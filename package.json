@@ -1,0 +1,41 @@
+{
+  "name": "modular-saas-platform",
+  "version": "1.0.0",
+  "description": "Modular SaaS Platform with Next.js Frontend and Express Backend",
+  "private": true,
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "prisma:generate": "cd backend && prisma generate",
+    "prisma:migrate:dev": "cd backend && prisma migrate dev --name init",
+    "prisma:migrate:deploy": "cd backend && prisma migrate deploy",
+    "prisma:db:push": "cd backend && prisma db push",
+    "deploy": "bash ./scripts/deploy.sh",
+    "backup": "bash ./scripts/backup_db.sh",
+    "dev:frontend": "cd frontend && npm run dev",
+    "dev:backend": "cd backend && npm run dev",
+    "build:frontend": "cd frontend && npm run build",
+    "build:backend": "cd backend && npm run build",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces",
+    "start": "cd frontend && npm start"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=9.0.0"
+  },
+  "keywords": [
+    "saas",
+    "nextjs",
+    "express",
+    "prisma",
+    "docker"
+  ],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "sharp": "^0.34.4"
+  }
+}

@@ -1,0 +1,39 @@
+{
+  "recommendations": [
+    "prisma.prisma",
+    "ckolkman.vscode-postgres",
+    "bradlc.vscode-tailwindcss",
+    "ms-vscode.vscode-typescript-next",
+    "dbaeumer.vscode-eslint",
+    "esbenp.prettier-vscode",
+    "usernamehw.errorlens",
+    "ms-playwright.playwright",
+    "firsttris.vscode-jest-runner",
+    "GitHub.copilot",
+    "github.copilot-chat",
+    "github.vscode-pull-request-github",
+    "github.vscode-github-actions",
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    "humao.rest-client",
+    "ms-azuretools.vscode-docker",
+    "formulahendry.auto-rename-tag",
+    "aaron-bond.better-comments",
+    "oderwat.indent-rainbow",
+    "christian-kohler.path-intellisense",
+    "wayou.vscode-todo-highlight",
+    "streetsidesoftware.code-spell-checker"
+  ],
+  "unwantedRecommendations": [
+    "ms-vscode.vscode-typescript",
+    "Vue.volar",
+    "ms-python.python",
+    "ms-python.vscode-pylance",
+    "ms-vscode.powershell",
+    "redis.redis-for-vscode",
+    "ms-azuretools.vscode-containers",
+    "ms-vscode-remote.remote-containers",
+    "firsttris.vscode-jest-runner",
+    "rangav.vscode-thunder-client"
+  ]
+}

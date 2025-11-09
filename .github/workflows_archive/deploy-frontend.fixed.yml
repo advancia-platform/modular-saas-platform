@@ -1,0 +1,75 @@
+name: Deploy Frontend to Rendername: Deploy Frontend to Render
+
+on:on:
+
+  push:  push:
+
+    branches: [main]    branches: [main]
+
+    paths:    paths:
+
+      - 'frontend/**'      - 'frontend/**'
+
+      - '.github/workflows/deploy-frontend.yml'      - '.github/workflows/deploy-frontend.yml'
+
+
+
+jobs:jobs:
+
+  deploy:  deploy:
+
+    runs-on: ubuntu-latest    runs-on: ubuntu-latest
+
+    if: ${{ github.actor != 'copilot-swe-agent[bot]' }}    if: ${{ github.actor != 'copilot-swe-agent[bot]' }}
+
+        
+
+    steps:    steps:
+
+      - uses: actions/checkout@v4      - uses: actions/checkout@v4
+
+            
+
+      - uses: actions/setup-node@v4      - uses: actions/setup-node@v4
+
+        with:        with:
+
+          node-version: '18'          node-version: '18'
+
+          cache: 'npm'          cache: 'npm'
+
+            
+
+      - name: Install frontend dependencies      - name: Install frontend dependencies
+
+        working-directory: ./frontend        working-directory: ./frontend
+
+        run: npm install        run: npm install
+
+            
+
+      - name: Build frontend      - name: Build frontend
+
+        working-directory: ./frontend        working-directory: ./frontend
+
+        run: npm run build        run: npm run build
+
+            
+
+      - name: Check hook      - name: Deploy to Render
+
+        id: check        if: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND != '' }}
+
+        env:        run: |
+
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}"
+
+        run: |
+          if [ -n "$HOOK" ]; then echo "ok=true" >> $GITHUB_OUTPUT; else echo "ok=false" >> $GITHUB_OUTPUT; fi
+      
+      - name: Deploy to Render
+        if: ${{ steps.check.outputs.ok == 'true' }}
+        env:
+          HOOK: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          curl -X POST "$HOOK"

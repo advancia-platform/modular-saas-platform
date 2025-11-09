@@ -1,0 +1,31 @@
+name: Deploy Backend to Render
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/deploy-backend.yml'
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: ${{ github.actor != 'copilot-swe-agent[bot]' }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+      
+      - name: Install root dependencies
+        run: npm ci
+      
+      - name: Build backend
+        run: npm run build --workspace=backend
+      
+      - name: Deploy to Render
+        if: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND != '' }}
+        run: |
+          curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}"

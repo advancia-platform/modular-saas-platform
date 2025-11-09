@@ -1,0 +1,188 @@
+{
+  // CRITICAL: Remove secrets from workspace settings
+  // "secrets.passphrase": "Good_mother1!?", // MOVED TO USER SETTINGS FOR SECURITY
+
+  // CSS/Styling
+  "css.lint.unknownAtRules": "ignore",
+
+  // General Editor Settings
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit",
+    "source.organizeImports": "explicit"
+  },
+  "editor.rulers": [80, 120],
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+
+  // TypeScript/JavaScript Settings
+  "typescript.preferences.preferTypeOnlyAutoImports": true,
+  "typescript.suggest.autoImports": true,
+  "javascript.preferences.preferTypeOnlyAutoImports": true,
+
+  // Jest Runner Settings - Use Native Test Runner
+  "jestrunner.jestCommand": "npm test --",
+  "jestrunner.projectPath": "backend",
+  "jestrunner.configPath": "backend/jest.config.js",
+  "jestrunner.runOptions": ["--runInBand", "--no-cache"],
+  "jestrunner.codeLensSelector": "**/*.{test,spec}.{js,jsx,ts,tsx}",
+  "jestrunner.enableYarnPnpSupport": false,
+  
+  // Native VS Code Testing
+  "testing.automaticallyOpenPeekView": "failureInVisibleDocument",
+  "testing.openTesting": "neverOpen",
+  "testing.defaultGutterClickAction": "run",
+  "testing.gutterEnabled": true,
+
+  // File Associations
+  "files.associations": {
+    "*.env*": "dotenv",
+    "docker-compose*.yml": "dockercompose",
+    "Dockerfile*": "dockerfile",
+    "*.prisma": "prisma"
+  },
+
+  // Git Settings
+  "git.autofetch": true,
+  "git.enableSmartCommit": true,
+  "git.confirmSync": false,
+
+  // GitLens Settings - Deployment Drift Filter
+  "gitlens.advanced.messages": {
+    "suppressCommitHasNoPreviousCommitWarning": false
+  },
+  "gitlens.views.commits.files.layout": "tree",
+  "gitlens.views.repositories.files.layout": "tree",
+
+  // GitLens Filter Presets for Deployment Tracking
+  "gitlens.views.commits.filters.preset": {
+    "deployment-drift": {
+      "name": "🚀 Deployment Drift (Render/Cloudflare)",
+      "description": "Show commits that changed deployment workflows, configs, and startup scripts (excludes Vercel)",
+      "filters": {
+        "branches": {
+          "include": ["main", "deploy/*", "ci/*"]
+        },
+        "paths": {
+          "include": [
+            ".github/workflows/**",
+            "render.yaml",
+            "render.*.yaml",
+            "wrangler.toml",
+            "docker-compose.yml",
+            "Dockerfile",
+            "**/Dockerfile*",
+            "scripts/deploy*.sh",
+            "scripts/deploy*.ps1",
+            "scripts/start*.sh",
+            "scripts/start*.ps1",
+            "**/deploy*.sh",
+            "**/deploy*.ps1",
+            "backend/Procfile",
+            "backend/package.json",
+            "frontend/package.json",
+            ".env.example",
+            "**/.env.example",
+            "backend/prisma/schema.prisma",
+            "backend/src/index.ts",
+            "backend/src/app.ts",
+            "frontend/next.config.js",
+            "frontend/middleware.ts"
+          ],
+          "exclude": [
+            "**/*vercel*",
+            "**/*Vercel*",
+            "**/vercel.json",
+            "VERCEL*.md",
+            "**/node_modules/**",
+            "**/dist/**",
+            "**/.next/**"
+          ]
+        },
+        "authors": {
+          "include": [],
+          "exclude": []
+        }
+      }
+    },
+    "render-only": {
+      "name": "🎯 Render Only",
+      "description": "Isolate Render-specific deployments and configurations",
+      "filters": {
+        "paths": {
+          "include": [
+            "render.yaml",
+            "render.*.yaml",
+            ".github/workflows/deploy-render*.yml",
+            ".github/workflows/*render*.yml",
+            "backend/Procfile",
+            "RENDER*.md",
+            "**/*RENDER*.md"
+          ],
+          "exclude": ["**/node_modules/**"]
+        }
+      }
+    },
+    "cloudflare-only": {
+      "name": "☁️ Cloudflare Only",
+      "description": "Isolate Cloudflare Workers/Pages deployments",
+      "filters": {
+        "paths": {
+          "include": [
+            "wrangler.toml",
+            "wrangler*.toml",
+            ".github/workflows/*cloudflare*.yml",
+            "CLOUDFLARE*.md",
+            "**/*CLOUDFLARE*.md"
+          ],
+          "exclude": ["**/node_modules/**"]
+        }
+      }
+    },
+    "ci-workflows": {
+      "name": "⚙️ CI/CD Workflows",
+      "description": "All GitHub Actions workflow changes",
+      "filters": {
+        "paths": {
+          "include": [".github/workflows/**"],
+          "exclude": ["**/*vercel*"]
+        }
+      }
+    }
+  },
+
+  // Testing Settings
+  "jest.autoEnable": false,
+  "jest.disabledWorkspaceFolders": ["Advancia Pay Ledger (Root)", "Frontend"],
+  "jest.rootPath": "backend",
+  "playwright.showTrace": true,
+
+  // ESLint Settings
+  "eslint.workingDirectories": ["backend", "frontend"],
+
+  // Search Settings
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/build": true,
+    "**/.next": true,
+    "**/coverage": true,
+    "**/backups": true,
+    "**/.venv": true
+  },
+
+  // Security
+  "security.workspace.trust.untrustedFiles": "open",
+
+  // YAML: map GitHub Actions schema to workflows and reduce false positives
+  "yaml.schemas": {
+    "https://json.schemastore.org/github-workflow.json": ".github/workflows/*"
+  },
+  "[dockercompose]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  },
+  "[dockerfile]": {
+    "editor.defaultFormatter": "ms-azuretools.vscode-containers"
+  }
+}

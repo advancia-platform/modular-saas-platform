@@ -1,0 +1,25 @@
+**********************
+PowerShell transcript start
+Start time: 20251021170335
+Username: DESKTOP-H7T9NPM\mucha
+RunAs User: DESKTOP-H7T9NPM\mucha
+Configuration Name: 
+Machine: DESKTOP-H7T9NPM (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -NoProfile -ExecutionPolicy Bypass -File c:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\scripts\DEPLOY-AND-TAIL.ps1
+Process ID: 20456
+PSVersion: 7.5.3
+PSEdition: Core
+GitCommitId: 7.5.3
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+
+🚀 Starting full Advancia build & deploy... (logging to C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\scripts\logs\deploy-20251021-170335.txt)
+
+🧱 Building Backend...
+
+✅ Backend build succeeded.

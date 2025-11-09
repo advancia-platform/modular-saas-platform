@@ -1,0 +1,19 @@
+name = "advancia-email-worker"
+main = "worker.js"
+compatibility_date = "2025-11-08"
+workers_dev = true
+
+# Email routes configuration
+[email]
+routes = [
+  { pattern = "support@advanciapayledger.com", action = "forward", destination = "advanciapayledger@gmail.com" },
+  { pattern = "contact@advanciapayledger.com", action = "forward", destination = "advanciapayledger@gmail.com" }
+]
+
+# Environment variables (set these in CloudFlare dashboard)
+[vars]
+# BACKEND_API_URL will be set in CloudFlare dashboard
+
+# For local testing
+[[env.dev.vars]]
+BACKEND_API_URL = "http://localhost:4000"

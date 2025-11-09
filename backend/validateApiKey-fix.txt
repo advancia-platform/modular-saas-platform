@@ -1,0 +1,19 @@
+// Optional API key guard (lenient in development)
+const validateApiKey = (
+  req: express.Request,
+  res: express.Response,
+  next: express.NextFunction
+) => {
+  // Skip API key validation in development or test environments
+  if (process.env.NODE_ENV === "development" || process.env.NODE_ENV === "test") {
+    return next();
+  }
+  
+  const apiKey = req.headers["x-api-key"];
+  const expectedKey = process.env.API_KEY;
+  
+  if (!apiKey || apiKey !== expectedKey) {
+    return res.status(401).json({ error: "Invalid or missing API key" });
+  }
+  next();
+};

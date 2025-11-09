@@ -1,0 +1,23 @@
+# GitHub Codespaces Prebuild Configuration
+# Speeds up Codespace creation by pre-building the development environment
+
+version: 2
+build:
+  prebuildCommands:
+    - npm install
+    - cd backend && npm install && npm run build
+    - cd ../frontend && npm install && npm run build
+    - docker-compose pull db redis
+
+tasks:
+  - name: Setup Database
+    init: |
+      docker-compose up -d db redis
+      sleep 10
+      cd backend && npx prisma migrate deploy
+      npx prisma generate
+
+  - name: Start Development Servers
+    command: |
+      cd backend && npm run dev &
+      cd frontend && npm run dev

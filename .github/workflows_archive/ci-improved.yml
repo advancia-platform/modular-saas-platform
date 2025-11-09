@@ -1,0 +1,199 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  node:
+    name: Node - install, lint, test, build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint (if present)
+        run: |
+          if npm run | grep -q 'lint'; then
+            npm run lint
+          else
+            echo "No lint script, skipping."
+          fi
+
+      - name: Test (if present)
+        run: |
+          if npm run | grep -q 'test'; then
+            npm test
+          else
+            echo "No test script, skipping."
+          fi
+
+      - name: Build (if present)
+        run: |
+          if npm run | grep -q 'build'; then
+            npm run build
+          else
+            echo "No build script, skipping."
+          fi
+
+  integration:
+    name: Integration - services, migrate & health-check
+    runs-on: ubuntu-latest
+    needs: node
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: password
+          POSTGRES_DB: saas_platform
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping || exit 1"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Wait for Postgres & Redis
+        run: |
+          echo "Waiting for Postgres..."
+          for i in $(seq 1 30); do
+            if pg_isready -h localhost -p 5432 -U postgres; then
+              echo "Postgres is ready"
+              break
+            fi
+            echo "Attempt $i/30..."
+            sleep 2
+          done
+
+          echo "Waiting for Redis..."
+          for i in $(seq 1 20); do
+            if redis-cli -h localhost ping >/dev/null 2>&1; then
+              echo "Redis is ready"
+              break
+            fi
+            echo "Attempt $i/20..."
+            sleep 1
+          done
+
+      - name: Set environment variables
+        run: |
+          echo "DATABASE_URL=postgresql://postgres:password@localhost:5432/saas_platform" >> $GITHUB_ENV
+          echo "REDIS_URL=redis://localhost:6379" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_API_URL=http://localhost:4000" >> $GITHUB_ENV
+          echo "NEXT_PUBLIC_APP_URL=http://localhost:3000" >> $GITHUB_ENV
+          echo "JWT_SECRET=test-jwt-secret-for-ci" >> $GITHUB_ENV
+          echo "SESSION_SECRET=test-session-secret-for-ci" >> $GITHUB_ENV
+          echo "NODE_ENV=test" >> $GITHUB_ENV
+
+      - name: Apply Prisma migrations
+        run: |
+          if [ -f backend/prisma/schema.prisma ]; then
+            echo "Running Prisma migrations..."
+            cd backend
+            npx prisma migrate deploy
+            npx prisma generate
+          elif [ -f prisma/schema.prisma ]; then
+            echo "Running Prisma migrations (root)..."
+            npx prisma migrate deploy
+            npx prisma generate
+          else
+            echo "No prisma schema found; skipping migrations."
+          fi
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+
+      - name: Start backend app
+        run: |
+          if [ -f backend/package.json ]; then
+            cd backend
+            if npm run | grep -q 'start'; then
+              echo "Starting backend..."
+              nohup npm run start > backend.log 2>&1 &
+              echo $! > backend.pid
+              sleep 8
+            else
+              echo "No start script in backend"
+            fi
+          fi
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          REDIS_URL: ${{ env.REDIS_URL }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          SESSION_SECRET: ${{ env.SESSION_SECRET }}
+          PORT: 4000
+
+      - name: Health check backend
+        run: |
+          echo "Checking backend health at http://localhost:4000/api/health"
+          for i in $(seq 1 20); do
+            if curl --fail --silent http://localhost:4000/api/health >/dev/null 2>&1; then
+              echo "✅ Backend health check passed"
+              exit 0
+            fi
+            echo "Attempt $i/20..."
+            sleep 3
+          done
+          echo "❌ Backend health check failed"
+          if [ -f backend/backend.log ]; then
+            echo "Backend logs:"
+            tail -100 backend/backend.log
+          fi
+          exit 1
+
+      - name: Run integration tests (if present)
+        run: |
+          if npm run | grep -q 'test:integration'; then
+            npm run test:integration
+          elif [ -f backend/package.json ]; then
+            cd backend
+            if npm run | grep -q 'test:integration'; then
+              npm run test:integration
+            else
+              echo "No integration tests configured"
+            fi
+          fi
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          REDIS_URL: ${{ env.REDIS_URL }}
+
+      - name: Cleanup
+        if: always()
+        run: |
+          if [ -f backend/backend.pid ]; then
+            kill $(cat backend/backend.pid) || true
+          fi

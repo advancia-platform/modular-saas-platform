@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Doctor Registration - Test Page</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 20px;
+      }
+      .container {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        max-width: 600px;
+        width: 100%;
+        padding: 40px;
+      }
+      h1 {
+        color: #333;
+        margin-bottom: 10px;
+        text-align: center;
+      }
+      .subtitle {
+        color: #666;
+        text-align: center;
+        margin-bottom: 30px;
+      }
+      .form-group {
+        margin-bottom: 20px;
+      }
+      label {
+        display: block;
+        margin-bottom: 5px;
+        color: #333;
+        font-weight: 600;
+      }
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.3s;
+      }
+      input:focus {
+        outline: none;
+        border-color: #667eea;
+      }
+      .required {
+        color: #e74c3c;
+      }
+      .btn {
+        width: 100%;
+        padding: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+      .btn:hover {
+        transform: translateY(-2px);
+      }
+      .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        transform: none;
+      }
+      .message {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .note {
+        background: #fff3cd;
+        color: #856404;
+        padding: 10px;
+        border-radius: 8px;
+        margin-top: 20px;
+        font-size: 13px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🏥 Doctor Registration</h1>
+      <p class="subtitle">MedBed Consultation System</p>
+
+      <div id="successMsg" class="message success"></div>
+      <div id="errorMsg" class="message error"></div>
+
+      <form id="doctorForm">
+        <div class="form-group">
+          <label>First Name <span class="required">*</span></label>
+          <input type="text" id="firstName" required placeholder="Sarah" />
+        </div>
+
+        <div class="form-group">
+          <label>Last Name <span class="required">*</span></label>
+          <input type="text" id="lastName" required placeholder="Johnson" />
+        </div>
+
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input
+            type="email"
+            id="email"
+            required
+            placeholder="sarah.johnson@medbed.com"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Password <span class="required">*</span></label>
+          <input
+            type="password"
+            id="password"
+            required
+            minlength="8"
+            placeholder="Minimum 8 characters"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Specialization <span class="required">*</span></label>
+          <input
+            type="text"
+            id="specialization"
+            required
+            placeholder="General Medicine"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Medical License Number <span class="required">*</span></label>
+          <input
+            type="text"
+            id="licenseNumber"
+            required
+            placeholder="MD123456789"
+          />
+        </div>
+
+        <div class="form-group">
+          <label>Phone Number (Optional)</label>
+          <input type="tel" id="phoneNumber" placeholder="+1 (555) 123-4567" />
+        </div>
+
+        <div class="form-group">
+          <label>Invite Code <span class="required">*</span></label>
+          <input
+            type="text"
+            id="inviteCode"
+            required
+            placeholder="Enter invite code"
+          />
+        </div>
+
+        <button type="submit" class="btn" id="submitBtn">
+          Register as Doctor
+        </button>
+      </form>
+
+      <div class="note">
+        💡 <strong>Test Invite Code:</strong> ADVANCIA2025MEDBED<br />
+        📝 Your account will be created with <strong>PENDING</strong> status and
+        requires admin verification.
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:4000";
+      const API_KEY = "dev-api-key-123";
+
+      document
+        .getElementById("doctorForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const submitBtn = document.getElementById("submitBtn");
+          const successMsg = document.getElementById("successMsg");
+          const errorMsg = document.getElementById("errorMsg");
+
+          // Hide previous messages
+          successMsg.style.display = "none";
+          errorMsg.style.display = "none";
+
+          // Disable button
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Submitting...";
+
+          // Collect form data
+          const formData = {
+            firstName: document.getElementById("firstName").value,
+            lastName: document.getElementById("lastName").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+            specialization: document.getElementById("specialization").value,
+            licenseNumber: document.getElementById("licenseNumber").value,
+            phoneNumber:
+              document.getElementById("phoneNumber").value || undefined,
+            inviteCode: document.getElementById("inviteCode").value,
+          };
+
+          try {
+            const response = await fetch(
+              `${API_URL}/api/auth/register-doctor`,
+              {
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json",
+                  "x-api-key": API_KEY,
+                },
+                body: JSON.stringify(formData),
+              }
+            );
+
+            const data = await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                data.error || data.message || "Registration failed"
+              );
+            }
+
+            // Success!
+            successMsg.textContent = `✅ ${data.message}\n\nDoctor ID: ${data.doctor.id}\nStatus: ${data.doctor.status}`;
+            successMsg.style.display = "block";
+
+            // Store token if provided
+            if (data.token) {
+              localStorage.setItem("doctorToken", data.token);
+              console.log("Token saved to localStorage");
+            }
+
+            // Reset form
+            document.getElementById("doctorForm").reset();
+          } catch (error) {
+            errorMsg.textContent = `❌ Error: ${error.message}`;
+            errorMsg.style.display = "block";
+            console.error("Registration error:", error);
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = "Register as Doctor";
+          }
+        });
+
+      // Auto-fill for testing (remove in production)
+      window.addEventListener("load", () => {
+        document.getElementById("firstName").value = "Sarah";
+        document.getElementById("lastName").value = "Johnson";
+        document.getElementById("email").value = "sarah.johnson@medbed.com";
+        document.getElementById("password").value = "SecureDoctor2025!";
+        document.getElementById("specialization").value = "General Medicine";
+        document.getElementById("licenseNumber").value = "MD123456789";
+        document.getElementById("phoneNumber").value = "+1 (555) 123-4567";
+        document.getElementById("inviteCode").value = "ADVANCIA2025MEDBED";
+      });
+    </script>
+  </body>
+</html>

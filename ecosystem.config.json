@@ -1,0 +1,61 @@
+{
+  "apps": [
+    {
+      "name": "advancia-backend",
+      "script": "dist/index.js",
+      "cwd": "./backend",
+      "instances": 2,
+      "exec_mode": "cluster",
+      "env": {
+        "NODE_ENV": "production"
+      },
+      "error_file": "./logs/backend-error.log",
+      "out_file": "./logs/backend-out.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
+      "merge_logs": true,
+      "autorestart": true,
+      "max_restarts": 10,
+      "min_uptime": "10s",
+      "max_memory_restart": "500M",
+      "restart_delay": 3000,
+      "watch": false,
+      "ignore_watch": ["node_modules", "logs", "*.log"],
+      "kill_timeout": 5000,
+      "wait_ready": true,
+      "listen_timeout": 10000,
+      "shutdown_with_message": true,
+      "exp_backoff_restart_delay": 100,
+      "health_check": {
+        "enabled": true,
+        "endpoint": "http://localhost:4000/health/live",
+        "interval": 30000,
+        "timeout": 5000
+      }
+    },
+    {
+      "name": "advancia-frontend",
+      "script": "server.js",
+      "cwd": "./frontend",
+      "instances": 1,
+      "exec_mode": "cluster",
+      "env": {
+        "NODE_ENV": "production",
+        "PORT": 3000,
+        "HOSTNAME": "0.0.0.0"
+      },
+      "error_file": "./logs/frontend-error.log",
+      "out_file": "./logs/frontend-out.log",
+      "log_date_format": "YYYY-MM-DD HH:mm:ss Z",
+      "merge_logs": true,
+      "autorestart": true,
+      "max_restarts": 10,
+      "min_uptime": "10s",
+      "max_memory_restart": "300M",
+      "restart_delay": 3000,
+      "watch": false,
+      "kill_timeout": 5000,
+      "wait_ready": false,
+      "exp_backoff_restart_delay": 100
+    }
+  ]
+}

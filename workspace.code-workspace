@@ -1,0 +1,76 @@
+{
+  "folders": [
+    {
+      "name": "Advancia Pay Ledger (Root)",
+      "path": "."
+    },
+    {
+      "name": "Backend",
+      "path": "./backend"
+    },
+    {
+      "name": "Frontend",
+      "path": "./frontend"
+    }
+  ],
+  "settings": {
+    "files.exclude": {
+      "**/node_modules": true,
+      "**/.git": false,
+      "**/dist": true,
+      "**/.next": true,
+      "**/build": true,
+      "**/.cache": true,
+      "**/backups": true
+    },
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/.next": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.cache": true,
+      "**/backups": true
+    },
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true,
+    "[typescript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[typescriptreact]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[javascript]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode",
+      "editor.formatOnSave": true
+    },
+    "[json]": {
+      "editor.defaultFormatter": "esbenp.prettier-vscode"
+    },
+    "files.associations": {
+      "*.css": "css",
+      "*.prisma": "prisma"
+    },
+    "git.enabled": true,
+    "git.autofetch": true,
+    "git.confirmSync": false,
+    "editor.codeActions.triggerOnFocusChange": true,
+    "powershell.cwd": "Advancia Pay Ledger (Root)"
+  },
+  "extensions": {
+    "recommendations": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "prisma.prisma",
+      "ms-vscode.vscode-typescript-next",
+      "bradlc.vscode-tailwindcss",
+      "formulahendry.auto-rename-tag",
+      "christian-kohler.path-intellisense",
+      "usernamehw.errorlens",
+      "github.copilot"
+    ]
+  }
+}

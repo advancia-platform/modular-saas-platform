@@ -1,0 +1,98 @@
+### Advancia PayLedger API Tests
+### Authentication & User Management
+
+@baseUrl = http://localhost:4000
+@apiKey = dev-api-key-123
+
+### Health Check
+GET {{baseUrl}}/health
+Content-Type: application/json
+
+###
+
+### User Registration
+POST {{baseUrl}}/api/auth/register
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "email": "test@advanciapayledger.com",
+  "username": "testuser",
+  "password": "SecurePassword123!",
+  "firstName": "Test",
+  "lastName": "User"
+}
+
+###
+
+### User Login
+# @name login
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "email": "test@advanciapayledger.com",
+  "password": "SecurePassword123!"
+}
+
+### Extract token from login response
+@authToken = {{login.response.body.token}}
+
+###
+
+### Get User Profile
+GET {{baseUrl}}/api/users/profile
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Update User Profile
+PUT {{baseUrl}}/api/users/profile
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "firstName": "Updated",
+  "lastName": "User",
+  "bio": "Updated bio for testing"
+}
+
+###
+
+### Request Password Reset
+POST {{baseUrl}}/api/auth/forgot-password
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "email": "test@advanciapayledger.com"
+}
+
+###
+
+### SMS/OTP Verification (Twilio)
+POST {{baseUrl}}/api/auth/verify-sms
+Content-Type: application/json
+x-api-key: {{apiKey}}
+
+{
+  "phoneNumber": "+1234567890",
+  "code": "123456"
+}
+
+###
+
+### Get User Balance
+GET {{baseUrl}}/api/users/balance
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Logout
+POST {{baseUrl}}/api/auth/logout
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+x-api-key: {{apiKey}}

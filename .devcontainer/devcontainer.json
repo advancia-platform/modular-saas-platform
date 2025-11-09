@@ -1,0 +1,137 @@
+{
+  "name": "AdvanciaPayLedger - Payment & Ledger Platform",
+  "dockerComposeFile": ["./docker-compose.yml"],
+  "service": "app",
+  "workspaceFolder": "/workspaces/modular-saas-platform",
+  
+  "initializeCommand": "pwsh -Command \"if (-not (Test-Path .env)) { Copy-Item .env.example .env -ErrorAction SilentlyContinue }\"",
+  
+  // Forward ports for development services
+  "forwardPorts": [3000, 4000, 5432, 6379],
+  "portsAttributes": {
+    "3000": {
+      "label": "Next.js App",
+      "onAutoForward": "notify"
+    },
+    "4000": {
+      "label": "Backend API",
+      "onAutoForward": "notify"
+    },
+    "3003": {
+      "label": "Development UI",
+      "onAutoForward": "notify"
+    },
+    "3005": {
+      "label": "API Server",
+      "onAutoForward": "silent"
+    },
+    "5432": {
+      "label": "PostgreSQL",
+      "onAutoForward": "silent"
+    },
+    "6379": {
+      "label": "Redis",
+      "onAutoForward": "silent"
+    },
+    "9090": {
+      "label": "Prometheus",
+      "onAutoForward": "silent"
+    },
+    "3001": {
+      "label": "Storybook",
+      "onAutoForward": "silent"
+    }
+  },
+
+  // Enhanced VS Code customizations
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        // Core development
+        "dbaeumer.vscode-eslint",
+        "esbenp.prettier-vscode",
+        "ms-vscode.vscode-typescript-next",
+
+        // Testing & Quality
+        "ms-playwright.playwright",
+        "orta.vscode-jest",
+        "firsttris.vscode-jest-runner",
+        "bradlc.vscode-tailwindcss",
+
+        // Docker & DevOps
+        "ms-azuretools.vscode-docker",
+        "ms-kubernetes-tools.vscode-kubernetes-tools",
+
+        // Database & APIs
+        "ms-mssql.mssql",
+        "humao.rest-client",
+        "rangav.vscode-thunder-client",
+
+        // Git & Collaboration
+        "github.vscode-pull-request-github",
+        "github.copilot",
+        "github.copilot-chat",
+
+        // Productivity
+        "ms-vscode.vscode-json",
+        "redhat.vscode-yaml",
+        "ms-vscode.powershell",
+        "ms-vscode-remote.remote-containers"
+      ],
+
+      "settings": {
+        "typescript.preferences.preferTypeOnlyAutoImports": true,
+        "typescript.suggest.autoImports": true,
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "esbenp.prettier-vscode",
+        "editor.codeActionsOnSave": {
+          "source.fixAll.eslint": "explicit",
+          "source.organizeImports": "explicit"
+        },
+        "jest.autoEnable": true,
+        "playwright.showTrace": true,
+        "files.associations": {
+          "*.env*": "dotenv"
+        },
+        "terminal.integrated.defaultProfile.linux": "bash",
+        "git.autofetch": true,
+        "git.enableSmartCommit": true
+      }
+    }
+  },
+
+  // Enhanced lifecycle commands
+  "postCreateCommand": ".devcontainer/setup.sh",
+  "postStartCommand": "echo 'Dev container ready!'",
+
+  // Container features and tools
+  "features": {
+    "ghcr.io/devcontainers/features/node:1": {
+      "nodeGypDependencies": true,
+      "version": "18"
+    },
+    "ghcr.io/devcontainers/features/docker-in-docker:2": {
+      "version": "latest",
+      "dockerDashComposeVersion": "v2"
+    },
+    "ghcr.io/devcontainers/features/git:1": {
+      "version": "latest"
+    },
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "version": "latest"
+    }
+  },
+
+  // Environment variables for development
+  "containerEnv": {
+    "NODE_ENV": "development",
+    "NEXT_TELEMETRY_DISABLED": "1",
+    "DATABASE_URL": "postgresql://postgres:password@db:5432/saas_platform_dev",
+    "REDIS_URL": "redis://:devpassword@redis:6379"
+  },
+
+  // Mount additional volumes
+  "mounts": [
+    "source=/var/run/docker.sock,target=/var/run/docker.sock,type=bind"
+  ]
+}

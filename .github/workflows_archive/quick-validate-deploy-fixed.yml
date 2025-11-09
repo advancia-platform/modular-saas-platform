@@ -1,0 +1,63 @@
+name: Quick Validate & Deploy (Render)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install backend deps
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Install frontend deps
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+      - name: Check deploy hooks
+        id: check
+        env:
+          RENDER_DEPLOY_HOOK_BACKEND: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+          RENDER_DEPLOY_HOOK_FRONTEND: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          if [ -n "$RENDER_DEPLOY_HOOK_BACKEND" ]; then echo "backend=true" >> $GITHUB_OUTPUT; else echo "backend=false" >> $GITHUB_OUTPUT; fi
+          if [ -n "$RENDER_DEPLOY_HOOK_FRONTEND" ]; then echo "frontend=true" >> $GITHUB_OUTPUT; else echo "frontend=false" >> $GITHUB_OUTPUT; fi
+
+      - name: Trigger backend Render deployment
+        if: ${{ steps.check.outputs.backend == 'true' }}
+        env:
+          RENDER_DEPLOY_HOOK_BACKEND: ${{ secrets.RENDER_DEPLOY_HOOK_BACKEND }}
+        run: |
+          echo "Deploying backend to Render..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --request POST --url "$RENDER_DEPLOY_HOOK_BACKEND")
+          echo "Backend hook HTTP $STATUS"
+
+      - name: Trigger frontend Render deployment
+        if: ${{ steps.check.outputs.frontend == 'true' }}
+        env:
+          RENDER_DEPLOY_HOOK_FRONTEND: ${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}
+        run: |
+          echo "Deploying frontend to Render..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --request POST --url "$RENDER_DEPLOY_HOOK_FRONTEND")
+          echo "Frontend hook HTTP $STATUS"
+
+      - name: Skip (no hooks configured)
+        if: ${{ steps.check.outputs.backend != 'true' && steps.check.outputs.frontend != 'true' }}
+        run: echo "No Render deploy hooks configured; set repo secrets to enable deployment."

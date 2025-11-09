@@ -1,0 +1,101 @@
+{
+  "folders": [
+    {
+      "name": "🏠 Root",
+      "path": "."
+    },
+    {
+      "name": "⚙️ Backend",
+      "path": "./backend"
+    },
+    {
+      "name": "🎨 Frontend",
+      "path": "./frontend"
+    }
+  ],
+  "settings": {
+    // General Editor Settings
+    "editor.formatOnSave": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.codeActionsOnSave": {
+      "source.fixAll.eslint": "explicit",
+      "source.organizeImports": "explicit"
+    },
+    "editor.rulers": [80, 120],
+    "editor.tabSize": 2,
+
+    // TypeScript/JavaScript Settings
+    "typescript.preferences.preferTypeOnlyAutoImports": true,
+    "typescript.suggest.autoImports": true,
+    "javascript.preferences.preferTypeOnlyAutoImports": true,
+
+    // File Associations
+    "files.associations": {
+      "*.env*": "dotenv",
+      "docker-compose*.yml": "dockercompose",
+      "Dockerfile*": "dockerfile"
+    },
+
+    // Terminal Settings
+    "terminal.integrated.defaultProfile.windows": "PowerShell",
+    "terminal.integrated.profiles.windows": {
+      "PowerShell": {
+        "source": "PowerShell",
+        "icon": "terminal-powershell"
+      }
+    },
+
+    // Git Settings
+    "git.autofetch": true,
+    "git.enableSmartCommit": true,
+    "git.confirmSync": false,
+
+    // Docker Settings
+    "docker.showStartPage": false,
+
+    // Dev Container Settings
+    "remote.containers.defaultExtensions": [
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "bradlc.vscode-tailwindcss",
+      "prisma.prisma",
+      "github.copilot"
+    ],
+
+    // Testing Settings
+    "jest.autoEnable": false,
+    "jest.disabledWorkspaceFolders": ["🏠 Root", "🎨 Frontend"],
+    "jest.rootPath": "backend",
+    "playwright.showTrace": true,
+
+    // Database Settings
+    "mssql.connections": [],
+
+    // Search Settings
+    "search.exclude": {
+      "**/node_modules": true,
+      "**/dist": true,
+      "**/build": true,
+      "**/.next": true,
+      "**/coverage": true
+    }
+  },
+  "extensions": {
+    "recommendations": [
+      "prisma.prisma",
+      "ckolkman.vscode-postgres",
+      "redis.redis-for-vscode",
+      "dbaeumer.vscode-eslint",
+      "esbenp.prettier-vscode",
+      "humao.rest-client",
+      "rangav.vscode-thunder-client",
+      "github.copilot",
+      "github.copilot-chat",
+      "eamodio.gitlens",
+      "bradlc.vscode-tailwindcss",
+      "usernamehw.errorlens",
+      "ms-azuretools.vscode-docker",
+      "ms-vscode-remote.remote-containers"
+    ]
+  }
+}

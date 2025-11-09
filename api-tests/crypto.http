@@ -1,0 +1,106 @@
+### Advancia PayLedger API Tests
+### Crypto & Ethereum Operations
+
+@baseUrl = http://localhost:4000
+@authToken = your-jwt-token-here
+
+### Get Crypto Prices
+GET {{baseUrl}}/api/crypto/prices
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Get User Crypto Balances
+GET {{baseUrl}}/api/crypto/balances
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Buy Cryptocurrency
+POST {{baseUrl}}/api/crypto/buy
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "symbol": "BTC",
+  "amount": "0.001",
+  "fiatAmount": "100.00",
+  "currency": "USD"
+}
+
+###
+
+### Sell Cryptocurrency
+POST {{baseUrl}}/api/crypto/sell
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "symbol": "BTC",
+  "amount": "0.0005",
+  "currency": "USD"
+}
+
+###
+
+### Get Crypto Order History
+GET {{baseUrl}}/api/crypto/orders
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Ethereum Deposit Address
+GET {{baseUrl}}/api/eth/deposit-address
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Ethereum Withdraw
+POST {{baseUrl}}/api/eth/withdraw
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "address": "0x742d35Cc6466C4Eb7c10e7D4A8c6e2a7b9",
+  "amount": "0.1",
+  "currency": "ETH"
+}
+
+###
+
+### Get Ethereum Transactions
+GET {{baseUrl}}/api/eth/transactions
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Check Ethereum Balance
+GET {{baseUrl}}/api/eth/balance
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Get Crypto Withdrawal History
+GET {{baseUrl}}/api/crypto/withdrawals
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Request Crypto Withdrawal
+POST {{baseUrl}}/api/crypto/withdraw
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "symbol": "USDT",
+  "amount": "50.00",
+  "address": "0x742d35Cc6466C4Eb7c10e7D4A8c6e2a7b9",
+  "network": "ETH"
+}

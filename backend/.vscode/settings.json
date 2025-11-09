@@ -1,0 +1,13 @@
+{
+  // Jest configuration for backend workspace
+  "jest.autoEnable": true,
+  "jest.jestCommandLine": "npm test --",
+  "jest.rootPath": ".",
+
+  // TypeScript settings
+  "typescript.tsdk": "node_modules/typescript/lib",
+
+  // ESLint
+  "eslint.enable": true,
+  "eslint.workingDirectories": ["."]
+}

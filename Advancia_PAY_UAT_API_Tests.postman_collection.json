@@ -1,0 +1,488 @@
+{
+  "info": {
+    "name": "Advancia Pay Ledger - UAT API Tests",
+    "description": "Complete API testing collection for UAT phase",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register Test User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"uat-test@advancia.pay\",\n  \"password\": \"TestPassword123!\",\n  \"firstName\": \"UAT\",\n  \"lastName\": \"Tester\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/auth/register",
+              "host": ["{{api_url}}"],
+              "path": ["api", "auth", "register"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Login Test User",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"uat-test@advancia.pay\",\n  \"password\": \"TestPassword123!\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/auth/login",
+              "host": ["{{api_url}}"],
+              "path": ["api", "auth", "login"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Token Wallet - Withdraw",
+      "item": [
+        {
+          "name": "Withdraw - Valid Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"ethAddress\": \"0x742d35Cc6634C0532925a3b844Bc91e8e1a81aB5\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/withdraw",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "withdraw"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw - Invalid ETH Address",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"ethAddress\": \"invalid-address\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/withdraw",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "withdraw"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw - Negative Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": -100,\n  \"ethAddress\": \"0x742d35Cc6634C0532925a3b844Bc91e8e1a81aB5\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/withdraw",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "withdraw"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Withdraw - No Auth Token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"amount\": 100,\n  \"ethAddress\": \"0x742d35Cc6634C0532925a3b844Bc91e8e1a81aB5\"\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/withdraw",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "withdraw"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Token Wallet - Cashout",
+      "item": [
+        {
+          "name": "Cashout - Valid Request (50 tokens = $5)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenAmount\": 50\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/cashout",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "cashout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cashout - Zero Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenAmount\": 0\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/cashout",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "cashout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cashout - Negative Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenAmount\": -50\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/cashout",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "cashout"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Cashout - Large Amount",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"tokenAmount\": 10000\n}"
+            },
+            "url": {
+              "raw": "{{api_url}}/api/tokens/cashout",
+              "host": ["{{api_url}}"],
+              "path": ["api", "tokens", "cashout"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Rewards - Pending",
+      "item": [
+        {
+          "name": "Get Pending Rewards - Valid User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/api/rewards/pending/{{user_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "pending", "{{user_id}}"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Rewards - Invalid User ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/api/rewards/pending/invalid-user-id",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "pending", "invalid-user-id"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Pending Rewards - No Auth",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{api_url}}/api/rewards/pending/{{user_id}}",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "pending", "{{user_id}}"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Rewards - Leaderboard",
+      "item": [
+        {
+          "name": "Get Leaderboard - Default (limit=10)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/api/rewards/leaderboard",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "leaderboard"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard - Top 5",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/api/rewards/leaderboard?limit=5",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "leaderboard"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "5"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard - Top 100",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/api/rewards/leaderboard?limit=100",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "leaderboard"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "100"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard - With Offset (Pagination)",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/api/rewards/leaderboard?limit=10&offset=10",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "leaderboard"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10"
+                },
+                {
+                  "key": "offset",
+                  "value": "10"
+                }
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Get Leaderboard - No Auth",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{api_url}}/api/rewards/leaderboard",
+              "host": ["{{api_url}}"],
+              "path": ["api", "rewards", "leaderboard"]
+            }
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "Health Checks",
+      "item": [
+        {
+          "name": "API Health",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{api_url}}/api/health",
+              "host": ["{{api_url}}"],
+              "path": ["api", "health"]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "Database Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{auth_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{api_url}}/api/system/health/db",
+              "host": ["{{api_url}}"],
+              "path": ["api", "system", "health", "db"]
+            }
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "api_url",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "auth_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}

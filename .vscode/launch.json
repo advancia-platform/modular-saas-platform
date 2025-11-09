@@ -1,0 +1,237 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    
+    {
+      "name": "🔧 Backend: Debug (TS via tsx)",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--inspect=9229", "--loader", "tsx"],
+      "cwd": "${workspaceFolder}/backend",
+      "skipFiles": ["<node_internals>/"],
+      "console": "integratedTerminal",
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "app:*"
+      },
+      "envFile": "${workspaceFolder}/backend/.env",
+      "restart": true,
+      "program": "${workspaceFolder}/backend/src/index.ts"
+    },
+    {
+      "name": "🎨 Frontend: Next.js Debug",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--inspect=9230",
+        "node_modules/next/dist/bin/next",
+        "dev"
+      ],
+      "cwd": "${workspaceFolder}/frontend",
+      "skipFiles": ["<node_internals>/"],
+      "console": "integratedTerminal",
+      "env": {
+        "NEXT_PUBLIC_API_URL": "http://localhost:4000",
+        "NEXTAUTH_URL": "http://localhost:3000"
+      }
+    },
+    {
+      "name": "Attach to Backend (9229)",
+      "type": "node",
+      "request": "attach",
+      "port": 9229
+    },
+    {
+      "name": "🧠 Debug Backend (Copilot Agent)",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/"],
+      "program": "${workspaceFolder}/backend/src/index.ts",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--inspect=9229", "--loader", "tsx"],
+      "cwd": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "console": "integratedTerminal",
+      "preLaunchTask": "Auto-Decrypt Env (if needed)"
+    },
+    {
+      "name": "Backend – Debug Prisma & API",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/"],
+      "program": "${workspaceFolder}/backend/src/index.ts",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--inspect=9229", "--loader", "tsx"],
+      "cwd": "${workspaceFolder}/backend",
+      "envFile": "${workspaceFolder}/backend/.env",
+      "env": {
+        "NODE_ENV": "development",
+        "DEBUG": "prisma:*",
+        "PRISMA_LOG_LEVEL": "query"
+      },
+      "console": "integratedTerminal",
+      "preLaunchTask": "Auto-Decrypt Env (if needed)"
+    },
+    {
+      "name": "⚡ Debug Frontend (Next.js)",
+      "type": "node",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/"],
+      "program": "${workspaceFolder}/frontend/node_modules/next/dist/bin/next",
+      "args": ["dev"],
+      "env": {
+        "NODE_ENV": "development",
+        "NEXTAUTH_URL": "http://localhost:3000",
+        "NEXT_PUBLIC_API_URL": "http://localhost:4000"
+      },
+      "runtimeArgs": ["--inspect=9230"],
+      "cwd": "${workspaceFolder}/frontend",
+      "console": "integratedTerminal",
+      "preLaunchTask": "Wait for Backend (4000)",
+      "outFiles": ["${workspaceFolder}/frontend/.next//*.js"]
+    },
+    {
+      "name": "🐘 Prisma Studio",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/node_modules/.bin/prisma",
+      "args": ["studio"],
+      "console": "integratedTerminal",
+      "cwd": "${workspaceFolder}/backend",
+      "env": {
+        "DATABASE_URL": "${env:DATABASE_URL}"
+      }
+    },
+    {
+      "name": "🤖 Run RPA Worker",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceFolder}/backend/scripts/rpaWorker.ts",
+      "runtimeArgs": ["--loader", "tsx"],
+      "cwd": "${workspaceFolder}",
+      "console": "integratedTerminal"
+    },
+    {
+      "name": "🧪 Jest: Debug All Tests",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/jest/bin/jest.js",
+      "args": ["--runInBand", "--no-cache"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    {
+      "name": "🔍 Jest: Debug Current File",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/jest/bin/jest.js",
+      "args": [
+        "${fileBasename}",
+        "--runInBand",
+        "--no-cache",
+        "--watchAll=false"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    {
+      "name": "🎯 Jest: Debug Integration Tests",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/jest/bin/jest.js",
+      "args": ["integration.test.ts", "--runInBand", "--no-cache", "--verbose"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    {
+      "name": "✅ Jest: Debug Auth Tests",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/jest/bin/jest.js",
+      "args": ["auth.test.ts", "--runInBand", "--no-cache", "--verbose"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    {
+      "name": "🧬 Jest: Debug with Coverage",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/jest/bin/jest.js",
+      "args": ["--coverage", "--runInBand", "--no-cache"],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    },
+    {
+      "name": "⚡ Jest: Debug Single Test",
+      "type": "node",
+      "request": "launch",
+      "cwd": "${workspaceFolder}/backend",
+      "program": "${workspaceFolder}/backend/node_modules/jest/bin/jest.js",
+      "args": [
+        "${input:testFile}",
+        "--runInBand",
+        "--no-cache",
+        "--testNamePattern=${input:testNamePattern}"
+      ],
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "neverOpen",
+      "skipFiles": ["<node_internals>/**"],
+      "env": {
+        "NODE_ENV": "test"
+      }
+    }
+  ],
+  "compounds": [
+    {
+      "name": "🚀 Full Stack Debug (Backend + Frontend)",
+      "configurations": [
+        "🧠 Debug Backend (Copilot Agent)",
+        "⚡ Debug Frontend (Next.js)"
+      ]
+    }
+  ],
+  "inputs": [
+    {
+      "id": "testFile",
+      "type": "promptString",
+      "description": "Test file name (e.g., auth.test.ts)",
+      "default": "integration.test.ts"
+    },
+    {
+      "id": "testNamePattern",
+      "type": "promptString",
+      "description": "Test name pattern (e.g., 'should register')",
+      "default": ".*"
+    }
+  ]
+}

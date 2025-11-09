@@ -1,0 +1,14 @@
+# Exclusions to keep EB bundle small
+.git/
+node_modules/
+backups/
+frontend/
+**/*.log
+**/*.md
+.env*
+*.enc.json
+*.ps1
+Dockerfile
+render.yaml
+scripts/
+.prisma/

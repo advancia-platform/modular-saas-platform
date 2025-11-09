@@ -1,0 +1,500 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Admin Dashboard - Doctor Verification</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+        min-height: 100vh;
+        padding: 20px;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .header {
+        background: white;
+        padding: 30px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      h1 {
+        color: #1e3c72;
+        margin-bottom: 10px;
+      }
+      .subtitle {
+        color: #666;
+      }
+      .filters {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+      }
+      .filter-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        background: white;
+        color: #1e3c72;
+      }
+      .filter-btn.active {
+        background: #1e3c72;
+        color: white;
+      }
+      .doctors-grid {
+        display: grid;
+        gap: 20px;
+      }
+      .doctor-card {
+        background: white;
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+      }
+      .doctor-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+      }
+      .doctor-name {
+        font-size: 20px;
+        font-weight: 700;
+        color: #333;
+      }
+      .status-badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        text-transform: uppercase;
+      }
+      .status-PENDING {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status-VERIFIED {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status-SUSPENDED {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .doctor-info {
+        margin-bottom: 15px;
+        color: #666;
+      }
+      .info-row {
+        margin: 5px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+      .info-label {
+        font-weight: 600;
+        color: #333;
+      }
+      .actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+      }
+      .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: all 0.3s;
+        flex: 1;
+      }
+      .btn-verify {
+        background: #28a745;
+        color: white;
+      }
+      .btn-verify:hover {
+        background: #218838;
+      }
+      .btn-suspend {
+        background: #ffc107;
+        color: #333;
+      }
+      .btn-suspend:hover {
+        background: #e0a800;
+      }
+      .btn-delete {
+        background: #dc3545;
+        color: white;
+      }
+      .btn-delete:hover {
+        background: #c82333;
+      }
+      .btn:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .message {
+        padding: 15px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        display: none;
+      }
+      .success {
+        background: #d4edda;
+        color: #155724;
+        border: 1px solid #c3e6cb;
+      }
+      .error {
+        background: #f8d7da;
+        color: #721c24;
+        border: 1px solid #f5c6cb;
+      }
+      .loading {
+        text-align: center;
+        padding: 40px;
+        color: white;
+        font-size: 18px;
+      }
+      .empty {
+        text-align: center;
+        padding: 60px;
+        background: white;
+        border-radius: 15px;
+        color: #666;
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🔐 Admin Dashboard</h1>
+        <p class="subtitle">Doctor Verification & Management</p>
+      </div>
+
+      <div id="successMsg" class="message success"></div>
+      <div id="errorMsg" class="message error"></div>
+
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterDoctors('ALL')">
+          All Doctors
+        </button>
+        <button class="filter-btn" onclick="filterDoctors('PENDING')">
+          ⏳ Pending
+        </button>
+        <button class="filter-btn" onclick="filterDoctors('VERIFIED')">
+          ✅ Verified
+        </button>
+        <button class="filter-btn" onclick="filterDoctors('SUSPENDED')">
+          🚫 Suspended
+        </button>
+        <button class="filter-btn" onclick="loadDoctors()">🔄 Refresh</button>
+      </div>
+
+      <div id="loading" class="loading">Loading doctors...</div>
+      <div id="doctorsGrid" class="doctors-grid"></div>
+      <div id="empty" class="empty">
+        No doctors found with the selected filter.
+      </div>
+    </div>
+
+    <script>
+      const API_URL = "http://localhost:4000";
+      const ADMIN_KEY = "supersecureadminkey123";
+      let currentFilter = "ALL";
+      let allDoctors = [];
+
+      async function loadDoctors() {
+        const loading = document.getElementById("loading");
+        const grid = document.getElementById("doctorsGrid");
+        const empty = document.getElementById("empty");
+
+        loading.style.display = "block";
+        grid.style.display = "none";
+        empty.style.display = "none";
+
+        try {
+          const url =
+            currentFilter === "ALL"
+              ? `${API_URL}/api/admin/doctors`
+              : `${API_URL}/api/admin/doctors?status=${currentFilter}`;
+
+          const response = await fetch(url, {
+            headers: {
+              "x-admin-key": ADMIN_KEY,
+            },
+          });
+
+          if (!response.ok) {
+            throw new Error(`Failed to load doctors: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          allDoctors = data.doctors || [];
+
+          loading.style.display = "none";
+
+          if (allDoctors.length === 0) {
+            empty.style.display = "block";
+          } else {
+            renderDoctors(allDoctors);
+          }
+        } catch (error) {
+          loading.style.display = "none";
+          showError(`Error loading doctors: ${error.message}`);
+          console.error("Load error:", error);
+        }
+      }
+
+      function renderDoctors(doctors) {
+        const grid = document.getElementById("doctorsGrid");
+        grid.style.display = "grid";
+        grid.innerHTML = "";
+
+        doctors.forEach((doctor) => {
+          const card = document.createElement("div");
+          card.className = "doctor-card";
+          card.innerHTML = `
+                    <div class="doctor-header">
+                        <div>
+                            <div class="doctor-name">Dr. ${doctor.firstName} ${
+            doctor.lastName
+          }</div>
+                        </div>
+                        <span class="status-badge status-${doctor.status}">${
+            doctor.status
+          }</span>
+                    </div>
+                    
+                    <div class="doctor-info">
+                        <div class="info-row">
+                            <span class="info-label">📧 Email:</span>
+                            <span>${doctor.email}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🏥 Specialization:</span>
+                            <span>${doctor.specialization}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">🆔 License:</span>
+                            <span>${doctor.licenseNumber}</span>
+                        </div>
+                        ${
+                          doctor.phoneNumber
+                            ? `
+                        <div class="info-row">
+                            <span class="info-label">📞 Phone:</span>
+                            <span>${doctor.phoneNumber}</span>
+                        </div>
+                        `
+                            : ""
+                        }
+                        <div class="info-row">
+                            <span class="info-label">🔑 Invite Code:</span>
+                            <span>${doctor.inviteCode}</span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">📅 Registered:</span>
+                            <span>${new Date(
+                              doctor.createdAt
+                            ).toLocaleString()}</span>
+                        </div>
+                        ${
+                          doctor.verifiedAt
+                            ? `
+                        <div class="info-row">
+                            <span class="info-label">✅ Verified:</span>
+                            <span>${new Date(
+                              doctor.verifiedAt
+                            ).toLocaleString()}</span>
+                        </div>
+                        `
+                            : ""
+                        }
+                    </div>
+
+                    <div class="actions">
+                        ${
+                          doctor.status === "PENDING"
+                            ? `
+                            <button class="btn btn-verify" onclick="verifyDoctor('${doctor.id}')">
+                                ✅ Verify
+                            </button>
+                        `
+                            : ""
+                        }
+                        ${
+                          doctor.status === "VERIFIED"
+                            ? `
+                            <button class="btn btn-suspend" onclick="suspendDoctor('${doctor.id}')">
+                                🚫 Suspend
+                            </button>
+                        `
+                            : ""
+                        }
+                        ${
+                          doctor.status === "SUSPENDED"
+                            ? `
+                            <button class="btn btn-verify" onclick="verifyDoctor('${doctor.id}')">
+                                ✅ Reactivate
+                            </button>
+                        `
+                            : ""
+                        }
+                        <button class="btn btn-delete" onclick="deleteDoctor('${
+                          doctor.id
+                        }', '${doctor.firstName} ${doctor.lastName}')">
+                            🗑️ Delete
+                        </button>
+                    </div>
+                `;
+          grid.appendChild(card);
+        });
+      }
+
+      async function verifyDoctor(doctorId) {
+        if (
+          !confirm(
+            "Verify this doctor? They will be able to create consultations."
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${API_URL}/api/admin/doctor/${doctorId}/verify`,
+            {
+              method: "POST",
+              headers: {
+                "x-admin-key": ADMIN_KEY,
+              },
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to verify doctor");
+          }
+
+          showSuccess(`✅ Doctor verified successfully!`);
+          loadDoctors();
+        } catch (error) {
+          showError(`Error verifying doctor: ${error.message}`);
+          console.error("Verify error:", error);
+        }
+      }
+
+      async function suspendDoctor(doctorId) {
+        if (
+          !confirm(
+            "Suspend this doctor? They will not be able to create new consultations."
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${API_URL}/api/admin/doctor/${doctorId}/suspend`,
+            {
+              method: "POST",
+              headers: {
+                "x-admin-key": ADMIN_KEY,
+              },
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to suspend doctor");
+          }
+
+          showSuccess(`🚫 Doctor suspended successfully!`);
+          loadDoctors();
+        } catch (error) {
+          showError(`Error suspending doctor: ${error.message}`);
+          console.error("Suspend error:", error);
+        }
+      }
+
+      async function deleteDoctor(doctorId, doctorName) {
+        if (
+          !confirm(
+            `⚠️ PERMANENTLY DELETE Dr. ${doctorName}?\n\nThis action CANNOT be undone!`
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const response = await fetch(
+            `${API_URL}/api/admin/doctor/${doctorId}`,
+            {
+              method: "DELETE",
+              headers: {
+                "x-admin-key": ADMIN_KEY,
+              },
+            }
+          );
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            throw new Error(data.error || "Failed to delete doctor");
+          }
+
+          showSuccess(`🗑️ Doctor deleted successfully!`);
+          loadDoctors();
+        } catch (error) {
+          showError(`Error deleting doctor: ${error.message}`);
+          console.error("Delete error:", error);
+        }
+      }
+
+      function filterDoctors(status) {
+        currentFilter = status;
+
+        // Update active button
+        document.querySelectorAll(".filter-btn").forEach((btn) => {
+          btn.classList.remove("active");
+        });
+        event.target.classList.add("active");
+
+        loadDoctors();
+      }
+
+      function showSuccess(message) {
+        const el = document.getElementById("successMsg");
+        el.textContent = message;
+        el.style.display = "block";
+        setTimeout(() => (el.style.display = "none"), 5000);
+      }
+
+      function showError(message) {
+        const el = document.getElementById("errorMsg");
+        el.textContent = message;
+        el.style.display = "block";
+        setTimeout(() => (el.style.display = "none"), 5000);
+      }
+
+      // Load doctors on page load
+      window.addEventListener("load", loadDoctors);
+    </script>
+  </body>
+</html>

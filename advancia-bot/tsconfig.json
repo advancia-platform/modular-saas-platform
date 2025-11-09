@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "module": "Node16",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "moduleResolution": "Node16",
+    "allowUnusedLabels": false,
+    "allowUnreachableCode": false,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "noImplicitReturns": true,
+    "noUncheckedIndexedAccess": true,
+    "noUnusedParameters": true,
+    "target": "es2017",
+    "outDir": "dist",
+    "checkJs": false,
+    "incremental": true,
+    "exactOptionalPropertyTypes": false,
+    "resolveJsonModule": true,
+    "noPropertyAccessFromIndexSignature": false,
+    "noUnusedLocals": false
+  },
+  "include": [".botpress/**/*", "src/**/*", "*.ts", "*.json"]
+}

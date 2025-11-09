@@ -1,0 +1,26 @@
+branch-defaults:
+  default:
+    environment: my-backend-env
+    group_suffix: null
+environment-defaults:
+  my-backend-env:
+    branch: null
+    repository: null
+    platform: Node.js
+    region: us-east-1
+    option_settings:
+      aws:elasticbeanstalk:environment:process:default:
+        HealthCheckPath: /api/payments/health
+        Port: 4000
+    solution_stack: null
+global:
+  application_name: advancia-pay-ledger-backend
+  default_ec2_keyname: null
+  default_platform: Node.js
+  default_region: us-east-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  sc: git

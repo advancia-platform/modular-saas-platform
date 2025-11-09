@@ -1,0 +1,19 @@
+{
+  "summarize-file": "Analyze the open file and describe its purpose, key functions, and dependencies.",
+  "fix-typescript-errors": "Scan the file for TypeScript errors, add missing types, and fix issues automatically.",
+  "create-express-route": "Create a new Express route under backend/src/routes with default CRUD handlers and authentication middleware.",
+  "generate-dashboard-card": "Generate a React component for a dashboard card displaying ETH balance, USD equivalent, and last updated time.",
+  "debug-session": "Start a Node.js inspector session on port 9229, set breakpoints in the current file, and print values for watched variables.",
+  "explain-stack-trace": "Analyze the last stack trace from console output and suggest minimal code fixes.",
+  "evaluate-expression": "Evaluate the given expression in the current paused debug frame and return its value.",
+  "prisma-health-check": "Add an Express route /health that returns { db: 'ok' } if Prisma connection succeeds.",
+  "generate-prisma-migration": "Create a new Prisma migration adding a 'currency' column to the Transaction model.",
+  "auth-middleware": "Add Express middleware that verifies JWTs and attaches the user object to the request.",
+  "socketio-notification": "Emit newNotification Socket.io event when a new record is created in the notifications table.",
+  "eth-balance-route": "Implement route /api/wallet/:userId/balance using ethers.js Cloudflare gateway and return wallet balance.",
+  "rpa-worker": "Build a daily automation script that summarizes transactions and emails admin reports.",
+  "support-chatbot": "Create /api/chatbot endpoint that connects to Dialogflow or Botpress and returns assistant replies.",
+  "fix-build": "Inspect Next.js build logs, identify failed imports or static export conflicts, and propose corrections.",
+  "security-scan": "Search the backend for unvalidated inputs, hard-coded secrets, or unsafe operations, and suggest mitigations.",
+  "add-tests": "Generate Jest + Supertest unit tests for authentication and notification routes."
+}

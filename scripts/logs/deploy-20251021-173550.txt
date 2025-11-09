@@ -1,0 +1,43 @@
+**********************
+PowerShell transcript start
+Start time: 20251021173550
+Username: DESKTOP-H7T9NPM\mucha
+RunAs User: DESKTOP-H7T9NPM\mucha
+Configuration Name: 
+Machine: DESKTOP-H7T9NPM (Microsoft Windows NT 10.0.26200.0)
+Host Application: C:\Program Files\PowerShell\7\pwsh.dll -NoProfile -ExecutionPolicy Bypass -File c:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\scripts\DEPLOY-AND-TAIL.ps1
+Process ID: 23076
+PSVersion: 7.5.3
+PSEdition: Core
+GitCommitId: 7.5.3
+OS: Microsoft Windows 10.0.26200
+Platform: Win32NT
+PSCompatibleVersions: 1.0, 2.0, 3.0, 4.0, 5.0, 5.1, 6.0, 7.0
+PSRemotingProtocolVersion: 2.3
+SerializationVersion: 1.1.0.1
+WSManStackVersion: 3.0
+**********************
+
+🚀 Starting full Advancia build & deploy... (logging to C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\scripts\logs\deploy-20251021-173550.txt)
+
+🧱 Building Backend...
+
+✅ Backend build succeeded.
+
+🧱 Building Frontend...
+
+✅ Frontend build succeeded.
+🚀 Starting backend and frontend servers...
+⏳ Waiting 15 seconds for servers to boot...
+🔍 Checking Backend API at http://localhost:4000/api/system/health ...
+✅ Backend API healthy
+🔍 Checking Frontend UI at http://localhost:3000 ...
+✅ Frontend UI healthy
+ℹ No RENDER_DEPLOY_STATUS_WEBHOOK set; skipping webhook.
+WARNING: The command 'Send-MailMessage' is obsolete. This cmdlet does not guarantee secure connections to SMTP servers. While there is no immediate replacement available in PowerShell, we recommend you do not use Send-MailMessage at this time. See https://aka.ms/SendMailMessage for more information.
+📧 Email notification sent to pdtribe181@gmail.com
+🎉 All systems operational.
+**********************
+PowerShell transcript end
+End time: 20251021174252
+**********************

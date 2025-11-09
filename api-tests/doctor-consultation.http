@@ -1,0 +1,275 @@
+### Doctor Consultation System - API Tests
+### Base URL
+@baseUrl = http://localhost:4000
+@adminKey = supersecureadminkey123
+
+################################################################################
+# DOCTOR AUTHENTICATION
+################################################################################
+
+### Register New Doctor
+# @name registerDoctor
+POST {{baseUrl}}/api/auth/register-doctor
+Content-Type: application/json
+
+{
+  "firstName": "Sarah",
+  "lastName": "Johnson",
+  "email": "sarah.johnson@hospital.com",
+  "specialization": "General Medicine",
+  "licenseNumber": "MD789012",
+  "password": "Doctor@2025!",
+  "inviteCode": "ADVANCIA2025MEDBED"
+}
+
+### Doctor Login
+# @name loginDoctor
+POST {{baseUrl}}/api/auth/login-doctor
+Content-Type: application/json
+
+{
+  "email": "sarah.johnson@hospital.com",
+  "password": "Doctor@2025!"
+}
+
+@doctorToken = {{loginDoctor.response.body.token}}
+@doctorId = {{loginDoctor.response.body.doctor.id}}
+
+################################################################################
+# ADMIN - DOCTOR MANAGEMENT
+################################################################################
+
+### List All Doctors
+GET {{baseUrl}}/api/admin/doctors
+x-admin-key: {{adminKey}}
+
+### List Pending Doctors Only
+GET {{baseUrl}}/api/admin/doctors?status=PENDING
+x-admin-key: {{adminKey}}
+
+### List Verified Doctors Only
+GET {{baseUrl}}/api/admin/doctors?status=VERIFIED
+x-admin-key: {{adminKey}}
+
+### List Suspended Doctors Only
+GET {{baseUrl}}/api/admin/doctors?status=SUSPENDED
+x-admin-key: {{adminKey}}
+
+### Verify Doctor (Replace with actual doctor ID)
+POST {{baseUrl}}/api/admin/doctor/{{doctorId}}/verify
+x-admin-key: {{adminKey}}
+Content-Type: application/json
+
+{
+  "adminId": "admin-user-001"
+}
+
+### Suspend Doctor (Replace with actual doctor ID)
+POST {{baseUrl}}/api/admin/doctor/{{doctorId}}/suspend
+x-admin-key: {{adminKey}}
+Content-Type: application/json
+
+{}
+
+### Delete Doctor (Replace with actual doctor ID)
+DELETE {{baseUrl}}/api/admin/doctor/doctor-id-here
+x-admin-key: {{adminKey}}
+
+################################################################################
+# PATIENT AUTHENTICATION (for testing)
+################################################################################
+
+### Patient Login (use existing patient)
+# @name loginPatient
+POST {{baseUrl}}/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "patient@example.com",
+  "password": "password123"
+}
+
+@patientToken = {{loginPatient.response.body.token}}
+
+################################################################################
+# CONSULTATIONS
+################################################################################
+
+### Create New Consultation (as Patient)
+# @name createConsultation
+POST {{baseUrl}}/api/consultation
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "doctorId": "{{doctorId}}",
+  "symptoms": "I have been experiencing severe headaches and dizziness for the past 3 days. Also feeling nauseous in the mornings."
+}
+
+@consultationId = {{createConsultation.response.body.consultation.id}}
+
+### List All Consultations (as Patient)
+GET {{baseUrl}}/api/consultation
+Authorization: Bearer {{patientToken}}
+
+### List All Consultations (as Doctor)
+GET {{baseUrl}}/api/consultation
+Authorization: Bearer {{doctorToken}}
+
+### Get Specific Consultation (as Patient)
+GET {{baseUrl}}/api/consultation/{{consultationId}}
+Authorization: Bearer {{patientToken}}
+
+### Get Specific Consultation (as Doctor)
+GET {{baseUrl}}/api/consultation/{{consultationId}}
+Authorization: Bearer {{doctorToken}}
+
+### Update Consultation Status (as Doctor)
+PATCH {{baseUrl}}/api/consultation/{{consultationId}}
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS"
+}
+
+### Add Diagnosis (as Doctor)
+PATCH {{baseUrl}}/api/consultation/{{consultationId}}
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "diagnosis": "Based on your symptoms, this appears to be a migraine with associated nausea. I recommend rest, hydration, and prescribed medication. Follow up in 1 week if symptoms persist."
+}
+
+### Complete Consultation (as Doctor)
+PATCH {{baseUrl}}/api/consultation/{{consultationId}}
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "status": "COMPLETED"
+}
+
+################################################################################
+# CONSULTATION MESSAGING
+################################################################################
+
+### Send Message (as Patient)
+POST {{baseUrl}}/api/consultation/message
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "consultationId": "{{consultationId}}",
+  "content": "Hello Doctor, thank you for taking my case. The headaches are really affecting my daily work."
+}
+
+### Send Message (as Doctor)
+POST {{baseUrl}}/api/consultation/message
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "consultationId": "{{consultationId}}",
+  "content": "Hello! I've reviewed your symptoms. Let's schedule a video consultation to discuss your condition in detail. I'll also prescribe some initial pain relief medication."
+}
+
+### Send Follow-up Message (as Patient)
+POST {{baseUrl}}/api/consultation/message
+Authorization: Bearer {{patientToken}}
+Content-Type: application/json
+
+{
+  "consultationId": "{{consultationId}}",
+  "content": "That sounds great. What time works best for the video call?"
+}
+
+### Send Follow-up Message (as Doctor)
+POST {{baseUrl}}/api/consultation/message
+Authorization: Bearer {{doctorToken}}
+Content-Type: application/json
+
+{
+  "consultationId": "{{consultationId}}",
+  "content": "How about tomorrow at 2 PM? I'll send you the video link shortly. In the meantime, try to rest in a dark, quiet room and stay hydrated."
+}
+
+################################################################################
+# VIDEO CONSULTATION
+################################################################################
+
+### Get Video URL (as Patient)
+GET {{baseUrl}}/api/consultation/video/{{consultationId}}
+Authorization: Bearer {{patientToken}}
+
+### Get Video URL (as Doctor)
+GET {{baseUrl}}/api/consultation/video/{{consultationId}}
+Authorization: Bearer {{doctorToken}}
+
+################################################################################
+# ERROR TESTING
+################################################################################
+
+### Test: Register without invite code (should fail)
+POST {{baseUrl}}/api/auth/register-doctor
+Content-Type: application/json
+
+{
+  "firstName": "John",
+  "lastName": "Doe",
+  "email": "john.doe@hospital.com",
+  "specialization": "Cardiology",
+  "licenseNumber": "MD999999",
+  "password": "Test@123",
+  "inviteCode": "WRONG_CODE"
+}
+
+### Test: Access admin endpoint without admin key (should fail)
+GET {{baseUrl}}/api/admin/doctors
+
+### Test: Access consultation without token (should fail)
+GET {{baseUrl}}/api/consultation
+
+### Test: Doctor login before verification (should work but doctor status will be PENDING)
+POST {{baseUrl}}/api/auth/login-doctor
+Content-Type: application/json
+
+{
+  "email": "unverified.doctor@hospital.com",
+  "password": "password123"
+}
+
+################################################################################
+# COMPLETE WORKFLOW TEST
+################################################################################
+
+### WORKFLOW STEP 1: Doctor registers
+# Run the "Register New Doctor" request above
+
+### WORKFLOW STEP 2: Admin lists pending doctors
+# Run the "List Pending Doctors Only" request above
+
+### WORKFLOW STEP 3: Admin verifies doctor
+# Run the "Verify Doctor" request above (replace with actual ID)
+
+### WORKFLOW STEP 4: Doctor logs in
+# Run the "Doctor Login" request above
+
+### WORKFLOW STEP 5: Patient creates consultation
+# Run the "Create New Consultation" request above
+
+### WORKFLOW STEP 6: Doctor views consultation
+# Run the "List All Consultations (as Doctor)" request above
+
+### WORKFLOW STEP 7: Exchange messages
+# Run the "Send Message" requests above
+
+### WORKFLOW STEP 8: Start video call
+# Run the "Get Video URL" requests above
+
+### WORKFLOW STEP 9: Doctor updates diagnosis
+# Run the "Add Diagnosis" request above
+
+### WORKFLOW STEP 10: Doctor completes consultation
+# Run the "Complete Consultation" request above

@@ -1,0 +1,95 @@
+### Advancia PayLedger API Tests
+### Payments & Transactions
+
+@baseUrl = http://localhost:4000
+@authToken = your-jwt-token-here
+
+### Get All Transactions
+GET {{baseUrl}}/api/transactions
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Create New Transaction
+POST {{baseUrl}}/api/transactions
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "type": "DEPOSIT",
+  "amount": "100.00",
+  "currency": "USD",
+  "description": "Test deposit transaction"
+}
+
+###
+
+### Get Transaction by ID
+GET {{baseUrl}}/api/transactions/1
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Create Stripe Payment Intent
+POST {{baseUrl}}/api/payments/create-intent
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "amount": 5000,
+  "currency": "usd",
+  "description": "Test payment"
+}
+
+###
+
+### Confirm Stripe Payment
+POST {{baseUrl}}/api/payments/confirm
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "paymentIntentId": "pi_test_1234567890",
+  "paymentMethodId": "pm_test_1234567890"
+}
+
+###
+
+### Get Payment History
+GET {{baseUrl}}/api/payments/history
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Process Refund
+POST {{baseUrl}}/api/payments/refund
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "paymentIntentId": "pi_test_1234567890",
+  "amount": 2500,
+  "reason": "Testing refund functionality"
+}
+
+###
+
+### Get User Wallet
+GET {{baseUrl}}/api/wallet
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+###
+
+### Top Up Wallet
+POST {{baseUrl}}/api/wallet/topup
+Authorization: Bearer {{authToken}}
+Content-Type: application/json
+
+{
+  "amount": "50.00",
+  "paymentMethodId": "pm_test_1234567890"
+}

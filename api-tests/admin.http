@@ -1,0 +1,115 @@
+### Advancia PayLedger API Tests
+### Admin & Support Operations
+
+@baseUrl = http://localhost:4000
+@adminToken = your-admin-jwt-token-here
+
+### Get All Users (Admin)
+GET {{baseUrl}}/api/admin/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Get System Analytics
+GET {{baseUrl}}/api/admin/analytics
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Get System Status
+GET {{baseUrl}}/api/admin/system/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Create Support Ticket
+POST {{baseUrl}}/api/support/tickets
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "Test Support Ticket",
+  "description": "This is a test support ticket for API testing",
+  "category": "TECHNICAL",
+  "priority": "MEDIUM"
+}
+
+###
+
+### Get Support Tickets
+GET {{baseUrl}}/api/support/tickets
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Update Support Ticket Status
+PUT {{baseUrl}}/api/support/tickets/1/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "status": "IN_PROGRESS"
+}
+
+###
+
+### Add Comment to Support Ticket
+POST {{baseUrl}}/api/support/tickets/1/comments
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "message": "This is a test comment on the support ticket"
+}
+
+###
+
+### Get Audit Logs
+GET {{baseUrl}}/api/admin/audit-logs
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Get Notifications
+GET {{baseUrl}}/api/notifications
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Mark Notification as Read
+PUT {{baseUrl}}/api/notifications/1/read
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Send Push Notification (Admin)
+POST {{baseUrl}}/api/admin/notifications/push
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "Test Notification",
+  "body": "This is a test push notification",
+  "userId": 1
+}
+
+###
+
+### Get User Statistics (Admin)
+GET {{baseUrl}}/api/admin/stats/users
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+###
+
+### Get Transaction Statistics (Admin)
+GET {{baseUrl}}/api/admin/stats/transactions
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json

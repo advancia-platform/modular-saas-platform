@@ -1,0 +1,75 @@
+services:
+  # 🧠 Backend (Node API)
+  - type: web
+    name: advancia-backend
+    env: node
+    plan: free
+    buildCommand: |
+      cd backend
+      npm ci
+      echo "🧩 Running Prisma generate..."
+      npx prisma generate
+      echo "🚀 Applying database migrations..."
+      npx prisma migrate deploy || (echo "❌ Migration failed — retrying..." && sleep 5 && npx prisma migrate deploy) || (echo "⚠ Migration failed again — rolling back" && exit 1)
+      echo "🏗 Building backend..."
+      npm run build
+    startCommand: node dist/server.js
+    healthCheckPath: /health
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: DATABASE_URL
+        sync: false
+      - key: JWT_SECRET
+        sync: false
+      - key: SESSION_SECRET
+        sync: false
+      - key: FRONTEND_URL
+        value: https://advanciapayledger.com
+      - key: STRIPE_SECRET_KEY
+        sync: false
+      - key: STRIPE_WEBHOOK_SECRET
+        sync: false
+      - key: VAPID_PUBLIC_KEY
+        sync: false
+      - key: VAPID_PRIVATE_KEY
+        sync: false
+      - key: VAPID_SUBJECT
+        value: mailto:support@advanciapayledger.com
+
+  # 💻 Frontend (Next.js Static Site)
+  - type: static
+    name: advancia-frontend
+    buildCommand: |
+      cd frontend
+      npm ci
+      echo "🏗 Building Next.js static site..."
+      npm run build
+    publishDir: frontend/out
+    autoDeploy: true
+    envVars:
+      - key: NODE_VERSION
+        value: 20
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_API_URL
+        value: https://api.advanciapayledger.com
+      - key: NEXT_PUBLIC_APP_NAME
+        value: Advancia PayLedger
+      - key: NEXT_PUBLIC_CURRENCY_LIST
+        value: USD,EUR,BTC,ETH,USDT,TRUMP,MEDBED
+      - key: NEXT_PUBLIC_FEATURE_FLAGS
+        value: notifications,bonus_tokens,debit_card,crypto_recovery
+      - key: NEXT_PUBLIC_VAPID_KEY
+        sync: false
+      - key: NEXT_PUBLIC_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_BOTPRESS_BOT_ID
+        sync: false
+      - key: NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+        sync: false
+      - key: NEXTAUTH_SECRET
+        sync: false
+      - key: NEXTAUTH_URL
+        value: https://advanciapayledger.com

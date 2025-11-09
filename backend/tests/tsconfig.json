@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "types": ["jest", "node"],
+    "noEmit": true,
+    "typeRoots": ["../node_modules/@types"],
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "strict": false
+  },
+  "include": ["./**/*", "../src/**/*"],
+  "exclude": ["../node_modules", "../dist"]
+}

@@ -1,0 +1,22 @@
+{
+  "version": "1.0.0",
+  "commands": [
+    { "name": "summarize-file", "title": "Summarize current file", "prompt": "Analyze the open file and describe its purpose, key functions, and dependencies." },
+    { "name": "fix-typescript-errors", "title": "Fix TypeScript errors", "prompt": "Scan the file for TypeScript errors, add missing types, and fix issues automatically." },
+    { "name": "create-express-route", "title": "Create new Express route", "prompt": "Create a new Express route under backend/src/routes with default CRUD handlers and authentication middleware." },
+    { "name": "generate-dashboard-card", "title": "Generate dashboard card", "prompt": "Generate a React component for a dashboard card displaying ETH balance, USD equivalent, and last updated time." },
+    { "name": "debug-session", "title": "Start backend debug session", "prompt": "Start a Node.js inspector session on port 9229, set breakpoints in the current file, and print values for watched variables." },
+    { "name": "explain-stack-trace", "title": "Explain last error", "prompt": "Analyze the last stack trace from console output and suggest minimal code fixes." },
+    { "name": "evaluate-expression", "title": "Evaluate expression", "prompt": "Evaluate the given expression in the current paused debug frame and return its value." },
+    { "name": "prisma-health-check", "title": "Add health check route", "prompt": "Add an Express route /health that returns { db: 'ok' } if Prisma connection succeeds." },
+    { "name": "generate-prisma-migration", "title": "Generate Prisma migration", "prompt": "Create a new Prisma migration adding a 'currency' column to the Transaction model." },
+    { "name": "auth-middleware", "title": "Implement requireAuth", "prompt": "Add Express middleware that verifies JWTs and attaches the user object to the request." },
+    { "name": "socketio-notification", "title": "Add Socket.io notification", "prompt": "Emit newNotification Socket.io event when a new record is created in the notifications table." },
+    { "name": "eth-balance-route", "title": "Get ETH balance", "prompt": "Implement route /api/wallet/:userId/balance using ethers.js Cloudflare gateway and return wallet balance." },
+    { "name": "rpa-worker", "title": "Create RPA worker", "prompt": "Build a daily automation script that summarizes transactions and emails admin reports." },
+    { "name": "support-chatbot", "title": "Add chatbot endpoint", "prompt": "Create /api/chatbot endpoint that connects to Dialogflow or Botpress and returns assistant replies." },
+    { "name": "fix-build", "title": "Fix frontend build", "prompt": "Inspect Next.js build logs, identify failed imports or static export conflicts, and propose corrections." },
+    { "name": "security-scan", "title": "Scan for security issues", "prompt": "Search the backend for unvalidated inputs, hard-coded secrets, or unsafe operations, and suggest mitigations." },
+    { "name": "add-tests", "title": "Generate tests", "prompt": "Generate Jest + Supertest unit tests for authentication and notification routes." }
+  ]
+}

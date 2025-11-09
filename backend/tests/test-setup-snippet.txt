@@ -1,0 +1,15 @@
+describe("Integration Tests - Core Endpoints", () => {
+  let authToken: string;
+  let testUserId: string;
+  let testUsers: any;
+
+  // Seed database before all tests
+  beforeAll(async () => {
+    testUsers = await seedTestDatabase();
+    testUserId = testUsers.testUser.id;
+  });
+
+  // Clean up after all tests
+  afterAll(async () => {
+    await cleanTestDatabase();
+  });

@@ -1,0 +1,27 @@
+name = "advanciafrontend"
+compatibility_date = "2025-10-19"
+account_id = "74ecde4d46d4b399c7295cf599d2886b"
+
+# Static assets configuration for Next.js export
+# No main script needed - just serving static files
+[assets]
+directory = "./out"
+binding = "ASSETS"
+
+# Custom domains (uncomment after DNS is configured)
+# routes = [
+#   { pattern = "advanciapayledger.com/*", zone_name = "advanciapayledger.com" },
+#   { pattern = "www.advanciapayledger.com/*", zone_name = "advanciapayledger.com" }
+# ]
+
+# Environment variables (public, non-sensitive)
+[vars]
+NEXT_PUBLIC_API_URL = "https://api.advanciapayledger.com"
+NEXT_PUBLIC_SOCKET_URL = "https://api.advanciapayledger.com"
+
+# Observability
+[observability]
+enabled = true
+
+# NOTE: For secrets, use: wrangler secret put SECRET_NAME
+# Never commit secrets to this file!

@@ -1,0 +1,12 @@
+import ipBlocksRouter from "./routes/ipBlocks";
+import { runSecurityRPA } from "./jobs/rpaSecurityAgent";
+
+// Register IP blocks router
+app.use("/api/admin/ip-blocks", ipBlocksRouter);
+
+// Start security RPA job
+setInterval(() => {
+  runSecurityRPA().catch(error => {
+    console.error("Security RPA error:", error);
+  });
+}, 10 * 60 * 1000); // Run every 10 minutes

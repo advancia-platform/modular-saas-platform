@@ -1,0 +1,94 @@
+name: CI (build → test → optional deploy)
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    outputs:
+      build_succeeded: ${{ steps.build-signal.outputs.ok }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install deps
+        run: npm ci
+
+      - name: Lint (if present)
+        run: npm run lint --if-present
+
+      - name: Run tests (if present)
+        run: npm test --if-present
+
+      - name: Build
+        id: build-signal
+        run: |
+          set -e
+          npm run build
+          echo "ok=true" >> $GITHUB_OUTPUT
+
+  deploy-render:
+    needs: build-and-test
+    if: needs.build-and-test.outputs.build_succeeded == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Ensure RENDER_API_KEY secret exists
+        run: |
+          if [ -z "${{ secrets.RENDER_API_KEY }}" ]; then
+            echo "Missing RENDER_API_KEY secret. Set it in repo Settings → Secrets → Actions"
+            exit 1
+          fi
+      - name: Deploy to Render (example)
+        uses: docker://ghcr.io/render-examples/deploy-action:latest
+        with:
+          args: deploy
+        env:
+          RENDER_API_KEY: ${{ secrets.RENDER_API_KEY }}
+          # Add other envs needed by your action
+
+  deploy-ssh:
+    needs: build-and-test
+    if: needs.build-and-test.outputs.build_succeeded == 'true' && env.SSH_DEPLOY == 'true'
+    runs-on: ubuntu-latest
+    env:
+      SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+      SSH_KNOWN_HOSTS: ${{ secrets.SSH_KNOWN_HOSTS }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Prepare SSH key
+        run: |
+          if [ -z "$SSH_PRIVATE_KEY" ]; then
+            echo "Missing SSH_PRIVATE_KEY secret; skip or set secret"
+            exit 1
+          fi
+          mkdir -p ~/.ssh
+          printf '%s\n' "$SSH_PRIVATE_KEY" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          if [ -n "${SSH_KNOWN_HOSTS-}" ]; then
+            printf '%s\n' "$SSH_KNOWN_HOSTS" > ~/.ssh/known_hosts
+            chmod 644 ~/.ssh/known_hosts
+          fi
+
+      - name: SSH deploy (example)
+        run: |
+          # Replace with your actual deploy commands:
+          ssh -i ~/.ssh/id_rsa -o StrictHostKeyChecking=yes deployuser@your.host "cd /path && ./deploy-script.sh"

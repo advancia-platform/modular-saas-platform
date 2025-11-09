@@ -1,0 +1,148 @@
+name: 🎨 Frontend CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+  pull_request:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'frontend/**'
+      - '.github/workflows/frontend-ci.yml'
+
+env:
+  NODE_VERSION: '18'
+  NEXT_TELEMETRY_DISABLED: 1
+
+jobs:
+  # ============================================================
+  # Job 1: Lint, Typecheck, Build
+  # ============================================================
+  frontend-ci:
+    name: 🔍 Lint → 📝 Typecheck → 🏗️ Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          
+
+      - name: 📦 Install dependencies
+        working-directory: frontend
+        run: npm ci --prefer-offline --no-audit
+
+      - name: 🔍 Lint with ESLint
+        working-directory: frontend
+        run: npm run lint
+        continue-on-error: false
+
+      - name: 📝 TypeScript type check
+        working-directory: frontend
+        run: npx tsc --noEmit
+        continue-on-error: false
+
+      - name: 🏗️ Build Next.js app
+        working-directory: frontend
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_API_URL: https://api.advanciapayledger.com
+          NEXT_PUBLIC_WS_URL: wss://api.advanciapayledger.com
+        run: npm run build
+
+      - name: 📤 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        if: success()
+        with:
+          name: frontend-build-${{ github.sha }}
+          path: |
+            frontend/.next
+            !frontend/.next/cache
+          retention-days: 7
+
+  # ============================================================
+  # Job 2: Security Audit (runs in parallel)
+  # ============================================================
+  security-audit:
+    name: 🔒 Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🟢 Setup Node.js ${{ env.NODE_VERSION }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: 🔒 Run npm audit
+        working-directory: frontend
+        run: npm audit --audit-level=moderate || echo "⚠️ Vulnerabilities found but continuing..."
+
+  # ============================================================
+  # Job 3: Auto-Deploy to Render (only on main push)
+  # ============================================================
+  deploy:
+    name: 🚀 Deploy to Render
+    runs-on: ubuntu-latest
+    needs: [frontend-ci, security-audit]
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    timeout-minutes: 10
+
+    steps:
+      - name: 🚀 Trigger Render deployment
+        run: |
+          if [ -n "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}" ]; then
+            echo "🔄 Triggering Render deployment for frontend..."
+            curl -X POST "${{ secrets.RENDER_DEPLOY_HOOK_FRONTEND }}"
+            echo "✅ Deployment triggered successfully!"
+          else
+            echo "⚠️ RENDER_DEPLOY_HOOK_FRONTEND secret not configured. Skipping deployment."
+          fi
+
+      - name: 📊 Deployment summary
+        run: |
+          echo "## 🚀 Frontend Deployment Triggered" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Environment**: Production" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **URL**: https://advanciapayledger.com" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "⏳ Render will build and deploy in 3-8 minutes." >> $GITHUB_STEP_SUMMARY
+
+  # ============================================================
+  # Job 4: Notify on failure (optional)
+  # ============================================================
+  notify-failure:
+    name: 📢 Notify on Failure
+    runs-on: ubuntu-latest
+    needs: [frontend-ci]
+    if: failure()
+
+    steps:
+      - name: 📢 Create failure summary
+        run: |
+          echo "## ❌ Frontend CI Failed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch**: \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit**: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "- **Author**: @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Please check the logs above for details." >> $GITHUB_STEP_SUMMARY
+
+

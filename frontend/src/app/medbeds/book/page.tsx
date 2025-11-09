@@ -1,0 +1,54 @@
+"use client";
+import { useState } from "react";
+const API = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
+
+export default function MedbedsBookingPage() {
+  const [fullName, setFullName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [preferredDate, setPreferredDate] = useState("");
+  const [preferredTime, setPreferredTime] = useState("");
+  const [notes, setNotes] = useState("");
+  const [token, setToken] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [msg, setMsg] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  async function submit() {
+    setLoading(true); setError(null); setMsg(null);
+    try {
+      const res = await fetch(`${API}/api/medbeds/book`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: token ? `Bearer ${token}` : '' },
+        body: JSON.stringify({ fullName, email, phone, preferredDate, preferredTime, notes }),
+      });
+      if (!res.ok) { const j = await res.json().catch(()=>({})); throw new Error(j.error || `Failed: ${res.status}`); }
+      const data = await res.json();
+      setMsg(`✅ Booking submitted. Ticket: ${data.ticketId}`);
+    } catch (e: unknown) {
+      const m = e instanceof Error ? e.message : String(e);
+      setError(m);
+    } finally { setLoading(false); }
+  }
+
+  return (
+    <div className="max-w-xl mx-auto p-6 space-y-4">
+      <h1 className="text-3xl font-bold">Schedule a Med Beds Appointment</h1>
+      <p className="text-gray-600">Complete the form below to request an appointment. Our team will review and confirm availability.</p>
+      <div className="grid gap-3">
+        <input className="border rounded px-3 py-2" placeholder="Full name" value={fullName} onChange={e=>setFullName(e.target.value)} />
+        <input className="border rounded px-3 py-2" placeholder="Email" value={email} onChange={e=>setEmail(e.target.value)} />
+        <input className="border rounded px-3 py-2" placeholder="Phone" value={phone} onChange={e=>setPhone(e.target.value)} />
+        <input className="border rounded px-3 py-2" type="date" title="Preferred appointment date" value={preferredDate} onChange={e=>setPreferredDate(e.target.value)} />
+        <input className="border rounded px-3 py-2" type="time" title="Preferred appointment time" value={preferredTime} onChange={e=>setPreferredTime(e.target.value)} />
+        <textarea className="border rounded px-3 py-2" placeholder="Additional notes (optional)" value={notes} onChange={e=>setNotes(e.target.value)} />
+        <textarea className="border rounded px-3 py-2" placeholder="Paste your JWT token" value={token} onChange={e=>setToken(e.target.value)} />
+      </div>
+      <button onClick={submit} disabled={loading || !fullName || !email || !phone || !preferredDate || !token} className="bg-emerald-600 text-white px-4 py-2 rounded disabled:opacity-50">
+        {loading ? 'Submitting…' : 'Submit Request'}
+      </button>
+      {msg && <div className="text-green-700 text-sm">{msg}</div>}
+      {error && <div className="text-red-600 text-sm">{error}</div>}
+    </div>
+  );
+}

@@ -1,0 +1,16 @@
+{
+  "name": "advancia-email-worker",
+  "version": "1.0.0",
+  "description": "CloudFlare Email Worker for Advancia Pay Ledger support emails",
+  "main": "worker.js",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy"
+  },
+  "keywords": ["cloudflare", "workers", "email"],
+  "author": "Advancia Pay Ledger",
+  "license": "MIT",
+  "devDependencies": {
+    "wrangler": "^3.0.0"
+  }
+}

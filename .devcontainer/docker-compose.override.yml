@@ -1,0 +1,7 @@
+services:
+  db:
+    ports:
+      - "55432:5432"
+  redis:
+    ports:
+      - "36379:6379"

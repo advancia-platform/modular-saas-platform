@@ -1,0 +1,59 @@
+name: Active Work Graph
+
+on:
+  schedule:
+    - cron: "0 2 * * *"  # Daily at 02:00 UTC
+  workflow_dispatch:       # Allow manual trigger
+  push:
+    branches: [main]       # Update on every push to main
+
+jobs:
+  build-graph:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Need full history for commit counts
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      
+      - name: Install dependencies (if package.json exists)
+        run: npm install
+        continue-on-error: true
+      
+      - name: Generate active work graph
+        run: |
+          if [ -f tools/active-work-graph.mjs ]; then
+            node tools/active-work-graph.mjs
+          else
+            echo "::warning::tools/active-work-graph.mjs not found. Skipping graph generation."
+            echo "### ⚠️ Active Work Graph Skipped" >> $GITHUB_STEP_SUMMARY
+            echo "- File tools/active-work-graph.mjs was not found in the repository." >> $GITHUB_STEP_SUMMARY
+          fi
+        continue-on-error: true
+      
+      - name: Commit and push SVG
+        continue-on-error: true
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          
+          # Check if public directory exists and has changes
+          if [ -d "public" ] && [ -f "public/active-work.svg" ]; then
+            git add public/active-work.svg
+            if ! git diff --quiet && ! git diff --staged --quiet; then
+              git commit -m "chore: update active work graph [skip ci]"
+              git push
+            else
+              echo "No changes to commit"
+            fi
+          else
+            echo "::warning::public/active-work.svg not found. Skipping commit."
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

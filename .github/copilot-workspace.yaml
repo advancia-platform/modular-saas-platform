@@ -1,0 +1,91 @@
+version: "1.0.0"
+name: Advancia Pay Ledger Workspace
+description: >
+  Full-stack fintech workspace for Advancia Pay Ledger, integrating
+  Next.js frontend, Express/Prisma backend, crypto services, RPA, and automation.
+  Configured for Copilot Agent live editing, debugging, and deployment guidance.
+
+instructions:
+  readme: .github/COPILOT_INSTRUCTIONS.md
+  agent: .github/copilot-agent.json
+  prompts: .github/copilot-prompts.json
+
+runtime:
+  backend:
+    language: typescript
+    entry: backend/src/index.ts
+    port: 9229
+    command: node --inspect=9229 -r tsx/register backend/src/index.ts
+  frontend:
+    language: typescript
+    entry: frontend/app/page.tsx
+    port: 9230
+    command: node --inspect=9230 node_modules/next/dist/bin/next dev
+
+env:
+  NODE_ENV: development
+  DATABASE_URL: ${secrets.DATABASE_URL}
+  JWT_SECRET: ${secrets.JWT_SECRET}
+  NEXT_PUBLIC_API_URL: http://localhost:4000
+  NEXTAUTH_URL: http://localhost:3000
+  SMTP_USER: ${secrets.SMTP_USER}
+  SMTP_PASS: ${secrets.SMTP_PASS}
+  ETH_PROVIDER_URL: https://cloudflare-eth.com
+
+features:
+  - copilot-agent you want, I can add an auto-decrypt preLaunchTask so the backend debug config decrypts .env automatically when SECRETS_PASSPHRASE is set.
+  - live-debug
+  - prisma-migrate
+  - rpa-runner
+  - notification-center
+  - eth-gateway
+  - health-check
+
+tasks:
+  - id: run-backend
+    label: Run Backend
+    command: npm run dev --prefix backend
+  - id: run-frontend
+    label: Run Frontend
+    command: npm run dev --prefix frontend
+  - id: build-all
+    label: Build All
+    command: npm run build --workspaces
+  - id: prisma-deploy
+    label: Prisma Migrate
+    command: npx prisma migrate deploy
+  - id: start-rpa
+    label: Start RPA Worker
+    command: tsx backend/scripts/rpaWorker.ts
+
+debug:
+  default: Backend
+  configs:
+    - name: Backend Debug
+      port: 9229
+      entry: backend/src/index.ts
+    - name: Frontend Debug
+      port: 9230
+      entry: frontend/app/page.tsx
+
+ci:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install Dependencies
+        run: npm ci
+      - name: Build
+        run: npm run build
+      - name: Prisma Migrate
+        run: npx prisma migrate deploy
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to Render
+        run: echo "Auto-deploy handled by Render webhook."
+
+metadata:
+  owner: Advancia Labs
+  license: MIT
+  repo-url: https://github.com/pdtribe181-prog/-modular-saas-platform
