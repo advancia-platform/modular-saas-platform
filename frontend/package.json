@@ -20,6 +20,7 @@
     "export": "next export"
   },
   "dependencies": {
+    "@sendgrid/mail": "^8.1.6",
     "@sentry/nextjs": "^8.0.0",
     "@types/nodemailer": "^7.0.3",
     "@types/qrcode": "^1.5.5",
