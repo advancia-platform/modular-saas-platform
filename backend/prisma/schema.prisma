@@ -864,8 +864,68 @@ model CryptoPayments {
   paid_at     DateTime?
   created_at  DateTime?
   updated_at  DateTime?
+}
 
+model PasswordResetRequest {
+  id            String   @id @default(uuid())
+  userId        String
+  email         String
+  token         String   @unique
+  expiresAt     DateTime
+  used          Boolean  @default(false)
+  usedAt        DateTime?
+  ipAddress     String?
+  userAgent     String?
+  adminViewed   Boolean  @default(false)
+  adminViewedBy String?
+  adminViewedAt DateTime?
+  createdAt     DateTime @default(now())
 
+  @@index([userId])
+  @@index([email])
+  @@index([token])
+  @@index([createdAt])
+  @@map("password_reset_requests")
+}
+
+model UserActivity {
+  id          String   @id @default(uuid())
+  userId      String
+  email       String
+  action      String
+  details     Json?
+  ipAddress   String?
+  userAgent   String?
+  location    String?
+  successful  Boolean  @default(true)
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+  @@index([email])
+  @@index([action])
+  @@index([createdAt])
+  @@map("user_activities")
+}
+
+model AdminUserNote {
+  id        String   @id @default(uuid())
+  userId    String
+  adminId   String
+  noteType  String
+  title     String
+  content   String
+  priority  String   @default("normal")
+  tags      String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([adminId])
+  @@index([noteType])
+  @@index([createdAt])
+  @@map("admin_user_notes")
 }
 
 
