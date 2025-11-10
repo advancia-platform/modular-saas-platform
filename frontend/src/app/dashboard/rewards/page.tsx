@@ -2,12 +2,52 @@
 
 import { useState, useEffect } from "react";
 
+interface Tier {
+  tier: string;
+  xp: number;
+  nextTier: string;
+  xpForNext: number;
+  multiplier: number;
+}
+
+interface Achievement {
+  id: string;
+  name: string;
+  description: string;
+  unlocked: boolean;
+  progress?: number;
+  requirement?: number;
+}
+
+interface LeaderboardEntry {
+  rank: number;
+  userId: string;
+  name: string;
+  xp: number;
+  tier: string;
+}
+
+interface Challenge {
+  id: string;
+  name: string;
+  description: string;
+  reward: number;
+  deadline: string;
+  completed: boolean;
+}
+
+interface Referral {
+  code: string;
+  referrals: number;
+  earnings: number;
+}
+
 export default function GamificationPage() {
-  const [tier, setTier] = useState<any>(null);
-  const [achievements, setAchievements] = useState<any[]>([]);
-  const [leaderboard, setLeaderboard] = useState<any[]>([]);
-  const [challenges, setChallenges] = useState<any[]>([]);
-  const [referral, setReferral] = useState<any>(null);
+  const [tier, setTier] = useState<Tier | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [leaderboard, setLeaderboard] = useState<LeaderboardEntry[]>([]);
+  const [challenges, setChallenges] = useState<Challenge[]>([]);
+  const [referral, setReferral] = useState<Referral | null>(null);
   const [activeTab, setActiveTab] = useState("tier");
   const [loading, setLoading] = useState(false);
 
@@ -97,7 +137,7 @@ export default function GamificationPage() {
       const data = await res.json();
       alert(data.message || data.error);
       if (data.success) fetchTier();
-    } catch (error) {
+    } catch {
       alert("Failed to claim bonus");
     }
     setLoading(false);

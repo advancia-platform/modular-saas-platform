@@ -1,18 +1,34 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
+
+interface ChartDataPoint {
+  time: string;
+  price: number;
+}
+
+interface Rates {
+  [key: string]: number;
+}
+
+interface SwapPreview {
+  fromAmount: number;
+  toAmount: number;
+  rate: number;
+  fee: number;
+}
 
 export default function CryptoChartsPage() {
   const [activeSymbol, setActiveSymbol] = useState("BTC");
-  const [chartData, setChartData] = useState<any[]>([]);
-  const [rates, setRates] = useState<any>({});
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [rates, setRates] = useState<Rates>({});
   const [swapForm, setSwapForm] = useState({
     fromSymbol: "BTC",
     toSymbol: "ETH",
     amount: "",
   });
-  const [swapPreview, setSwapPreview] = useState<any>(null);
+  const [swapPreview, setSwapPreview] = useState<SwapPreview | null>(null);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("charts");
 
@@ -53,7 +69,7 @@ export default function CryptoChartsPage() {
     }
   };
 
-  const fetchSwapPreview = async () => {
+  const fetchSwapPreview = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const params = new URLSearchParams({
@@ -66,10 +82,10 @@ export default function CryptoChartsPage() {
       });
       const data = await res.json();
       if (data.success) setSwapPreview(data);
-    } catch (error) {
-      console.error("Swap preview error:", error);
+    } catch {
+      console.error("Swap preview error");
     }
-  };
+  }, [swapForm]);
 
   const handleSwap = async () => {
     if (!swapForm.amount || parseFloat(swapForm.amount) <= 0) {
@@ -98,7 +114,7 @@ export default function CryptoChartsPage() {
         setSwapForm({ ...swapForm, amount: "" });
         setSwapPreview(null);
       }
-    } catch (error) {
+    } catch {
       alert("Swap failed");
     }
     setLoading(false);
