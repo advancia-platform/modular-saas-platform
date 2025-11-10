@@ -16,23 +16,31 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email via Resend
-    const data = await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: from || 'Advancia Pay <noreply@advanciapayledger.com>',
       to: Array.isArray(to) ? to : [to],
       subject: subject,
       html: html,
     });
 
+    if (error) {
+      return NextResponse.json(
+        { error: error.message || 'Failed to send email' },
+        { status: 400 }
+      );
+    }
+
     return NextResponse.json({ 
       success: true, 
-      id: data.id,
+      id: data?.id,
       message: 'Email sent successfully' 
     });
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error('Email send error:', error);
+    const errorMessage = error instanceof Error ? error.message : 'Failed to send email';
     return NextResponse.json(
       { 
-        error: error.message || 'Failed to send email',
+        error: errorMessage,
         details: process.env.NODE_ENV === 'development' ? error : undefined
       },
       { status: 500 }
