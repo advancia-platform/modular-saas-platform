@@ -33,6 +33,27 @@ npm install
 npm run dev
 ```
 
+### TypeScript / Build Notes
+
+This project previously used a tsconfig field `ignoreDeprecations` which caused Vercel production builds to fail with:
+
+```
+Type error: Invalid value for '--ignoreDeprecations'.
+```
+
+We removed it from `tsconfig.json`. If you later upgrade TypeScript and need to suppress specific legacy deprecation warnings, only re-add it after confirming the flag is supported for your TypeScript compiler version. Example (if supported):
+
+```jsonc
+{
+  "compilerOptions": {
+    // ...other options
+    "ignoreDeprecations": "5.0" // or the version boundary specified by TS docs
+  }
+}
+```
+
+Always run a local `npm run build` and a CI typecheck before deploying to ensure flags are valid in your build environment.
+
 Open [http://localhost:3000](http://localhost:3000) to view the dashboard.
 
 ## 📁 Project Structure

@@ -13,7 +13,7 @@
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-  "baseUrl": ".",
+  "baseUrl": ".", // NOTE: Removed unsupported `ignoreDeprecations` option (caused Next.js build failure on Vercel). If you upgrade to a TS version that supports it and need to suppress legacy deprecation warnings, re-add: "ignoreDeprecations": "5.0" (or appropriate version) after verifying compiler docs.
     "paths": {
       "@/*": ["./src/*"],
       "@/components": ["./src/components"],
