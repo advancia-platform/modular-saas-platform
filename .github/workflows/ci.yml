@@ -20,11 +20,33 @@ jobs:
       NODE_ENV: "test"
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
           cache-dependency-path: backend/package-lock.json
+      
+      # Cache Prisma generated client
+      - name: Cache Prisma Client
+        uses: actions/cache@v4
+        with:
+          path: |
+            backend/node_modules/.prisma
+            backend/node_modules/@prisma/client
+          key: ${{ runner.os }}-prisma-${{ hashFiles('backend/prisma/schema.prisma') }}
+          restore-keys: |
+            ${{ runner.os }}-prisma-
+      
+      # Cache TypeScript build output
+      - name: Cache TypeScript Build
+        uses: actions/cache@v4
+        with:
+          path: backend/dist
+          key: ${{ runner.os }}-backend-build-${{ hashFiles('backend/src/**/*.ts', 'backend/tsconfig.json') }}
+          restore-keys: |
+            ${{ runner.os }}-backend-build-
+      
       - run: npm ci
       - run: npx prisma generate
       - run: npm run build
@@ -40,10 +62,24 @@ jobs:
       NEXT_PUBLIC_API_KEY: dev-api-key-123
     steps:
       - uses: actions/checkout@v4
+      
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
+      
+      # Cache Next.js build output
+      - name: Cache Next.js Build
+        uses: actions/cache@v4
+        with:
+          path: |
+            frontend/.next/cache
+            frontend/.next/static
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('frontend/package-lock.json') }}-${{ hashFiles('frontend/**/*.ts', 'frontend/**/*.tsx', 'frontend/**/*.js', 'frontend/**/*.jsx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('frontend/package-lock.json') }}-
+            ${{ runner.os }}-nextjs-
+      
       - run: npm ci
       - run: npm run build
