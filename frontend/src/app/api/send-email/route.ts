@@ -1,8 +1,16 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 
-// Initialize Resend
-const resend = new Resend(process.env.RESEND_API_KEY);
+// Gmail SMTP configuration
+const createTransporter = () => {
+  return nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: process.env.GMAIL_EMAIL || 'advanciapayledger@gmail.com',
+      pass: process.env.GMAIL_APP_PASSWORD || 'qmbk dljx rubt zihx',
+    },
+  });
+};
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,26 +24,21 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Send email via Resend
-    const { data, error } = await resend.emails.send({
-      from: from || 'Advancia Pay <noreply@advanciapayledger.com>',
-      to: Array.isArray(to) ? to : [to],
+    const transporter = createTransporter();
+
+    // Send email via Gmail SMTP
+    const info = await transporter.sendMail({
+      from: from || 'Advancia Pay <advanciapayledger@gmail.com>',
+      to: Array.isArray(to) ? to.join(', ') : to,
       subject: subject,
       html: html || text,
       text: text,
     });
 
-    if (error) {
-      return NextResponse.json(
-        { error: error.message || 'Failed to send email' },
-        { status: 400 }
-      );
-    }
-
     return NextResponse.json({ 
       success: true, 
-      id: data?.id,
-      message: 'Email sent successfully via Resend' 
+      messageId: info.messageId,
+      message: 'Email sent successfully via Gmail SMTP' 
     });
   } catch (error: unknown) {
     console.error('Email send error:', error);
@@ -50,17 +53,23 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Optional: GET endpoint to check if email service is configured
+// GET endpoint to check Gmail SMTP status
 export async function GET() {
-  const isConfigured = !!process.env.RESEND_API_KEY && 
-                       process.env.RESEND_API_KEY !== 're_placeholder';
-  
-  return NextResponse.json({
-    status: isConfigured ? 'ready' : 'pending_activation',
-    provider: 'Resend',
-    message: isConfigured 
-      ? 'Email service is configured and ready (Resend)'
-      : 'Resend account pending activation - will work once API key is updated',
-    dnsConfigured: true,
-  });
+  try {
+    const transporter = createTransporter();
+    await transporter.verify();
+    
+    return NextResponse.json({
+      status: 'ready',
+      provider: 'Gmail SMTP',
+      message: 'Email service is configured and ready',
+    });
+  } catch (error) {
+    return NextResponse.json({
+      status: 'error',
+      provider: 'Gmail SMTP',
+      message: 'Gmail SMTP connection failed - check credentials',
+      error: error instanceof Error ? error.message : 'Unknown error',
+    }, { status: 500 });
+  }
 }
