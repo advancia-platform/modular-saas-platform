@@ -11,7 +11,7 @@ export async function seedTestDatabase() {
       create: {
         email: "admin@test.com",
         username: "testadmin",
-        password: "$2a$10$dummyHashForTestingOnly",
+        passwordHash: "$2a$10$dummyHashForTestingOnly",
         firstName: "Test",
         lastName: "Admin",
         role: "ADMIN",
@@ -28,7 +28,7 @@ export async function seedTestDatabase() {
       create: {
         email: "user@test.com",
         username: "testuser",
-        password: "$2a$10$dummyHashForTestingOnly",
+        passwordHash: "$2a$10$dummyHashForTestingOnly",
         firstName: "Test",
         lastName: "User",
         role: "USER",
