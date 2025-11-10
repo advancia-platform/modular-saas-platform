@@ -36,6 +36,24 @@ export default function CryptoChartsPage() {
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState("charts");
 
+  const fetchSwapPreview = useCallback(async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const params = new URLSearchParams({
+        fromSymbol: swapForm.fromSymbol,
+        toSymbol: swapForm.toSymbol,
+        amount: swapForm.amount,
+      });
+      const res = await fetch(`/api/crypto/swap/preview?${params.toString()}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await res.json();
+      if (data.success) setSwapPreview(data);
+    } catch {
+      console.error("Swap preview error");
+    }
+  }, [swapForm]);
+
   useEffect(() => {
     fetchChart(activeSymbol);
     fetchRates();
@@ -72,24 +90,6 @@ export default function CryptoChartsPage() {
       console.error("Fetch rates error:", error);
     }
   };
-
-  const fetchSwapPreview = useCallback(async () => {
-    try {
-      const token = localStorage.getItem("token");
-      const params = new URLSearchParams({
-        fromSymbol: swapForm.fromSymbol,
-        toSymbol: swapForm.toSymbol,
-        amount: swapForm.amount,
-      });
-      const res = await fetch(`/api/crypto/swap/preview?${params.toString()}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await res.json();
-      if (data.success) setSwapPreview(data);
-    } catch {
-      console.error("Swap preview error");
-    }
-  }, [swapForm]);
 
   const handleSwap = async () => {
     if (!swapForm.amount || parseFloat(swapForm.amount) <= 0) {
@@ -236,7 +236,7 @@ export default function CryptoChartsPage() {
                       <div className="bg-gray-50 rounded-lg p-4">
                         <div className="text-xs text-gray-600 mb-1">24h Volume</div>
                         <div className="text-lg font-bold text-gray-900">
-                          ${(chartData[chartData.length - 1].volume / 1000000).toFixed(2)}M
+                          ${((chartData[chartData.length - 1]?.volume ?? 0) / 1000000).toFixed(2)}M
                         </div>
                       </div>
                       <div className="bg-gray-50 rounded-lg p-4">

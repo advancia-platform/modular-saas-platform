@@ -76,7 +76,7 @@ router.get("/achievements", authenticateToken, async (req: Request, res: Respons
 
     // Check user progress
     const transactionCount = await prisma.transaction.count({ where: { userId } });
-    const referralCount = await prisma.user.count({ where: { referredBy: userId } });
+    const referralCount = await prisma.userTier.count({ where: { referredBy: userId } });
 
     // Mock login streak (would need DailyLoginStreak table)
     const currentStreak = 5;
@@ -128,24 +128,33 @@ router.get("/leaderboard", authenticateToken, async (req: Request, res: Response
     const { period = "all" } = req.query; // all, month, week
 
     const wallets = await prisma.tokenWallet.findMany({
-      include: { user: { select: { email: true, firstName: true, lastName: true } } },
       orderBy: { lifetimeEarned: "desc" },
       take: 100,
     });
 
-    const leaderboard = wallets.map((wallet, index) => ({
-      rank: index + 1,
-      userId: wallet.userId,
-      name: wallet.user.firstName ? `${wallet.user.firstName} ${wallet.user.lastName}` : wallet.user.email,
-      tokens: Number(wallet.lifetimeEarned),
-      tier: Object.entries(USER_TIERS)
-        .reverse()
-        .find(([_, req]) => Number(wallet.lifetimeEarned) >= req.minTokens)?.[0] || "BRONZE",
-    }));
+    // Get user details separately
+    const leaderboardWithUsers = await Promise.all(
+      wallets.map(async (wallet, index) => {
+        const user = await prisma.user.findUnique({
+          where: { id: wallet.userId },
+          select: { email: true, firstName: true, lastName: true },
+        });
+
+        return {
+          rank: index + 1,
+          userId: wallet.userId,
+          name: user?.firstName ? `${user.firstName} ${user.lastName}` : user?.email || "Unknown",
+          tokens: Number(wallet.lifetimeEarned),
+          tier: Object.entries(USER_TIERS)
+            .reverse()
+            .find(([_, req]) => Number(wallet.lifetimeEarned) >= req.minTokens)?.[0] || "BRONZE",
+        };
+      })
+    );
 
     res.json({
       success: true,
-      leaderboard,
+      leaderboard: leaderboardWithUsers,
       period,
     });
   } catch (error) {
@@ -172,7 +181,7 @@ router.post("/referral", authenticateToken, async (req: Request, res: Response) 
       referralCode,
       referralLink,
       reward: 500, // Tokens earned per referral
-      referrals: await prisma.user.count({ where: { referredBy: userId } }),
+      referrals: await prisma.userTier.count({ where: { referredBy: userId } }),
     });
   } catch (error) {
     logger.error("Generate referral error:", error);
@@ -192,9 +201,15 @@ router.post("/daily-bonus", authenticateToken, async (req: Request, res: Respons
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
+    // Get wallet first
+    let wallet = await prisma.tokenWallet.findUnique({ where: { userId } });
+    if (!wallet) {
+      wallet = await prisma.tokenWallet.create({ data: { userId } });
+    }
+
     const lastClaim = await prisma.tokenTransaction.findFirst({
       where: {
-        wallet: { userId },
+        walletId: wallet.id,
         type: "DAILY_BONUS",
         createdAt: { gte: today },
       },
@@ -202,12 +217,6 @@ router.post("/daily-bonus", authenticateToken, async (req: Request, res: Respons
 
     if (lastClaim) {
       return res.status(400).json({ error: "Daily bonus already claimed today" });
-    }
-
-    // Get or create wallet
-    let wallet = await prisma.tokenWallet.findUnique({ where: { userId } });
-    if (!wallet) {
-      wallet = await prisma.tokenWallet.create({ data: { userId } });
     }
 
     // Calculate bonus based on tier

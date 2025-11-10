@@ -209,7 +209,7 @@ export default function GamificationPage() {
                   <div className="text-center">
                     <h2 className="text-3xl sm:text-4xl font-bold mb-2">{tier.currentTier}</h2>
                     <p className="text-lg sm:text-xl opacity-90">Reward Multiplier: {tier.multiplier}x</p>
-                    <p className="text-sm sm:text-base opacity-75 mt-2">{tier.totalTokens.toLocaleString()} Total Tokens</p>
+                    <p className="text-sm sm:text-base opacity-75 mt-2">{tier.totalTokens?.toLocaleString() || 0} Total Tokens</p>
                   </div>
                 </div>
 
@@ -217,12 +217,12 @@ export default function GamificationPage() {
                   <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6">
                     <h3 className="font-semibold text-lg mb-4">Current Benefits</h3>
                     <ul className="space-y-2">
-                      {tier.benefits.map((benefit: string, i: number) => (
+                      {tier.benefits?.map((benefit: string, i: number) => (
                         <li key={i} className="flex items-center text-sm sm:text-base">
                           <span className="text-green-500 mr-2">✓</span>
                           {benefit}
                         </li>
-                      ))}
+                      )) || <li className="text-gray-500">No benefits listed</li>}
                     </ul>
                   </div>
 
@@ -234,8 +234,8 @@ export default function GamificationPage() {
                           <div className="flex justify-between text-sm mb-2">
                             <span>Progress</span>
                             <span className="font-semibold">
-                              {tier.tokensUntilNextTier > 0
-                                ? `${tier.tokensUntilNextTier.toLocaleString()} tokens to go`
+                              {(tier.tokensUntilNextTier ?? 0) > 0
+                                ? `${tier.tokensUntilNextTier?.toLocaleString() || 0} tokens to go`
                                 : "Unlocked!"}
                             </span>
                           </div>
@@ -245,7 +245,7 @@ export default function GamificationPage() {
                               style={{
                                 width: `${Math.min(
                                   100,
-                                  ((tier.totalTokens / (tier.totalTokens + tier.tokensUntilNextTier)) * 100)
+                                  (((tier.totalTokens ?? 0) / ((tier.totalTokens ?? 0) + (tier.tokensUntilNextTier ?? 1))) * 100)
                                 )}%`,
                               }}
                             />
@@ -283,13 +283,13 @@ export default function GamificationPage() {
                     {!achievement.unlocked && (
                       <div className="bg-white rounded-lg p-2">
                         <div className="text-xs text-gray-600 mb-1">
-                          Progress: {achievement.progress} / {achievement.id.split("_")[1] || 1}
+                          Progress: {achievement.progress ?? 0} / {achievement.id.split("_")[1] || 1}
                         </div>
                         <div className="bg-gray-200 rounded-full h-2 overflow-hidden">
                           <div
                             className="bg-blue-500 h-full transition-all"
                             style={{
-                              width: `${Math.min(100, (achievement.progress / (achievement.id.split("_")[1] || 1)) * 100)}%`,
+                              width: `${Math.min(100, ((achievement.progress ?? 0) / (parseInt(achievement.id.split("_")[1]) || 1)) * 100)}%`,
                             }}
                           />
                         </div>
@@ -326,7 +326,7 @@ export default function GamificationPage() {
                       </div>
                     </div>
                     <div className="text-right flex-shrink-0 ml-2">
-                      <div className="font-bold text-sm sm:text-lg text-purple-600">{user.tokens.toLocaleString()}</div>
+                      <div className="font-bold text-sm sm:text-lg text-purple-600">{user.tokens?.toLocaleString() || 0}</div>
                       <div className="text-xs text-gray-500">tokens</div>
                     </div>
                   </div>
@@ -406,7 +406,7 @@ export default function GamificationPage() {
                       </div>
                       <button
                         onClick={() => {
-                          navigator.clipboard.writeText(referral.referralLink);
+                          navigator.clipboard.writeText(referral.referralLink || "");
                           alert("Copied to clipboard!");
                         }}
                         className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white py-2 sm:py-3 rounded-lg hover:from-purple-600 hover:to-blue-600 transition text-sm sm:text-base"
@@ -424,7 +424,7 @@ export default function GamificationPage() {
                       </div>
                       <div className="bg-white border-2 border-gray-200 rounded-xl p-4 sm:p-6 text-center">
                         <div className="text-3xl sm:text-4xl font-bold text-green-600 mb-2">
-                          {referral.referrals * referral.reward}
+                          {referral.referrals * (referral.reward ?? 0)}
                         </div>
                         <div className="text-sm sm:text-base text-gray-600">Tokens Earned</div>
                       </div>

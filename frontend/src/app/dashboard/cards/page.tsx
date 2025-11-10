@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { CreditCard, Lock, Settings, TrendingUp, Freeze, Send, Ban } from "lucide-react";
+import { useState, useEffect, useCallback } from "react";
+import { CreditCard, Lock, Settings, TrendingUp, Send, Ban, Snowflake } from "lucide-react";
 
 interface DebitCard {
   id: string;
@@ -38,17 +38,7 @@ export default function DebitCardsPage() {
   const [limitForm, setLimitForm] = useState({ dailyLimit: "" });
   const [nameForm, setNameForm] = useState({ cardHolderName: "" });
 
-  useEffect(() => {
-    fetchCards();
-  }, []);
-
-  useEffect(() => {
-    if (selectedCard) {
-      fetchTransactions(selectedCard.id);
-    }
-  }, [selectedCard]);
-
-  const fetchCards = async () => {
+  const fetchCards = useCallback(async () => {
     try {
       const token = localStorage.getItem("token");
       const res = await fetch("/api/debit-cards/my-cards", {
@@ -64,7 +54,17 @@ export default function DebitCardsPage() {
     } catch {
       console.error("Failed to fetch cards");
     }
-  };
+  }, [selectedCard]);
+
+  useEffect(() => {
+    fetchCards();
+  }, [fetchCards]);
+
+  useEffect(() => {
+    if (selectedCard) {
+      fetchTransactions(selectedCard.id);
+    }
+  }, [selectedCard]);
 
   const fetchTransactions = async (cardId: string) => {
     try {
@@ -378,7 +378,7 @@ export default function DebitCardsPage() {
                             : "bg-yellow-600 hover:bg-yellow-700 text-white"
                         }`}
                       >
-                        <Freeze size={20} />
+                        <Snowflake size={20} />
                         {selectedCard.status === "frozen" ? "Unfreeze Card" : "Freeze Card"}
                       </button>
 

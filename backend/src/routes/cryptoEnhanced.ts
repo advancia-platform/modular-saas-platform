@@ -113,16 +113,7 @@ router.post("/swap", authenticateToken, async (req: Request, res: Response) => {
           type: "CRYPTO_SWAP",
           amount: usdValue,
           status: "completed",
-          description: `Swapped ${amount} ${fromSymbol} for ${toAmount.toFixed(6)} ${toSymbol}`,
-          metadata: JSON.stringify({
-            fromSymbol,
-            toSymbol,
-            fromAmount: amount,
-            toAmount,
-            fee: feeAmount,
-            fromRate,
-            toRate,
-          }),
+          description: `Swapped ${amount} ${fromSymbol} for ${toAmount.toFixed(6)} ${toSymbol} (Fee: ${feeAmount.toFixed(6)} ${fromSymbol})`,
         },
       });
     });
