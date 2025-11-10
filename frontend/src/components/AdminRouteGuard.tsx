@@ -73,19 +73,23 @@ export default function AdminRouteGuard({ children }: AdminRouteGuardProps) {
           setIsAuthorized(true);
           setIsChecking(false);
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.error('Admin access check failed:', error);
         
-        if (error.response?.status === 403) {
-          // User is NOT admin - redirect to dashboard
-          alert('Access Denied: Admin privileges required');
-          router.push('/dashboard');
-        } else {
-          // Other error (token refresh failed, network error, etc.)
-          // The apiClient interceptor will handle redirects if refresh fails
-          localStorage.clear();
-          router.push('/admin/login');
+        if (error && typeof error === 'object' && 'response' in error) {
+          const axiosError = error as { response?: { status?: number } };
+          if (axiosError.response?.status === 403) {
+            // User is NOT admin - redirect to dashboard
+            alert('Access Denied: Admin privileges required');
+            router.push('/dashboard');
+            return;
+          }
         }
+        
+        // Other error (token refresh failed, network error, etc.)
+        // The apiClient interceptor will handle redirects if refresh fails
+        localStorage.clear();
+        router.push('/admin/login');
       }
     };
 

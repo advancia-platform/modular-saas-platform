@@ -29,7 +29,6 @@ export default function AdminDashboard() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -42,12 +41,10 @@ export default function AdminDashboard() {
     adminApi.getDashboardStats()
       .then((response) => {
         setStats(response.data as DashboardStats);
-        setError(null);
         setLoading(false);
       })
       .catch((err) => {
         console.error("Failed to fetch dashboard stats:", err);
-        setError("Failed to load dashboard statistics");
         setLoading(false);
       });
   }, [router]);
