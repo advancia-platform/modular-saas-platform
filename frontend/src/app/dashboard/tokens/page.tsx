@@ -3,9 +3,22 @@
 import { useState, useEffect } from "react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
+interface Wallet {
+  balance: number;
+  lifetimeEarned: number;
+  staked: number;
+  pendingRewards: number;
+  lockedBalance?: number;
+}
+
+interface ChartDataPoint {
+  date: string;
+  price: number;
+}
+
 export default function TokenWalletPage() {
-  const [wallet, setWallet] = useState<any>(null);
-  const [chartData, setChartData] = useState<any[]>([]);
+  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [activeTab, setActiveTab] = useState("overview");
   const [transferForm, setTransferForm] = useState({ toEmail: "", amount: "", message: "" });
   const [buyForm, setBuyForm] = useState({ usdAmount: "" });
@@ -58,7 +71,7 @@ export default function TokenWalletPage() {
       const data = await res.json();
       alert(data.message || data.error);
       if (data.success) fetchWallet();
-    } catch (error) {
+    } catch {
       alert("Withdrawal failed");
     }
     setLoading(false);
@@ -87,7 +100,7 @@ export default function TokenWalletPage() {
         fetchWallet();
         setTransferForm({ toEmail: "", amount: "", message: "" });
       }
-    } catch (error) {
+    } catch {
       alert("Transfer failed");
     }
     setLoading(false);
@@ -112,7 +125,7 @@ export default function TokenWalletPage() {
         fetchWallet();
         setBuyForm({ usdAmount: "" });
       }
-    } catch (error) {
+    } catch {
       alert("Purchase failed");
     }
     setLoading(false);
@@ -140,7 +153,7 @@ export default function TokenWalletPage() {
         fetchWallet();
         setStakeForm({ amount: "", duration: "30" });
       }
-    } catch (error) {
+    } catch {
       alert("Staking failed");
     }
     setLoading(false);
@@ -171,7 +184,7 @@ export default function TokenWalletPage() {
 
           <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 border-l-4 border-purple-500">
             <div className="text-sm text-gray-600 mb-1">Locked Balance</div>
-            <div className="text-2xl sm:text-3xl font-bold text-purple-600">{wallet.lockedBalance.toLocaleString()}</div>
+            <div className="text-2xl sm:text-3xl font-bold text-purple-600">{(wallet.lockedBalance || 0).toLocaleString()}</div>
             <div className="text-xs text-gray-500 mt-1">Staking</div>
           </div>
 

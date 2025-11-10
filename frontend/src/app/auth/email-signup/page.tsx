@@ -29,9 +29,9 @@ export default function EmailSignupPage() {
       if (data.success) {
         setSuccess(true);
       } else {
-        setError(data.error || "Failed to send signup link");
+        setError(data.error || "Signup failed");
       }
-    } catch (err) {
+    } catch {
       setError("Network error. Please try again.");
     } finally {
       setLoading(false);
@@ -217,7 +217,7 @@ export default function EmailSignupPage() {
                   } else {
                     alert("❌ " + data.error);
                   }
-                } catch (err) {
+                } catch {
                   alert("Failed to resend link");
                 } finally {
                   setLoading(false);

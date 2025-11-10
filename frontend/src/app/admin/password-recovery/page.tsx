@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Search, Eye, Key, FileText, Clock, CheckCircle, XCircle, User } from "lucide-react";
+import { Search, Eye, Key, FileText, Clock, CheckCircle, XCircle } from "lucide-react";
 
 interface PasswordResetRequest {
   id: string;
@@ -33,7 +33,7 @@ interface UserDetails {
 interface UserActivity {
   id: string;
   action: string;
-  details?: any;
+  details?: Record<string, unknown>;
   ipAddress?: string;
   createdAt: string;
   successful: boolean;

@@ -24,7 +24,6 @@ import authRouter from "./routes/auth";
 import adminUsersRouter, { setAdminUsersSocketIO } from "./routes/users";
 import transactionsRouter from "./routes/transactions";
 import invoicesRouter from "./routes/invoices";
-import emailsRouter from "./routes/emails";
 import twoFactorRouter from "./routes/twoFactor";
 import adminDashboardRouter from "./routes/adminDashboard";
 import chatRouter, { setChatSocketIO } from "./routes/chat";
