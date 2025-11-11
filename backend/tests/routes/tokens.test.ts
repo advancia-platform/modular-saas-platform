@@ -13,6 +13,7 @@ const API_KEY = process.env.API_KEY || 'dev-api-key-123';
 describe('Token Wallet API', () => {
   let userId: string;
   let userToken: string;
+  let walletId: string;
 
   beforeAll(async () => {
     const user = await createTestUser({
@@ -25,9 +26,11 @@ describe('Token Wallet API', () => {
 
   afterAll(async () => {
     // Cleanup token transactions
-    await prisma.tokenTransaction.deleteMany({
-      where: { userId },
-    });
+    if (walletId) {
+      await prisma.tokenTransaction.deleteMany({
+        where: { walletId },
+      });
+    }
     // Cleanup wallet
     await prisma.tokenWallet.deleteMany({
       where: { userId },
@@ -45,10 +48,11 @@ describe('Token Wallet API', () => {
 
       expect(res.body).toHaveProperty('userId', userId);
       expect(res.body).toHaveProperty('balance');
-      expect(res.body).toHaveProperty('pendingBalance');
-    });
+      expect(res.body).toHaveProperty('lockedBalance');
 
-    it('should return existing wallet balance', async () => {
+      // Store walletId for cleanup
+      walletId = res.body.id;
+    });    it('should return existing wallet balance', async () => {
       // Get balance again
       const res = await request(app)
         .get(`/api/tokens/balance/${userId}`)
@@ -71,31 +75,32 @@ describe('Token Wallet API', () => {
   describe('GET /api/tokens/history/:userId', () => {
     beforeAll(async () => {
       // Ensure wallet exists
-      await prisma.tokenWallet.upsert({
+      const wallet = await prisma.tokenWallet.upsert({
         where: { userId },
         update: {},
         create: { userId },
       });
+      walletId = wallet.id;
 
       // Create some test transactions
       await prisma.tokenTransaction.createMany({
         data: [
           {
-            userId,
+            walletId,
             type: 'EARN',
             amount: 100,
             description: 'Test reward',
             status: 'COMPLETED',
           },
           {
-            userId,
+            walletId,
             type: 'SPEND',
             amount: 50,
             description: 'Test purchase',
             status: 'COMPLETED',
           },
           {
-            userId,
+            walletId,
             type: 'EARN',
             amount: 25,
             description: 'Test bonus',
@@ -144,7 +149,9 @@ describe('Token Wallet API', () => {
       expect(res.body).toEqual({ transactions: [], total: 0 });
 
       // Cleanup
-      await prisma.user.delete({ where: { id: newUser.id } });
+      await prisma.user.deleteMany({
+        where: { email: { contains: 'nowallet-' } },
+      });
     });
 
     it('should require authentication', async () => {
@@ -184,11 +191,24 @@ describe('Token Wallet API', () => {
     });
 
     afterAll(async () => {
-      // Cleanup recipient
-      await prisma.tokenWallet.deleteMany({
-        where: { userId: recipientId },
-      });
-      await prisma.user.delete({ where: { id: recipientId } });
+      // Cleanup recipient transactions and wallet
+      if (recipientId) {
+        const recipientWallet = await prisma.tokenWallet.findUnique({
+          where: { userId: recipientId },
+        });
+        if (recipientWallet) {
+          await prisma.tokenTransaction.deleteMany({
+            where: { walletId: recipientWallet.id },
+          });
+          await prisma.tokenWallet.delete({
+            where: { id: recipientWallet.id },
+          });
+        }
+        // Delete user through cleanup function
+        await prisma.user.deleteMany({
+          where: { email: { contains: 'recipient-' } },
+        });
+      }
     });
 
     it('should transfer tokens between users', async () => {
@@ -205,7 +225,8 @@ describe('Token Wallet API', () => {
         .expect(200);
 
       expect(res.body).toHaveProperty('success', true);
-      expect(res.body).toHaveProperty('transaction');
+      expect(res.body).toHaveProperty('transactionId');
+      expect(res.body).toHaveProperty('message');
     });
 
     it('should reject transfer with insufficient balance', async () => {

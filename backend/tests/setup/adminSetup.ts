@@ -46,7 +46,7 @@ export async function createTestUser(overrides?: Partial<typeof regularUserFixtu
 
   return await prisma.user.create({
     data: {
-      id: userData.id,
+      // Don't set id - let Prisma generate it
       email: userData.email,
       username: userData.username,
       passwordHash: hashedPassword,
