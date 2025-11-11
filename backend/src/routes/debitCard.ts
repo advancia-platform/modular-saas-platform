@@ -1,6 +1,6 @@
 import { Router } from 'express';
 import { authenticateToken, requireAdmin } from '../middleware/auth';
-import { config } from '../config';
+import { config } from '../jobs/config';
 import prisma from '../prismaClient';
 import Stripe from 'stripe';
 import type { Server as IOServer } from 'socket.io';

@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import { securityHeaders } from "./middleware/security";
+import { helmetMiddleware } from "./middleware/security";
 import cors from "cors";
 import { logger } from "./logger";
 
@@ -7,14 +7,14 @@ import { logger } from "./logger";
 const app = express();
 
 // Global security headers first
-app.use(securityHeaders);
+app.use(helmetMiddleware());
 
 // CORS is configured in index.ts where config is available (deferred)
 
 // Logging middleware - tracks all HTTP requests
 app.use((req: Request, res: Response, next: NextFunction) => {
   const start = Date.now();
-  
+
   res.on('finish', () => {
     const duration = Date.now() - start;
     logger.info('HTTP Request', {
@@ -25,7 +25,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
       ip: req.ip || req.headers['x-forwarded-for'] || 'unknown'
     });
   });
-  
+
   next();
 });
 

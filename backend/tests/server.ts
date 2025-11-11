@@ -1,7 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { securityHeaders } from "../src/middleware/security";
-import { config } from "../src/config";
+import { config } from "../src/jobs/config";
 import authRouter from "../src/routes/auth";
 
 // Create test app with routes

@@ -45,6 +45,14 @@ export const paymentSchema = z.object({
   paymentMethodId: z.string().min(1, 'Payment method required'),
 });
 
+// Crypto order validation
+export const cryptoOrderSchema = z.object({
+  amount: z.number().positive('Amount must be positive'),
+  currency: z.string().min(1, 'Currency is required').max(10, 'Currency too long'),
+  orderId: z.string().optional(),
+  description: z.string().max(500, 'Description too long').optional(),
+});
+
 // User login validation (alias for compatibility)
 export const loginSchema = userLoginSchema;
 

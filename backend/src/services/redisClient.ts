@@ -1,5 +1,5 @@
 import Redis from 'ioredis';
-import { config } from '../config';
+import { config } from '../jobs/config';
 
 let redis: Redis | null = null;
 

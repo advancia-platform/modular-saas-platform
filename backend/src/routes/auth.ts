@@ -3,7 +3,7 @@ import express from "express";
 import jwt from "jsonwebtoken";
 import * as nodemailer from "nodemailer";
 import { z } from "zod";
-import { config } from "../config";
+import { config } from "../jobs/config";
 import { authenticateToken, requireApiKey } from "../middleware/auth";
 import { rateLimit } from "../middleware/security";
 import prisma from "../prismaClient";

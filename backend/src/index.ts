@@ -1,4 +1,7 @@
+// Load environment variables FIRST before any other imports
 import dotenv from "dotenv";
+dotenv.config();
+
 import http from "http";
 import https from "https";
 import fs from "fs";
@@ -64,14 +67,16 @@ import webhooksRouter from "./routes/webhooks"; // Resend webhook handlers
 import passwordRecoveryRouter from "./routes/passwordRecovery"; // Password recovery & user details
 import emailSignupRouter from "./routes/emailSignup"; // Email magic link signup
 import helmet from "helmet";
-import { validateInput, securityHeaders } from "./middleware/security";
+import { validateInput, helmetMiddleware, rateLimit } from "./middleware/security";
 import { sanitizeInput } from "./validation/middleware";
+import { activityLogger } from "./middleware/activityLogger";
 import { handleStripeWebhook, setPaymentsSocketIO } from "./routes/payments";
 import { activeSessions } from "./routes/authAdmin";
 import { requireAdmin, authenticateToken } from "./middleware/auth";
+import { envInspector } from "./utils/envInspector";
 
-// Load environment variables
-dotenv.config();
+// Import configuration
+import { config } from "./jobs/config";
 
 // Initialize Sentry for error tracking and monitoring
 initSentry();
@@ -103,7 +108,7 @@ app.post(
 
 // JSON parser and common middlewares AFTER webhook
 app.use(express.json());
-app.use(helmet(securityHeaders));
+app.use(helmetMiddleware());
 app.use(sanitizeInput);
 app.use(dataMasker.createResponseSanitizer());
 app.use(validateInput);

@@ -2,7 +2,7 @@ import { Router, Request, Response } from "express";
 import Stripe from "stripe";
 import { PrismaClient } from "@prisma/client";
 import { authenticateToken } from "../middleware/auth";
-import { config } from "../config";
+import { config } from "../jobs/config";
 import logger from "../logger";
 
 const router = Router();
@@ -384,11 +384,11 @@ router.post("/charge-saved-method", authenticateToken, async (req: Request, res:
     });
   } catch (error: any) {
     logger.error("Charge saved method error:", error);
-    
+
     if (error.type === "StripeCardError") {
       return res.status(400).json({ error: error.message });
     }
-    
+
     res.status(500).json({ error: "Payment failed" });
   }
 });
