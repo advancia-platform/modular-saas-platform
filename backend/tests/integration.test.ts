@@ -13,6 +13,7 @@ import jwt from "jsonwebtoken";
 import request from "supertest";
 import prisma from "../src/prismaClient";
 import app from "./test-app";
+import { createTestAdmin, generateAdminToken, cleanupTestAdmin } from "./setup/adminSetup";
 
 // Mock notificationService to prevent real notifications during tests
 jest.mock("../src/services/notificationService", () => ({
@@ -543,44 +544,61 @@ describe("Integration Tests - Core Endpoints", () => {
   // ═══════════════════════════════════════════════════════════
   // NOTIFICATIONS
   // ═══════════════════════════════════════════════════════════
-  describe.skip("Notifications", () => {
-    // NOTE: Notifications routes don't exist as standalone endpoints yet
-    // They are managed through userApproval.ts and require admin access
+  describe("Notifications", () => {
+    let adminToken: string;
+    let adminId: string;
+
+    beforeAll(async () => {
+      const admin = await createTestAdmin();
+      adminId = admin.id;
+      adminToken = generateAdminToken(adminId);
+    });
+
+    afterAll(async () => {
+      await cleanupTestAdmin();
+    });
+
+    // NOTE: Notification endpoints require ADMIN role
+    // They are at /api/admin/user-approval/notifications
     it("should get user notifications", async () => {
-      expect(authToken).toBeDefined();
+      expect(adminToken).toBeDefined();
 
       const res = await request(app)
-        .get("/api/notifications")
+        .get("/api/admin/user-approval/notifications")
         .set("x-api-key", API_KEY)
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(Array.isArray(res.body)).toBe(true);
+      // Response is {notifications: [], unreadCount: 0}
+      expect(res.body).toHaveProperty('notifications');
+      expect(Array.isArray(res.body.notifications)).toBe(true);
+      expect(res.body).toHaveProperty('unreadCount');
     });
 
     it("should mark notification as read", async () => {
-      expect(authToken).toBeDefined();
-      expect(testUserId).toBeDefined();
+      expect(adminToken).toBeDefined();
+      expect(adminId).toBeDefined();
 
-      // Create a notification first
-      const notification = await prisma.notification.create({
+      // Create an admin notification first
+      const notification = await prisma.adminNotification.create({
         data: {
-          userId: testUserId,
           type: "INFO",
-          category: "SYSTEM",
           title: "Test Notification",
-          message: "Test message for notification read test",
-          isRead: false,
+          message: "Test admin notification for mark-read test",
+          read: false,
         },
       });
 
       const res = await request(app)
-        .put(`/api/notifications/${notification.id}/read`)
+        .post(`/api/admin/user-approval/notifications/${notification.id}/mark-read`)
         .set("x-api-key", API_KEY)
-        .set("Authorization", `Bearer ${authToken}`)
+        .set("Authorization", `Bearer ${adminToken}`)
         .expect(200);
 
-      expect(res.body.isRead).toBe(true);
+      expect(res.body.message).toBe('Notification marked as read');
+
+      // Cleanup
+      await prisma.adminNotification.delete({ where: { id: notification.id } });
     });
   }); // ═══════════════════════════════════════════════════════════
   // ERROR HANDLING
