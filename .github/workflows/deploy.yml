@@ -7,17 +7,9 @@ on:
     types: [published]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v3
-      - name: Build Docker images
-        run: docker-compose build
-
   deploy-staging:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    needs: build
     concurrency:
       group: advvancia-staging
       cancel-in-progress: true
@@ -33,12 +25,15 @@ jobs:
           script: |
             cd -modular-saas-platform
             git pull origin main
-            docker-compose up -d --build
+            cd backend
+            npm install --production=false
+            npx prisma generate
+            npx prisma migrate deploy
+            pm2 restart advvancia-backend || pm2 start ecosystem.config.js
 
   deploy-production:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
-    needs: build
     concurrency:
       group: advvancia-production
       cancel-in-progress: false # don't cancel prod deploys
@@ -54,4 +49,8 @@ jobs:
           script: |
             cd -modular-saas-platform
             git pull origin main
-            docker-compose up -d --build
+            cd backend
+            npm install --production=false
+            npx prisma generate
+            npx prisma migrate deploy
+            pm2 restart advvancia-backend || pm2 start ecosystem.config.js
