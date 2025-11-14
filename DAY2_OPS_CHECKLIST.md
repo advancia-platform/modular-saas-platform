@@ -1,74 +1,45 @@
 # 🛠️ Day‑2 Ops Checklist (Self‑Hosted SaaS)
 
-## 🔹 Daily Tasks
-- ✅ **Check service health**
-  - `docker ps` → confirm backend, frontend, db, nginx are running
-  - `docker-compose logs -f` → scan for errors
-- ✅ **Monitor performance**
-  - Review DigitalOcean Monitoring (CPU, memory, disk)
-  - Check Datadog dashboards
-- ✅ **Error tracking**
-  - Review Sentry alerts (frontend/backend)
-- ✅ **Security checks**
-  - Cloudflare Analytics → look for blocked threats
-  - Confirm SSL certs are valid
-- ✅ **Database health**
-  - Run quick query to confirm DB connectivity
-  - Check for slow queries
+## 🔹 Daily
+Check Docker services (docker ps, docker-compose logs -f)
 
----
+Monitor CPU/memory/disk (DigitalOcean Monitoring)
 
-## 🔹 Weekly Tasks
-- 🔄 **Backups**
-  - Run `pg_dump` → store DB backup securely
-  - Verify restore process works
-- 🔄 **Log reviews**
-  - Audit backend logs for anomalies
-  - Check Nginx access/error logs
-- 🔄 **Update dependencies**
-  - Run `npm audit` for backend/frontend
-  - Apply security patches
-- 🔄 **Cloudflare rules**
-  - Review WAF & rate limiting effectiveness
-- 🔄 **CI/CD pipeline**
-  - Test GitHub Actions deploy workflow
+Review Sentry alerts (frontend/backend errors)
 
----
+Scan Cloudflare Analytics for blocked threats
 
-## 🔹 Monthly Tasks
-- 📈 **Scaling review**
-  - Check Droplet resource usage → resize if needed
-  - Consider load balancer if traffic grows
-- 📈 **Security audit**
-  - Rotate API keys (Stripe, Plaid, JWT secret)
-  - Review firewall rules
-- 📈 **Compliance**
-  - Ensure audit logs are intact
-  - Review GDPR/PCI DSS requirements
-- 📈 **Disaster recovery drill**
-  - Simulate DB restore from backup
-  - Test failover plan
+Confirm SSL cert validity
 
----
+## 🔹 Weekly
+Run PostgreSQL backups (pg_dump) and verify restore
 
-## 🔹 Quarterly Tasks
-- 🚀 **Feature roadmap**
-  - Add enhancements (multi‑tenancy, advanced analytics, file uploads)
-- 🚀 **Infrastructure upgrade**
-  - Consider Kubernetes migration if scaling demands
-- 🚀 **Zero Trust**
-  - Apply Cloudflare Access for sensitive routes
-- 🚀 **Cost optimization**
-  - Review DigitalOcean + Datadog billing
+Audit backend + Nginx logs for anomalies
 
----
+Apply dependency updates (npm audit)
 
-# ✅ Outcome
-With this Day‑2 Ops Checklist:
-- Your SaaS stays **secure** (patches, WAF, SSL, audits).  
-- Your stack stays **healthy** (monitoring, backups, logs).  
-- Your business stays **scalable** (resource reviews, roadmap).  
+Review Cloudflare WAF & rate limiting rules
 
----
+Test CI/CD pipeline (GitHub Actions deploy)
 
-⚡ This ensures Advvancia isn’t just launched today — it’s **maintained, monitored, and future‑proofed**.
+## 🔹 Monthly
+Review Droplet resource usage (resize if needed)
+
+Rotate API keys (Stripe, Plaid, JWT secret)
+
+Audit firewall rules
+
+Compliance check (GDPR/PCI DSS logs)
+
+Disaster recovery drill (simulate DB restore)
+
+## 🔹 Quarterly
+Plan feature roadmap (multi‑tenancy, analytics, file uploads)
+
+Infrastructure upgrade (consider Kubernetes migration)
+
+Apply Zero Trust security (Cloudflare Access for admin routes)
+
+Review billing (DigitalOcean, Datadog)
+
+⚡ This calendar ensures you don’t miss a beat: daily health checks, weekly backups, monthly audits, quarterly scaling. It’s the operational rhythm that keeps your SaaS secure, reliable, and future‑proof.
