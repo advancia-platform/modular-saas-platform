@@ -1,6 +1,6 @@
-import { faker } from '@faker-js/faker';
-import bcrypt from 'bcryptjs';
-import { envInspector } from './envInspector';
+import { faker } from "@faker-js/faker";
+import bcrypt from "bcryptjs";
+import { envInspector } from "./envInspector";
 
 /**
  * Fake data generator for development environments
@@ -12,7 +12,7 @@ export class FakeDataGenerator {
 
   constructor() {
     if (!this.isDevelopment) {
-      throw new Error('FakeDataGenerator should only be used in development');
+      throw new Error("FakeDataGenerator should only be used in development");
     }
   }
 
@@ -25,12 +25,14 @@ export class FakeDataGenerator {
 
     return {
       email: overrides.email || faker.internet.email(),
-      username: overrides.username || faker.internet.username(),
+      username: overrides.username || faker.internet.userName(),
       passwordHash,
       firstName: overrides.firstName || faker.person.firstName(),
       lastName: overrides.lastName || faker.person.lastName(),
-      usdBalance: overrides.usdBalance || faker.number.float({ min: 0, max: 10000, precision: 0.01 }),
-      role: overrides.role || 'user',
+      usdBalance:
+        overrides.usdBalance ||
+        faker.number.float({ min: 0, max: 10000, precision: 0.01 }),
+      role: overrides.role || "user",
       emailVerified: overrides.emailVerified || faker.datatype.boolean(),
       twoFactorEnabled: overrides.twoFactorEnabled || faker.datatype.boolean(),
       createdAt: overrides.createdAt || faker.date.past(),
@@ -45,7 +47,7 @@ export class FakeDataGenerator {
    */
   async generateAdmin(overrides: Partial<any> = {}): Promise<any> {
     return this.generateUser({
-      role: 'admin',
+      role: "admin",
       usdBalance: 0,
       emailVerified: true,
       twoFactorEnabled: true,
@@ -57,16 +59,19 @@ export class FakeDataGenerator {
    * Generate fake transaction
    */
   generateTransaction(userId: string, overrides: Partial<any> = {}): any {
-    const types = ['credit', 'debit'];
+    const types = ["credit", "debit"];
     const type = overrides.type || faker.helpers.arrayElement(types);
-    const amount = overrides.amount || faker.number.float({ min: 1, max: 1000, precision: 0.01 });
+    const amount =
+      overrides.amount ||
+      faker.number.float({ min: 1, max: 1000, precision: 0.01 });
 
     return {
       userId,
       amount,
       type,
-      description: overrides.description || faker.finance.transactionDescription(),
-      status: overrides.status || 'completed',
+      description:
+        overrides.description || faker.finance.transactionDescription(),
+      status: overrides.status || "completed",
       createdAt: overrides.createdAt || faker.date.recent(),
       updatedAt: overrides.updatedAt || new Date(),
     };
@@ -76,9 +81,12 @@ export class FakeDataGenerator {
    * Generate fake crypto order
    */
   generateCryptoOrder(userId: string, overrides: Partial<any> = {}): any {
-    const cryptoTypes = ['BTC', 'ETH', 'USDT'];
-    const cryptoType = overrides.cryptoType || faker.helpers.arrayElement(cryptoTypes);
-    const usdAmount = overrides.usdAmount || faker.number.float({ min: 10, max: 5000, precision: 0.01 });
+    const cryptoTypes = ["BTC", "ETH", "USDT"];
+    const cryptoType =
+      overrides.cryptoType || faker.helpers.arrayElement(cryptoTypes);
+    const usdAmount =
+      overrides.usdAmount ||
+      faker.number.float({ min: 10, max: 5000, precision: 0.01 });
 
     // Mock exchange rates
     const rates = { BTC: 45000, ETH: 2800, USDT: 1 };
@@ -94,10 +102,21 @@ export class FakeDataGenerator {
       exchangeRate,
       processingFee: parseFloat(processingFee.toFixed(2)),
       totalUsd: usdAmount + processingFee,
-      status: overrides.status || faker.helpers.arrayElement(['pending', 'processing', 'completed', 'failed']),
+      status:
+        overrides.status ||
+        faker.helpers.arrayElement([
+          "pending",
+          "processing",
+          "completed",
+          "failed",
+        ]),
       adminAddress: this.generateWalletAddress(cryptoType),
       userWalletAddress: this.generateWalletAddress(cryptoType),
-      transactionHash: overrides.transactionHash || (faker.datatype.boolean() ? faker.string.hexadecimal({ length: 64 }) : null),
+      transactionHash:
+        overrides.transactionHash ||
+        (faker.datatype.boolean()
+          ? faker.string.hexadecimal({ length: 64 })
+          : null),
       createdAt: overrides.createdAt || faker.date.recent(),
       updatedAt: overrides.updatedAt || new Date(),
     };
@@ -108,12 +127,12 @@ export class FakeDataGenerator {
    */
   private generateWalletAddress(cryptoType: string): string {
     switch (cryptoType) {
-      case 'BTC':
-        return faker.string.hexadecimal({ length: 40, prefix: '1' });
-      case 'ETH':
-        return faker.string.hexadecimal({ length: 40, prefix: '0x' });
-      case 'USDT':
-        return faker.string.hexadecimal({ length: 40, prefix: '0x' });
+      case "BTC":
+        return faker.string.hexadecimal({ length: 40, prefix: "1" });
+      case "ETH":
+        return faker.string.hexadecimal({ length: 40, prefix: "0x" });
+      case "USDT":
+        return faker.string.hexadecimal({ length: 40, prefix: "0x" });
       default:
         return faker.string.alphanumeric(42);
     }
@@ -125,11 +144,24 @@ export class FakeDataGenerator {
   generatePayment(userId: string, overrides: Partial<any> = {}): any {
     return {
       userId,
-      amount: overrides.amount || faker.number.float({ min: 1, max: 500, precision: 0.01 }),
-      currency: overrides.currency || 'USD',
-      status: overrides.status || faker.helpers.arrayElement(['pending', 'completed', 'failed', 'refunded']),
-      paymentMethod: overrides.paymentMethod || faker.helpers.arrayElement(['card', 'bank_transfer', 'crypto']),
-      stripePaymentIntentId: overrides.stripePaymentIntentId || `pi_${faker.string.alphanumeric(24)}`,
+      amount:
+        overrides.amount ||
+        faker.number.float({ min: 1, max: 500, precision: 0.01 }),
+      currency: overrides.currency || "USD",
+      status:
+        overrides.status ||
+        faker.helpers.arrayElement([
+          "pending",
+          "completed",
+          "failed",
+          "refunded",
+        ]),
+      paymentMethod:
+        overrides.paymentMethod ||
+        faker.helpers.arrayElement(["card", "bank_transfer", "crypto"]),
+      stripePaymentIntentId:
+        overrides.stripePaymentIntentId ||
+        `pi_${faker.string.alphanumeric(24)}`,
       description: overrides.description || faker.commerce.productDescription(),
       createdAt: overrides.createdAt || faker.date.recent(),
       updatedAt: overrides.updatedAt || new Date(),
@@ -140,8 +172,8 @@ export class FakeDataGenerator {
    * Generate fake support ticket
    */
   generateSupportTicket(userId: string, overrides: Partial<any> = {}): any {
-    const priorities = ['low', 'medium', 'high', 'urgent'];
-    const statuses = ['open', 'in_progress', 'resolved', 'closed'];
+    const priorities = ["low", "medium", "high", "urgent"];
+    const statuses = ["open", "in_progress", "resolved", "closed"];
 
     return {
       userId,
@@ -149,7 +181,15 @@ export class FakeDataGenerator {
       message: overrides.message || faker.lorem.paragraphs(2),
       priority: overrides.priority || faker.helpers.arrayElement(priorities),
       status: overrides.status || faker.helpers.arrayElement(statuses),
-      category: overrides.category || faker.helpers.arrayElement(['technical', 'billing', 'account', 'feature_request', 'bug']),
+      category:
+        overrides.category ||
+        faker.helpers.arrayElement([
+          "technical",
+          "billing",
+          "account",
+          "feature_request",
+          "bug",
+        ]),
       createdAt: overrides.createdAt || faker.date.recent(),
       updatedAt: overrides.updatedAt || new Date(),
     };
@@ -185,11 +225,17 @@ export class FakeDataGenerator {
    */
   generateAdminSettings(overrides: Partial<any> = {}): any {
     return {
-      btcAddress: overrides.btcAddress || this.generateWalletAddress('BTC'),
-      ethAddress: overrides.ethAddress || this.generateWalletAddress('ETH'),
-      exchangeRateBtc: overrides.exchangeRateBtc || faker.number.float({ min: 30000, max: 60000, precision: 0.01 }),
-      exchangeRateEth: overrides.exchangeRateEth || faker.number.float({ min: 2000, max: 4000, precision: 0.01 }),
-      processingFeePercent: overrides.processingFeePercent || faker.number.float({ min: 1, max: 5, precision: 0.1 }),
+      btcAddress: overrides.btcAddress || this.generateWalletAddress("BTC"),
+      ethAddress: overrides.ethAddress || this.generateWalletAddress("ETH"),
+      exchangeRateBtc:
+        overrides.exchangeRateBtc ||
+        faker.number.float({ min: 30000, max: 60000, precision: 0.01 }),
+      exchangeRateEth:
+        overrides.exchangeRateEth ||
+        faker.number.float({ min: 2000, max: 4000, precision: 0.01 }),
+      processingFeePercent:
+        overrides.processingFeePercent ||
+        faker.number.float({ min: 1, max: 5, precision: 0.1 }),
       maintenanceMode: overrides.maintenanceMode || false,
       allowRegistrations: overrides.allowRegistrations || true,
       allowCryptoOrders: overrides.allowCryptoOrders || true,
@@ -200,14 +246,16 @@ export class FakeDataGenerator {
   /**
    * Generate a complete fake dataset
    */
-  async generateDataset(options: {
-    users?: number;
-    admins?: number;
-    transactionsPerUser?: number;
-    cryptoOrdersPerUser?: number;
-    paymentsPerUser?: number;
-    supportTicketsPerUser?: number;
-  } = {}): Promise<{
+  async generateDataset(
+    options: {
+      users?: number;
+      admins?: number;
+      transactionsPerUser?: number;
+      cryptoOrdersPerUser?: number;
+      paymentsPerUser?: number;
+      supportTicketsPerUser?: number;
+    } = {},
+  ): Promise<{
     users: any[];
     admins: any[];
     transactions: any[];
@@ -290,8 +338,11 @@ export class FakeDataGenerator {
   /**
    * Seed database with fake data
    */
-  async seedDatabase(prisma: any, options?: Parameters<FakeDataGenerator['generateDataset']>[0]): Promise<void> {
-    console.log('🌱 Seeding database with fake data...');
+  async seedDatabase(
+    prisma: any,
+    options?: Parameters<FakeDataGenerator["generateDataset"]>[0],
+  ): Promise<void> {
+    console.log("🌱 Seeding database with fake data...");
 
     const data = await this.generateDataset(options);
 
@@ -310,7 +361,9 @@ export class FakeDataGenerator {
         update: adminData,
         create: adminData,
       });
-      console.log(`✅ Created admin: ${adminData.email} (password: ${_plainPassword})`);
+      console.log(
+        `✅ Created admin: ${adminData.email} (password: ${_plainPassword})`,
+      );
     }
 
     // Insert users
@@ -339,9 +392,13 @@ export class FakeDataGenerator {
       await prisma.supportTicket.create({ data: ticket });
     }
 
-    console.log(`✅ Database seeded with ${data.users.length} users, ${data.admins.length} admins, and related data`);
+    console.log(
+      `✅ Database seeded with ${data.users.length} users, ${data.admins.length} admins, and related data`,
+    );
   }
 }
 
 // Export singleton instance for development
-export const fakeDataGenerator = envInspector.isDevelopment() ? new FakeDataGenerator() : null;
+export const fakeDataGenerator = envInspector.isDevelopment()
+  ? new FakeDataGenerator()
+  : null;

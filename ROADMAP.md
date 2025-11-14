@@ -1,8 +1,8 @@
 # 🚀 Advancia Pay Ledger - Development Roadmap
 
 **Project**: Self-Hosted Fintech SaaS Platform  
-**Status**: 95% Complete (Phase 3 COMPLETE - Phase 4 Next)  
-**Last Updated**: November 8, 2025
+**Status**: 95% Complete (Phase 3 COMPLETE - Phase 4 Next + Cleanup Tasks)  
+**Last Updated**: November 14, 2025
 
 ---
 
@@ -11,6 +11,7 @@
 **Main Repository**: `~/projects/advancia-pay-ledger/` (Monorepo - USE THIS)
 
 ### Architecture
+
 ```
 advancia-pay-ledger/
 ├── backend/          # Express.js API + Prisma ORM + Socket.IO
@@ -20,6 +21,7 @@ advancia-pay-ledger/
 ```
 
 ### ⚠️ **Duplicate Projects to Archive**
+
 - `advancia-backend-run/` - Legacy backend (MERGE INTO MAIN)
 - `advanciapayledger-local/` - Old local setup (REPLACE WITH DOCKER)
 
@@ -30,6 +32,7 @@ advancia-pay-ledger/
 ### **Core SaaS Features Required**
 
 #### ✅ **Phase 1: Foundation** (COMPLETED - 100%)
+
 - [x] User authentication (Password, Email OTP, SMS OTP)
 - [x] Transaction management API
 - [x] Real-time WebSocket updates
@@ -40,13 +43,13 @@ advancia-pay-ledger/
 - [x] Responsive UI with Tailwind CSS
 
 #### 🚧 **Phase 2: Advanced Features** (COMPLETED - 100%)
+
 - [x] **Token/Coin Wallet System** (Priority: HIGH)
   - [x] Token balance tracking
   - [x] Withdraw functionality
   - [x] Cash-out system
   - [x] Exchange rate integration (1 token = $0.10)
   - [x] Transaction history for tokens
-  
 - [x] **Rewards & Gamification** (Priority: MEDIUM)
   - [x] User tier system (Bronze → Silver → Gold → Platinum → Diamond)
   - [x] Achievement badges (6+ achievements)
@@ -62,6 +65,7 @@ advancia-pay-ledger/
   - [ ] Goal tracking
 
 #### 📦 **Phase 3: Production Ready** (COMPLETED - 95%)
+
 - [x] Invoice generation & PDF export (PDFKit integration)
 - [x] Email notifications (Resend with 6 templates)
 - [x] Admin panel enhancements (Real-time charts & analytics)
@@ -72,21 +76,53 @@ advancia-pay-ledger/
 - [ ] Multi-currency support (Planned for Phase 4)
 - [ ] Data export (CSV, Excel) (Planned for Phase 4)
 
-#### 🚀 **Phase 4: Deployment & Self-Hosting** (NOT STARTED - 0%)
-- [ ] Docker Compose production setup
-- [ ] Nginx reverse proxy configuration
-- [ ] SSL/TLS certificates (Let's Encrypt)
-- [ ] Automated backups
+#### 🚀 **Phase 4: Deployment & Self-Hosting** (IN PROGRESS - 40%)
+
+- [x] Docker Compose production setup ✅
+- [x] DigitalOcean one-hour migration automation ✅ NEW
+- [x] Automated deployment scripts (PowerShell + Bash) ✅ NEW
+- [x] Demo environment with mock services (MailHog, test Stripe) ✅ NEW
+- [ ] Nginx reverse proxy configuration (in docker-compose.prod.yml)
+- [ ] SSL/TLS certificates (Let's Encrypt) - Documented
+- [ ] Automated backups (GitHub Actions workflows exist)
 - [ ] Monitoring & alerting (Prometheus/Grafana)
-- [ ] CI/CD pipeline (GitHub Actions)
-- [ ] Database migration strategy
-- [ ] Environment configuration management
+- [x] CI/CD pipeline (GitHub Actions) ✅ 13 active workflows
+- [x] Database migration strategy (Prisma) ✅
+- [x] Environment configuration management ✅
+
+#### 🧹 **Phase 5: Repository Cleanup** (NEW - 0%)
+
+**Priority**: HIGH - Documentation sprawl identified  
+**Estimated Effort**: 8-12 hours
+
+- [ ] **Delete Temporary Files** (15 min)
+  - [ ] Remove 12 .txt/.old files (COMMIT_MESSAGE.txt, api.ts.old, etc.)
+  - [ ] Clean up old deployment logs
+- [ ] **Consolidate PostgreSQL Documentation** (2-3 hours)
+  - [ ] Reduce 8 duplicate guides → 3 files
+  - [ ] Files: README_POSTGRES_SETUP.md, POSTGRES_SETUP_QUICK.md, etc.
+  - [ ] Target: POSTGRES_SETUP_GUIDE.md, POSTGRES_QUICK_REFERENCE.md, POSTGRES_CHECKLIST.md
+- [ ] **Consolidate CloudFlare Documentation** (1-2 hours)
+  - [ ] Reduce 14 duplicate guides → 4 files
+  - [ ] Organize in docs/cloudflare/ directory
+- [ ] **Archive Outdated Reports** (30 min)
+  - [ ] Move completed status docs to docs/archive/
+  - [ ] Files: PROJECT_COMPLETE.md, DELIVERABLES_COMPLETE.md, etc.
+- [ ] **Reorganize Documentation Structure** (2-4 hours)
+  - [ ] Create clear directory hierarchy (setup/, deployment/, infrastructure/)
+  - [ ] Update all internal links
+  - [ ] Create index files
+- [ ] **Implement Automated Link Checker** (1 hour)
+  - [ ] Add GitHub Actions workflow for doc link validation
+  - [ ] Configure .markdown-link-check.json
+  - [ ] Auto-comment on PRs with broken links
 
 ---
 
 ## 📅 Timeline & Milestones
 
 ### **Week 1-2: Consolidation & Cleanup** ✅ COMPLETE
+
 - **Milestone 1**: Single Source of Truth
   - [x] Merge `advancia-backend-run` improvements into main repo
   - [x] Archive duplicate projects
@@ -95,6 +131,7 @@ advancia-pay-ledger/
   - [x] Test local development environment
 
 ### **Week 3-4: Token Wallet Implementation** ✅ COMPLETE
+
 - **Milestone 2**: Token System MVP
   - [x] Database schema for tokens (TokenWallet & TokenTransaction)
   - [x] Token balance API endpoints
@@ -104,6 +141,7 @@ advancia-pay-ledger/
   - [x] End-to-end testing
 
 ### **Week 5-6: Rewards System** ✅ COMPLETE
+
 - **Milestone 3**: Gamification Features
   - [x] User tier calculation logic
   - [x] Achievement system (6+ badges)
@@ -112,6 +150,7 @@ advancia-pay-ledger/
   - [x] Point tracking & redemption
 
 ### **Week 7-8: Production Preparation** ✅ COMPLETE
+
 - **Milestone 4**: Production Ready
   - [x] Invoice generation & PDF export (PDFKit)
   - [x] Email notification system (Resend - 6 templates)
@@ -121,6 +160,7 @@ advancia-pay-ledger/
   - [x] Enhanced logging & audit trails
 
 ### **Week 9-10: Self-Hosted Deployment** 🚧 NEXT PHASE
+
 - **Milestone 5**: Client Deployment
   - [ ] Docker production build (Dockerfile + docker-compose.yml)
   - [ ] Server provisioning (VPS setup)
@@ -135,6 +175,7 @@ advancia-pay-ledger/
 ## 🛠️ Technical Stack
 
 ### **Backend**
+
 - **Runtime**: Node.js 18+
 - **Framework**: Express.js 4.21
 - **Language**: TypeScript 5.9
@@ -145,6 +186,7 @@ advancia-pay-ledger/
 - **Auth**: JWT + bcrypt
 
 ### **Frontend**
+
 - **Framework**: Next.js 14.2
 - **Language**: TypeScript
 - **Styling**: Tailwind CSS
@@ -154,6 +196,7 @@ advancia-pay-ledger/
 - **Forms**: React Hook Form
 
 ### **DevOps**
+
 - **Containerization**: Docker + Docker Compose
 - **Reverse Proxy**: Nginx
 - **SSL**: Let's Encrypt (Certbot)
@@ -168,12 +211,14 @@ advancia-pay-ledger/
 ### **1. Token Wallet System**
 
 **User Stories:**
+
 - As a user, I want to view my token balance
 - As a user, I want to withdraw tokens to cash
 - As a user, I want to see token transaction history
 - As a user, I want to know current exchange rates
 
 **Technical Requirements:**
+
 ```typescript
 // Database Schema
 model TokenWallet {
@@ -198,6 +243,7 @@ model TokenTransaction {
 ```
 
 **API Endpoints:**
+
 - `GET /api/tokens/balance/:userId`
 - `POST /api/tokens/withdraw`
 - `GET /api/tokens/transactions/:userId`
@@ -206,18 +252,21 @@ model TokenTransaction {
 ### **2. Rewards & Tier System**
 
 **Tier Levels:**
+
 - 🥉 **Bronze**: 0-999 points
 - 🥈 **Silver**: 1,000-4,999 points
 - 🥇 **Gold**: 5,000-19,999 points
 - 💎 **Diamond**: 20,000+ points
 
 **Point Earning:**
+
 - Transaction: 1 point per $1
 - Daily login: 10 points
 - Referral: 500 points
 - Achievement: Variable points
 
 **Achievement Examples:**
+
 - "First Transaction" - 100 points
 - "Week Streak" - 250 points
 - "High Roller" ($1000+ transaction) - 500 points
@@ -228,6 +277,7 @@ model TokenTransaction {
 ## 🔒 Security Considerations
 
 ### **Priority Security Tasks**
+
 - [ ] Implement rate limiting on all API endpoints
 - [ ] Add CSRF protection for forms
 - [ ] Enable SQL injection prevention (Prisma handles this)
@@ -244,6 +294,7 @@ model TokenTransaction {
 ## 📊 Testing Strategy
 
 ### **Backend Testing**
+
 - [ ] Unit tests for business logic (Jest)
 - [ ] Integration tests for API endpoints
 - [ ] Database migration tests
@@ -251,6 +302,7 @@ model TokenTransaction {
 - [ ] Payment gateway mock tests
 
 ### **Frontend Testing**
+
 - [ ] Component unit tests (React Testing Library)
 - [ ] E2E tests (Playwright/Cypress)
 - [ ] Accessibility testing
@@ -258,6 +310,7 @@ model TokenTransaction {
 - [ ] Mobile responsiveness tests
 
 ### **Performance Testing**
+
 - [ ] Load testing (Artillery/k6)
 - [ ] Database query optimization
 - [ ] API response time benchmarks
@@ -268,6 +321,7 @@ model TokenTransaction {
 ## 🚀 Deployment Checklist
 
 ### **Pre-Deployment**
+
 - [ ] All environment variables documented
 - [ ] Database backup strategy tested
 - [ ] SSL certificates configured
@@ -276,6 +330,7 @@ model TokenTransaction {
 - [ ] Monitoring alerts configured
 
 ### **Deployment Steps**
+
 1. [ ] Provision server (VPS/Dedicated)
 2. [ ] Install Docker & Docker Compose
 3. [ ] Clone repository
@@ -290,6 +345,7 @@ model TokenTransaction {
 12. [ ] Monitor logs for 24 hours
 
 ### **Post-Deployment**
+
 - [ ] Client training session
 - [ ] Documentation handoff
 - [ ] Support SLA agreement
@@ -302,6 +358,7 @@ model TokenTransaction {
 ## 📖 Documentation Required
 
 ### **For Client**
+
 - [ ] User guide (PDF)
 - [ ] Admin manual
 - [ ] API documentation
@@ -310,6 +367,7 @@ model TokenTransaction {
 - [ ] Maintenance procedures
 
 ### **For Development**
+
 - [ ] Architecture diagram
 - [ ] Database schema documentation
 - [ ] API reference (Swagger/OpenAPI)
@@ -322,6 +380,7 @@ model TokenTransaction {
 ## 💰 Client Payment Milestones
 
 ### **Milestone-Based Billing**
+
 1. **30%** - Project setup & Phase 1 completion ✅
 2. **25%** - Phase 2 completion (Token Wallet + Rewards)
 3. **20%** - Phase 3 completion (Production features)
@@ -333,12 +392,14 @@ model TokenTransaction {
 ## 🆘 Support & Maintenance
 
 ### **Included in Project**
+
 - 30 days post-launch support
 - Bug fixes for deployment phase
 - Performance optimization
 - Security patches
 
 ### **Ongoing Maintenance (Optional)**
+
 - Monthly retainer for updates
 - Feature enhancements
 - Server maintenance

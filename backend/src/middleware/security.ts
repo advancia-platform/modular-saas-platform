@@ -1,27 +1,40 @@
-import { Request, Response, NextFunction } from "express";
-import helmet from "helmet";
 import cors from "cors";
-import { envInspector } from "../utils/envInspector";
+import { NextFunction, Request, Response } from "express";
+import helmet from "helmet";
+import { EnvironmentInspector } from "../utils/envInspector";
+
+// Lazy-load environment inspector to avoid validation errors during tests
+let envInspector: EnvironmentInspector | null = null;
+const getEnvInspector = () => {
+  if (!envInspector) {
+    envInspector = new EnvironmentInspector();
+  }
+  return envInspector;
+};
 
 // Dynamic import for Redis rate limiter (only in production)
 let redisLimiter: any = null;
-if (envInspector.isProduction() && process.env.REDIS_URL) {
-  try {
-    // Use rate-limiter-flexible with Redis for production
-    const { RateLimiterRedis } = require('rate-limiter-flexible');
-    const Redis = require('ioredis');
+const initRedisLimiter = () => {
+  if (getEnvInspector().isProduction() && process.env.REDIS_URL) {
+    try {
+      // Use rate-limiter-flexible with Redis for production
+      const { RateLimiterRedis } = require("rate-limiter-flexible");
+      const Redis = require("ioredis");
 
-    const redisClient = new Redis(process.env.REDIS_URL);
-    redisLimiter = new RateLimiterRedis({
-      storeClient: redisClient,
-      keyPrefix: 'rate_limit',
-      points: 300, // Number of requests
-      duration: 60, // Per 60 seconds
-    });
-  } catch (error) {
-    console.warn('⚠️  Redis rate limiter failed to initialize, falling back to in-memory');
+      const redisClient = new Redis(process.env.REDIS_URL);
+      redisLimiter = new RateLimiterRedis({
+        storeClient: redisClient,
+        keyPrefix: "rate_limit",
+        points: 300, // Number of requests
+        duration: 60, // Per 60 seconds
+      });
+    } catch (error) {
+      console.warn(
+        "⚠️  Redis rate limiter failed to initialize, falling back to in-memory",
+      );
+    }
   }
-}
+};
 
 // Fallback in-memory rate limiter
 const requestCounts = new Map<string, { count: number; resetTime: number }>();
@@ -53,7 +66,10 @@ export function rateLimit(options: RateLimitOptions) {
           res.setHeader("Retry-After", retryAfter);
           res.setHeader("X-RateLimit-Limit", maxRequests);
           res.setHeader("X-RateLimit-Remaining", 0);
-          res.setHeader("X-RateLimit-Reset", new Date(Date.now() + rejRes.msBeforeNext).toISOString());
+          res.setHeader(
+            "X-RateLimit-Reset",
+            new Date(Date.now() + rejRes.msBeforeNext).toISOString(),
+          );
 
           return res.status(429).json({
             error: message || "Too many requests, please try again later.",
@@ -86,7 +102,10 @@ export function rateLimit(options: RateLimitOptions) {
           res.setHeader("Retry-After", retryAfter);
           res.setHeader("X-RateLimit-Limit", maxRequests);
           res.setHeader("X-RateLimit-Remaining", 0);
-          res.setHeader("X-RateLimit-Reset", new Date(record.resetTime).toISOString());
+          res.setHeader(
+            "X-RateLimit-Reset",
+            new Date(record.resetTime).toISOString(),
+          );
 
           return res.status(429).json({
             error: message || "Too many requests, please try again later.",
@@ -97,12 +116,15 @@ export function rateLimit(options: RateLimitOptions) {
         // Set rate limit headers
         res.setHeader("X-RateLimit-Limit", maxRequests);
         res.setHeader("X-RateLimit-Remaining", maxRequests - record.count);
-        res.setHeader("X-RateLimit-Reset", new Date(record.resetTime).toISOString());
+        res.setHeader(
+          "X-RateLimit-Reset",
+          new Date(record.resetTime).toISOString(),
+        );
 
         next();
       }
     } catch (error) {
-      console.error('Rate limiting error:', error);
+      console.error("Rate limiting error:", error);
       // Allow request on error to avoid blocking legitimate traffic
       next();
     }
@@ -122,13 +144,13 @@ const cleanupInterval = setInterval(() => {
     }
   });
 
-  keysToDelete.forEach(key => requestCounts.delete(key));
+  keysToDelete.forEach((key) => requestCounts.delete(key));
 }, 60000); // Clean up every minute
 
 // Don't run cleanup in test environment or when using Redis
-if (process.env.NODE_ENV === 'test' || redisLimiter) {
+if (process.env.NODE_ENV === "test" || redisLimiter) {
   cleanupInterval.unref();
-}/**
+} /**
  * Input validation middleware
  * Sanitizes and validates request inputs
  */
@@ -170,21 +192,21 @@ export function corsMiddleware() {
       if (!origin) return callback(null, true);
 
       const allowedOrigins = [
-        'http://localhost:3000', // Frontend development
-        'http://localhost:3001',
-        'https://yourdomain.com', // Replace with your production domain
-        'https://www.yourdomain.com',
+        "http://localhost:3000", // Frontend development
+        "http://localhost:3001",
+        "https://yourdomain.com", // Replace with your production domain
+        "https://www.yourdomain.com",
       ];
 
       if (allowedOrigins.indexOf(origin) !== -1) {
         callback(null, true);
       } else {
-        callback(new Error('Not allowed by CORS'));
+        callback(new Error("Not allowed by CORS"));
       }
     },
     credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
   };
 
   return cors(corsOptions);
@@ -220,4 +242,3 @@ export function helmetMiddleware() {
     frameguard: { action: "deny" },
   });
 }
-

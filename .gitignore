@@ -154,6 +154,12 @@ Quick-*.ps1
 Fix-*.ps1
 Check-*.ps1
 
+# Temporary files from cleanup utilities
+*.tmp
+temp_*/
+cleanup.log
+unused-files.log
+
 # Docker
 .dockerignore
 
@@ -173,6 +179,26 @@ db_backups/
 CLEANUP_*.md
 CI_*.md
 DEPLOYMENT_*.md
+
+# Financial transaction logs (never commit real transaction data)
+transactions_*.csv
+ledger_*.json
+audit_*.log
+payment_logs/
+transaction_reports/
+
+# API keys and tokens (additional protection layer)
+*_api_key.txt
+*_secret.txt
+*_token.txt
+api-keys/
+secrets/
+
+# Build artifacts and deployment files
+*.zip
+*.tar.gz
+deploy-*.txt
+scripts/logs/*.txt
 
 # Allow VS Code launch config for team debugging
 !.vscode/launch.json

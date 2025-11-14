@@ -1,6 +1,30 @@
-# ✅ DigitalOcean Migration - Quick Start Checklist
+problem i want # ✅ DigitalOcean Migration - Quick Start Checklist
 
 Complete this checklist to migrate from Render + Vercel to DigitalOcean.
+
+---
+
+## 🚀 NEW: One-Hour Demo Migration
+
+**Want to complete everything in under 1 hour with automated demo setup?**
+
+👉 **See [ONE_HOUR_MIGRATION_GUIDE.md](./ONE_HOUR_MIGRATION_GUIDE.md)** for fully automated migration with:
+
+- ✅ One-command PowerShell/Bash scripts
+- ✅ Automated Docker setup
+- ✅ Demo credentials and mock services (MailHog, test Stripe, etc.)
+- ✅ No SSL/DNS hassle (HTTP demo only)
+- ✅ Quick reference card for troubleshooting
+
+**Quick Start Command (Windows)**:
+
+```powershell
+.\scripts\one-hour-migration.ps1 -DropletIP "157.245.8.131"
+```
+
+**For production-ready migration with SSL, DNS, and real API keys**, continue with this checklist below.
+
+---
 
 ## 📋 Pre-Migration (Preparation)
 
@@ -52,6 +76,7 @@ Complete this checklist to migrate from Render + Vercel to DigitalOcean.
   - [ ] Creates `/app/.env.production`
 
 - [ ] **Configure Environment Variables**
+
   ```bash
   nano /app/.env.production
   ```
@@ -78,6 +103,7 @@ Complete this checklist to migrate from Render + Vercel to DigitalOcean.
   ```
 
 - [ ] **Verify Services Running**
+
   ```bash
   docker-compose -f docker-compose.prod.yml ps
   curl http://localhost:4000/api/health
@@ -169,6 +195,7 @@ Complete this checklist to migrate from Render + Vercel to DigitalOcean.
   - [ ] Admin dashboard accessible
 
 - [ ] **Monitor Logs**
+
   ```bash
   ssh -i ~/.ssh/do_github_actions root@YOUR_DROPLET_IP
   docker-compose -f /app/modular-saas-platform/docker-compose.prod.yml logs -f

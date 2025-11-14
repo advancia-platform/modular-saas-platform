@@ -13,6 +13,9 @@ export interface JWTPayload {
 
 export interface AuthRequest extends Request {
   user?: JWTPayload;
+  body?: any;
+  query?: any;
+  params?: any;
 }
 
 /**
@@ -21,7 +24,7 @@ export interface AuthRequest extends Request {
 export const authenticateToken = async (
   req: any,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   const authHeader = req.headers["authorization"];
   const token =
@@ -129,7 +132,7 @@ export const allowRoles = (...roles: string[]) => {
 export const restrictBackendAccess = (
   req: any,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ) => {
   // Allow public routes
   const publicRoutes = [

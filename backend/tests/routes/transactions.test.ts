@@ -3,17 +3,17 @@
  * Tests for transaction creation and retrieval endpoints
  */
 
-import request from "supertest";
-import app from "../test-app";
-import prisma from "../../src/prismaClient";
 import { Decimal } from "@prisma/client/runtime/library";
+import request from "supertest";
+import prisma from "../../src/prismaClient";
 import {
-  createTestUser,
-  createTestAdmin,
-  generateUserToken,
-  generateAdminToken,
   cleanupTestUsers,
+  createTestAdmin,
+  createTestUser,
+  generateAdminToken,
+  generateUserToken,
 } from "../setup/adminSetup";
+import app from "../test-app";
 
 const API_KEY = process.env.API_KEY || "test-api-key";
 
@@ -134,21 +134,21 @@ describe("Transactions API", () => {
         data: [
           {
             userId,
-            amount: new Decimal(100),
+            amount: new Decimal(100) as any,
             type: "credit",
             status: "completed",
             description: "Test transaction 1",
           },
           {
             userId,
-            amount: new Decimal(50),
+            amount: new Decimal(50) as any,
             type: "debit",
             status: "completed",
             description: "Test transaction 2",
           },
           {
             userId,
-            amount: new Decimal(200),
+            amount: new Decimal(200) as any,
             type: "credit",
             status: "completed",
             description: "Test transaction 3",

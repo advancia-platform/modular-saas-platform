@@ -28,32 +28,30 @@ if (process.env.NODE_ENV === "development") {
   global.__prisma = prisma;
 }
 
-// Add connection retry logic
-let retries = 3;
-const connectWithRetry = async () => {
-  while (retries > 0) {
-    try {
-      await prisma.$connect();
-      // Only log in non-test environments to avoid Jest warnings
-      if (process.env.NODE_ENV !== 'test') {
+// Add connection retry logic (skip in test mode - use mocks)
+if (process.env.NODE_ENV !== "test") {
+  let retries = 3;
+  const connectWithRetry = async () => {
+    while (retries > 0) {
+      try {
+        await prisma.$connect();
         console.log("✅ Prisma connected successfully");
+        break;
+      } catch (error) {
+        retries--;
+        console.error(`❌ Prisma connection failed. Retries left: ${retries}`);
+        if (retries === 0) {
+          console.error(
+            "Failed to connect to database after multiple attempts",
+          );
+          throw error;
+        }
+        // Wait 2 seconds before retry
+        await new Promise((resolve) => setTimeout(resolve, 2000));
       }
-      break;
-    } catch (error) {
-      retries--;
-      console.error(`❌ Prisma connection failed. Retries left: ${retries}`);
-      if (retries === 0) {
-        console.error("Failed to connect to database after multiple attempts");
-        throw error;
-      }
-      // Wait 2 seconds before retry
-      await new Promise((resolve) => setTimeout(resolve, 2000));
     }
-  }
-};
+  };
 
-// Auto-connect in test mode
-if (process.env.NODE_ENV === "test") {
   connectWithRetry();
 }
 

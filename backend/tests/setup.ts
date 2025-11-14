@@ -2,7 +2,52 @@
 // Jest globals are provided by @types/jest (added via tests/tsconfig.json)
 
 import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
 import jwt from "jsonwebtoken";
+import path from "path";
+
+// Load .env.test file BEFORE importing prismaClient
+dotenv.config({ path: path.join(__dirname, "../.env.test") });
+
+// ==========================================
+// External Service Mocks (BEFORE any imports using them)
+// ==========================================
+// Mock Prisma client to use in-memory data when database is unavailable
+const mockPrismaClient = {
+  user: {
+    create: jest
+      .fn()
+      .mockResolvedValue({ id: "mock-user-id", email: "test@example.com" }),
+    findUnique: jest.fn().mockResolvedValue(null),
+    findMany: jest.fn().mockResolvedValue([]),
+    updateMany: jest.fn().mockResolvedValue({ count: 0 }),
+    deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+    update: jest.fn().mockResolvedValue({}),
+  },
+  transaction: {
+    create: jest.fn().mockResolvedValue({ id: "mock-tx-id" }),
+    createMany: jest.fn().mockResolvedValue({ count: 0 }),
+    findMany: jest.fn().mockResolvedValue([]),
+    findUnique: jest.fn().mockResolvedValue(null),
+  },
+  tokenWallet: {
+    findUnique: jest.fn().mockResolvedValue(null),
+    create: jest.fn().mockResolvedValue({}),
+    update: jest.fn().mockResolvedValue({}),
+  },
+  reward: {
+    findMany: jest.fn().mockResolvedValue([]),
+    create: jest.fn().mockResolvedValue({}),
+  },
+  // Add other models as needed
+  $disconnect: jest.fn().mockResolvedValue(undefined),
+  $connect: jest.fn().mockResolvedValue(undefined),
+};
+
+// Mock Prisma BEFORE importing it
+jest.mock("../src/prismaClient", () => mockPrismaClient);
+
+// NOW we can import after mocking
 import prisma from "../src/prismaClient";
 
 // ==========================================
@@ -29,14 +74,6 @@ process.env.VAPID_PRIVATE_KEY = "test-vapid-private";
 
 // Increase timeout for DB ops if needed
 jest.setTimeout(30_000);
-
-// ==========================================
-// External Service Mocks
-// ==========================================
-// These mocks prevent real external calls during tests,
-// keeping tests fast, isolated, and safe to run.
-
-// NOTE: bcryptjs is NOT mocked - we use real password hashing for integration tests
 
 // Mock Socket.IO to avoid real connections
 jest.mock("socket.io", () => ({

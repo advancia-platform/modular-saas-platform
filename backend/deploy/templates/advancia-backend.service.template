@@ -1,0 +1,18 @@
+[Unit]
+Description=Advancia Backend
+After=network.target
+
+[Service]
+Type=simple
+# Change to the user that should run the service (e.g. www-data)
+User={{USER}}
+WorkingDirectory={{WORKING_DIR}}
+# Optionally load environment file
+EnvironmentFile={{ENV_FILE}}
+ExecStart=/usr/bin/npm start
+Restart=always
+RestartSec=5
+LimitNOFILE=65536
+
+[Install]
+WantedBy=multi-user.target

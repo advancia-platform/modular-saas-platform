@@ -1,5 +1,10 @@
 // Global setup runs once before all tests
 import { PrismaClient } from "@prisma/client";
+import dotenv from "dotenv";
+import path from "path";
+
+// Load .env.test file
+dotenv.config({ path: path.join(__dirname, "../.env.test") });
 
 export default async () => {
   console.log("🌍 Global test setup...");
@@ -54,7 +59,7 @@ export default async () => {
     console.log("✅ Database cleaned successfully");
   } catch (error: any) {
     console.warn(
-      "⚠️  Could not connect to test database - unit tests will use mocks"
+      "⚠️  Could not connect to test database - unit tests will use mocks",
     );
     console.warn(`   Error: ${error.message}`);
     // Don't throw - allow unit tests to proceed with mocks

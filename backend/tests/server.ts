@@ -1,21 +1,21 @@
-import express from "express";
 import cors from "cors";
-import { securityHeaders } from "../src/middleware/security";
+import express from "express";
 import { config } from "../src/jobs/config";
+import { helmetMiddleware } from "../src/middleware/security";
 import authRouter from "../src/routes/auth";
 
 // Create test app with routes
 const app = express();
 
 // Global security headers first
-app.use(securityHeaders);
+app.use(helmetMiddleware());
 
 // CORS configuration
 app.use(
   cors({
     origin: config.allowedOrigins,
     credentials: true,
-  })
+  }),
 );
 
 // Body parsing
