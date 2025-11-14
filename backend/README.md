@@ -14,17 +14,58 @@ Real-time transaction processing backend with WebSocket support and Prisma ORM.
 - ✅ Debug configurations for VS Code
 - ⏸️ Database migration pending (see [PRISMA_SETUP.md](./PRISMA_SETUP.md))
 
+## 🚀 Running the Application
+
+### Development Mode
+
+```bash
+npm run dev
+```
+
+Uses nodemon for auto-restart on file changes.
+
+### Production Mode with PM2
+
+```bash
+# Install PM2 globally (one-time)
+npm install -g pm2
+
+# Start the application
+npm run pm2:start
+
+# View logs
+npm run pm2:logs
+
+# Monitor processes
+npm run pm2:monit
+
+# Restart application
+npm run pm2:restart
+
+# Stop application
+npm run pm2:stop
+
+# Save PM2 configuration for auto-restart on server reboot
+pm2 save
+pm2 startup
+```
+
+PM2 ensures your application stays running, auto-restarts on crashes, and survives server reboots.
+
 ## 🚀 API Endpoints
 
 ### Health & Status
+
 - `GET /api/health` - Health check endpoint
 
 ### Authentication (Stubs - Ready for Implementation)
+
 - `POST /api/auth/login` - User login (TODO: implement real logic)
 - `POST /api/auth/register` - User registration (TODO: implement real logic)
 - `POST /api/auth/logout` - User logout (TODO: implement real logic)
 
 ### Email Templates Available
+
 - Welcome email (`emailTemplates.welcome`)
 - Password reset (`emailTemplates.passwordReset`)
 - Email verification (`emailTemplates.emailVerification`)
@@ -426,12 +467,10 @@ The test suite includes comprehensive infrastructure for robust testing:
   - Cryptomus API mocking for crypto payment tests
   - Email service mocking for notification tests
   - Blockchain network mocking for transaction tests
-  
 - **Admin Utilities**: `tests/setup/adminSetup.ts`
   - Admin user creation and cleanup
   - JWT token generation for authenticated tests
   - Test data fixtures and helpers
-  
 - **Environment Helpers**: `tests/setup/testEnv.ts`
   - Environment variable loading and validation
   - CI/CD detection
@@ -448,10 +487,10 @@ The test suite includes comprehensive infrastructure for robust testing:
 
 ```typescript
 // Example: Using test infrastructure
-import { createTestAdmin, generateAdminToken } from './setup/adminSetup';
-import { mockCryptomusAPI, resetAllMocks } from './setup/mocks';
+import { createTestAdmin, generateAdminToken } from "./setup/adminSetup";
+import { mockCryptomusAPI, resetAllMocks } from "./setup/mocks";
 
-describe('Your Feature', () => {
+describe("Your Feature", () => {
   let adminToken: string;
 
   beforeAll(async () => {
@@ -463,16 +502,17 @@ describe('Your Feature', () => {
     resetAllMocks();
   });
 
-  it('should work', async () => {
+  it("should work", async () => {
     const res = await request(app)
-      .get('/api/endpoint')
-      .set('Authorization', `Bearer ${adminToken}`);
+      .get("/api/endpoint")
+      .set("Authorization", `Bearer ${adminToken}`);
     expect(res.status).toBe(200);
   });
 });
 ```
 
 **For detailed test documentation**, see:
+
 - `TEST_IMPLEMENTATION_GUIDE.md` - Comprehensive implementation guide
 - `QUICK_TEST_REFERENCE.md` - Quick reference card
 - `tests/README.md` - Test suite documentation

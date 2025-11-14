@@ -22,7 +22,7 @@ export async function runMigrations() {
   const fs = await import("fs");
   const path = await import("path");
   const url = await import("url");
-  const dir = path.resolve("backend/migrations");
+  const dir = path.resolve("migrations");
   const files = fs
     .readdirSync(dir)
     .filter((f) => f.endsWith(".sql") || f.endsWith(".js"))
