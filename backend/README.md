@@ -54,18 +54,26 @@ PM2 ensures your application stays running, auto-restarts on crashes, and surviv
 
 ### Log Rotation
 
-PM2 automatically rotates logs to prevent disk space issues:
+PM2 automatically rotates logs to prevent disk space issues. Log rotation is configured directly in `ecosystem.config.js`:
 
 - **Max size**: 10MB per log file
 - **Retention**: Keep 7 rotated log files
 - **Compression**: Gzipped old logs
 - **Rotation**: Daily at midnight
+- **Date format**: `YYYY-MM-DD_HH-mm-ss`
 
 Logs are stored in `backend/logs/`:
 
 - `out.log` - Standard output
 - `err.log` - Error output
 - `combined.log` - All logs combined
+
+Rotated files will appear as:
+```
+out-2025-11-14_00-00-00.log.gz
+err-2025-11-14_00-00-00.log.gz
+combined-2025-11-14_00-00-00.log.gz
+```
 
 ## 🚀 API Endpoints
 
