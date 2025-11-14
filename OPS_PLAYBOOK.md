@@ -609,10 +609,12 @@ echo "Running job systematically..."
 ⚡ **Recommendation**: For SaaS deployment via GitHub → Droplet, use the **GitHub Actions approach with `concurrency`** for systematic, duplicate-free execution.
 
 #### Staging vs Production Environments
+
 - **Staging**: Deploys automatically on every push to `main` branch. Use for testing changes safely.
 - **Production**: Deploys only on GitHub releases (manual promotion). Ensures stability.
 - **Setup**: Configure separate secrets (`DROPLET_IP_STAGING`, `DROPLET_IP_PROD`, etc.) for each environment.
-- **Workflow**: Push to `main` → Staging deploy. Create release → Production deploy.
+- **Approval Gates**: For production, set up environment protection in GitHub: Settings > Environments > `production` > Add required reviewers to approve deploys.
+- **Workflow**: Push to `main` → Staging deploy. Create release → Wait for approval → Production deploy.
 
 ### Emergency Contacts
 
