@@ -1,12 +1,19 @@
 import { Router } from "express";
-import prisma from "../prismaClient";
+import type { Server as IOServer } from "socket.io";
 import {
   authenticateToken,
-  requireAdmin,
   logAdminAction,
+  requireAdmin,
 } from "../middleware/auth";
-import type { Server as IOServer } from "socket.io";
-
+import {
+  adminRateLimiter,
+  clearRateLimit,
+  getAllRateLimitGroups,
+  getGlobalTrends,
+  getOffenderTrends,
+  getRateLimitStats,
+} from "../middleware/rateLimiterRedis";
+import prisma from "../prismaClient";
 const router = Router();
 
 let ioRef: IOServer | null = null;
@@ -15,9 +22,10 @@ export function setAdminUsersSocketIO(io: IOServer) {
 }
 
 // GET /api/admin/users
-// Supports pagination and filtering: ?page=1&pageSize=20&role=ADMIN&search=foo
+// Supports pagination, filtering, and sorting: ?page=1&pageSize=20&role=ADMIN&search=foo&sortField=email&sortOrder=asc
 router.get(
   "/users",
+  adminRateLimiter,
   authenticateToken as any,
   requireAdmin as any,
   async (req, res) => {
@@ -29,7 +37,12 @@ router.get(
       );
       const skip = (page - 1) * pageSize;
 
-      const { role, search } = req.query as { role?: string; search?: string };
+      const { role, search, sortField, sortOrder } = req.query as {
+        role?: string;
+        search?: string;
+        sortField?: string;
+        sortOrder?: string;
+      };
       const where: any = {};
       if (role) where.role = String(role).toUpperCase();
       if (search) {
@@ -42,11 +55,18 @@ router.get(
         ];
       }
 
+      // Validate and set sorting
+      const validSortFields = ["email", "role", "createdAt", "usdBalance"];
+      const field = validSortFields.includes(sortField || "")
+        ? sortField
+        : "createdAt";
+      const order = sortOrder === "asc" ? "asc" : "desc";
+
       const [total, users] = await Promise.all([
         prisma.user.count({ where }),
         prisma.user.findMany({
           where,
-          orderBy: { createdAt: "desc" },
+          orderBy: { [field]: order },
           skip,
           take: pageSize,
           select: {
@@ -759,6 +779,253 @@ router.get(
     } catch (err) {
       console.error("Error fetching paginated bulk credits:", err);
       return res.status(500).json({ error: "Failed to fetch bulk credits" });
+    }
+  }
+);
+
+// ============================================
+// RATE LIMIT MONITORING (ADMIN ONLY)
+// ============================================
+
+/**
+ * GET /api/admin/rate-limits
+ * Get rate limit offenders for monitoring dashboard
+ * Query params:
+ * - group: Route group to monitor (admin, auth, payments, crypto, etc.)
+ * - limit: Maximum number of offenders to return (default: 20)
+ */
+router.get(
+  "/rate-limits",
+  adminRateLimiter,
+  authenticateToken as any,
+  requireAdmin as any,
+  async (req, res) => {
+    try {
+      const group = (req.query.group as string) || "admin";
+      const limit = Math.min(100, Math.max(1, Number(req.query.limit) || 20));
+
+      const offenders = await getRateLimitStats(group, limit);
+      const allGroups = await getAllRateLimitGroups();
+
+      return res.json({
+        success: true,
+        group,
+        offenders,
+        availableGroups: allGroups,
+        totalOffenders: offenders.length,
+      });
+    } catch (err) {
+      console.error("Failed to fetch rate limit stats:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to fetch rate limit statistics",
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/admin/rate-limits/groups
+ * Get all available rate limit groups with offender counts
+ */
+router.get(
+  "/rate-limits/groups",
+  adminRateLimiter,
+  authenticateToken as any,
+  requireAdmin as any,
+  async (req, res) => {
+    try {
+      const groups = await getAllRateLimitGroups();
+      return res.json({
+        success: true,
+        groups,
+      });
+    } catch (err) {
+      console.error("Failed to fetch rate limit groups:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to fetch rate limit groups",
+      });
+    }
+  }
+);
+
+/**
+ * POST /api/admin/rate-limits/clear
+ * Clear rate limit for a specific identifier (admin action)
+ * Body:
+ * - group: Route group (admin, auth, payments, etc.)
+ * - identifier: User ID or IP address to clear
+ */
+router.post(
+  "/rate-limits/clear",
+  adminRateLimiter,
+  authenticateToken as any,
+  requireAdmin as any,
+  async (req, res) => {
+    try {
+      const { group, identifier } = req.body;
+
+      if (!group || !identifier) {
+        return res.status(400).json({
+          success: false,
+          error: "Group and identifier are required",
+        });
+      }
+
+      await clearRateLimit(group, identifier);
+
+      // Log admin action
+      await logAdminAction(
+        (req as any).user.id,
+        "CLEAR_RATE_LIMIT",
+        "RATE_LIMIT",
+        identifier,
+        { group, identifier }
+      );
+
+      return res.json({
+        success: true,
+        message: `Rate limit cleared for ${identifier} in group ${group}`,
+      });
+    } catch (err) {
+      console.error("Failed to clear rate limit:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to clear rate limit",
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/admin/rate-limit-trends
+ * Get rate limit trends for a specific offender
+ * Query params:
+ * - group: Route group (admin, auth, payments, etc.)
+ * - identifier: User ID or IP address
+ * - minutesBack: Number of minutes of history (default: 60)
+ */
+router.get(
+  "/rate-limit-trends",
+  adminRateLimiter,
+  authenticateToken as any,
+  requireAdmin as any,
+  async (req, res) => {
+    try {
+      const { group, identifier, minutesBack } = req.query;
+
+      if (!group || !identifier) {
+        return res.status(400).json({
+          success: false,
+          error: "Group and identifier are required",
+        });
+      }
+
+      const minutes = minutesBack ? parseInt(minutesBack as string) : 60;
+      const trends = await getOffenderTrends(
+        group as string,
+        identifier as string,
+        minutes
+      );
+
+      return res.json({
+        success: true,
+        identifier,
+        group,
+        trends,
+        totalRequests: trends.reduce((sum, t) => sum + t.count, 0),
+      });
+    } catch (err) {
+      console.error("Failed to fetch offender trends:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to fetch offender trends",
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/admin/global-trends
+ * Get global rate limit trends for a route group
+ * Query params:
+ * - group: Route group (admin, auth, payments, etc.)
+ * - minutesBack: Number of minutes of history (default: 60)
+ */
+router.get(
+  "/global-trends",
+  adminRateLimiter,
+  authenticateToken as any,
+  requireAdmin as any,
+  async (req, res) => {
+    try {
+      const { group, minutesBack } = req.query;
+
+      if (!group) {
+        return res.status(400).json({
+          success: false,
+          error: "Group is required",
+        });
+      }
+
+      const minutes = minutesBack ? parseInt(minutesBack as string) : 60;
+      const trends = await getGlobalTrends(group as string, minutes);
+
+      return res.json({
+        success: true,
+        group,
+        trends,
+        totalRequests: trends.reduce((sum, t) => sum + t.count, 0),
+      });
+    } catch (err) {
+      console.error("Failed to fetch global trends:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to fetch global trends",
+      });
+    }
+  }
+);
+
+/**
+ * GET /api/admin/alert-history
+ * Get alert history for a route group
+ * Query params:
+ * - group: Route group (admin, auth, payments, etc.)
+ * - limit: Maximum number of alerts to return (default: 50)
+ */
+router.get(
+  "/alert-history",
+  adminRateLimiter,
+  authenticateToken as any,
+  requireAdmin as any,
+  async (req, res) => {
+    try {
+      const { group, limit } = req.query;
+
+      if (!group) {
+        return res.status(400).json({
+          success: false,
+          error: "Group is required",
+        });
+      }
+
+      const maxLimit = limit ? parseInt(limit as string) : 50;
+      const alerts = await getAlertHistory(group as string, maxLimit);
+
+      return res.json({
+        success: true,
+        group,
+        alerts,
+        total: alerts.length,
+      });
+    } catch (err) {
+      console.error("Failed to fetch alert history:", err);
+      return res.status(500).json({
+        success: false,
+        error: "Failed to fetch alert history",
+      });
     }
   }
 );

@@ -48,6 +48,7 @@ model User {
   signupMethod      String             @default("password")
   firstLoginCompleted Boolean          @default(false)
   stripeCustomerId  String?            @unique
+  gpt5Enabled       Boolean            @default(false)
   RPAWorkflow       RPAWorkflow[]
   cryptoWithdrawals CryptoWithdrawal[]
   cryptoWallets     CryptoWallet[]
@@ -56,6 +57,7 @@ model User {
   medBedsBookings   MedBedsBooking[]
   twoFactorAuth     TwoFactorAuth?
   profile           UserProfile?
+  adminWalletTransactions AdminWalletTransaction[]
 
   @@map("users")
 }
@@ -73,7 +75,10 @@ model UserProfile {
 model Transaction {
   id          String   @id @default(uuid())
   userId      String
+  orderId     String?  @unique
+  provider    String?
   amount      Float
+  currency    String   @default("USD")
   type        String
   description String?
   category    String?
@@ -83,6 +88,8 @@ model Transaction {
   Invoice     Invoice?
 
   @@index([userId])
+  @@index([orderId])
+  @@index([provider])
   @@index([createdAt])
   @@map("transactions")
 }
@@ -888,6 +895,40 @@ model CryptoPayments {
   updated_at  DateTime?
 }
 
+model AdminWallet {
+  id          String   @id @default(uuid())
+  currency    String   // USD, BTC, ETH, USDT, etc.
+  balance     Decimal  @default(0)
+  totalIn     Decimal  @default(0)  // Total received
+  totalOut    Decimal  @default(0)  // Total credited to users
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  transactions AdminWalletTransaction[]
+
+  @@unique([currency])
+  @@map("admin_wallets")
+}
+
+model AdminWalletTransaction {
+  id          String   @id @default(uuid())
+  adminWalletId String
+  userId      String?  // User who received credit (null for deposits)
+  amount      Decimal
+  currency    String
+  type        String   // 'deposit' (from crypto payments) or 'credit' (to users)
+  description String
+  createdAt   DateTime @default(now())
+
+  adminWallet AdminWallet @relation(fields: [adminWalletId], references: [id])
+  user        User?       @relation(fields: [userId], references: [id])
+
+  @@index([adminWalletId])
+  @@index([userId])
+  @@index([type])
+  @@map("admin_wallet_transactions")
+}
+
 model PasswordResetRequest {
   id            String   @id @default(uuid())
   userId        String
@@ -1011,10 +1052,69 @@ enum Role {
   USER
   STAFF
   ADMIN
+  SUPERADMIN
 }
 
 enum RPAExecutionStatus {
   RUNNING
   SUCCESS
   FAILED
+}
+
+enum AlertMode {
+  IMMEDIATE
+  BATCHED
+  MIXED
+}
+
+enum AlertSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model AlertPolicy {
+  id                String        @id @default(uuid())
+  routeGroup        String        @unique
+  threshold         Int
+  cooldown          Int           @default(300000) // 5 minutes in ms
+  mode              AlertMode     @default(IMMEDIATE)
+  batchIntervalMs   Int?
+  channels          String[]      // Array: ["email", "sms", "slack", "teams", "websocket", "sentry"]
+  severity          AlertSeverity @default(MEDIUM)
+  enabled           Boolean       @default(true)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  createdBy         String
+  updatedBy         String
+  auditLogs         PolicyAuditLog[]
+
+  @@index([routeGroup])
+  @@map("alert_policies")
+}
+
+model PolicyAuditLog {
+  id            String      @id @default(uuid())
+  policyId      String
+  policy        AlertPolicy @relation(fields: [policyId], references: [id], onDelete: Cascade)
+  action        String      // "created", "updated", "deleted", "enabled", "disabled"
+  changedBy     String
+  userEmail     String
+  userRole      String
+  ipAddress     String?
+  userAgent     String?
+  changesBefore Json?       // Snapshot before change
+  changesAfter  Json        // Snapshot after change
+  reason        String?     // Optional: reason for change
+  timestamp     DateTime    @default(now())
+  entryHash     String?     // SHA-256 hash of this entry + previous hash (tamper-evident)
+  prevHash      String?     // Hash of previous entry in chain
+  signature     String?     // Digital signature (optional, for enhanced security)
+
+  @@index([policyId])
+  @@index([changedBy])
+  @@index([timestamp])
+  @@index([entryHash])
+  @@map("policy_audit_logs")
 }

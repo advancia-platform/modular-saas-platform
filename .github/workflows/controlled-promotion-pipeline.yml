@@ -1,0 +1,439 @@
+name: Controlled Promotion Pipeline
+
+on:
+  push:
+    branches:
+      - staging
+      - uat
+      - main
+
+jobs:
+  #############################################
+  # STAGING DEPLOYMENT (Auto, No Approval)
+  #############################################
+  deploy-staging:
+    name: Deploy to Staging
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/staging'
+    environment: staging  # Uses staging environment secrets
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend && npm ci
+          cd ../frontend && npm ci
+
+      - name: Run tests
+        run: |
+          cd backend && npm test
+          cd ../frontend && npm test
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to staging server
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_IP }} << 'EOF'
+            cd /opt/advancia
+            git fetch origin staging
+            git checkout staging
+            git pull origin staging
+            
+            # Update environment
+            cat > .env << EOL
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
+          NODE_ENV=staging
+          API_URL=https://api-staging.advancia.com
+          FRONTEND_URL=https://www-staging.advancia.com
+          EOL
+            
+            # Rebuild and restart
+            docker-compose down
+            docker-compose build
+            docker-compose up -d
+            
+            echo "✅ Staging deployment complete"
+          EOF
+
+      - name: Health check
+        run: |
+          sleep 15
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://api-staging.advancia.com/health)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Health check failed"
+            exit 1
+          fi
+          echo "✅ Staging is healthy"
+
+      - name: Update DNS
+        run: |
+          curl -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/dns_records/${{ secrets.CF_RECORD_ID_API }}" \
+            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"type":"A","name":"api-staging.advancia.com","content":"${{ secrets.DROPLET_IP }}","ttl":120,"proxied":true}'
+
+      - name: Notify Slack
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          COLOR=$([[ "$STATUS" == "success" ]] && echo "good" || echo "danger")
+          
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "attachments": [{
+                "color": "'$COLOR'",
+                "title": "🟢 Staging Deployment",
+                "text": "Status: *'$STATUS'*\nBranch: staging\nCommit: '"${GITHUB_SHA:0:7}"'\nURL: https://www-staging.advancia.com",
+                "footer": "Auto-deployed (no approval required)"
+              }]
+            }'
+
+  #############################################
+  # UAT DEPLOYMENT (Requires QA Approval)
+  #############################################
+  deploy-uat:
+    name: Deploy to UAT
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/uat'
+    environment: uat  # ⏸️ Pauses here for QA approval
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend && npm ci
+          cd ../frontend && npm ci
+
+      - name: Run tests
+        run: |
+          cd backend && npm test
+          cd ../frontend && npm test
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ secrets.DROPLET_IP }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to UAT server
+        run: |
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DROPLET_USER }}@${{ secrets.DROPLET_IP }} << 'EOF'
+            cd /opt/advancia-uat
+            git fetch origin uat
+            git checkout uat
+            git pull origin uat
+            
+            # Update environment
+            cat > .env << EOL
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
+          NODE_ENV=uat
+          API_URL=https://api-uat.advancia.com
+          FRONTEND_URL=https://www-uat.advancia.com
+          EOL
+            
+            # Rebuild and restart
+            docker-compose down
+            docker-compose build
+            docker-compose up -d
+            
+            echo "✅ UAT deployment complete"
+          EOF
+
+      - name: Health check
+        run: |
+          sleep 15
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://api-uat.advancia.com/health)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Health check failed"
+            exit 1
+          fi
+          echo "✅ UAT is healthy"
+
+      - name: Update DNS
+        run: |
+          curl -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/dns_records/${{ secrets.CF_RECORD_ID_API }}" \
+            -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"type":"A","name":"api-uat.advancia.com","content":"${{ secrets.DROPLET_IP }}","ttl":120,"proxied":true}'
+
+      - name: Notify Slack
+        if: always()
+        run: |
+          STATUS="${{ job.status }}"
+          COLOR=$([[ "$STATUS" == "success" ]] && echo "good" || echo "danger")
+          
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "attachments": [{
+                "color": "'$COLOR'",
+                "title": "🟡 UAT Deployment",
+                "text": "Status: *'$STATUS'*\nBranch: uat\nCommit: '"${GITHUB_SHA:0:7}"'\nURL: https://www-uat.advancia.com\nApproved by: ${{ github.actor }}",
+                "footer": "Approved by QA team"
+              }]
+            }'
+
+  #############################################
+  # PRODUCTION DEPLOYMENT (Requires Senior Approval + Blue/Green)
+  #############################################
+  determine-target:
+    name: Determine Blue/Green Target
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+    outputs:
+      target: ${{ steps.check.outputs.target }}
+      target_ip: ${{ steps.check.outputs.target_ip }}
+      inactive_ip: ${{ steps.check.outputs.inactive_ip }}
+    
+    steps:
+      - name: Check current live environment
+        id: check
+        env:
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_RECORD_ID_API: ${{ secrets.CF_RECORD_ID_API }}
+          BLUE_IP: ${{ secrets.DROPLET_IP_BLUE }}
+          GREEN_IP: ${{ secrets.DROPLET_IP_GREEN }}
+        run: |
+          # Get current DNS record
+          CURRENT_IP=$(curl -s -X GET \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_API" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" | jq -r '.result.content')
+          
+          echo "Current production IP: $CURRENT_IP"
+          
+          # Determine target (deploy to inactive)
+          if [[ "$CURRENT_IP" == "$BLUE_IP" ]]; then
+            echo "Current: Blue, Target: Green"
+            echo "target=green" >> $GITHUB_OUTPUT
+            echo "target_ip=$GREEN_IP" >> $GITHUB_OUTPUT
+            echo "inactive_ip=$BLUE_IP" >> $GITHUB_OUTPUT
+          else
+            echo "Current: Green, Target: Blue"
+            echo "target=blue" >> $GITHUB_OUTPUT
+            echo "target_ip=$BLUE_IP" >> $GITHUB_OUTPUT
+            echo "inactive_ip=$GREEN_IP" >> $GITHUB_OUTPUT
+          fi
+
+  deploy-production:
+    name: Deploy to Production (${{ needs.determine-target.outputs.target }})
+    runs-on: ubuntu-latest
+    needs: determine-target
+    environment: production  # ⏸️ Pauses for senior approval + 5min timer
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: |
+          cd backend && npm ci
+          cd ../frontend && npm ci
+
+      - name: Run tests
+        run: |
+          cd backend && npm test
+          cd ../frontend && npm test
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DROPLET_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ needs.determine-target.outputs.target_ip }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to ${{ needs.determine-target.outputs.target }} server
+        env:
+          TARGET_IP: ${{ needs.determine-target.outputs.target_ip }}
+          TARGET: ${{ needs.determine-target.outputs.target }}
+        run: |
+          echo "🚀 Deploying to $TARGET environment ($TARGET_IP)"
+          
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DROPLET_USER }}@$TARGET_IP << 'EOF'
+            cd /opt/advancia
+            git fetch origin main
+            git checkout main
+            git pull origin main
+            
+            # Update environment
+            cat > .env << EOL
+          DATABASE_URL=${{ secrets.DATABASE_URL }}
+          REDIS_URL=${{ secrets.REDIS_URL }}
+          NODE_ENV=production
+          API_URL=https://api.advancia.com
+          FRONTEND_URL=https://www.advancia.com
+          EOL
+            
+            # Rebuild and restart
+            docker-compose down
+            docker-compose build --no-cache
+            docker-compose up -d
+            
+            echo "✅ Deployment to ${{ needs.determine-target.outputs.target }} complete"
+          EOF
+
+      - name: Comprehensive health checks
+        env:
+          TARGET_IP: ${{ needs.determine-target.outputs.target_ip }}
+        run: |
+          echo "🏥 Running comprehensive health checks..."
+          sleep 30
+          
+          # Backend health
+          BACKEND_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://$TARGET_IP:4000/health)
+          if [ "$BACKEND_RESPONSE" != "200" ]; then
+            echo "❌ Backend health check failed (HTTP $BACKEND_RESPONSE)"
+            exit 1
+          fi
+          echo "✅ Backend healthy"
+          
+          # Frontend health
+          FRONTEND_RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://$TARGET_IP:3000)
+          if [ "$FRONTEND_RESPONSE" != "200" ]; then
+            echo "❌ Frontend health check failed (HTTP $FRONTEND_RESPONSE)"
+            exit 1
+          fi
+          echo "✅ Frontend healthy"
+          
+          # Database connectivity
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DROPLET_USER }}@$TARGET_IP << 'EOFDB'
+            docker exec advancia-backend npm run db:ping || exit 1
+          EOFDB
+          echo "✅ Database connected"
+          
+          # Redis connectivity
+          ssh -i ~/.ssh/deploy_key ${{ secrets.DROPLET_USER }}@$TARGET_IP << 'EOFREDIS'
+            docker exec advancia-redis redis-cli ping | grep -q PONG || exit 1
+          EOFREDIS
+          echo "✅ Redis connected"
+          
+          echo "✅ All health checks passed"
+
+  switch-traffic:
+    name: Switch Production Traffic
+    runs-on: ubuntu-latest
+    needs: [determine-target, deploy-production]
+    if: success()
+    environment: production
+    
+    steps:
+      - name: Update Cloudflare DNS
+        env:
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_RECORD_ID_API: ${{ secrets.CF_RECORD_ID_API }}
+          CF_RECORD_ID_WWW: ${{ secrets.CF_RECORD_ID_WWW }}
+          TARGET_IP: ${{ needs.determine-target.outputs.target_ip }}
+          TARGET: ${{ needs.determine-target.outputs.target }}
+        run: |
+          echo "🔄 Switching production traffic to $TARGET ($TARGET_IP)"
+          
+          # Update API DNS
+          API_RESPONSE=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_API" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"A\",\"name\":\"api.advancia.com\",\"content\":\"$TARGET_IP\",\"ttl\":60,\"proxied\":true}")
+          
+          if echo "$API_RESPONSE" | grep -q '"success":true'; then
+            echo "✅ API DNS updated"
+          else
+            echo "❌ API DNS update failed"
+            exit 1
+          fi
+          
+          # Update WWW DNS
+          WWW_RESPONSE=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_WWW" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"A\",\"name\":\"www.advancia.com\",\"content\":\"$TARGET_IP\",\"ttl\":60,\"proxied\":true}")
+          
+          if echo "$WWW_RESPONSE" | grep -q '"success":true'; then
+            echo "✅ WWW DNS updated"
+          else
+            echo "❌ WWW DNS update failed"
+            exit 1
+          fi
+          
+          echo "🎯 Production traffic switched to $TARGET"
+          echo "⏰ DNS propagation: 1-2 minutes"
+
+      - name: Verify DNS propagation
+        run: |
+          echo "⏳ Waiting for DNS propagation..."
+          sleep 60
+          
+          RESOLVED_IP=$(dig +short api.advancia.com | tail -n1)
+          echo "Resolved IP: $RESOLVED_IP"
+          echo "Expected IP: ${{ needs.determine-target.outputs.target_ip }}"
+          
+          if [[ "$RESOLVED_IP" == "${{ needs.determine-target.outputs.target_ip }}" ]]; then
+            echo "✅ DNS propagated successfully"
+          else
+            echo "⚠️  DNS still propagating (this is normal)"
+          fi
+
+      - name: Final production health check
+        run: |
+          sleep 30
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" https://api.advancia.com/health)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Production health check failed"
+            exit 1
+          fi
+          echo "✅ Production is live and healthy"
+
+      - name: Notify Slack
+        if: always()
+        env:
+          TARGET: ${{ needs.determine-target.outputs.target }}
+          TARGET_IP: ${{ needs.determine-target.outputs.target_ip }}
+        run: |
+          STATUS="${{ job.status }}"
+          COLOR=$([[ "$STATUS" == "success" ]] && echo "good" || echo "danger")
+          
+          curl -X POST ${{ secrets.SLACK_WEBHOOK }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "attachments": [{
+                "color": "'$COLOR'",
+                "title": "🔴 Production Deployment",
+                "text": "Status: *'$STATUS'*\nTarget: *'$TARGET'* ('$TARGET_IP')\nBranch: main\nCommit: '"${GITHUB_SHA:0:7}"'\nURL: https://www.advancia.com\nApproved by: Senior team",
+                "footer": "Blue/Green deployment with approval gates"
+              }]
+            }'

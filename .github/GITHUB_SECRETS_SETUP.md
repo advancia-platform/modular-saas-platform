@@ -2,9 +2,13 @@
 
 This guide shows you how to configure GitHub Secrets for automated CI/CD deployment to Render.
 
-## 📋 Prerequisites
+## Overview
 
-- GitHub repository: `pdtribe181-prog/-modular-saas-platform`
+This guide helps you set up GitHub Secrets for the Advancia Pay Ledger project.
+
+**Prerequisites:**
+
+- GitHub repository: `muchaeljohn739337-cloud/-modular-saas-platform`
 - Render account with frontend and backend services deployed
 - Admin access to your GitHub repository
 

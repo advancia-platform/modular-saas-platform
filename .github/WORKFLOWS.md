@@ -3,9 +3,11 @@
 ## 📋 Available Workflows
 
 ### 1. **deploy.yml** - Deployment Pipeline
+
 **Triggers:** Push to `main` branch, Pull Requests to `main`
 
 **What it does:**
+
 - ✅ Checks out code
 - ✅ Sets up Node.js 18
 - ✅ Installs dependencies (backend & frontend)
@@ -14,6 +16,7 @@
 - ✅ Deploys to production (on main branch only)
 
 **Uses these secrets:**
+
 - DATABASE_URL
 - REDIS_URL
 - JWT_SECRET_ENCRYPTED
@@ -28,22 +31,26 @@
 ---
 
 ### 2. **ci.yml** - Continuous Integration
+
 **Triggers:** Push/PR to `main` or `develop` branches
 
 **What it does:**
 
 #### Backend Testing:
+
 - ✅ Spins up PostgreSQL & Redis containers
 - ✅ Runs Prisma migrations
 - ✅ Executes tests
 - ✅ Builds the backend
 
 #### Frontend Testing:
+
 - ✅ Runs linter
 - ✅ Executes tests
 - ✅ Builds the frontend
 
 #### Code Quality:
+
 - ✅ Lints both backend and frontend code
 
 ---
@@ -51,9 +58,11 @@
 ## 🚀 How to Use
 
 ### View Workflows:
+
 Visit: https://github.com/pdtribe181-prog/modular-saas-platform/actions
 
 ### Trigger a Workflow:
+
 ```bash
 # Push to main branch
 git add .
@@ -62,6 +71,7 @@ git push origin main
 ```
 
 ### Manual Trigger:
+
 Go to Actions tab → Select workflow → Click "Run workflow"
 
 ---
@@ -79,14 +89,14 @@ Edit `.github/workflows/deploy.yml` and replace the deployment section:
     # ... your secrets ...
   run: |
     # Your deployment commands here
-    
+
     # Example: Deploy to Vercel
     # npm install -g vercel
     # vercel --prod --token=${{ secrets.VERCEL_TOKEN }}
-    
+
     # Example: Deploy to AWS
     # aws deploy ...
-    
+
     # Example: Deploy with Docker
     # docker build -t myapp .
     # docker push myapp
@@ -106,8 +116,8 @@ Edit `.github/workflows/deploy.yml` and replace the deployment section:
 Add to your README.md:
 
 ```markdown
-![Deploy](https://github.com/pdtribe181-prog/modular-saas-platform/workflows/Deploy%20Advancia%20Pay%20Ledger/badge.svg)
-![CI](https://github.com/pdtribe181-prog/modular-saas-platform/workflows/CI%20-%20Test%20%26%20Build/badge.svg)
+![Deploy](https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/workflows/Deploy%20Advancia%20Pay%20Ledger/badge.svg)
+![CI](https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/workflows/CI%20-%20Test%20%26%20Build/badge.svg)
 ```
 
 ---
@@ -115,19 +125,24 @@ Add to your README.md:
 ## 🎯 Best Practices
 
 ### 1. **Environment-specific Secrets**
+
 For staging/production, use GitHub Environments:
+
 - Go to Settings → Environments
 - Create "staging" and "production" environments
 - Add environment-specific secrets
 - Update workflow to use environments
 
 ### 2. **Caching Dependencies**
+
 Already implemented! Uses `cache: 'npm'` to speed up builds.
 
 ### 3. **Parallel Jobs**
+
 CI workflow runs backend and frontend tests in parallel for speed.
 
 ### 4. **Service Containers**
+
 CI workflow includes PostgreSQL and Redis for realistic testing.
 
 ---
@@ -175,6 +190,7 @@ npm run lint
 ## 🔍 Troubleshooting
 
 ### Workflow Failed?
+
 1. Go to Actions tab
 2. Click on the failed workflow
 3. Expand the failed step
@@ -183,13 +199,18 @@ npm run lint
 ### Common Issues:
 
 **Missing Secrets:**
-- Add them at: https://github.com/pdtribe181-prog/modular-saas-platform/settings/secrets/actions
+
+---
+
+- Add them at: https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/settings/secrets/actions
 
 **Test Failures:**
+
 - Check if tests pass locally first
 - Ensure DATABASE_URL and REDIS_URL are correct
 
 **Build Failures:**
+
 - Check Node.js version (should be 18)
 - Verify dependencies are correctly listed in package.json
 
@@ -204,5 +225,8 @@ npm run lint
 ---
 
 **Created:** October 15, 2025  
-**Project:** Advancia Pay Ledger - Modular SaaS Platform  
-**Repository:** https://github.com/pdtribe181-prog/modular-saas-platform
+**Project:** Advancia Pay Ledger - Modular SaaS Platform
+
+---
+
+**Repository:** https://github.com/muchaeljohn739337-cloud/-modular-saas-platform

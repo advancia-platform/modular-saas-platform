@@ -122,9 +122,11 @@ git push origin main
 Add these to your README.md:
 
 ```markdown
-[![Frontend CI/CD](https://github.com/pdtribe181-prog/-modular-saas-platform/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/pdtribe181-prog/-modular-saas-platform/actions/workflows/frontend-ci.yml)
+## Status Badges
 
-[![Backend CI/CD](https://github.com/pdtribe181-prog/-modular-saas-platform/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/pdtribe181-prog/-modular-saas-platform/actions/workflows/backend-ci.yml)
+[![Frontend CI/CD](https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/actions/workflows/frontend-ci.yml/badge.svg)](https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/actions/workflows/frontend-ci.yml)
+
+[![Backend CI/CD](https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/actions/workflows/backend-ci.yml/badge.svg)](https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/actions/workflows/backend-ci.yml)
 ```
 
 ---

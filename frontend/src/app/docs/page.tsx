@@ -1,9 +1,18 @@
-'use client'
+"use client";
 
-import SidebarLayout from '@/components/SidebarLayout'
-import { motion } from 'framer-motion'
-import { Book, Code, Zap, Shield, Database, Boxes, FileText, ExternalLink } from 'lucide-react'
-import Link from 'next/link'
+import SidebarLayout from "@/components/SidebarLayout";
+import { motion } from "framer-motion";
+import {
+  Book,
+  Boxes,
+  Code,
+  Database,
+  ExternalLink,
+  FileText,
+  Shield,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 
 export default function DocsPage() {
   const sections = [
@@ -15,8 +24,8 @@ export default function DocsPage() {
         { label: "Introduction", href: "#introduction" },
         { label: "Account Setup", href: "#account-setup" },
         { label: "Dashboard Overview", href: "#dashboard" },
-        { label: "First Transaction", href: "#first-transaction" }
-      ]
+        { label: "First Transaction", href: "#first-transaction" },
+      ],
     },
     {
       icon: Shield,
@@ -26,8 +35,8 @@ export default function DocsPage() {
         { label: "Two-Factor Authentication", href: "#2fa" },
         { label: "Password Management", href: "#passwords" },
         { label: "Session Security", href: "#sessions" },
-        { label: "API Security", href: "#api-security" }
-      ]
+        { label: "API Security", href: "#api-security" },
+      ],
     },
     {
       icon: Database,
@@ -37,8 +46,8 @@ export default function DocsPage() {
         { label: "Creating Transactions", href: "#create-transaction" },
         { label: "Transaction History", href: "#history" },
         { label: "Filters & Search", href: "#filters" },
-        { label: "Export Data", href: "#export" }
-      ]
+        { label: "Export Data", href: "#export" },
+      ],
     },
     {
       icon: Code,
@@ -48,8 +57,8 @@ export default function DocsPage() {
         { label: "Authentication", href: "#auth-api" },
         { label: "Transactions API", href: "#transactions-api" },
         { label: "Tokens API", href: "#tokens-api" },
-        { label: "Webhooks", href: "#webhooks" }
-      ]
+        { label: "Webhooks", href: "#webhooks" },
+      ],
     },
     {
       icon: Boxes,
@@ -59,8 +68,8 @@ export default function DocsPage() {
         { label: "Crypto Trading", href: "#crypto" },
         { label: "Loan System", href: "#loans" },
         { label: "Rewards Program", href: "#rewards" },
-        { label: "Analytics", href: "#analytics" }
-      ]
+        { label: "Analytics", href: "#analytics" },
+      ],
     },
     {
       icon: FileText,
@@ -70,17 +79,29 @@ export default function DocsPage() {
         { label: "Mobile App Setup", href: "#mobile-setup" },
         { label: "Link Bank Account", href: "#link-bank" },
         { label: "Set Up Notifications", href: "#notifications" },
-        { label: "Tax Reporting", href: "#taxes" }
-      ]
-    }
-  ]
+        { label: "Tax Reporting", href: "#taxes" },
+      ],
+    },
+  ];
 
   const quickLinks = [
-    { title: "Backend README", href: "https://github.com/your-repo/backend#readme", external: true },
-    { title: "Frontend README", href: "https://github.com/your-repo/frontend#readme", external: true },
-    { title: "Troubleshooting Guide", href: "#troubleshooting", external: false },
-    { title: "FAQ", href: "#faq", external: false }
-  ]
+    {
+      title: "Backend README",
+      href: "https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/tree/main/backend#readme",
+      external: true,
+    },
+    {
+      title: "Frontend README",
+      href: "https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/tree/main/frontend#readme",
+      external: true,
+    },
+    {
+      title: "Troubleshooting Guide",
+      href: "#troubleshooting",
+      external: false,
+    },
+    { title: "FAQ", href: "#faq", external: false },
+  ];
 
   return (
     <SidebarLayout>
@@ -96,15 +117,17 @@ export default function DocsPage() {
             >
               <div className="inline-flex items-center gap-3 px-6 py-3 bg-gradient-to-r from-blue-100 to-purple-100 rounded-full">
                 <Book className="h-6 w-6 text-blue-600" />
-                <span className="text-blue-900 font-semibold">Documentation</span>
+                <span className="text-blue-900 font-semibold">
+                  Documentation
+                </span>
               </div>
-              
+
               <h1 className="text-5xl md:text-6xl font-bold">
                 <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                   Learn & Build
                 </span>
               </h1>
-              
+
               <p className="text-xl text-slate-600 max-w-3xl mx-auto">
                 Everything you need to know about using Advancia Pay Ledger
               </p>
@@ -188,16 +211,19 @@ export default function DocsPage() {
               <Code className="h-8 w-8" />
               <h2 className="text-3xl font-bold">API Documentation</h2>
             </div>
-            
+
             <p className="text-slate-300 text-lg mb-8 max-w-3xl">
-              Build powerful integrations with our RESTful API. Access transaction data, 
-              manage user accounts, and automate workflows programmatically.
+              Build powerful integrations with our RESTful API. Access
+              transaction data, manage user accounts, and automate workflows
+              programmatically.
             </p>
 
             <div className="bg-slate-950/50 rounded-xl p-6 mb-8 border border-slate-700">
-              <div className="text-sm text-slate-400 mb-2">Example API Request</div>
+              <div className="text-sm text-slate-400 mb-2">
+                Example API Request
+              </div>
               <pre className="text-green-400 font-mono text-sm overflow-x-auto">
-{`POST /api/transactions
+                {`POST /api/transactions
 Content-Type: application/json
 Authorization: Bearer YOUR_API_KEY
 
@@ -244,8 +270,15 @@ Authorization: Bearer YOUR_API_KEY
                 How do I get started?
               </h3>
               <p className="text-slate-600">
-                Simply create an account, verify your email, and you&apos;ll be ready to start 
-                managing your finances. Check out our <Link href="#getting-started" className="text-purple-600 hover:underline">Getting Started guide</Link> for a detailed walkthrough.
+                Simply create an account, verify your email, and you&apos;ll be
+                ready to start managing your finances. Check out our{" "}
+                <Link
+                  href="#getting-started"
+                  className="text-purple-600 hover:underline"
+                >
+                  Getting Started guide
+                </Link>{" "}
+                for a detailed walkthrough.
               </p>
             </motion.div>
 
@@ -259,8 +292,15 @@ Authorization: Bearer YOUR_API_KEY
                 Is my data secure?
               </h3>
               <p className="text-slate-600">
-                Yes! We use bank-grade encryption, secure authentication, and follow industry 
-                best practices. Learn more in our <Link href="#security" className="text-purple-600 hover:underline">Security section</Link>.
+                Yes! We use bank-grade encryption, secure authentication, and
+                follow industry best practices. Learn more in our{" "}
+                <Link
+                  href="#security"
+                  className="text-purple-600 hover:underline"
+                >
+                  Security section
+                </Link>
+                .
               </p>
             </motion.div>
 
@@ -274,13 +314,20 @@ Authorization: Bearer YOUR_API_KEY
                 Can I integrate this with my own application?
               </h3>
               <p className="text-slate-600">
-                Absolutely! Our API allows you to integrate Advancia Pay into your applications. 
-                Check out our <Link href="#api-reference" className="text-purple-600 hover:underline">API Reference</Link> to get started.
+                Absolutely! Our API allows you to integrate Advancia Pay into
+                your applications. Check out our{" "}
+                <Link
+                  href="#api-reference"
+                  className="text-purple-600 hover:underline"
+                >
+                  API Reference
+                </Link>{" "}
+                to get started.
               </p>
             </motion.div>
           </div>
         </div>
       </div>
     </SidebarLayout>
-  )
+  );
 }

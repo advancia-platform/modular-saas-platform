@@ -2,6 +2,12 @@ import crypto from "crypto";
 import { Router } from "express";
 import { authenticateToken } from "../middleware/auth";
 import prisma from "../prismaClient";
+import {
+  creditAdminWallet,
+  creditUserCryptoWallet,
+  emitPaymentNotification,
+  recordTransaction,
+} from "../services/transactionService.js";
 
 const router = Router();
 
@@ -50,7 +56,9 @@ router.post(
         currency: currency.toUpperCase(), // BTC, ETH, USDT, etc.
         order_id: orderId || `ORDER-${Date.now()}`,
         url_return: `${process.env.FRONTEND_URL}/payments/success`,
-        url_callback: `${process.env.BACKEND_URL || "http://localhost:4000"}/api/cryptomus/webhook`,
+        url_callback: `${
+          process.env.BACKEND_URL || "http://localhost:4000"
+        }/api/cryptomus/webhook`,
         is_payment_multiple: false,
         lifetime: 3600, // 1 hour
         additional_data: JSON.stringify({ userId }),
@@ -145,33 +153,24 @@ router.post("/webhook", async (req, res) => {
       },
     });
 
-    // If payment is completed, credit user account
+    // If payment is completed, use unified transaction manager
     if (status === "paid") {
       const additionalInfo = JSON.parse(additional_data || "{}");
       const userId = additionalInfo.user_id || payment.user_id;
 
-      // Add balance to user
-      await prisma.user.update({
-        where: { id: userId },
-        data: {
-          usdBalance: { increment: parseFloat(amount) },
+      // Use unified transaction manager
+      await TransactionManager.createTransaction({
+        provider: "cryptomus",
+        orderId: order_id,
+        amount: parseFloat(amount),
+        currency: currency,
+        userId: userId,
+        description: `Crypto payment received (${currency})`,
+        metadata: {
+          invoiceId: uuid,
+          additionalData: additionalInfo,
         },
       });
-
-      // Create transaction record
-      await prisma.transaction.create({
-        data: {
-          userId,
-          amount: parseFloat(amount),
-          type: "credit",
-          description: `Crypto payment received (${currency}) - Order: ${order_id}`,
-          status: "completed",
-        },
-      });
-
-      console.log(
-        `✅ Payment completed for user ${userId}: ${amount} ${currency}`
-      );
     }
 
     return res.json({ success: true });
@@ -213,34 +212,97 @@ router.get("/status/:invoiceId", authenticateToken as any, async (req, res) => {
 });
 
 /**
- * Get user's crypto payment history
- * GET /api/cryptomus/history
+ * Verify Cryptomus webhook signature
  */
-router.get("/history", authenticateToken as any, async (req: any, res) => {
+function verifyCryptomusSignature(body: any, signature: string): boolean {
+  const payload = JSON.stringify(body);
+  const hmac = crypto
+    .createHmac("sha256", CRYPTOMUS_API_KEY)
+    .update(payload)
+    .digest("hex");
+  return hmac === signature;
+}
+
+/**
+ * Handle Cryptomus payment webhooks
+ * POST /api/cryptomus/webhook
+ */
+router.post("/webhook", async (req, res) => {
   try {
-    const userId = req.user?.userId || req.user?.user_id;
+    const signature = req.headers["cryptomus-signature"] as string;
+    const body = req.body;
 
-    const payments = await prisma.cryptoPayments.findMany({
-      where: { user_id: userId },
-      orderBy: { created_at: "desc" },
-      take: 50,
-    });
+    // Verify signature
+    if (!verifyCryptomusSignature(body, signature)) {
+      console.error("Invalid Cryptomus webhook signature");
+      return res.status(401).json({ error: "Invalid signature" });
+    }
 
-    return res.json({
-      payments: payments.map((p: any) => ({
-        id: p.id,
-        invoice_id: p.invoice_id,
-        amount: p.amount.toString(),
-        currency: p.currency,
-        status: p.status,
-        order_id: p.orderId,
-        description: p.description,
-        created_at: p.created_at,
-        paid_at: p.paid_at,
-      })),
-    });
+    console.log("Cryptomus webhook received:", body);
+
+    // Check payment status
+    if (body.status === "paid" || body.status === "paid_over") {
+      const { order_id, amount, currency, invoice_id } = body;
+
+      // Find the existing crypto payment record
+      const existingPayment = await prisma.cryptoPayments.findFirst({
+        where: { invoice_id: invoice_id || order_id },
+      });
+
+      if (!existingPayment) {
+        console.error("Payment not found for invoice:", invoice_id || order_id);
+        return res.status(404).json({ error: "Payment not found" });
+      }
+
+      // Update payment status
+      await prisma.cryptoPayments.update({
+        where: { id: existingPayment.id },
+        data: {
+          status: "paid",
+          paid_at: new Date(),
+        },
+      });
+
+      const paymentAmount = parseFloat(amount);
+
+      // Use transaction service functions
+      await recordTransaction({
+        provider: "cryptomus",
+        orderId: order_id,
+        amount: paymentAmount,
+        currency: currency.toUpperCase(),
+        status: "confirmed",
+        userId: existingPayment.user_id,
+        description: existingPayment.description || "Crypto payment received",
+      });
+
+      await creditAdminWallet(paymentAmount, currency.toUpperCase());
+      await creditUserCryptoWallet(
+        existingPayment.user_id,
+        paymentAmount,
+        currency.toUpperCase()
+      );
+
+      // Emit real-time notification
+      emitPaymentNotification(existingPayment.user_id, {
+        provider: "cryptomus",
+        amount: paymentAmount,
+        currency: currency.toUpperCase(),
+        orderId: order_id,
+      });
+
+      console.log(
+        `✅ Cryptomus payment processed: ${paymentAmount} ${currency} for user ${existingPayment.user_id}`
+      );
+
+      return res
+        .status(200)
+        .json({ message: "Payment processed successfully" });
+    }
+
+    return res.status(200).json({ message: "Payment not confirmed" });
   } catch (error: any) {
-    console.error("Get payment history error:", error);
+    console.error("Cryptomus webhook error:", error);
     return res.status(500).json({ error: "Internal server error" });
   }
 });

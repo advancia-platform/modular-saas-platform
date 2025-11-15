@@ -88,4 +88,5 @@ ci:
 metadata:
   owner: Advancia Labs
   license: MIT
-  repo-url: https://github.com/pdtribe181-prog/-modular-saas-platform
+  # Repository context
+  repo-url: https://github.com/muchaeljohn739337-cloud/-modular-saas-platform

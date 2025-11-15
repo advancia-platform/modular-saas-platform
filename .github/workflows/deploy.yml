@@ -1,4 +1,4 @@
-name: Deploy Advvancia
+name: Deploy Advancia
 
 on:
   push:
@@ -11,11 +11,32 @@ jobs:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
     concurrency:
-      group: advvancia-staging
+      group: advancia-staging
       cancel-in-progress: true
     environment: staging
     steps:
       - uses: actions/checkout@v3
+
+      - name: Update DNS record for staging
+        if: env.CF_API_TOKEN != ''
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CF_ZONE_ID: ${{ secrets.CF_ZONE_ID }}
+          CF_STAGING_RECORD_ID: ${{ secrets.CF_STAGING_RECORD_ID }}
+          DROPLET_IP_STAGING: ${{ secrets.DROPLET_IP_STAGING }}
+        run: |
+          echo "🌐 Updating Cloudflare DNS record for staging..."
+          curl -X PUT "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_STAGING_RECORD_ID" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data '{
+              "type": "A",
+              "name": "staging",
+              "content": "'"$DROPLET_IP_STAGING"'",
+              "ttl": 300,
+              "proxied": true
+            }'
+
       - name: Deploy to Staging via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
@@ -23,24 +44,271 @@ jobs:
           username: ${{ secrets.DROPLET_USER_STAGING }}
           key: ${{ secrets.DROPLET_SSH_KEY_STAGING }}
           script: |
-            cd -modular-saas-platform
-            git pull origin main
+            set -e
+            echo "🚀 Starting deployment to staging..."
+
+            # Navigate to project
+            cd -modular-saas-platform || exit 1
+
+            # Pull latest changes
+            echo "📥 Pulling latest code..."
+            git fetch origin
+            git reset --hard origin/main
+
+            # Backend deployment
             cd backend
-            npm install --production=false
+            echo "📦 Installing backend dependencies..."
+            npm ci --production=false
+
+            echo "🗄️ Running database migrations..."
             npx prisma generate
             npx prisma migrate deploy
-            pm2 restart advvancia-backend || pm2 start ecosystem.config.js
+
+            # Frontend deployment
+            cd ../frontend
+            echo "📦 Installing frontend dependencies..."
+            npm ci --omit=dev
+
+            echo "🔨 Building frontend..."
+            npm run build
+
+            # Restart services
+            echo "🔄 Restarting services..."
+            pm2 restart all
+
+            # Configure log rotation
             pm2 install pm2-logrotate
             pm2 set pm2-logrotate:max_size 10M
             pm2 set pm2-logrotate:retain 7
             pm2 set pm2-logrotate:compress true
             pm2 set pm2-logrotate:rotateInterval '0 0 * * *'
 
+            # Save PM2 config
+            pm2 save
+
+            echo "✅ Deployment complete!"
+      - name: Health check
+        run: |
+          echo "🏥 Running health check..."
+          sleep 10
+
+          echo "Checking DNS resolution..."
+          RESOLVED_IP=$(dig +short staging.advancia.com)
+          echo "Resolved IP: $RESOLVED_IP"
+          if [ "$RESOLVED_IP" != "$STAGING_IP" ]; then
+            echo "❌ DNS mismatch: expected $STAGING_IP"
+            exit 1
+          fi
+
+          echo "Checking HTTP response..."
+          MAX_RETRIES=5
+          RETRY_COUNT=0
+
+          while [ $RETRY_COUNT -lt $MAX_RETRIES ]; do
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://staging.advancia.com/api/health || echo "000")
+            
+            if [ "$HTTP_CODE" = "200" ]; then
+              echo "✅ Health check passed! Service is healthy."
+              exit 0
+            else
+              RETRY_COUNT=$((RETRY_COUNT + 1))
+              echo "⚠️ Health check failed (attempt $RETRY_COUNT/$MAX_RETRIES). HTTP code: $HTTP_CODE"
+              
+              if [ $RETRY_COUNT -lt $MAX_RETRIES ]; then
+                echo "⏳ Waiting 10 seconds before retry..."
+                sleep 10
+              fi
+            fi
+          done
+
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          exit 1
+        env:
+          STAGING_IP: ${{ secrets.DROPLET_IP_STAGING }}
+
+      - name: Notify Slack if health check fails
+        if: failure()
+        env:
+          DROPLET_IP_STAGING: ${{ secrets.DROPLET_IP_STAGING }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          STATUS="✅ Staging Deployment Successful!"
+          if [ "$SSL_DAYS_LEFT" != "" ] && [ "$SSL_DAYS_LEFT" -lt 30 ] 2>/dev/null; then
+            STATUS="⚠️ SSL Expiry Warning: $SSL_DAYS_LEFT days left!"
+          fi
+          curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\": \"❌ Staging health check failed!\\nDomain: staging.advancia.com\\nExpected IP: $DROPLET_IP_STAGING\"}" \
+            $SLACK_WEBHOOK_URL
+
+      - name: Measure response time
+        if: success()
+        run: |
+          RESPONSE_TIME=$(curl -o /dev/null -s -w "%{time_total}" https://staging.advancia.com/api/health)
+          RESPONSE_MS=$(echo "$RESPONSE_TIME * 1000" | bc 2>/dev/null | cut -d. -f1 || echo "0")
+          echo "RESPONSE_MS=$RESPONSE_MS" >> $GITHUB_ENV
+
+      - name: Check SSL expiry
+        if: success()
+        run: |
+          EXPIRY_DATE=$(echo | openssl s_client -connect staging.advancia.com:443 -servername staging.advancia.com 2>/dev/null | openssl x509 -noout -enddate 2>/dev/null | cut -d= -f2 || echo "Unknown")
+          if [ "$EXPIRY_DATE" != "Unknown" ]; then
+            EXPIRY_TS=$(date -d "$EXPIRY_DATE" +%s 2>/dev/null || echo "0")
+            NOW_TS=$(date +%s)
+            DAYS_LEFT=$(( (EXPIRY_TS - NOW_TS) / 86400 ))
+            echo "SSL_DAYS_LEFT=$DAYS_LEFT" >> $GITHUB_ENV
+            if [ $DAYS_LEFT -lt 30 ]; then
+              echo "❌ SSL certificate expires in $DAYS_LEFT days!"
+              exit 1
+            fi
+          else
+            echo "SSL_DAYS_LEFT=Unknown" >> $GITHUB_ENV
+          fi
+
+      - name: Collect build metadata
+        if: success()
+        run: |
+          echo "COMMIT_AUTHOR=${{ github.actor }}" >> $GITHUB_ENV
+          echo "COMMIT_BRANCH=${{ github.ref_name }}" >> $GITHUB_ENV
+          echo "BUILD_DURATION=$((SECONDS))s" >> $GITHUB_ENV
+
+      - name: Collect system metrics
+        id: collect_metrics
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.DROPLET_IP_STAGING }}
+          username: ${{ secrets.DROPLET_USER_STAGING }}
+          key: ${{ secrets.DROPLET_SSH_KEY_STAGING }}
+          script: |
+            DISK_USAGE=$(df -h / | tail -1 | awk '{print $5}')
+            CPU_USAGE=$(top -bn1 | grep "Cpu(s)" | awk '{print $2 + $4}')
+            MEM_USAGE=$(free -m | awk '/Mem:/ {printf("%.2f"), $3/$2*100}')
+            echo "::set-output name=disk_usage::$DISK_USAGE"
+            echo "::set-output name=cpu_usage::$CPU_USAGE%"
+            echo "::set-output name=mem_usage::$MEM_USAGE%"
+
+      - name: Notify Slack if deployment succeeded
+        if: always()
+        env:
+          DROPLET_IP_STAGING: ${{ secrets.DROPLET_IP_STAGING }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          DEPLOY_TIME=$(date -u +"%Y-%m-%d %H:%M UTC")
+          COMMIT_HASH=${{ github.sha }}
+          if [ "${{ job.status }}" = "success" ]; then
+            STATUS="✅ Staging Deployment Successful!"
+          else
+            STATUS="❌ Staging Deployment Failed!"
+          fi
+          if [ "$SSL_DAYS_LEFT" != "" ] && [ "$SSL_DAYS_LEFT" -lt 30 ] 2>/dev/null; then
+            STATUS="$STATUS ⚠️ SSL Expiry Warning: $SSL_DAYS_LEFT days left!"
+          fi
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "*'"$STATUS"'*"
+                  }
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Domain:*\nstaging.advancia.com"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*IP Address:*\n'"$DROPLET_IP_STAGING"'"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit Hash:*\n`'"$COMMIT_HASH"'`"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Deployment Time:*\n'"$DEPLOY_TIME"'"
+                    }
+                  ]
+                },
+                {
+                  "type": "section",
+                  "fields": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Health Status:*\n💚 Healthy"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Uptime:*\n'"$UPTIME"'"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*PM2 Restarts:*\n'"$RESTARTS"'"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Memory Usage:*\n${{ steps.collect_metrics.outputs.mem_usage }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*CPU Usage:*\n${{ steps.collect_metrics.outputs.cpu_usage }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Disk Usage:*\n${{ steps.collect_metrics.outputs.disk_usage }}"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Response Time:*\n'"$RESPONSE_MS"' ms"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*SSL Days Left:*\n'"$SSL_DAYS_LEFT"'"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Commit Author:*\n'"$COMMIT_AUTHOR"'"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Branch:*\n'"$COMMIT_BRANCH"'"
+                    },
+                    {
+                      "type": "mrkdwn",
+                      "text": "*Build Duration:*\n'"$BUILD_DURATION"'"
+                    }
+                  ]
+                },
+                {
+                  "type": "context",
+                  "elements": [
+                    {
+                      "type": "mrkdwn",
+                      "text": "All health checks passed. PM2 restarted. Ready for testing. 🚀"
+                    }
+                  ]
+                }
+              ]
+            }' \
+            $SLACK_WEBHOOK_URL
+
+      - name: Notify deployment status
+        if: always()
+        run: |
+          if [ "${{ job.status }}" = "success" ]; then
+            echo "✅ Staging deployment successful!"
+          else
+            echo "❌ Staging deployment failed!"
+          fi
+
   deploy-production:
     if: github.event_name == 'release'
     runs-on: ubuntu-latest
     concurrency:
-      group: advvancia-production
+      group: advancia-production
       cancel-in-progress: false # don't cancel prod deploys
     environment: production
     steps:
@@ -48,9 +316,9 @@ jobs:
       - name: Deploy to Production via SSH
         uses: appleboy/ssh-action@v0.1.7
         with:
-          host: ${{ secrets.DROPLET_IP_PROD }}
-          username: ${{ secrets.DROPLET_USER_PROD }}
-          key: ${{ secrets.DROPLET_SSH_KEY_PROD }}
+          host: ${{ secrets.DROPLET_IP_PROD || secrets.DO_HOST }}
+          username: ${{ secrets.DROPLET_USER_PROD || secrets.DO_USER }}
+          key: ${{ secrets.DROPLET_SSH_KEY_PROD || secrets.DO_SSH_KEY }}
           script: |
             cd -modular-saas-platform
             git pull origin main
@@ -58,7 +326,7 @@ jobs:
             npm install --production=false
             npx prisma generate
             npx prisma migrate deploy
-            pm2 restart advvancia-backend || pm2 start ecosystem.config.js
+            pm2 restart advancia-backend || pm2 start ecosystem.config.js
             pm2 install pm2-logrotate
             pm2 set pm2-logrotate:max_size 10M
             pm2 set pm2-logrotate:retain 7

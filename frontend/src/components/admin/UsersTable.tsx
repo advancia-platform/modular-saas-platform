@@ -1,10 +1,13 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
+import PaginationControls from "@/components/PaginationControls";
+import RoleBadge from "@/components/RoleBadge";
+import SortControls from "@/components/SortControls";
 import adminApi from "@/lib/adminApi";
+import { Download, Lock, Users, UserX } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
 import toast from "react-hot-toast";
-import { Download, Users, UserX, Lock } from "lucide-react";
 
 export type AdminUserRow = {
   id: string;
@@ -35,6 +38,8 @@ export default function UsersTable() {
   const [loading, setLoading] = useState(false);
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState("");
+  const [sortField, setSortField] = useState<string>("createdAt");
+  const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
 
   // Debounce search
   useEffect(() => {
@@ -48,7 +53,12 @@ export default function UsersTable() {
     async function load() {
       setLoading(true);
       try {
-        const params: Record<string, string | number> = { page, pageSize };
+        const params: Record<string, string | number> = {
+          page,
+          pageSize,
+          sortField,
+          sortOrder,
+        };
         if (role) params.role = role;
         if (debouncedSearch) params.search = debouncedSearch;
         const { data } = await adminApi.get<UsersApiResponse>(
@@ -69,7 +79,7 @@ export default function UsersTable() {
     return () => {
       cancelled = true;
     };
-  }, [page, pageSize, role, debouncedSearch]);
+  }, [page, pageSize, role, debouncedSearch, sortField, sortOrder]);
 
   const totalPages = useMemo(
     () => Math.max(1, Math.ceil(total / pageSize)),
@@ -82,7 +92,12 @@ export default function UsersTable() {
       await adminApi.patch(`/api/admin/users/${u.id}/role`, { role: next });
       toast.success(`Role updated to ${next}`);
       // Reload current page
-      const params: Record<string, string | number> = { page, pageSize };
+      const params: Record<string, string | number> = {
+        page,
+        pageSize,
+        sortField,
+        sortOrder,
+      };
       if (role) params.role = role;
       if (debouncedSearch) params.search = debouncedSearch;
       const { data } = await adminApi.get<UsersApiResponse>(
@@ -100,7 +115,7 @@ export default function UsersTable() {
     if (selectedUsers.size === items.length) {
       setSelectedUsers(new Set());
     } else {
-      setSelectedUsers(new Set(items.map(u => u.id)));
+      setSelectedUsers(new Set(items.map((u) => u.id)));
     }
   }
 
@@ -122,7 +137,7 @@ export default function UsersTable() {
 
     const userIds = Array.from(selectedUsers);
     const confirmMsg = `Are you sure you want to ${bulkAction} ${userIds.length} user(s)?`;
-    
+
     if (!confirm(confirmMsg)) return;
 
     try {
@@ -158,13 +173,17 @@ export default function UsersTable() {
         case "export":
           endpoint = "/api/admin/bulk/export-users";
           break;
+        case "enable-gpt5":
+          endpoint = "/api/admin/bulk/enable-gpt5";
+          body.gpt5Enabled = true;
+          break;
         default:
           toast.error("Unknown action");
           return;
       }
 
       const response = await adminApi.post(endpoint, body);
-      
+
       if (bulkAction === "export") {
         // Download CSV
         const blob = new Blob([response.data.csv], { type: "text/csv" });
@@ -182,7 +201,12 @@ export default function UsersTable() {
       // Reload table
       setSelectedUsers(new Set());
       setBulkAction("");
-      const params: Record<string, string | number> = { page, pageSize };
+      const params: Record<string, string | number> = {
+        page,
+        pageSize,
+        sortField,
+        sortOrder,
+      };
       if (role) params.role = role;
       if (debouncedSearch) params.search = debouncedSearch;
       const { data } = await adminApi.get<UsersApiResponse>(
@@ -258,6 +282,79 @@ export default function UsersTable() {
               </div>
             </div>
 
+            {/* Sorting Controls Row */}
+            <SortControls
+              sortField={sortField}
+              setSortField={(field) => {
+                setSortField(field);
+                setPage(1);
+              }}
+              sortOrder={sortOrder}
+              setSortOrder={(order) => {
+                setSortOrder(order);
+                setPage(1);
+              }}
+            />
+
+            {/* Quick Role Filter Buttons */}
+            <div className="flex gap-2 items-center">
+              <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
+                Quick Filters:
+              </span>
+              <button
+                onClick={() => {
+                  setRole("");
+                  setPage(1);
+                }}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  role === ""
+                    ? "bg-indigo-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                }`}
+              >
+                All Users
+              </button>
+              <button
+                onClick={() => {
+                  setRole("USER");
+                  setPage(1);
+                }}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  role === "USER"
+                    ? "bg-green-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                }`}
+              >
+                👥 Users Only
+              </button>
+              <button
+                onClick={() => {
+                  setRole("ADMIN");
+                  setPage(1);
+                }}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  role === "ADMIN"
+                    ? "bg-blue-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                }`}
+              >
+                👑 Admins Only
+              </button>
+              <button
+                onClick={() => {
+                  setRole("STAFF");
+                  setPage(1);
+                }}
+                className={`px-3 py-1 rounded text-sm font-medium transition-colors ${
+                  role === "STAFF"
+                    ? "bg-orange-600 text-white"
+                    : "bg-gray-200 text-gray-700 hover:bg-gray-300 dark:bg-gray-700 dark:text-gray-200 dark:hover:bg-gray-600"
+                }`}
+              >
+                🛠️ Staff Only
+              </button>
+            </div>
+
             {/* Bulk Actions Row */}
             {selectedUsers.size > 0 && (
               <div className="flex items-center gap-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
@@ -282,6 +379,7 @@ export default function UsersTable() {
                   <option value="export">
                     <Download className="inline w-4 h-4" /> Export CSV
                   </option>
+                  <option value="enable-gpt5">🤖 Enable GPT-5</option>
                   <option value="delete">
                     <UserX className="inline w-4 h-4" /> Delete
                   </option>
@@ -314,7 +412,9 @@ export default function UsersTable() {
                 <th className="px-4 py-3 text-sm font-medium w-12">
                   <input
                     type="checkbox"
-                    checked={selectedUsers.size === items.length && items.length > 0}
+                    checked={
+                      selectedUsers.size === items.length && items.length > 0
+                    }
                     onChange={toggleSelectAll}
                     className="w-4 h-4 rounded border-gray-300"
                     aria-label="Select all users"
@@ -365,9 +465,7 @@ export default function UsersTable() {
                     </td>
                     <td className="px-4 py-3">{u.email}</td>
                     <td className="px-4 py-3">
-                      <span className="inline-flex items-center px-2 py-1 rounded-full text-xs bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200">
-                        {u.role}
-                      </span>
+                      <RoleBadge role={u.role} />
                     </td>
                     <td className="px-4 py-3">
                       <span
@@ -405,29 +503,11 @@ export default function UsersTable() {
         </div>
 
         {/* Pagination */}
-        <div className="flex items-center justify-between px-4 py-3 border-t border-gray-200 dark:border-gray-700">
-          <div className="text-sm text-gray-600 dark:text-gray-300">
-            Page {page} of {totalPages}
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              aria-label="Previous page"
-              disabled={page <= 1}
-              onClick={() => setPage((p) => Math.max(1, p - 1))}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Prev
-            </button>
-            <button
-              aria-label="Next page"
-              disabled={page >= totalPages}
-              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-              className="px-3 py-1 border rounded disabled:opacity-50"
-            >
-              Next
-            </button>
-          </div>
-        </div>
+        <PaginationControls
+          page={page}
+          totalPages={totalPages}
+          setPage={setPage}
+        />
       </div>
     </div>
   );

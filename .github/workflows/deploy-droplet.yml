@@ -1,0 +1,274 @@
+name: Deploy to DigitalOcean Droplet
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/deploy-droplet.yml"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install backend dependencies
+        working-directory: backend
+        run: npm ci
+
+      - name: Run backend tests
+        working-directory: backend
+        run: npm test
+        env:
+          NODE_ENV: test
+          DATABASE_URL: ${{ secrets.TEST_DATABASE_URL }}
+
+      - name: Install frontend dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Run frontend tests
+        working-directory: frontend
+        run: npm test -- --passWithNoTests
+
+  build:
+    name: Build Frontend
+    runs-on: ubuntu-latest
+    needs: test
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        working-directory: frontend
+        run: npm ci
+
+      - name: Build frontend
+        working-directory: frontend
+        run: npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || vars.NEXT_PUBLIC_API_URL || 'https://advanciapayledger.com/api' }}
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+          retention-days: 1
+
+  deploy:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: [test, build]
+    environment:
+      name: production
+      url: https://advanciapayledger.com
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build/
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          port: ${{ secrets.DO_SSH_PORT || 22 }}
+          script_stop: true
+          script: |
+            set -e
+
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "🚀 Deploying Advancia Pay Ledger"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+
+            # Navigate to app directory
+            cd /opt/advancia
+
+            # Backup current state
+            echo "📦 Creating backup..."
+            tar -czf /opt/backups/advancia-backup-$(date +%Y%m%d-%H%M%S).tar.gz \
+              backend/src backend/public frontend/src || true
+
+            # Pull latest code
+            echo "⬇️  Pulling latest code from main..."
+            git fetch origin main
+            git reset --hard origin/main
+
+            # Backend deployment
+            echo "🔧 Updating backend..."
+            cd /opt/advancia/backend
+
+            # Install production dependencies
+            npm ci --production --quiet
+
+            # Run database migrations
+            echo "🗃️  Running database migrations..."
+            npx prisma migrate deploy
+            npx prisma generate
+
+            # Restart backend with PM2
+            echo "🔄 Restarting backend processes..."
+            pm2 restart advancia-backend --update-env
+            pm2 restart backend-watchdog --update-env
+            pm2 restart status-updater --update-env
+
+            # Verify backend is healthy
+            sleep 5
+            if ! pm2 list | grep -q "advancia-backend.*online"; then
+              echo "❌ Backend failed to start"
+              pm2 logs advancia-backend --lines 20 --nostream
+              exit 1
+            fi
+
+            # Frontend deployment
+            echo "🎨 Updating frontend..."
+            cd /opt/advancia/frontend
+
+            # Install dependencies
+            npm ci --quiet
+
+            # Build frontend
+            echo "🏗️  Building frontend..."
+            npm run build
+
+            # Copy build to Nginx directory
+            echo "📂 Updating web files..."
+            sudo rsync -a --delete build/ /var/www/status/
+
+            # Update status.json
+            echo "📊 Updating status page..."
+            cd /opt/advancia/backend
+            node scripts/status-generator.mjs
+            sudo cp public/status.json /var/www/status/status.json
+
+            # Reload Nginx
+            echo "🌐 Reloading Nginx..."
+            sudo nginx -t && sudo systemctl reload nginx
+
+            # Verify frontend is accessible
+            if curl -sf https://advanciapayledger.com/status > /dev/null; then
+              echo "✅ Frontend is accessible"
+            else
+              echo "⚠️  Frontend health check failed"
+            fi
+
+            # Save PM2 configuration
+            pm2 save
+
+            echo ""
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo "✅ Deployment Complete!"
+            echo "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━"
+            echo ""
+            echo "📊 Process Status:"
+            pm2 list
+            echo ""
+            echo "🌐 URLs:"
+            echo "  Frontend: https://advanciapayledger.com"
+            echo "  Status:   https://advanciapayledger.com/status"
+            echo "  API:      https://advanciapayledger.com/api"
+
+      - name: Verify deployment
+        run: |
+          echo "Waiting for services to stabilize..."
+          sleep 10
+
+          echo "Checking API health..."
+          curl -f https://advanciapayledger.com/api/health || {
+            echo "❌ API health check failed"
+            exit 1
+          }
+
+          echo "Checking status page..."
+          curl -f https://advanciapayledger.com/status || {
+            echo "❌ Status page check failed"
+            exit 1
+          }
+
+          echo "Checking status.json..."
+          curl -f https://advanciapayledger.com/api/status.json | jq .overallStatus || {
+            echo "❌ status.json check failed"
+            exit 1
+          }
+
+          echo "✅ All health checks passed!"
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Deployment Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Environment:** Production" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployed by:** @${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment Steps" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Frontend built" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Backend updated" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Database migrations applied" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ PM2 processes restarted" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Nginx reloaded" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Health checks passed" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### URLs" >> $GITHUB_STEP_SUMMARY
+          echo "- [Frontend](https://advanciapayledger.com)" >> $GITHUB_STEP_SUMMARY
+          echo "- [Status Page](https://advanciapayledger.com/status)" >> $GITHUB_STEP_SUMMARY
+          echo "- [API Health](https://advanciapayledger.com/api/health)" >> $GITHUB_STEP_SUMMARY
+
+      - name: Notify deployment failure
+        if: failure()
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.DO_HOST }}
+          username: ${{ secrets.DO_USER }}
+          key: ${{ secrets.DO_SSH_KEY }}
+          script: |
+            echo "❌ Deployment failed - rolling back..."
+            cd /opt/advancia
+
+            # Find latest backup
+            LATEST_BACKUP=$(ls -t /opt/backups/advancia-backup-*.tar.gz | head -1)
+
+            if [ -n "$LATEST_BACKUP" ]; then
+              echo "Restoring from: $LATEST_BACKUP"
+              tar -xzf "$LATEST_BACKUP" -C /opt/advancia/
+              
+              # Restart services
+              pm2 restart all
+              sudo systemctl reload nginx
+              
+              echo "✅ Rollback complete"
+            else
+              echo "⚠️  No backup found for rollback"
+            fi

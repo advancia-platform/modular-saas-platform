@@ -1,0 +1,128 @@
+name: Repository Hygiene & Cleanup
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - ".gitignore"
+  schedule:
+    # Run weekly on Sunday at 3 AM UTC
+    - cron: "0 3 * * 0"
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  cleanup:
+    name: Enforce .gitignore & Run Garbage Collection
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Full history for proper gc
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Check repository size before cleanup
+        id: size_before
+        run: |
+          echo "Repository statistics BEFORE cleanup:"
+          git count-objects -vH
+          SIZE_BEFORE=$(git count-objects -v | grep "size-pack" | awk '{print $2}')
+          echo "size_before=$SIZE_BEFORE" >> $GITHUB_OUTPUT
+
+      - name: Enforce .gitignore rules
+        run: |
+          echo "Checking for ignored files in Git tracking..."
+          IGNORED_COUNT=$(git ls-files -i --exclude-standard | wc -l)
+          echo "Found $IGNORED_COUNT ignored files in Git"
+
+          if [ $IGNORED_COUNT -gt 0 ]; then
+            echo "Removing ignored files from Git tracking..."
+            git ls-files -i --exclude-standard | head -20
+            
+            # Remove cached files
+            git rm -r --cached . || true
+            
+            # Re-add everything (respecting .gitignore)
+            git add .
+            
+            # Check if there are changes to commit
+            if [ -n "$(git diff --cached --name-only)" ]; then
+              git commit -m "chore(cleanup): enforce .gitignore - remove ignored files [skip ci]"
+              echo "cleanup_committed=true" >> $GITHUB_ENV
+            else
+              echo "No changes to commit"
+              echo "cleanup_committed=false" >> $GITHUB_ENV
+            fi
+          else
+            echo "No ignored files found in Git tracking"
+            echo "cleanup_committed=false" >> $GITHUB_ENV
+          fi
+
+      - name: Expire reflog
+        run: |
+          echo "Expiring reflog entries..."
+          git reflog expire --expire=now --all
+          echo "✓ Reflog expired"
+
+      - name: Run garbage collection
+        run: |
+          echo "Running git gc..."
+          git gc --prune=now --quiet
+          echo "✓ Garbage collection complete"
+
+      - name: Check repository size after cleanup
+        id: size_after
+        run: |
+          echo "Repository statistics AFTER cleanup:"
+          git count-objects -vH
+          SIZE_AFTER=$(git count-objects -v | grep "size-pack" | awk '{print $2}')
+          echo "size_after=$SIZE_AFTER" >> $GITHUB_OUTPUT
+
+          # Calculate reduction
+          SIZE_BEFORE=${{ steps.size_before.outputs.size_before }}
+          if [ "$SIZE_BEFORE" -gt "$SIZE_AFTER" ]; then
+            REDUCTION=$((SIZE_BEFORE - SIZE_AFTER))
+            PERCENTAGE=$(awk "BEGIN {printf \"%.1f\", ($REDUCTION / $SIZE_BEFORE) * 100}")
+            echo "reduction=$REDUCTION" >> $GITHUB_OUTPUT
+            echo "percentage=$PERCENTAGE" >> $GITHUB_OUTPUT
+            echo "✓ Repo size reduced by $REDUCTION KB ($PERCENTAGE%)"
+          else
+            echo "reduction=0" >> $GITHUB_OUTPUT
+            echo "percentage=0" >> $GITHUB_OUTPUT
+            echo "ℹ No size reduction (repo was already clean)"
+          fi
+
+      - name: Push cleanup changes
+        if: ${{ env.cleanup_committed == 'true' }}
+        run: |
+          echo "Pushing cleanup changes to main..."
+          git push origin HEAD:main || {
+            echo "⚠ Push failed, skipping"
+            exit 0
+          }
+          echo "✓ Cleanup changes pushed"
+
+      - name: Create cleanup summary
+        run: |
+          echo "## 🧹 Repository Cleanup Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** \`${{ github.ref_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Triggered by:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Results" >> $GITHUB_STEP_SUMMARY
+          echo "- Size before: ${{ steps.size_before.outputs.size_before }} KB" >> $GITHUB_STEP_SUMMARY
+          echo "- Size after: ${{ steps.size_after.outputs.size_after }} KB" >> $GITHUB_STEP_SUMMARY
+          echo "- Reduction: ${{ steps.size_after.outputs.reduction }} KB (${{ steps.size_after.outputs.percentage }}%)" >> $GITHUB_STEP_SUMMARY
+          echo "- Changes committed: ${{ env.cleanup_committed }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Actions Taken" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Enforced .gitignore rules" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Expired reflog entries" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Ran garbage collection" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Optimized repository storage" >> $GITHUB_STEP_SUMMARY

@@ -1,0 +1,54 @@
+name: Update Status Page
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # Manual trigger
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Download logs from server
+        if: ${{ secrets.SERVER_SSH_KEY != '' }}
+        env:
+          SSH_KEY: ${{ secrets.SERVER_SSH_KEY }}
+          SERVER_HOST: ${{ secrets.SERVER_HOST }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          mkdir -p backend/logs
+          echo "$SSH_KEY" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+          scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            $SERVER_USER@$SERVER_HOST:/path/to/backend/logs/*.log backend/logs/ || true
+          rm /tmp/ssh_key
+
+      - name: Generate status JSON
+        run: |
+          cd backend
+          node scripts/parse-status.js
+
+      - name: Commit and push status.json
+        run: |
+          git config --global user.name "Status Bot"
+          git config --global user.email "bot@advancia.com"
+          git add backend/public/status.json
+          git diff --quiet && git diff --staged --quiet || \
+            (git commit -m "Update status page [automated]" && git push)

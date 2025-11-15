@@ -1,62 +1,309 @@
 name: Integration Tests
 
 on:
+  push:
+    branches: [main, develop]
+    paths:
+      - "backend/**"
+      - "frontend/**"
+      - ".github/workflows/integration-tests.yml"
   pull_request:
+    branches: [main, develop]
+    paths:
+      - "backend/**"
+      - "frontend/**"
   workflow_dispatch:
 
 jobs:
-  integration-tests:
+  backend-test:
+    name: Backend Tests
     runs-on: ubuntu-latest
+
     services:
       postgres:
-        image: postgres:15
+        image: postgres:15-alpine
         env:
-          POSTGRES_USER: test
-          POSTGRES_PASSWORD: test
-          POSTGRES_DB: testdb
+          POSTGRES_USER: test_user
+          POSTGRES_PASSWORD: test_pass
+          POSTGRES_DB: advancia_test
         ports:
           - 5432:5432
         options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-    steps:
-      - uses: actions/checkout@v4
+          --health-cmd="pg_isready -U test_user -d advancia_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
 
-      - name: Use Node.js
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      TEST_DATABASE_URL: postgres://test_user:test_pass@localhost:5432/advancia_test
+      DATABASE_URL: postgres://test_user:test_pass@localhost:5432/advancia_test
+      NODE_ENV: test
+      JWT_SECRET: ${{ secrets.TEST_JWT_SECRET }}
+      STRIPE_SECRET_KEY: ${{ secrets.STRIPE_TEST_SECRET_KEY }}
+      CRYPTOMUS_API_KEY: ${{ secrets.CRYPTOMUS_TEST_API_KEY }}
+      REDIS_URL: redis://localhost:6379/1
+      MOCK_EXTERNAL_APIS: true
+      SKIP_EMAIL_SENDING: true
+      SKIP_SLACK_ALERTS: true
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: "18"
 
       - name: Install dependencies
-        run: |
-          cd backend
-          npm ci
+        working-directory: backend
+        run: npm ci
 
-      - name: Wait for Postgres to be ready
-        run: |
-          for i in $(seq 1 30); do
-            if pg_isready -h localhost -p 5432; then
-              echo 'Postgres ready'
-              exit 0
-            fi
-            sleep 2
-          done
-          echo 'Postgres not ready after timeout'
-          exit 1
+      - name: Generate Prisma Client
+        working-directory: backend
+        run: npx prisma generate
 
-      - name: Set test env
-        run: |
-          echo "DATABASE_URL=postgresql://test:test@localhost:5432/testdb" >> $GITHUB_ENV
-          echo "JWT_SECRET=test-jwt-secret" >> $GITHUB_ENV
-
-      - name: Run integration tests
+      - name: Run database migrations
+        working-directory: backend
         env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
-          JWT_SECRET: ${{ env.JWT_SECRET }}
+          DATABASE_URL: postgres://test_user:test_pass@localhost:5432/advancia_test
+        run: npx prisma migrate deploy
+
+      - name: Seed test database
+        working-directory: backend
+        env:
+          DATABASE_URL: postgres://test_user:test_pass@localhost:5432/advancia_test
+          NODE_ENV: test
         run: |
-          cd backend
-          npm run prisma:generate || true
-          npm run prisma:migrate --if-present || true
-          npm run test:integration
+          if [ -f "scripts/seed-test-data.js" ]; then
+            node scripts/seed-test-data.js
+          else
+            echo "Seed script not found, skipping..."
+          fi
+
+      - name: Run tests
+        working-directory: backend
+        run: npm test -- --coverage --maxWorkers=2 --forceExit
+
+      - name: Upload coverage to Codecov
+        if: success()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./backend/coverage/lcov.info
+          flags: backend
+          name: backend-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Comment PR with coverage
+        if: github.event_name == 'pull_request' && success()
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: ./backend/coverage/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          title: "Backend Test Coverage"
+
+      - name: Upload backend coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-coverage
+          path: backend/coverage/lcov.info
+          retention-days: 7
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-test-results-${{ github.run_number }}
+          path: |
+            backend/coverage/
+            backend/test-results/
+          retention-days: 30
+
+      - name: Cleanup test database
+        if: always()
+        run: |
+          PGPASSWORD=test_pass psql -h localhost -U test_user -d postgres -c "DROP DATABASE IF EXISTS advancia_test;"
+
+  frontend-test:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+
+    env:
+      NODE_ENV: test
+      REACT_APP_API_URL: http://localhost:3000
+      MOCK_EXTERNAL_APIS: true
+      SKIP_EMAIL_SENDING: true
+      SKIP_SLACK_ALERTS: true
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Install dependencies
+        run: npm install --prefix frontend
+
+      - name: Run frontend tests
+        run: npm test --prefix frontend -- --coverage --maxWorkers=2 --forceExit
+
+      - name: Upload coverage to Codecov
+        if: success()
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./frontend/coverage/lcov.info
+          flags: frontend
+          name: frontend-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Upload frontend coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-coverage
+          path: frontend/coverage/lcov.info
+          retention-days: 7
+
+      - name: Archive test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-test-results-${{ github.run_number }}
+          path: |
+            frontend/coverage/
+            frontend/test-results/
+          retention-days: 30
+
+  merge-coverage:
+    name: Merge & Report Coverage
+    runs-on: ubuntu-latest
+    needs: [backend-test, frontend-test]
+    if: always()
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Download backend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-coverage
+          path: ./coverage/backend
+
+      - name: Download frontend coverage
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-coverage
+          path: ./coverage/frontend
+
+      - name: Install lcov tools
+        run: |
+          npm install -g lcov-result-merger
+          sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Merge coverage reports
+        run: |
+          mkdir -p ./coverage/merged
+          lcov-result-merger \
+            ./coverage/backend/lcov.info \
+            ./coverage/frontend/lcov.info \
+            > ./coverage/merged/lcov.info
+
+      - name: Generate coverage summary
+        id: coverage
+        run: |
+          # Extract coverage percentages
+          LINES=$(lcov --summary ./coverage/merged/lcov.info 2>&1 | grep "lines" | awk '{print $2}' | sed 's/%//')
+          FUNCTIONS=$(lcov --summary ./coverage/merged/lcov.info 2>&1 | grep "functions" | awk '{print $2}' | sed 's/%//')
+          BRANCHES=$(lcov --summary ./coverage/merged/lcov.info 2>&1 | grep "branches" | awk '{print $2}' | sed 's/%//')
+          
+          echo "lines=$LINES" >> $GITHUB_OUTPUT
+          echo "functions=$FUNCTIONS" >> $GITHUB_OUTPUT
+          echo "branches=$BRANCHES" >> $GITHUB_OUTPUT
+          
+          # Save to trend file
+          mkdir -p ./coverage-trends
+          echo "$(date -Iseconds),${{ github.run_number }},$LINES,$FUNCTIONS,$BRANCHES" >> ./coverage-trends/history.csv
+
+      - name: Upload merged coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          files: ./coverage/merged/lcov.info
+          flags: combined
+          name: full-project-coverage
+          fail_ci_if_error: false
+          token: ${{ secrets.CODECOV_TOKEN }}
+
+      - name: Comment PR with merged coverage
+        if: github.event_name == 'pull_request'
+        uses: romeovs/lcov-reporter-action@v0.3.1
+        with:
+          lcov-file: ./coverage/merged/lcov.info
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          title: "📊 Combined Test Coverage (Frontend + Backend)"
+
+      - name: Check coverage thresholds
+        run: |
+          THRESHOLD=80
+          LINES=${{ steps.coverage.outputs.lines }}
+          FUNCTIONS=${{ steps.coverage.outputs.functions }}
+          BRANCHES=${{ steps.coverage.outputs.branches }}
+          
+          echo "📊 Coverage Summary:"
+          echo "  Lines: $LINES%"
+          echo "  Functions: $FUNCTIONS%"
+          echo "  Branches: $BRANCHES%"
+          echo "  Threshold: $THRESHOLD%"
+          
+          FAILED=0
+          if (( $(echo "$LINES < $THRESHOLD" | bc -l) )); then
+            echo "❌ Line coverage ($LINES%) is below threshold ($THRESHOLD%)"
+            FAILED=1
+          fi
+          if (( $(echo "$FUNCTIONS < $THRESHOLD" | bc -l) )); then
+            echo "❌ Function coverage ($FUNCTIONS%) is below threshold ($THRESHOLD%)"
+            FAILED=1
+          fi
+          if (( $(echo "$BRANCHES < $THRESHOLD" | bc -l) )); then
+            echo "❌ Branch coverage ($BRANCHES%) is below threshold ($THRESHOLD%)"
+            FAILED=1
+          fi
+          
+          if [ $FAILED -eq 1 ]; then
+            echo "::error::Coverage below 80% threshold"
+            exit 1
+          else
+            echo "✅ All coverage thresholds met!"
+          fi
+
+      - name: Upload coverage trend data
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-trends-${{ github.run_number }}
+          path: ./coverage-trends/
+          retention-days: 90
+
+      - name: Upload merged coverage artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: merged-coverage-${{ github.run_number }}
+          path: ./coverage/merged/
+          retention-days: 30

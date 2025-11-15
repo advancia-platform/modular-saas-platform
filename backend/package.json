@@ -13,25 +13,47 @@
     "pm2:logs": "pm2 logs advvancia-backend",
     "pm2:monit": "pm2 monit",
     "migrate": "node src/index.js migrate",
-    "seed": "node src/seed.js"
+    "seed": "node src/seed.js",
+    "test": "cross-env NODE_ENV=test jest --config jest.config.js",
+    "test:watch": "npm test -- --watch",
+    "test:coverage": "npm test -- --coverage",
+    "test:verbose": "npm test -- --verbose",
+    "migrate:test": "cross-env NODE_ENV=test DATABASE_URL=\"$TEST_DATABASE_URL\" npx prisma migrate deploy",
+    "seed:test": "cross-env NODE_ENV=test DATABASE_URL=\"$TEST_DATABASE_URL\" node scripts/seed-test-data.js",
+    "db:setup:test": "node scripts/setup-test-db.js",
+    "db:reset:test": "cross-env NODE_ENV=test DATABASE_URL=\"$TEST_DATABASE_URL\" npx prisma migrate reset --force --skip-seed",
+    "prisma:generate": "npx prisma generate",
+    "prisma:studio": "npx prisma studio",
+    "prisma:studio:test": "cross-env DATABASE_URL=\"$TEST_DATABASE_URL\" npx prisma studio"
   },
   "dependencies": {
     "@datadog/datadog-api-client": "^1.47.0",
+    "@prisma/client": "^6.18.0",
     "@sentry/node": "^10.25.0",
+    "@sentry/tracing": "^7.120.4",
     "bcrypt": "5.1.1",
+    "chart.js": "^4.5.1",
     "cors": "2.8.5",
     "dotenv": "16.4.5",
     "express": "4.19.2",
     "express-rate-limit": "^8.2.1",
     "helmet": "7.0.0",
+    "ioredis": "^5.8.2",
     "jsonwebtoken": "9.0.2",
     "nodemailer": "^7.0.10",
     "pg": "8.13.1",
     "qrcode": "^1.5.4",
+    "react-chartjs-2": "^5.3.1",
+    "socket.io": "^4.8.1",
+    "socket.io-client": "^4.8.1",
     "speakeasy": "^2.0.0",
+    "swagger-jsdoc": "^6.2.8",
+    "swagger-ui-express": "^5.0.1",
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "nodemon": "3.0.2"
+    "nodemon": "3.0.2",
+    "pm2": "^6.0.13",
+    "typescript": "^5.9.3"
   }
 }

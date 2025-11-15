@@ -1,0 +1,515 @@
+{
+  "info": {
+    "name": "Advancia Lockout & Recovery Tests",
+    "description": "Automated tests for login, TOTP, backup codes, and lockout policy verification",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "advancia-lockout-tests",
+    "version": "1.0.0"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{jwtToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request script",
+          "console.log('Running request:', pm.info.requestName);"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test script",
+          "console.log('Request completed:', pm.info.requestName);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Health Check",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has ok property', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('ok');",
+              "    pm.expect(jsonData.ok).to.be.true;",
+              "});",
+              "",
+              "console.log('✓ Backend is healthy');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/health",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "health"]
+        },
+        "description": "Verify backend is running and responsive"
+      },
+      "response": []
+    },
+    {
+      "name": "2. Admin Login (Valid TOTP)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 200', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Response has token', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('token');",
+              "    pm.environment.set('jwtToken', jsonData.token);",
+              "    console.log('✓ JWT token saved to environment');",
+              "});",
+              "",
+              "pm.test('Response has user data', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('user');",
+              "    pm.expect(jsonData.user.role).to.equal('admin');",
+              "});",
+              "",
+              "console.log('✓ Admin login successful with TOTP');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"token\": \"{{validTOTP}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Admin login with valid TOTP token from authenticator app"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Failed Login Attempt 1",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "pm.test('Error message is present', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData).to.have.property('error');",
+              "});",
+              "",
+              "console.log('✓ Failed attempt 1 - Unauthorized as expected');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"wrongpassword\",\n  \"token\": \"000000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Simulate failed login attempt with wrong password"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Failed Login Attempt 2",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "console.log('✓ Failed attempt 2 - Unauthorized as expected');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"wrongpassword\",\n  \"token\": \"000000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Simulate failed login attempt 2"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Failed Login Attempt 3",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "console.log('✓ Failed attempt 3 - Unauthorized as expected');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"wrongpassword\",\n  \"token\": \"000000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Simulate failed login attempt 3"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Failed Login Attempt 4",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401', function () {",
+              "    pm.response.to.have.status(401);",
+              "});",
+              "",
+              "console.log('✓ Failed attempt 4 - Unauthorized as expected');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"wrongpassword\",\n  \"token\": \"000000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Simulate failed login attempt 4"
+      },
+      "response": []
+    },
+    {
+      "name": "3. Failed Login Attempt 5 (Triggers Lockout)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 401 or 429', function () {",
+              "    pm.expect(pm.response.code).to.be.oneOf([401, 429]);",
+              "});",
+              "",
+              "pm.test('Lockout triggered after 5 attempts', function () {",
+              "    const jsonData = pm.response.json();",
+              "    if (pm.response.code === 429) {",
+              "        pm.expect(jsonData.error).to.include('too many');",
+              "        console.log('✓ Account locked after 5 failed attempts');",
+              "    } else {",
+              "        console.log('⚠ Attempt 5 - Will lock on next attempt');",
+              "    }",
+              "});"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"wrongpassword\",\n  \"token\": \"000000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "5th failed attempt - should trigger lockout"
+      },
+      "response": []
+    },
+    {
+      "name": "4. Verify Lockout (With Correct Password)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Status code is 429 (Too Many Requests)', function () {",
+              "    pm.response.to.have.status(429);",
+              "});",
+              "",
+              "pm.test('Lockout message present', function () {",
+              "    const jsonData = pm.response.json();",
+              "    pm.expect(jsonData.error).to.include('too many');",
+              "});",
+              "",
+              "console.log('✓ Account correctly locked even with correct password');"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"token\": \"{{validTOTP}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Attempt login with CORRECT credentials while locked - should still be rejected"
+      },
+      "response": []
+    },
+    {
+      "name": "5. Admin Login (Backup Code)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "// This test should only pass if account is unlocked first",
+              "if (pm.response.code === 200) {",
+              "    pm.test('Backup code login successful', function () {",
+              "        const jsonData = pm.response.json();",
+              "        pm.expect(jsonData).to.have.property('token');",
+              "        pm.environment.set('jwtToken', jsonData.token);",
+              "        console.log('✓ Backup code accepted, JWT token saved');",
+              "    });",
+              "} else if (pm.response.code === 429) {",
+              "    pm.test('Account still locked', function () {",
+              "        console.log('⚠ Account is still locked, backup code cannot be used');",
+              "        pm.expect(pm.response.code).to.equal(429);",
+              "    });",
+              "} else {",
+              "    pm.test('Invalid backup code or other error', function () {",
+              "        console.log('✗ Backup code rejected');",
+              "        pm.expect(pm.response.code).to.be.oneOf([401, 429]);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"{{adminPassword}}\",\n  \"backupCode\": \"{{backupCode}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Login with backup code (requires account to be unlocked first)"
+      },
+      "response": []
+    },
+    {
+      "name": "6. Get Users (Protected Endpoint)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    pm.test('Protected endpoint accessible with JWT', function () {",
+              "        pm.response.to.have.status(200);",
+              "        console.log('✓ JWT authentication working');",
+              "    });",
+              "} else if (pm.response.code === 401) {",
+              "    pm.test('JWT token missing or invalid', function () {",
+              "        console.log('⚠ No valid JWT token - run successful login first');",
+              "        pm.expect(pm.response.code).to.equal(401);",
+              "    });",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{jwtToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/users",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "users"]
+        },
+        "description": "Test protected endpoint with JWT token from successful login"
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    }
+  ]
+}

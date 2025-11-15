@@ -14,7 +14,8 @@
 ### Application Deployment
 
 ```bash
-git clone https://github.com/your-org/advvancia.git
+# Clone repository
+git clone https://github.com/muchaeljohn739337-cloud/-modular-saas-platform.git
 cd advvancia
 cp backend/.env.example backend/.env
 cp frontend/.env.example frontend/.env

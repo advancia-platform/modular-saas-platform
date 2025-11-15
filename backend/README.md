@@ -69,6 +69,7 @@ Logs are stored in `backend/logs/`:
 - `combined.log` - All logs combined
 
 Rotated files will appear as:
+
 ```
 out-2025-11-14_00-00-00.log.gz
 err-2025-11-14_00-00-00.log.gz

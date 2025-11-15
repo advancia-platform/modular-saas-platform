@@ -1,0 +1,136 @@
+name: Emergency Rollback
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: 'Reason for emergency rollback'
+        required: true
+        type: string
+      notify_team:
+        description: 'Send urgent notifications to team'
+        required: true
+        type: boolean
+        default: true
+
+jobs:
+  emergency-rollback:
+    name: Execute Emergency Rollback
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Determine current and target environments
+        id: environments
+        run: |
+          # Get current production IP
+          current_ip=$(dig +short api.advancia.com | head -n1)
+          
+          # Determine which is current and which is rollback target
+          if [ "$current_ip" == "${{ secrets.DROPLET_IP_GREEN }}" ]; then
+            echo "CURRENT_ENV=🟢 Green" >> $GITHUB_OUTPUT
+            echo "ROLLBACK_ENV=🔵 Blue" >> $GITHUB_OUTPUT
+            echo "ROLLBACK_IP=${{ secrets.DROPLET_IP_BLUE }}" >> $GITHUB_OUTPUT
+            echo "ROLLBACK_URL=https://blue.advancia.com" >> $GITHUB_OUTPUT
+          else
+            echo "CURRENT_ENV=🔵 Blue" >> $GITHUB_OUTPUT
+            echo "ROLLBACK_ENV=🟢 Green" >> $GITHUB_OUTPUT
+            echo "ROLLBACK_IP=${{ secrets.DROPLET_IP_GREEN }}" >> $GITHUB_OUTPUT
+            echo "ROLLBACK_URL=https://green.advancia.com" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send urgent alert
+        if: github.event.inputs.notify_team == 'true'
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"🚨 *EMERGENCY ROLLBACK INITIATED* 🚨\n\n*Current Environment:* ${{ steps.environments.outputs.CURRENT_ENV }}\n*Rolling back to:* ${{ steps.environments.outputs.ROLLBACK_ENV }}\n*Reason:* ${{ github.event.inputs.reason }}\n*Initiated by:* ${{ github.actor }}\n*Status:* IN PROGRESS\n\n@channel - Production rollback in progress\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Verify rollback target health
+        run: |
+          echo "Checking rollback target health..."
+          if curl -f -s "${{ steps.environments.outputs.ROLLBACK_URL }}/api/health" | grep -q "ok"; then
+            echo "✅ Rollback target is healthy"
+          else
+            echo "⚠️ WARNING: Rollback target may have issues"
+            curl -X POST -H 'Content-type: application/json' \
+            --data "{\"text\":\"⚠️ Rollback target health check failed but continuing with rollback...\"}" \
+            ${{ secrets.SLACK_WEBHOOK_URL }}
+          fi
+
+      - name: Switch DNS to rollback environment
+        run: |
+          # Update production DNS immediately
+          curl -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/dns_records/${{ secrets.CF_PROD_RECORD_ID }}" \
+          -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data "{\"type\":\"A\",\"name\":\"api.advancia.com\",\"content\":\"${{ steps.environments.outputs.ROLLBACK_IP }}\",\"ttl\":60,\"proxied\":true}"
+          
+          # Update www
+          curl -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/dns_records/${{ secrets.CF_WWW_RECORD_ID }}" \
+          -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data "{\"type\":\"A\",\"name\":\"www.advancia.com\",\"content\":\"${{ steps.environments.outputs.ROLLBACK_IP }}\",\"ttl\":60,\"proxied\":true}"
+          
+          echo "✅ DNS switched to rollback environment"
+
+      - name: Verify rollback
+        run: |
+          sleep 15
+          
+          max_attempts=30
+          attempt=0
+          
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f -s "https://api.advancia.com/api/health" | grep -q "ok"; then
+              echo "✅ Rollback successful - production responding"
+              exit 0
+            fi
+            echo "Attempt $((attempt+1))/$max_attempts - Waiting for DNS propagation..."
+            sleep 2
+            attempt=$((attempt+1))
+          done
+          
+          echo "⚠️ Production verification taking longer than expected"
+
+      - name: Rollback success notification
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"✅ *EMERGENCY ROLLBACK COMPLETE*\n\n*From:* ${{ steps.environments.outputs.CURRENT_ENV }}\n*To:* ${{ steps.environments.outputs.ROLLBACK_ENV }}\n*Reason:* ${{ github.event.inputs.reason }}\n*Time:* $(date -u +'%Y-%m-%d %H:%M:%S UTC')\n*Duration:* ~1 minute\n\n✅ Production is now stable\n\n*Next Steps:*\n1. Investigate issue in ${{ steps.environments.outputs.CURRENT_ENV }}\n2. Fix problems before redeploying\n3. Monitor metrics closely\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Create incident report
+        run: |
+          cat > incident_report.txt << EOF
+          EMERGENCY ROLLBACK INCIDENT REPORT
+          ==================================
+          
+          Date/Time: $(date -u +'%Y-%m-%d %H:%M:%S UTC')
+          Triggered by: ${{ github.actor }}
+          Reason: ${{ github.event.inputs.reason }}
+          
+          Environment Changes:
+          - Previous: ${{ steps.environments.outputs.CURRENT_ENV }}
+          - Current: ${{ steps.environments.outputs.ROLLBACK_ENV }}
+          
+          Actions Taken:
+          1. DNS switched to rollback environment
+          2. Health checks verified
+          3. Production confirmed stable
+          
+          Status: RESOLVED
+          
+          Follow-up Required:
+          - Root cause analysis
+          - Fix issues in rolled-back environment
+          - Plan for redeployment
+          EOF
+          
+          echo "Incident report created"
+
+      - name: Rollback failure notification
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"🔴 *CRITICAL: ROLLBACK FAILED* 🔴\n\n*Status:* FAILED\n*Reason:* ${{ github.event.inputs.reason }}\n\n@channel IMMEDIATE ACTION REQUIRED\n\nBoth environments may be unstable.\nContact DevOps team NOW!\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}

@@ -2,78 +2,80 @@
 import dotenv from "dotenv";
 dotenv.config();
 
-import http from "http";
-import https from "https";
-import fs from "fs";
-import path from "path";
-import express from "express";
 import cors from "cors";
-import { Server as SocketIOServer } from "socket.io";
+import express from "express";
+import http from "http";
 import jwt from "jsonwebtoken";
+import { Server as SocketIOServer } from "socket.io";
 import app from "./app";
-import { dataMasker } from "./utils/dataMasker";
-import { initSentry } from "./utils/sentry";
-import { setSocketIO as setNotificationSocket } from "./services/notificationService";
-import { setTransactionSocketIO } from "./routes/transactions";
+import { activityLogger } from "./middleware/activityLogger";
+import { authenticateToken, requireAdmin } from "./middleware/auth";
+import {
+  helmetMiddleware,
+  rateLimit,
+  validateInput,
+} from "./middleware/security";
 import prisma from "./prismaClient";
-import paymentsRouter from "./routes/payments";
-import paymentsEnhancedRouter from "./routes/paymentsEnhanced";
-import debitCardRouter, { setDebitCardSocketIO } from "./routes/debitCard";
-import debitCardEnhancedRouter from "./routes/debitCardEnhanced";
-import medbedsRouter, { setMedbedsSocketIO } from "./routes/medbeds";
-import supportRouter, { setSupportSocketIO } from "./routes/support";
-import analyticsRouter from "./routes/analytics";
-import aiAnalyticsRouter from "./routes/aiAnalytics";
-import authRouter from "./routes/auth";
-import adminUsersRouter, { setAdminUsersSocketIO } from "./routes/users";
-import transactionsRouter from "./routes/transactions";
-import invoicesRouter from "./routes/invoices";
-import twoFactorRouter from "./routes/twoFactor";
-import adminDashboardRouter from "./routes/adminDashboard";
-import chatRouter, { setChatSocketIO } from "./routes/chat";
 import adminRouter from "./routes/admin";
 import adminBulkActionsRouter from "./routes/adminBulkActions";
-import consultationRouter from "./routes/consultation";
-import systemRouter from "./routes/system";
-import marketingRouter from "./routes/marketing";
-import subscribersRouter from "./routes/subscribers";
-import securityLevelRouter from "./routes/securityLevel";
-import ipBlocksRouter from "./routes/ipBlocks";
-import tokenRefreshRouter from "./routes/tokenRefresh";
+import adminDashboardRouter from "./routes/adminDashboard";
+import aiAnalyticsRouter from "./routes/aiAnalytics";
+import amplitudeAnalyticsRouter from "./routes/amplitudeAnalytics";
+import analyticsRouter from "./routes/analytics";
+import analyticsEnhancedRouter from "./routes/analyticsEnhanced";
+import authRouter from "./routes/auth";
 import authAdminRouter, {
+  activeSessions,
   setBroadcastSessions as setAuthBroadcast,
 } from "./routes/authAdmin";
+import chatRouter, { setChatSocketIO } from "./routes/chat";
+import consultationRouter from "./routes/consultation";
+import cryptoEnhancedRouter from "./routes/cryptoEnhanced";
+import cryptomusRouter from "./routes/cryptomus";
+import debitCardRouter, { setDebitCardSocketIO } from "./routes/debitCard";
+import debitCardEnhancedRouter from "./routes/debitCardEnhanced";
+import emailRouter from "./routes/email"; // Email templates router
+import emailTestRouter from "./routes/email-test"; // Email testing endpoints
+import emailsRouter from "./routes/emails";
+import emailSignupRouter from "./routes/emailSignup"; // Email magic link signup
+import healthRouter from "./routes/health";
+import healthReadingsRouter from "./routes/health-readings";
+import invoicesRouter from "./routes/invoices";
+import ipBlocksRouter from "./routes/ipBlocks";
+import marketingRouter from "./routes/marketing";
+import medbedsRouter, { setMedbedsSocketIO } from "./routes/medbeds";
+import oalRouter, { setOALSocketIO } from "./routes/oal";
+import passwordRecoveryRouter from "./routes/passwordRecovery"; // Password recovery & user details
+import paymentsRouter, {
+  handleStripeWebhook,
+  setPaymentsSocketIO,
+} from "./routes/payments";
+import paymentsEnhancedRouter from "./routes/paymentsEnhanced";
+import rewardsRouter from "./routes/rewards";
+import securityLevelRouter from "./routes/securityLevel";
+import sendEmailRouter from "./routes/send-email"; // Universal email sending
 import sessionsRouter, {
   setBroadcastSessions as setSessionsBroadcast,
 } from "./routes/sessions";
-import withdrawalsRouter, { setWithdrawalSocketIO } from "./routes/withdrawals";
-import healthRouter from './routes/health';
+import subscribersRouter from "./routes/subscribers";
+import supportRouter, { setSupportSocketIO } from "./routes/support";
+import systemRouter from "./routes/system";
+import tokenRefreshRouter from "./routes/tokenRefresh";
 import tokensRouter, { setTokenSocketIO } from "./routes/tokens";
 import tokensEnhancedRouter from "./routes/tokensEnhanced";
-import rewardsRouter from "./routes/rewards";
-import gamificationRouter from "./routes/gamification";
-import analyticsEnhancedRouter from "./routes/analyticsEnhanced";
-import amplitudeAnalyticsRouter from "./routes/amplitudeAnalytics";
-import healthReadingsRouter from "./routes/health-readings";
-import oalRouter, { setOALSocketIO } from "./routes/oal";
+import transactionsRouter, {
+  setTransactionSocketIO,
+} from "./routes/transactions";
+import twoFactorRouter from "./routes/twoFactor";
 import userApprovalRouter from "./routes/userApproval";
-import cryptomusRouter from "./routes/cryptomus";
-import cryptoEnhancedRouter from "./routes/cryptoEnhanced";
-import emailsRouter from "./routes/emails";
-import emailRouter from "./routes/email"; // Email templates router
-import emailTestRouter from "./routes/email-test"; // Email testing endpoints
-import sendEmailRouter from "./routes/send-email"; // Universal email sending
+import adminUsersRouter, { setAdminUsersSocketIO } from "./routes/users";
 import webhooksRouter from "./routes/webhooks"; // Resend webhook handlers
-import passwordRecoveryRouter from "./routes/passwordRecovery"; // Password recovery & user details
-import emailSignupRouter from "./routes/emailSignup"; // Email magic link signup
-import helmet from "helmet";
-import { validateInput, helmetMiddleware, rateLimit } from "./middleware/security";
-import { sanitizeInput } from "./validation/middleware";
-import { activityLogger } from "./middleware/activityLogger";
-import { handleStripeWebhook, setPaymentsSocketIO } from "./routes/payments";
-import { activeSessions } from "./routes/authAdmin";
-import { requireAdmin, authenticateToken } from "./middleware/auth";
+import withdrawalsRouter, { setWithdrawalSocketIO } from "./routes/withdrawals";
+import { setSocketIO as setNotificationSocket } from "./services/notificationService";
+import { dataMasker } from "./utils/dataMasker";
 import { envInspector } from "./utils/envInspector";
+import { initSentry } from "./utils/sentry";
+import { sanitizeInput } from "./validation/middleware";
 
 // Import configuration
 import { config } from "./jobs/config";
@@ -115,9 +117,9 @@ app.use(validateInput);
 app.use(activityLogger);
 app.use("/api", rateLimit({ windowMs: 60_000, maxRequests: 300 }));
 
-
 // Health check endpoint (critical for production monitoring)
 app.use("/api", healthRouter);
+app.use("/api", statusRouter);
 
 // Auth routes (public)
 app.use("/api/auth", tokenRefreshRouter); // Token refresh endpoint
@@ -133,16 +135,41 @@ app.use("/api/ai-analytics", aiAnalyticsRouter);
 app.use("/api/auth", authRouter);
 
 // Admin routes - PROTECTED with requireAdmin middleware
-app.use("/api/admin/analytics", authenticateToken, requireAdmin, analyticsRouter);
+app.use(
+  "/api/admin/analytics",
+  authenticateToken,
+  requireAdmin,
+  analyticsRouter
+);
 app.use("/api/analytics", authenticateToken, analyticsEnhancedRouter); // Enhanced analytics with export
 app.use("/api/analytics", authenticateToken, amplitudeAnalyticsRouter); // Amplitude-style analytics
-app.use("/api/admin/security", authenticateToken, requireAdmin, securityLevelRouter);
-app.use("/api/admin/ip-blocks", authenticateToken, requireAdmin, ipBlocksRouter);
-app.use("/api/admin/user-approval", authenticateToken, requireAdmin, userApprovalRouter);
+app.use(
+  "/api/admin/security",
+  authenticateToken,
+  requireAdmin,
+  securityLevelRouter
+);
+app.use(
+  "/api/admin/ip-blocks",
+  authenticateToken,
+  requireAdmin,
+  ipBlocksRouter
+);
+app.use(
+  "/api/admin/user-approval",
+  authenticateToken,
+  requireAdmin,
+  userApprovalRouter
+);
 app.use("/api/admin", authenticateToken, requireAdmin, adminUsersRouter);
 app.use("/api/admin", authenticateToken, requireAdmin, adminDashboardRouter);
 app.use("/api/admin", authenticateToken, requireAdmin, adminRouter);
-app.use("/api/admin/bulk", authenticateToken, requireAdmin, adminBulkActionsRouter); // Bulk user actions
+app.use(
+  "/api/admin/bulk",
+  authenticateToken,
+  requireAdmin,
+  adminBulkActionsRouter
+); // Bulk user actions
 
 // Admin auth (public - for login)
 app.use("/api/auth/admin", authAdminRouter);
@@ -160,6 +187,7 @@ app.use("/api/oal", oalRouter);
 app.use("/api/tokens", tokensRouter);
 app.use("/api/tokens", authenticateToken, tokensEnhancedRouter); // Enhanced token features
 app.use("/api/crypto", authenticateToken, cryptoEnhancedRouter); // Crypto charts & swap (RE-ENABLED)
+app.use("/api/cryptomus", cryptomusRouter); // Cryptomus payment processing
 app.use("/api/invoices", invoicesRouter);
 app.use("/api/emails", emailsRouter);
 app.use("/api/email", emailRouter); // New email templates endpoint
@@ -253,6 +281,10 @@ setWithdrawalSocketIO(io);
 setOALSocketIO(io);
 setTokenSocketIO(io);
 
+// Import and inject Socket.IO into rate limiter for real-time monitoring
+import { setRateLimiterSocketIO } from "./middleware/rateLimiterRedis";
+setRateLimiterSocketIO(io);
+
 import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
 
 // Wire up session broadcasting
@@ -276,7 +308,3 @@ server.listen(PORT, () => {
   console.log(`📡 Socket.IO enabled for real-time notifications`);
   console.log(`🔒 Security middleware active`);
 });
-
-
-
-

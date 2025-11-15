@@ -1,0 +1,509 @@
+name: Canary Deployment with Progressive Traffic Shifting
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Target environment (blue or green)'
+        required: true
+        type: choice
+        options:
+          - green
+          - blue
+
+env:
+  MONITORING_INTERVAL: 300  # 5 minutes between stages
+  FINAL_MONITORING_INTERVAL: 600  # 10 minutes for later stages
+
+jobs:
+  #############################################
+  # DETERMINE CURRENT STATE
+  #############################################
+  determine-state:
+    name: Determine Current Production State
+    runs-on: ubuntu-latest
+    outputs:
+      current_live: ${{ steps.check.outputs.current_live }}
+      current_ip: ${{ steps.check.outputs.current_ip }}
+      target: ${{ steps.check.outputs.target }}
+      target_ip: ${{ steps.check.outputs.target_ip }}
+    
+    steps:
+      - name: Check current live environment
+        id: check
+        env:
+          CF_ZONE_ID: ${{ secrets.PROD_CF_ZONE_ID }}
+          CF_API_TOKEN: ${{ secrets.PROD_CF_API_TOKEN }}
+          CF_RECORD_ID_API: ${{ secrets.PROD_CF_RECORD_ID_API }}
+          BLUE_IP: ${{ secrets.PROD_DROPLET_IP_BLUE }}
+          GREEN_IP: ${{ secrets.PROD_DROPLET_IP_GREEN }}
+        run: |
+          # Get current production DNS
+          CURRENT_IP=$(curl -s -X GET \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_API" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" | jq -r '.result.content')
+          
+          echo "current_ip=$CURRENT_IP" >> $GITHUB_OUTPUT
+          
+          # Determine environments
+          if [[ "$CURRENT_IP" == "$BLUE_IP" ]]; then
+            echo "current_live=blue" >> $GITHUB_OUTPUT
+            echo "target=green" >> $GITHUB_OUTPUT
+            echo "target_ip=$GREEN_IP" >> $GITHUB_OUTPUT
+            echo "📍 Current: Blue ($BLUE_IP), Target: Green ($GREEN_IP)"
+          else
+            echo "current_live=green" >> $GITHUB_OUTPUT
+            echo "target=blue" >> $GITHUB_OUTPUT
+            echo "target_ip=$BLUE_IP" >> $GITHUB_OUTPUT
+            echo "📍 Current: Green ($GREEN_IP), Target: Blue ($BLUE_IP)"
+          fi
+
+  #############################################
+  # DEPLOY TO TARGET ENVIRONMENT
+  #############################################
+  deploy-target:
+    name: Deploy to ${{ needs.determine-state.outputs.target }}
+    runs-on: ubuntu-latest
+    needs: determine-state
+    environment: production
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.PROD_DROPLET_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ needs.determine-state.outputs.target_ip }} >> ~/.ssh/known_hosts
+
+      - name: Deploy to ${{ needs.determine-state.outputs.target }}
+        env:
+          TARGET: ${{ needs.determine-state.outputs.target }}
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+        run: |
+          echo "🚀 Deploying to $TARGET ($TARGET_IP)"
+          
+          ssh -i ~/.ssh/deploy_key ${{ secrets.PROD_DROPLET_USER }}@$TARGET_IP << 'EOF'
+            cd /opt/advancia
+            git fetch origin main
+            git checkout main
+            git pull origin main
+            
+            docker-compose down
+            docker-compose build --no-cache
+            docker-compose up -d
+            
+            echo "✅ ${{ needs.determine-state.outputs.target }} deployment complete"
+          EOF
+
+      - name: Pre-deployment health checks
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+        run: |
+          echo "🏥 Running pre-deployment health checks..."
+          sleep 30
+          
+          # Backend health
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" http://$TARGET_IP:4000/health)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Backend health check failed"
+            exit 1
+          fi
+          
+          # Measure baseline metrics
+          RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" http://$TARGET_IP:4000/health)
+          echo "⏱️  Response time: ${RESPONSE_TIME}s"
+          echo "baseline_response_time=${RESPONSE_TIME}" >> $GITHUB_ENV
+          
+          echo "✅ Pre-deployment health checks passed"
+
+  #############################################
+  # CANARY STAGE 1: 10% Traffic
+  #############################################
+  canary-stage-1:
+    name: Canary Stage 1 (10% Traffic)
+    runs-on: ubuntu-latest
+    needs: [determine-state, deploy-target]
+    environment: production
+    
+    steps:
+      - name: Configure 10% traffic to ${{ needs.determine-state.outputs.target }}
+        env:
+          TARGET: ${{ needs.determine-state.outputs.target }}
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+          CURRENT_IP: ${{ needs.determine-state.outputs.current_ip }}
+        run: |
+          echo "🎯 Stage 1: Routing 10% traffic to $TARGET"
+          
+          # Update load balancer weights (NGINX example)
+          ssh -i ~/.ssh/deploy_key ${{ secrets.PROD_DROPLET_USER }}@${{ secrets.NGINX_LB_IP }} << EOF
+            # Backup current config
+            cp /etc/nginx/conf.d/upstream.conf /etc/nginx/conf.d/upstream.conf.backup
+            
+            # Update weights: 10% target, 90% current
+            cat > /etc/nginx/conf.d/upstream.conf << 'NGINX'
+          upstream backend {
+              server $TARGET_IP:4000 weight=1;      # 10%
+              server $CURRENT_IP:4000 weight=9;     # 90%
+              keepalive 32;
+          }
+          NGINX
+            
+            # Reload NGINX
+            nginx -t && systemctl reload nginx
+            
+            echo "✅ 10% traffic now routed to $TARGET"
+          EOF
+
+      - name: Monitor Stage 1 (5 minutes)
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+          CURRENT_IP: ${{ needs.determine-state.outputs.current_ip }}
+        run: |
+          echo "📊 Monitoring Stage 1 for 5 minutes..."
+          
+          for i in {1..10}; do
+            echo "Check $i/10..."
+            
+            # Health check target
+            TARGET_STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://$TARGET_IP:4000/health)
+            if [ "$TARGET_STATUS" != "200" ]; then
+              echo "❌ Target health check failed: $TARGET_STATUS"
+              exit 1
+            fi
+            
+            # Check error rate
+            ERROR_RATE=$(curl -s http://$TARGET_IP:4000/metrics | grep 'error_rate' | awk '{print $2}')
+            if (( $(echo "$ERROR_RATE > 1.0" | bc -l) )); then
+              echo "❌ Error rate too high: $ERROR_RATE%"
+              exit 1
+            fi
+            
+            # Check response time
+            RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" http://$TARGET_IP:4000/health)
+            if (( $(echo "$RESPONSE_TIME > 0.5" | bc -l) )); then
+              echo "❌ Response time too high: ${RESPONSE_TIME}s"
+              exit 1
+            fi
+            
+            echo "✅ Check $i passed - Error: $ERROR_RATE%, Latency: ${RESPONSE_TIME}s"
+            sleep 30
+          done
+          
+          echo "✅ Stage 1 monitoring complete - All checks passed"
+
+  #############################################
+  # CANARY STAGE 2: 25% Traffic
+  #############################################
+  canary-stage-2:
+    name: Canary Stage 2 (25% Traffic)
+    runs-on: ubuntu-latest
+    needs: [determine-state, canary-stage-1]
+    environment: production
+    
+    steps:
+      - name: Configure 25% traffic
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+          CURRENT_IP: ${{ needs.determine-state.outputs.current_ip }}
+        run: |
+          echo "🎯 Stage 2: Routing 25% traffic to target"
+          
+          ssh -i ~/.ssh/deploy_key ${{ secrets.PROD_DROPLET_USER }}@${{ secrets.NGINX_LB_IP }} << EOF
+            cat > /etc/nginx/conf.d/upstream.conf << 'NGINX'
+          upstream backend {
+              server $TARGET_IP:4000 weight=1;      # 25%
+              server $CURRENT_IP:4000 weight=3;     # 75%
+              keepalive 32;
+          }
+          NGINX
+            nginx -t && systemctl reload nginx
+          EOF
+
+      - name: Monitor Stage 2 (5 minutes)
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+        run: |
+          echo "📊 Monitoring Stage 2 for 5 minutes..."
+          
+          for i in {1..10}; do
+            echo "Check $i/10..."
+            
+            # Stricter thresholds for Stage 2
+            ERROR_RATE=$(curl -s http://$TARGET_IP:4000/metrics | grep 'error_rate' | awk '{print $2}')
+            if (( $(echo "$ERROR_RATE > 0.5" | bc -l) )); then
+              echo "❌ Error rate too high: $ERROR_RATE%"
+              exit 1
+            fi
+            
+            RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" http://$TARGET_IP:4000/health)
+            if (( $(echo "$RESPONSE_TIME > 0.4" | bc -l) )); then
+              echo "❌ Response time too high: ${RESPONSE_TIME}s"
+              exit 1
+            fi
+            
+            echo "✅ Check $i passed - Error: $ERROR_RATE%, Latency: ${RESPONSE_TIME}s"
+            sleep 30
+          done
+          
+          echo "✅ Stage 2 monitoring complete"
+
+  #############################################
+  # CANARY STAGE 3: 50% Traffic
+  #############################################
+  canary-stage-3:
+    name: Canary Stage 3 (50% Traffic)
+    runs-on: ubuntu-latest
+    needs: [determine-state, canary-stage-2]
+    environment: production
+    
+    steps:
+      - name: Configure 50% traffic
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+          CURRENT_IP: ${{ needs.determine-state.outputs.current_ip }}
+        run: |
+          echo "🎯 Stage 3: Routing 50% traffic to target"
+          
+          ssh -i ~/.ssh/deploy_key ${{ secrets.PROD_DROPLET_USER }}@${{ secrets.NGINX_LB_IP }} << EOF
+            cat > /etc/nginx/conf.d/upstream.conf << 'NGINX'
+          upstream backend {
+              server $TARGET_IP:4000 weight=1;      # 50%
+              server $CURRENT_IP:4000 weight=1;     # 50%
+              keepalive 32;
+          }
+          NGINX
+            nginx -t && systemctl reload nginx
+          EOF
+
+      - name: Monitor Stage 3 (10 minutes)
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+        run: |
+          echo "📊 Monitoring Stage 3 for 10 minutes..."
+          
+          for i in {1..20}; do
+            echo "Check $i/20..."
+            
+            ERROR_RATE=$(curl -s http://$TARGET_IP:4000/metrics | grep 'error_rate' | awk '{print $2}')
+            if (( $(echo "$ERROR_RATE > 0.2" | bc -l) )); then
+              echo "❌ Error rate too high: $ERROR_RATE%"
+              exit 1
+            fi
+            
+            RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" http://$TARGET_IP:4000/health)
+            if (( $(echo "$RESPONSE_TIME > 0.35" | bc -l) )); then
+              echo "❌ Response time too high: ${RESPONSE_TIME}s"
+              exit 1
+            fi
+            
+            # Check CPU and memory
+            CPU=$(ssh -i ~/.ssh/deploy_key ${{ secrets.PROD_DROPLET_USER }}@$TARGET_IP "top -bn1 | grep 'Cpu(s)' | awk '{print \$2}' | cut -d'%' -f1")
+            if (( $(echo "$CPU > 80" | bc -l) )); then
+              echo "⚠️  High CPU usage: $CPU%"
+            fi
+            
+            echo "✅ Check $i passed - Error: $ERROR_RATE%, Latency: ${RESPONSE_TIME}s, CPU: $CPU%"
+            sleep 30
+          done
+          
+          echo "✅ Stage 3 monitoring complete"
+
+  #############################################
+  # CANARY STAGE 4: 75% Traffic
+  #############################################
+  canary-stage-4:
+    name: Canary Stage 4 (75% Traffic)
+    runs-on: ubuntu-latest
+    needs: [determine-state, canary-stage-3]
+    environment: production
+    
+    steps:
+      - name: Configure 75% traffic
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+          CURRENT_IP: ${{ needs.determine-state.outputs.current_ip }}
+        run: |
+          echo "🎯 Stage 4: Routing 75% traffic to target"
+          
+          ssh -i ~/.ssh/deploy_key ${{ secrets.PROD_DROPLET_USER }}@${{ secrets.NGINX_LB_IP }} << EOF
+            cat > /etc/nginx/conf.d/upstream.conf << 'NGINX'
+          upstream backend {
+              server $TARGET_IP:4000 weight=3;      # 75%
+              server $CURRENT_IP:4000 weight=1;     # 25%
+              keepalive 32;
+          }
+          NGINX
+            nginx -t && systemctl reload nginx
+          EOF
+
+      - name: Monitor Stage 4 (10 minutes)
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+        run: |
+          echo "📊 Monitoring Stage 4 for 10 minutes..."
+          
+          for i in {1..20}; do
+            echo "Check $i/20..."
+            
+            ERROR_RATE=$(curl -s http://$TARGET_IP:4000/metrics | grep 'error_rate' | awk '{print $2}')
+            if (( $(echo "$ERROR_RATE > 0.1" | bc -l) )); then
+              echo "❌ Error rate too high: $ERROR_RATE%"
+              exit 1
+            fi
+            
+            RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" http://$TARGET_IP:4000/health)
+            if (( $(echo "$RESPONSE_TIME > 0.3" | bc -l) )); then
+              echo "❌ Response time too high: ${RESPONSE_TIME}s"
+              exit 1
+            fi
+            
+            echo "✅ Check $i passed - Error: $ERROR_RATE%, Latency: ${RESPONSE_TIME}s"
+            sleep 30
+          done
+          
+          echo "✅ Stage 4 monitoring complete"
+
+  #############################################
+  # CANARY STAGE 5: 100% Traffic (Full Rollout)
+  #############################################
+  canary-stage-5:
+    name: Canary Stage 5 (100% Traffic - Full Rollout)
+    runs-on: ubuntu-latest
+    needs: [determine-state, canary-stage-4]
+    environment: production
+    
+    steps:
+      - name: Configure 100% traffic
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+          CF_ZONE_ID: ${{ secrets.PROD_CF_ZONE_ID }}
+          CF_API_TOKEN: ${{ secrets.PROD_CF_API_TOKEN }}
+          CF_RECORD_ID_API: ${{ secrets.PROD_CF_RECORD_ID_API }}
+          CF_RECORD_ID_WWW: ${{ secrets.PROD_CF_RECORD_ID_WWW }}
+        run: |
+          echo "🎯 Stage 5: Routing 100% traffic to target (DNS switch)"
+          
+          # Update API DNS
+          curl -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_API" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"A\",\"name\":\"api.advancia.com\",\"content\":\"$TARGET_IP\",\"ttl\":60,\"proxied\":true}"
+          
+          # Update WWW DNS
+          curl -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_WWW" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"A\",\"name\":\"www.advancia.com\",\"content\":\"$TARGET_IP\",\"ttl\":60,\"proxied\":true}"
+          
+          echo "✅ DNS switched to target environment"
+
+      - name: Final monitoring (30 minutes)
+        env:
+          TARGET_IP: ${{ needs.determine-state.outputs.target_ip }}
+        run: |
+          echo "📊 Final monitoring for 30 minutes..."
+          
+          for i in {1..60}; do
+            echo "Check $i/60..."
+            
+            # Production health check
+            STATUS=$(curl -s -o /dev/null -w "%{http_code}" https://api.advancia.com/health)
+            if [ "$STATUS" != "200" ]; then
+              echo "❌ Production health check failed: $STATUS"
+              exit 1
+            fi
+            
+            ERROR_RATE=$(curl -s http://$TARGET_IP:4000/metrics | grep 'error_rate' | awk '{print $2}')
+            RESPONSE_TIME=$(curl -s -o /dev/null -w "%{time_total}" https://api.advancia.com/health)
+            
+            echo "✅ Check $i passed - Error: $ERROR_RATE%, Latency: ${RESPONSE_TIME}s"
+            sleep 30
+          done
+          
+          echo "✅ Final monitoring complete - Deployment successful!"
+
+  #############################################
+  # ROLLBACK ON FAILURE
+  #############################################
+  rollback:
+    name: Emergency Rollback
+    runs-on: ubuntu-latest
+    needs: [determine-state]
+    if: failure()
+    
+    steps:
+      - name: Rollback to ${{ needs.determine-state.outputs.current_live }}
+        env:
+          CURRENT_IP: ${{ needs.determine-state.outputs.current_ip }}
+          CF_ZONE_ID: ${{ secrets.PROD_CF_ZONE_ID }}
+          CF_API_TOKEN: ${{ secrets.PROD_CF_API_TOKEN }}
+          CF_RECORD_ID_API: ${{ secrets.PROD_CF_RECORD_ID_API }}
+        run: |
+          echo "🚨 ROLLING BACK TO ${{ needs.determine-state.outputs.current_live }}"
+          
+          # Revert load balancer to 100% current
+          ssh -i ~/.ssh/deploy_key ${{ secrets.PROD_DROPLET_USER }}@${{ secrets.NGINX_LB_IP }} << EOF
+            cp /etc/nginx/conf.d/upstream.conf.backup /etc/nginx/conf.d/upstream.conf
+            nginx -t && systemctl reload nginx
+          EOF
+          
+          # Revert DNS
+          curl -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_API" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{\"type\":\"A\",\"name\":\"api.advancia.com\",\"content\":\"$CURRENT_IP\",\"ttl\":60,\"proxied\":true}"
+          
+          echo "✅ Rollback complete"
+
+      - name: Notify team
+        if: always()
+        run: |
+          curl -X POST ${{ secrets.PROD_SLACK_WEBHOOK }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "attachments": [{
+                "color": "danger",
+                "title": "🚨 Canary Deployment Rolled Back",
+                "text": "Automatic rollback triggered due to health check failure",
+                "fields": [
+                  {"title": "Failed Stage", "value": "${{ github.job }}", "short": true},
+                  {"title": "Rolled Back To", "value": "${{ needs.determine-state.outputs.current_live }}", "short": true}
+                ]
+              }]
+            }'
+
+  #############################################
+  # NOTIFY SUCCESS
+  #############################################
+  notify-success:
+    name: Notify Deployment Success
+    runs-on: ubuntu-latest
+    needs: [determine-state, canary-stage-5]
+    if: success()
+    
+    steps:
+      - name: Send success notification
+        env:
+          TARGET: ${{ needs.determine-state.outputs.target }}
+        run: |
+          curl -X POST ${{ secrets.PROD_SLACK_WEBHOOK }} \
+            -H 'Content-Type: application/json' \
+            -d '{
+              "attachments": [{
+                "color": "good",
+                "title": "✅ Canary Deployment Successful",
+                "text": "Progressive rollout completed: 10% → 25% → 50% → 75% → 100%",
+                "fields": [
+                  {"title": "Target Environment", "value": "'$TARGET'", "short": true},
+                  {"title": "Total Duration", "value": "~65 minutes", "short": true},
+                  {"title": "URL", "value": "https://www.advancia.com", "short": false}
+                ]
+              }]
+            }'

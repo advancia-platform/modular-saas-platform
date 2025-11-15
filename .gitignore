@@ -1,30 +1,93 @@
-# Dependencies
+# ═══════════════════════════════════════════════════════
+# Advancia Pay Ledger - Git Ignore Configuration
+# Self-hosted SaaS Platform
+# ═══════════════════════════════════════════════════════
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Node.js Dependencies
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 node_modules/
+jspm_packages/
 .pnp
 .pnp.js
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
 
-# Production builds
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Build Outputs & Distribution
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 dist/
 build/
 .next/
 out/
+.nuxt/
+.cache/
+.parcel-cache/
+*.tsbuildinfo
+backend/dist/
+frontend/build/
+frontend/.next/
+frontend/out/
 .vercel
 
-# Environment variables
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Logs & Runtime Data
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*.log
+logs/
+backend/logs/*.log
+backend-watchdog.log
+backend/*.log
+pids/
+pids
+*.pid
+*.seed
+*.pid.lock
+*.seed
+.pm2/
+dump.pm2
+pm2-*.log
+
+# Specific log files
+backend/logs/err.log
+backend/logs/out.log
+backend/logs/backend-watchdog.log
+backend/logs/status-updater-*.log
+backend/logs/status-cron.log
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Environment Variables & Secrets
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 .env
 .env.local
+.env.*.local
+.env.development
 .env.development.local
+.env.test
 .env.test.local
+.env.production
 .env.production.local
 .env.backup
 .env.*.backup
 encrypted_secrets_*.env
+backend/.env
 backend/.env.enc.json
+frontend/.env
+frontend/.env.local
 *.env.enc.json
 *.env.backup
 backup-tokens.txt
 tokens.backup
 AUTH_BACKUP_KEYS.md
+
+# Watchdog configuration (contains sensitive credentials)
+watchdog-config.ps1
 
 # Cloudflare credentials and secrets
 CLOUDFLARE_CREDENTIALS.md
@@ -34,78 +97,136 @@ cloudflare-secrets.txt
 frontend/.dev.vars
 **/wrangler-*.toml
 
-# Logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
+# Secret files
+*.key
+*.pem
+*.cert
+secrets/
+.secrets/
 
-# Runtime data
-pids
-*.pid
-*.seed
-*.pid.lock
-
-# Coverage directory used by tools like istanbul
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Test Coverage & Reports
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 coverage/
+*.lcov
 .nyc_output/
+test-results/
+playwright-report/
+.playwright/
 
-# Dependency directories
-jspm_packages/
-
-# TypeScript cache
-*.tsbuildinfo
-
-# Optional npm cache directory
-.npm
-
-# Optional eslint cache
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Temporary Files & Caches
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+.tmp/
+tmp/
+temp/
+*.tmp
+*.swp
+*.swo
+*~
+.sass-cache/
 .eslintcache
-
-# Microbundle cache
+.stylelintcache
+.npm
 .rpt2_cache/
 .rts2_cache_cjs/
 .rts2_cache_es/
 .rts2_cache_umd/
-
-# Optional REPL history
 .node_repl_history
-
-# Output of 'npm pack'
 *.tgz
-
-# Yarn Integrity file
 .yarn-integrity
-
-# parcel-bundler cache (https://parceljs.org/)
 .cache
 .parcel-cache
-
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-dist
-
-# Gatsby files
-.cache/
-public
-
-# Storybook build outputs
 .out
 .storybook-out
 
-# Temporary folders
-tmp/
-temp/
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Operating System Files
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+$RECYCLE.BIN/
 
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# IDE & Editor Files
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+.vscode/
 !.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.iml
+.project
+.classpath
+.c9/
+*.launch
+.settings/
+.history/
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Database Files
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*.sqlite
+*.sqlite3
+*.db
+*.db-journal
+*.db-shm
+*.db-wal
+backend/prisma/*.db
+backend/prisma/*.db-journal
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# PM2 & Process Management
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+.pm2/
+dump.pm2
+ecosystem.config.json
+pm2.json
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Status Page Auto-Generated Files
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+backend/public/status.json
+status.json
+/var/www/status/status.json
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Docker
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Backup Files
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+*.bak
+*.backup
+*.old
+*_backup
+*_old
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Keep Essential Config Files
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+!backend/ecosystem.config.cjs
+!backend/ecosystem-status.config.cjs
+!backend/ecosystem-monitoring.json
+!.github/workflows/
+!.vscode/settings.json
+!.vscode/launch.json
 .idea/
 *.suo
 *.ntvs*

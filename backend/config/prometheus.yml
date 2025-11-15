@@ -1,0 +1,65 @@
+# Prometheus Configuration for Advancia Pay Ledger
+# This file configures Prometheus to scrape metrics from PM2, Node Exporter, and Status JSON
+
+global:
+  scrape_interval: 15s # Scrape targets every 15 seconds
+  evaluation_interval: 15s # Evaluate rules every 15 seconds
+  external_labels:
+    cluster: "advancia-production"
+    environment: "production"
+
+# Alertmanager configuration
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - localhost:9093 # Alertmanager default port
+
+# Load alerting rules from alerts.yml
+rule_files:
+  - "alerts.yml"
+
+# Scrape configurations
+scrape_configs:
+  # ─── Node Exporter ───────────────────────────────
+  # Collects system metrics (CPU, memory, disk, network)
+  - job_name: "node"
+    static_configs:
+      - targets: ["localhost:9100"] # node_exporter runs here
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "advancia-droplet"
+
+  # ─── PM2 Exporter ────────────────────────────────
+  # Exposes PM2 process metrics (uptime, restarts, memory)
+  - job_name: "pm2"
+    static_configs:
+      - targets: ["localhost:9615"] # pm2 exporter default port
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: "advancia-pm2"
+
+  # ─── Status JSON via JSON Exporter ───────────────
+  # Scrapes status.json for incidents and uptime data
+  - job_name: "advancia-status"
+    metrics_path: /probe
+    params:
+      module: [json]
+    static_configs:
+      - targets:
+          - http://localhost/api/status.json
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - target_label: __address__
+        replacement: localhost:7979 # JSON exporter port
+      - source_labels: [__param_target]
+        target_label: instance
+
+  # ─── Prometheus Self-Monitoring ──────────────────
+  # Monitor Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]

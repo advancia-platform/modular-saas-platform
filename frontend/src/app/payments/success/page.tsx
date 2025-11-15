@@ -1,47 +1,84 @@
 "use client";
 
-import { useEffect, useState, Suspense, useCallback } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { CheckCircle, Clock, Home, Receipt, CreditCard, Bitcoin } from "lucide-react";
+import {
+  Bitcoin,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  Home,
+  Receipt,
+} from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
+import { Suspense, useCallback, useEffect, useState } from "react";
 
 function PaymentSuccessContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
-  const [status, setStatus] = useState<"checking" | "confirmed" | "pending">("checking");
+  const [status, setStatus] = useState<"checking" | "confirmed" | "pending">(
+    "checking"
+  );
   const [details, setDetails] = useState<any>(null);
   const [type, setType] = useState<"stripe" | "crypto" | null>(null);
 
   const sessionId = searchParams.get("session_id");
   const invoiceId = searchParams.get("invoice_id");
+  const orderId = searchParams.get("orderId");
 
   const checkPayment = useCallback(async () => {
     const token = localStorage.getItem("token");
-    
+
     if (sessionId) {
       setType("stripe");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/payments/session/${sessionId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/payments/session/${sessionId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         const data = await res.json();
         setDetails(data);
         setStatus(data.payment_status === "paid" ? "confirmed" : "pending");
       }
     }
-    
+
     if (invoiceId) {
       setType("crypto");
-      const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/cryptomus/status/${invoiceId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/cryptomus/status/${invoiceId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
       if (res.ok) {
         const data = await res.json();
         setDetails(data);
         setStatus("pending"); // Crypto requires admin approval
       }
     }
-  }, [sessionId, invoiceId]);
+
+    // Check unified payment status API for orderId
+    if (orderId && !sessionId && !invoiceId) {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL}/api/payment-status?orderId=${orderId}`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setDetails(data);
+        if (data.status === "confirmed") {
+          setStatus("confirmed");
+          setType("stripe"); // Default, could be enhanced to detect provider
+        } else if (data.status === "pending") {
+          setStatus("pending");
+          setType("crypto"); // Assume crypto for pending status
+        }
+      }
+    }
+  }, [sessionId, invoiceId, orderId]);
 
   useEffect(() => {
     checkPayment();
@@ -65,10 +102,24 @@ function PaymentSuccessContent() {
         {/* Payment Type Badge */}
         {type && (
           <div className="flex justify-center mb-4">
-            <div className={`flex items-center gap-2 px-4 py-2 rounded-full ${
-              type === "stripe" ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700"
-            }`}>
-              {type === "stripe" ? <><CreditCard className="w-4 h-4" /><span className="text-sm font-semibold">Card Payment</span></> : <><Bitcoin className="w-4 h-4" /><span className="text-sm font-semibold">Crypto Payment</span></>}
+            <div
+              className={`flex items-center gap-2 px-4 py-2 rounded-full ${
+                type === "stripe"
+                  ? "bg-purple-100 text-purple-700"
+                  : "bg-orange-100 text-orange-700"
+              }`}
+            >
+              {type === "stripe" ? (
+                <>
+                  <CreditCard className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Card Payment</span>
+                </>
+              ) : (
+                <>
+                  <Bitcoin className="w-4 h-4" />
+                  <span className="text-sm font-semibold">Crypto Payment</span>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -100,12 +151,19 @@ function PaymentSuccessContent() {
         {/* Description */}
         <div className="text-center mb-8">
           {status === "confirmed" && (
-            <p className="text-gray-700 text-lg">Your payment has been confirmed and processed!</p>
+            <p className="text-gray-700 text-lg">
+              Your payment has been confirmed and processed!
+            </p>
           )}
           {status === "pending" && type === "crypto" && (
             <div className="bg-orange-50 border-l-4 border-orange-500 p-4 rounded">
-              <p className="text-sm font-semibold text-orange-900">Admin Approval Required</p>
-              <p className="text-sm text-gray-700 mt-2">Your crypto payment has been received. Admin will review and credit your account within 15-60 minutes.</p>
+              <p className="text-sm font-semibold text-orange-900">
+                Admin Approval Required
+              </p>
+              <p className="text-sm text-gray-700 mt-2">
+                Your crypto payment has been received. Admin will review and
+                credit your account within 15-60 minutes.
+              </p>
             </div>
           )}
         </div>
@@ -120,11 +178,21 @@ function PaymentSuccessContent() {
             <div className="space-y-3">
               <div className="flex justify-between">
                 <span className="text-gray-600">Amount:</span>
-                <span className="font-bold text-xl">{details.amount_total ? `$${(details.amount_total / 100).toFixed(2)}` : `${details.currency} ${details.amount}`}</span>
+                <span className="font-bold text-xl">
+                  {details.amount_total
+                    ? `$${(details.amount_total / 100).toFixed(2)}`
+                    : `${details.currency} ${details.amount}`}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span className="text-gray-600">Status:</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-semibold ${status === "confirmed" ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                <span
+                  className={`px-3 py-1 rounded-full text-sm font-semibold ${
+                    status === "confirmed"
+                      ? "bg-green-100 text-green-700"
+                      : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
                   {status === "confirmed" ? "Confirmed" : "Pending"}
                 </span>
               </div>
@@ -142,7 +210,9 @@ function PaymentSuccessContent() {
         </button>
 
         {status === "confirmed" && (
-          <p className="text-center text-xs text-gray-400 mt-4 animate-pulse">Redirecting in 5 seconds...</p>
+          <p className="text-center text-xs text-gray-400 mt-4 animate-pulse">
+            Redirecting in 5 seconds...
+          </p>
         )}
       </motion.div>
     </div>
@@ -151,14 +221,16 @@ function PaymentSuccessContent() {
 
 export default function PaymentSuccessPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black flex items-center justify-center p-4">
-        <div className="text-center">
-          <Clock className="w-16 h-16 mx-auto text-purple-400 animate-spin" />
-          <p className="text-white mt-4">Loading...</p>
+    <Suspense
+      fallback={
+        <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-black flex items-center justify-center p-4">
+          <div className="text-center">
+            <Clock className="w-16 h-16 mx-auto text-purple-400 animate-spin" />
+            <p className="text-white mt-4">Loading...</p>
+          </div>
         </div>
-      </div>
-    }>
+      }
+    >
       <PaymentSuccessContent />
     </Suspense>
   );

@@ -23,17 +23,139 @@ router.get("/health", (req, res) => {
   return res.json({ stripeConfigured: Boolean(stripeClient) });
 });
 
+// Unified payment session creation endpoint
+// Supports both Stripe and Cryptomus payments
+router.post(
+  "/create-session",
+  authenticateToken as any,
+  async (req: any, res) => {
+    const {
+      amount,
+      currency = "usd",
+      provider = "stripe",
+      orderId,
+      description,
+    } = req.body;
+
+    if (!amount || Number.isNaN(Number(amount)) || Number(amount) <= 0) {
+      return res.status(400).json({ error: "A positive amount is required." });
+    }
+
+    if (!orderId) {
+      return res.status(400).json({ error: "orderId is required." });
+    }
+
+    const userId = req.user?.userId;
+    if (!userId) {
+      return res.status(401).json({ error: "User authentication required." });
+    }
+
+    try {
+      let redirectUrl: string;
+      let sessionId: string;
+
+      if (provider === "stripe") {
+        // Handle Stripe payment
+        if (!stripeClient) {
+          return res.status(503).json({
+            error:
+              "Stripe is not configured. Please provide STRIPE_SECRET_KEY.",
+          });
+        }
+
+        const session = await stripeClient.checkout.sessions.create({
+          mode: "payment",
+          payment_method_types: ["card"],
+          line_items: [
+            {
+              price_data: {
+                currency,
+                unit_amount: Math.round(Number(amount) * 100),
+                product_data: {
+                  name: description || "Account Top-Up",
+                },
+              },
+              quantity: 1,
+            },
+          ],
+          metadata: {
+            userId,
+            orderId,
+            provider: "stripe",
+          },
+          success_url: `${config.frontendUrl}/payments/success?session_id={CHECKOUT_SESSION_ID}&orderId=${orderId}`,
+          cancel_url: `${config.frontendUrl}/payments/cancel?orderId=${orderId}`,
+        });
+
+        redirectUrl = session.url!;
+        sessionId = session.id;
+      } else if (provider === "cryptomus") {
+        // Handle Cryptomus payment
+        const cryptomusResponse = await fetch(
+          "https://api.cryptomus.com/v1/payment",
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              merchant: config.cryptomusMerchantId!,
+              sign: "", // Will be calculated below
+            },
+            body: JSON.stringify({
+              amount: amount.toString(),
+              currency,
+              order_id: orderId,
+              url_callback: `${config.backendUrl}/api/cryptomus/webhook`,
+              url_return: `${config.frontendUrl}/payments/success?orderId=${orderId}`,
+              url_success: `${config.frontendUrl}/payments/success?orderId=${orderId}`,
+              lifetime: 3600, // 1 hour
+              additional_data: JSON.stringify({
+                user_id: userId,
+                description: description || "Crypto Payment",
+              }),
+            }),
+          }
+        );
+
+        if (!cryptomusResponse.ok) {
+          throw new Error(`Cryptomus API error: ${cryptomusResponse.status}`);
+        }
+
+        const cryptomusData = await cryptomusResponse.json();
+        redirectUrl = cryptomusData.result.url;
+        sessionId = cryptomusData.result.uuid;
+      } else {
+        return res.status(400).json({
+          error: "Invalid provider. Supported: stripe, cryptomus",
+        });
+      }
+
+      return res.json({
+        redirectUrl,
+        sessionId,
+        orderId,
+        provider,
+        amount,
+        currency,
+      });
+    } catch (error) {
+      console.error("Payment session creation error", error);
+      return res.status(500).json({
+        error: "Unable to create payment session.",
+        details: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }
+);
+
 // Create a Checkout Session, requiring auth; attach userId to metadata server-side
 router.post(
   "/checkout-session",
   authenticateToken as any,
   async (req: any, res) => {
     if (!stripeClient) {
-      return res
-        .status(503)
-        .json({
-          error: "Stripe is not configured. Please provide STRIPE_SECRET_KEY.",
-        });
+      return res.status(503).json({
+        error: "Stripe is not configured. Please provide STRIPE_SECRET_KEY.",
+      });
     }
 
     const { amount, currency = "usd", metadata } = req.body || {};
@@ -212,43 +334,41 @@ export const handleStripeWebhook = async (req: any, res: any) => {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
         const userId = session.metadata?.userId;
+        const orderId = session.metadata?.orderId || session.id;
 
         if (!userId) {
           console.error("No userId in session metadata", session.id);
           return res.status(400).send("Missing userId in metadata");
         }
 
-        // Begin transaction
-        await prisma.$transaction(async (tx) => {
-          // Credit user's balance
-          await tx.user.update({
-            where: { id: userId },
-            data: {
-              usdBalance: {
-                increment: Number(session.amount_total) / 100,
-              },
-            },
-          });
+        const amount = Number(session.amount_total) / 100;
+        const currency = (session.currency || "usd").toUpperCase();
 
-          // Record the transaction
-          await tx.transaction.create({
-            data: {
-              userId,
-              type: "credit",
-              amount: Number(session.amount_total) / 100,
-              description: `Stripe payment - Session ${session.id}`,
-              status: "completed",
-            },
-          });
+        // Use transaction service functions
+        await recordTransaction({
+          provider: "stripe",
+          orderId,
+          amount,
+          currency,
+          status: "confirmed",
+          userId,
+          description: `Stripe checkout session ${session.id}`,
         });
 
-        // Emit socket events
-        if (io) {
-          io.to(`user-${userId}`).emit("transaction-created", {
-            type: "CREDIT",
-            amount: Number(session.amount_total || 0) / 100,
-          });
-        }
+        await creditAdminWallet(amount, currency);
+        await creditUserUsdBalance(userId, amount);
+
+        // Emit real-time notification
+        emitPaymentNotification(userId, {
+          provider: "stripe",
+          amount,
+          currency,
+          orderId,
+        });
+
+        console.log(
+          `✅ Stripe payment processed: ${amount} ${currency} for user ${userId}`
+        );
 
         break;
       }

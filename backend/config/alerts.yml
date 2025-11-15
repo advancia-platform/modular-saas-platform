@@ -1,0 +1,241 @@
+# Prometheus Alerting Rules for Advancia Pay Ledger
+# These rules define conditions that trigger alerts sent via Alertmanager
+
+groups:
+  # ═══════════════════════════════════════════════════════
+  # Application Health Alerts
+  # ═══════════════════════════════════════════════════════
+  - name: advancia-application
+    interval: 30s
+    rules:
+      # ─── Uptime Alert ───────────────────────────────
+      - alert: LowUptime
+        expr: advancia_uptime_percent < 99
+        for: 5m
+        labels:
+          severity: warning
+          component: status-page
+        annotations:
+          summary: "System uptime dropped below 99%"
+          description: "Current uptime is {{ $value }}% (threshold: 99%)"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── Critical Uptime Alert ──────────────────────
+      - alert: CriticalUptime
+        expr: advancia_uptime_percent < 95
+        for: 2m
+        labels:
+          severity: critical
+          component: status-page
+        annotations:
+          summary: "CRITICAL: System uptime below 95%"
+          description: "Current uptime is {{ $value }}% - immediate action required"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── High Error Rate ────────────────────────────
+      - alert: HighErrorRate
+        expr: sum(increase(http_requests_total{status=~"5.."}[5m])) > 50
+        for: 5m
+        labels:
+          severity: warning
+          component: backend-api
+        annotations:
+          summary: "High error rate detected"
+          description: "{{ $value }} 5xx errors in the last 5 minutes (threshold: 50)"
+          value: "{{ $value }} errors"
+          timestamp: "{{ .StartsAt }}"
+
+  # ═══════════════════════════════════════════════════════
+  # PM2 Process Health Alerts
+  # ═══════════════════════════════════════════════════════
+  - name: advancia-pm2
+    interval: 30s
+    rules:
+      # ─── PM2 Process Down ───────────────────────────
+      - alert: PM2ProcessDown
+        expr: pm2_process_up == 0
+        for: 1m
+        labels:
+          severity: critical
+          component: pm2
+        annotations:
+          summary: "PM2 process {{ $labels.name }} is down"
+          description: "Process {{ $labels.name }} has been down for more than 1 minute"
+          value: "Process down"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── High PM2 Restarts ──────────────────────────
+      - alert: HighPM2Restarts
+        expr: increase(pm2_process_restarts_total[10m]) > 3
+        for: 10m
+        labels:
+          severity: critical
+          component: pm2
+        annotations:
+          summary: "PM2 process restarted too many times"
+          description: "Process {{ $labels.name }} has restarted {{ $value }} times in the last 10 minutes (threshold: 3)"
+          value: "{{ $value }} restarts"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── PM2 Memory Leak ────────────────────────────
+      - alert: PM2MemoryLeak
+        expr: pm2_process_memory_bytes > 1073741824 # 1GB
+        for: 15m
+        labels:
+          severity: warning
+          component: pm2
+        annotations:
+          summary: "Potential memory leak in PM2 process"
+          description: "Process {{ $labels.name }} is using {{ $value | humanize }}B of memory (threshold: 1GB)"
+          value: "{{ $value | humanize }}B"
+          timestamp: "{{ .StartsAt }}"
+
+  # ═══════════════════════════════════════════════════════
+  # System Resource Alerts
+  # ═══════════════════════════════════════════════════════
+  - name: advancia-system
+    interval: 30s
+    rules:
+      # ─── High CPU Usage ─────────────────────────────
+      - alert: HighCPUUsage
+        expr: 100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 85
+        for: 5m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }} (threshold: 85%)"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── Warning CPU Usage ──────────────────────────
+      - alert: WarningCPUUsage
+        expr: 100 - (avg by(instance)(irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100) > 70
+        for: 10m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "Elevated CPU usage detected"
+          description: "CPU usage is {{ $value }}% on {{ $labels.instance }} (threshold: 70%)"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── High Memory Usage ──────────────────────────
+      - alert: HighMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 90
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }} (threshold: 90%)"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── Critical Memory Usage ──────────────────────
+      - alert: CriticalMemoryUsage
+        expr: (node_memory_MemTotal_bytes - node_memory_MemAvailable_bytes) / node_memory_MemTotal_bytes * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "CRITICAL: Memory usage above 95%"
+          description: "Memory usage is {{ $value }}% on {{ $labels.instance }} - immediate action required"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── High Disk Usage ────────────────────────────
+      - alert: HighDiskUsage
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          component: system
+        annotations:
+          summary: "High disk usage detected"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }} (threshold: 85%)"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── Critical Disk Usage ────────────────────────
+      - alert: CriticalDiskUsage
+        expr: (node_filesystem_size_bytes{mountpoint="/"} - node_filesystem_avail_bytes{mountpoint="/"}) / node_filesystem_size_bytes{mountpoint="/"} * 100 > 95
+        for: 2m
+        labels:
+          severity: critical
+          component: system
+        annotations:
+          summary: "CRITICAL: Disk usage above 95%"
+          description: "Disk usage is {{ $value }}% on {{ $labels.instance }} - immediate cleanup required"
+          value: "{{ $value }}%"
+          timestamp: "{{ .StartsAt }}"
+
+  # ═══════════════════════════════════════════════════════
+  # Response Time & Performance Alerts
+  # ═══════════════════════════════════════════════════════
+  - name: advancia-performance
+    interval: 30s
+    rules:
+      # ─── Slow Response Time (p95) ───────────────────
+      - alert: SlowResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 0.5
+        for: 5m
+        labels:
+          severity: warning
+          component: backend-api
+        annotations:
+          summary: "API response times are slow"
+          description: "p95 response time is {{ $value }}s (threshold: 0.5s)"
+          value: "{{ $value }}s"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── Very Slow Response Time (p99) ──────────────
+      - alert: VerySlowResponseTime
+        expr: histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 5m
+        labels:
+          severity: critical
+          component: backend-api
+        annotations:
+          summary: "API response times are critically slow"
+          description: "p99 response time is {{ $value }}s (threshold: 2s)"
+          value: "{{ $value }}s"
+          timestamp: "{{ .StartsAt }}"
+
+  # ═══════════════════════════════════════════════════════
+  # Monitoring Stack Health
+  # ═══════════════════════════════════════════════════════
+  - name: advancia-monitoring
+    interval: 30s
+    rules:
+      # ─── Prometheus Target Down ────────────────────
+      - alert: PrometheusTargetDown
+        expr: up == 0
+        for: 2m
+        labels:
+          severity: warning
+          component: monitoring
+        annotations:
+          summary: "Prometheus target {{ $labels.job }} is down"
+          description: "Target {{ $labels.instance }} for job {{ $labels.job }} has been down for more than 2 minutes"
+          value: "Target down"
+          timestamp: "{{ .StartsAt }}"
+
+      # ─── Too Many Prometheus Targets Down ───────────
+      - alert: TooManyTargetsDown
+        expr: count(up == 0) > 2
+        for: 5m
+        labels:
+          severity: critical
+          component: monitoring
+        annotations:
+          summary: "Multiple Prometheus targets are down"
+          description: "{{ $value }} targets are down - monitoring coverage is degraded"
+          value: "{{ $value }} targets"
+          timestamp: "{{ .StartsAt }}"

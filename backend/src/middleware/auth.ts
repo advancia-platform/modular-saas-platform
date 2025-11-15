@@ -2,6 +2,20 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { config } from "../jobs/config";
 import prisma from "../prismaClient";
+import { captureError } from "../utils/sentry";
+
+/**
+ * Helper to determine route group from URL path for Sentry tagging
+ */
+function getRouteGroup(path: string): string {
+  if (path.includes("/api/admin")) return "admin";
+  if (path.includes("/api/payments")) return "payments";
+  if (path.includes("/api/crypto")) return "crypto";
+  if (path.includes("/api/transactions")) return "transactions";
+  if (path.includes("/api/auth")) return "auth";
+  if (path.includes("/api/users")) return "users";
+  return "other";
+}
 
 export interface JWTPayload {
   userId: string;
@@ -24,7 +38,7 @@ export interface AuthRequest extends Request {
 export const authenticateToken = async (
   req: any,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   const authHeader = req.headers["authorization"];
   const token =
@@ -33,6 +47,23 @@ export const authenticateToken = async (
       : undefined;
 
   if (!token) {
+    // Log missing authentication attempt to Sentry
+    captureError(new Error("Missing authentication token"), {
+      tags: {
+        type: "security",
+        event: "missing_auth_token",
+        severity: "info",
+        routeGroup: getRouteGroup(req.originalUrl),
+      },
+      extra: {
+        attemptedRoute: `${req.method} ${req.originalUrl}`,
+        userAgent: req.headers["user-agent"],
+        ipAddress: req.ip || req.connection?.remoteAddress,
+        authHeaderProvided: !!authHeader,
+        timestamp: new Date().toISOString(),
+      },
+    });
+
     return res.status(401).json({ error: "Access token required" });
   }
 
@@ -83,9 +114,28 @@ export const authenticateToken = async (
     req.user = payload;
     next();
   } catch (error) {
+    // Log authentication failure to Sentry
+    captureError(error as Error, {
+      tags: {
+        type: "security",
+        event: "authentication_failure",
+        severity: "warning",
+        routeGroup: getRouteGroup(req.originalUrl),
+      },
+      extra: {
+        attemptedRoute: `${req.method} ${req.originalUrl}`,
+        userAgent: req.headers["user-agent"],
+        ipAddress: req.ip || req.connection?.remoteAddress,
+        tokenProvided: !!req.headers["authorization"],
+        timestamp: new Date().toISOString(),
+        errorMessage: (error as Error).message,
+      },
+    });
+
     return res.status(403).json({ error: "Invalid or expired token" });
   }
-}; /**
+};
+/**
  * Middleware to check if user is admin
  */
 export const requireAdmin = (req: any, res: Response, next: NextFunction) => {
@@ -96,6 +146,30 @@ export const requireAdmin = (req: any, res: Response, next: NextFunction) => {
   const isAdmin = req.user.role === "ADMIN";
 
   if (!isAdmin) {
+    // Log unauthorized admin access attempt to Sentry
+    captureError(new Error("Unauthorized admin access attempt"), {
+      tags: {
+        type: "security",
+        event: "unauthorized_admin_access",
+        severity: "warning",
+        routeGroup: getRouteGroup(req.originalUrl),
+      },
+      extra: {
+        userId: req.user.userId,
+        userEmail: req.user.email,
+        userRole: req.user.role,
+        attemptedRoute: `${req.method} ${req.originalUrl}`,
+        userAgent: req.headers["user-agent"],
+        ipAddress: req.ip || req.connection?.remoteAddress,
+        timestamp: new Date().toISOString(),
+      },
+      user: {
+        id: req.user.userId,
+        email: req.user.email,
+        role: req.user.role,
+      },
+    });
+
     return res.status(403).json({
       error: "Access denied: Admin privileges required",
       message: "You do not have permission to access this resource",
@@ -116,9 +190,41 @@ export const allowRoles = (...roles: string[]) => {
     }
 
     if (!roles.includes(req.user.role)) {
+      // Log unauthorized role-based access attempt to Sentry
+      captureError(
+        new Error(
+          `Unauthorized access attempt - required roles: ${roles.join(", ")}`
+        ),
+        {
+          tags: {
+            type: "security",
+            event: "unauthorized_role_access",
+            severity: "warning",
+            routeGroup: getRouteGroup(req.originalUrl),
+          },
+          extra: {
+            userId: req.user.userId,
+            userEmail: req.user.email,
+            userRole: req.user.role,
+            requiredRoles: roles,
+            attemptedRoute: `${req.method} ${req.originalUrl}`,
+            userAgent: req.headers["user-agent"],
+            ipAddress: req.ip || req.connection?.remoteAddress,
+            timestamp: new Date().toISOString(),
+          },
+          user: {
+            id: req.user.userId,
+            email: req.user.email,
+            role: req.user.role,
+          },
+        }
+      );
+
       return res.status(403).json({
         error: "Access denied",
-        message: `This resource requires one of the following roles: ${roles.join(", ")}`,
+        message: `This resource requires one of the following roles: ${roles.join(
+          ", "
+        )}`,
       });
     }
 
@@ -132,7 +238,7 @@ export const allowRoles = (...roles: string[]) => {
 export const restrictBackendAccess = (
   req: any,
   res: Response,
-  next: NextFunction,
+  next: NextFunction
 ) => {
   // Allow public routes
   const publicRoutes = [

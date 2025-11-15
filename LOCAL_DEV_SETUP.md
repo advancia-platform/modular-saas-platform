@@ -1,6 +1,7 @@
 # 🚀 Local Development Setup - Quick Start
 
 ## Problem
+
 The backend is failing to start because it can't connect to PostgreSQL database. The error occurs during startup migrations.
 
 ## Solution Options
@@ -62,6 +63,7 @@ npm run dev
 ## Environment Variables
 
 Make sure your `.env` file has:
+
 ```env
 DATABASE_URL=postgres://postgres:postgres@localhost:5432/advvancia
 PORT=4000
@@ -72,12 +74,14 @@ JWT_SECRET=dev_secret_key_change_in_prod
 ## Next Steps After Database Setup
 
 1. **Test Backend Locally:**
+
    ```bash
    cd backend
    npm run dev
    ```
 
 2. **Test PM2 Locally:**
+
    ```bash
    pm2 start ecosystem.config.js
    pm2 logs
@@ -92,6 +96,7 @@ JWT_SECRET=dev_secret_key_change_in_prod
 ## Troubleshooting
 
 ### Database Connection Issues
+
 ```bash
 # Check if PostgreSQL is running
 netstat -an | find "5432"
@@ -101,6 +106,7 @@ psql -h localhost -U postgres -d advvancia
 ```
 
 ### Migration Issues
+
 ```bash
 # Reset database
 dropdb advvancia
@@ -112,7 +118,8 @@ docker exec -it advancia-postgres createdb -U postgres advvancia
 ```
 
 ### PM2 Issues
-```bash
+
+````bash
 # Kill all PM2 processes
 pm2 kill
 
@@ -123,3 +130,4 @@ pm2 flush
 pm2 start ecosystem.config.js
 ```</content>
 <parameter name="filePath">c:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\-modular-saas-platform\LOCAL_DEV_SETUP.md
+````

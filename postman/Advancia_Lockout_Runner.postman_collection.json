@@ -1,0 +1,158 @@
+{
+  "info": {
+    "name": "Advancia Lockout Runner (Automated)",
+    "description": "Automated lockout testing with iteration-based failed login attempts. Run with 5+ iterations to trigger lockout policy.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "advancia-lockout-runner",
+    "version": "2.0.0"
+  },
+  "variable": [
+    {
+      "key": "attemptCount",
+      "value": "0",
+      "type": "number"
+    },
+    {
+      "key": "lockedAt",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global pre-request: Track iteration number",
+          "const iteration = pm.info.iteration + 1;",
+          "console.log(`\\n${'='.repeat(60)}`);",
+          "console.log(`🔄 ITERATION ${iteration} - ${pm.info.requestName}`);",
+          "console.log('='.repeat(60));"
+        ]
+      }
+    },
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "// Global test: Summary logging",
+          "const iteration = pm.info.iteration + 1;",
+          "console.log(`✓ Iteration ${iteration} completed\\n`);"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Failed Login Attempt (Iterative)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "exec": [
+              "// Increment attempt counter",
+              "let attemptCount = pm.collectionVariables.get('attemptCount') || 0;",
+              "attemptCount++;",
+              "pm.collectionVariables.set('attemptCount', attemptCount);",
+              "",
+              "console.log(`📊 Attempt #${attemptCount} of ${pm.info.iterationCount}`);",
+              "console.log(`   Using password: wrongpassword${attemptCount}`);"
+            ],
+            "type": "text/javascript"
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "const attemptCount = pm.collectionVariables.get('attemptCount');",
+              "const statusCode = pm.response.code;",
+              "const responseBody = pm.response.json();",
+              "",
+              "console.log(`📥 Response Status: ${statusCode}`);",
+              "console.log(`📥 Response Message: ${responseBody.error || responseBody.message || 'N/A'}`);",
+              "",
+              "if (statusCode === 401) {",
+              "    pm.test(`Attempt ${attemptCount}: Unauthorized (Expected)`, function () {",
+              "        pm.response.to.have.status(401);",
+              "    });",
+              "    console.log(`✅ Attempt ${attemptCount}: Failed as expected (401 Unauthorized)`);",
+              "    ",
+              "} else if (statusCode === 429) {",
+              "    pm.test(`Attempt ${attemptCount}: Lockout Triggered (Expected)`, function () {",
+              "        pm.response.to.have.status(429);",
+              "    });",
+              "    ",
+              "    // Record when lockout was triggered",
+              "    if (!pm.collectionVariables.get('lockedAt')) {",
+              "        pm.collectionVariables.set('lockedAt', new Date().toISOString());",
+              "        console.log(`🔒 LOCKOUT TRIGGERED at attempt ${attemptCount}!`);",
+              "        console.log(`🔒 locked_until should be set to ~15 minutes from now`);",
+              "    } else {",
+              "        console.log(`🔒 Account still locked (attempt ${attemptCount})`);",
+              "    }",
+              "    ",
+              "} else {",
+              "    pm.test(`Attempt ${attemptCount}: Unexpected status ${statusCode}`, function () {",
+              "        pm.expect.fail(`Expected 401 or 429, got ${statusCode}`);",
+              "    });",
+              "    console.log(`⚠️ Unexpected response: ${statusCode}`);",
+              "}",
+              "",
+              "// Summary after all iterations",
+              "if (pm.info.iteration === pm.info.iterationCount - 1) {",
+              "    console.log(`\\n${'='.repeat(60)}`);",
+              "    console.log('📊 FINAL SUMMARY');",
+              "    console.log('='.repeat(60));",
+              "    console.log(`Total attempts made: ${attemptCount}`);",
+              "    ",
+              "    const lockedAt = pm.collectionVariables.get('lockedAt');",
+              "    if (lockedAt) {",
+              "        console.log(`🔒 Account locked at: ${lockedAt}`);",
+              "        console.log(`✅ Lockout policy triggered successfully!`);",
+              "    } else {",
+              "        console.log(`⚠️ Lockout not triggered (may need more iterations)`);",
+              "    }",
+              "    ",
+              "    console.log(`\\n📝 Next Steps:`);",
+              "    console.log(`   1. Run database verification: .\\\\run-sql-monitor.ps1`);",
+              "    console.log(`   2. Check failed_attempts column (should be 5+)`);",
+              "    console.log(`   3. Check locked_until timestamp (should be set)`);",
+              "    console.log(`   4. Wait 15 minutes OR run: .\\\\quick-db-check.ps1 reset`);",
+              "    console.log('='.repeat(60) + '\\n');",
+              "}"
+            ],
+            "type": "text/javascript"
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/admin-login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "admin-login"]
+        },
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{adminEmail}}\",\n  \"password\": \"wrongpassword{{attemptCount}}\",\n  \"token\": \"000000\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "description": "Simulates failed login attempts. Run with 5+ iterations to trigger lockout.\n\n**Runner Settings:**\n- Iterations: 6 (to ensure lockout triggers)\n- Delay: 1000ms (1 second between attempts)\n- Data: None needed (uses collection variables)"
+      },
+      "response": []
+    }
+  ]
+}

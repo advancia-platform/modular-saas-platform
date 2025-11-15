@@ -1,0 +1,383 @@
+name: Environment-Aware Deployment
+
+on:
+  push:
+    branches:
+      - main        # Production
+      - uat         # User Acceptance Testing
+      - staging     # Staging/Development
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target environment'
+        required: true
+        type: choice
+        options:
+          - staging
+          - uat
+          - production
+
+jobs:
+  detect-environment:
+    name: Detect Deployment Environment
+    runs-on: ubuntu-latest
+    outputs:
+      environment: ${{ steps.set-env.outputs.environment }}
+      cf_zone_id: ${{ steps.set-env.outputs.cf_zone_id }}
+      cf_api_token: ${{ steps.set-env.outputs.cf_api_token }}
+      cf_record_id_api: ${{ steps.set-env.outputs.cf_record_id_api }}
+      cf_record_id_www: ${{ steps.set-env.outputs.cf_record_id_www }}
+      droplet_ip: ${{ steps.set-env.outputs.droplet_ip }}
+      droplet_user: ${{ steps.set-env.outputs.droplet_user }}
+      droplet_ssh_key: ${{ steps.set-env.outputs.droplet_ssh_key }}
+      slack_webhook: ${{ steps.set-env.outputs.slack_webhook }}
+      database_url: ${{ steps.set-env.outputs.database_url }}
+      redis_url: ${{ steps.set-env.outputs.redis_url }}
+    
+    steps:
+      - name: Determine environment
+        id: set-env
+        run: |
+          # Determine environment from branch or manual input
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            ENV="${{ inputs.environment }}"
+          elif [[ "${{ github.ref_name }}" == "main" ]]; then
+            ENV="production"
+          elif [[ "${{ github.ref_name }}" == "uat" ]]; then
+            ENV="uat"
+          else
+            ENV="staging"
+          fi
+          
+          echo "environment=$ENV" >> $GITHUB_OUTPUT
+          echo "🎯 Detected environment: $ENV"
+          
+          # Set environment-specific secrets
+          if [[ "$ENV" == "production" ]]; then
+            echo "cf_zone_id=${{ secrets.PROD_CF_ZONE_ID }}" >> $GITHUB_OUTPUT
+            echo "cf_api_token=${{ secrets.PROD_CF_API_TOKEN }}" >> $GITHUB_OUTPUT
+            echo "cf_record_id_api=${{ secrets.PROD_CF_RECORD_ID_API }}" >> $GITHUB_OUTPUT
+            echo "cf_record_id_www=${{ secrets.PROD_CF_RECORD_ID_WWW }}" >> $GITHUB_OUTPUT
+            echo "droplet_ip=${{ secrets.PROD_DROPLET_IP_BLUE }}" >> $GITHUB_OUTPUT
+            echo "droplet_user=${{ secrets.PROD_DROPLET_USER }}" >> $GITHUB_OUTPUT
+            echo "droplet_ssh_key=${{ secrets.PROD_DROPLET_SSH_KEY }}" >> $GITHUB_OUTPUT
+            echo "slack_webhook=${{ secrets.PROD_SLACK_WEBHOOK }}" >> $GITHUB_OUTPUT
+            echo "database_url=${{ secrets.PROD_DATABASE_URL }}" >> $GITHUB_OUTPUT
+            echo "redis_url=${{ secrets.PROD_REDIS_URL }}" >> $GITHUB_OUTPUT
+          elif [[ "$ENV" == "uat" ]]; then
+            echo "cf_zone_id=${{ secrets.UAT_CF_ZONE_ID }}" >> $GITHUB_OUTPUT
+            echo "cf_api_token=${{ secrets.UAT_CF_API_TOKEN }}" >> $GITHUB_OUTPUT
+            echo "cf_record_id_api=${{ secrets.UAT_CF_RECORD_ID_API }}" >> $GITHUB_OUTPUT
+            echo "cf_record_id_www=${{ secrets.UAT_CF_RECORD_ID_WWW }}" >> $GITHUB_OUTPUT
+            echo "droplet_ip=${{ secrets.UAT_DROPLET_IP }}" >> $GITHUB_OUTPUT
+            echo "droplet_user=${{ secrets.UAT_DROPLET_USER }}" >> $GITHUB_OUTPUT
+            echo "droplet_ssh_key=${{ secrets.UAT_DROPLET_SSH_KEY }}" >> $GITHUB_OUTPUT
+            echo "slack_webhook=${{ secrets.UAT_SLACK_WEBHOOK }}" >> $GITHUB_OUTPUT
+            echo "database_url=${{ secrets.UAT_DATABASE_URL }}" >> $GITHUB_OUTPUT
+            echo "redis_url=${{ secrets.UAT_REDIS_URL }}" >> $GITHUB_OUTPUT
+          else
+            echo "cf_zone_id=${{ secrets.STAGING_CF_ZONE_ID }}" >> $GITHUB_OUTPUT
+            echo "cf_api_token=${{ secrets.STAGING_CF_API_TOKEN }}" >> $GITHUB_OUTPUT
+            echo "cf_record_id_api=${{ secrets.STAGING_CF_RECORD_ID_API }}" >> $GITHUB_OUTPUT
+            echo "cf_record_id_www=${{ secrets.STAGING_CF_RECORD_ID_WWW }}" >> $GITHUB_OUTPUT
+            echo "droplet_ip=${{ secrets.STAGING_DROPLET_IP }}" >> $GITHUB_OUTPUT
+            echo "droplet_user=${{ secrets.STAGING_DROPLET_USER }}" >> $GITHUB_OUTPUT
+            echo "droplet_ssh_key=${{ secrets.STAGING_DROPLET_SSH_KEY }}" >> $GITHUB_OUTPUT
+            echo "slack_webhook=${{ secrets.STAGING_SLACK_WEBHOOK }}" >> $GITHUB_OUTPUT
+            echo "database_url=${{ secrets.STAGING_DATABASE_URL }}" >> $GITHUB_OUTPUT
+            echo "redis_url=${{ secrets.STAGING_REDIS_URL }}" >> $GITHUB_OUTPUT
+          fi
+
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+    needs: detect-environment
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: Run backend tests
+        working-directory: ./backend
+        run: npm test
+        env:
+          NODE_ENV: test
+
+      - name: Run frontend tests
+        working-directory: ./frontend
+        run: npm test
+        env:
+          NODE_ENV: test
+
+      - name: Build backend
+        working-directory: ./backend
+        run: npm run build
+
+      - name: Build frontend
+        working-directory: ./frontend
+        run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: https://api-${{ needs.detect-environment.outputs.environment }}.advancia.com
+
+  deploy:
+    name: Deploy to ${{ needs.detect-environment.outputs.environment }}
+    runs-on: ubuntu-latest
+    needs: [detect-environment, build-and-test]
+    environment: ${{ needs.detect-environment.outputs.environment }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ needs.detect-environment.outputs.droplet_ssh_key }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H ${{ needs.detect-environment.outputs.droplet_ip }} >> ~/.ssh/known_hosts
+
+      - name: Deploy application
+        env:
+          DROPLET_IP: ${{ needs.detect-environment.outputs.droplet_ip }}
+          DROPLET_USER: ${{ needs.detect-environment.outputs.droplet_user }}
+          ENVIRONMENT: ${{ needs.detect-environment.outputs.environment }}
+          DATABASE_URL: ${{ needs.detect-environment.outputs.database_url }}
+          REDIS_URL: ${{ needs.detect-environment.outputs.redis_url }}
+        run: |
+          echo "🚀 Deploying to $ENVIRONMENT environment at $DROPLET_IP"
+          
+          ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no $DROPLET_USER@$DROPLET_IP << 'EOF'
+            # Navigate to application directory
+            cd /opt/advancia || exit 1
+            
+            # Pull latest code
+            echo "📥 Pulling latest code from ${{ github.ref_name }}..."
+            git fetch origin
+            git checkout ${{ github.ref_name }}
+            git pull origin ${{ github.ref_name }}
+            
+            # Update environment file
+            echo "⚙️  Updating environment configuration..."
+            cat > .env << EOL
+          DATABASE_URL=${{ needs.detect-environment.outputs.database_url }}
+          REDIS_URL=${{ needs.detect-environment.outputs.redis_url }}
+          NODE_ENV=${{ needs.detect-environment.outputs.environment }}
+          API_URL=https://api-${{ needs.detect-environment.outputs.environment }}.advancia.com
+          FRONTEND_URL=https://www-${{ needs.detect-environment.outputs.environment }}.advancia.com
+          EOL
+            
+            # Rebuild and restart services
+            echo "🔨 Building and restarting services..."
+            docker-compose down
+            docker-compose build --no-cache
+            docker-compose up -d
+            
+            # Wait for services to be ready
+            echo "⏳ Waiting for services to start..."
+            sleep 30
+            
+            # Check service health
+            docker-compose ps
+            
+            echo "✅ Deployment to ${{ needs.detect-environment.outputs.environment }} completed"
+          EOF
+
+      - name: Health check
+        run: |
+          echo "🏥 Running health checks..."
+          
+          # Wait for application to be fully ready
+          sleep 10
+          
+          # Check backend health
+          BACKEND_URL="https://api-${{ needs.detect-environment.outputs.environment }}.advancia.com/health"
+          echo "Checking backend: $BACKEND_URL"
+          
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $BACKEND_URL)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Backend health check failed (HTTP $RESPONSE)"
+            exit 1
+          fi
+          echo "✅ Backend is healthy"
+          
+          # Check frontend health
+          FRONTEND_URL="https://www-${{ needs.detect-environment.outputs.environment }}.advancia.com"
+          echo "Checking frontend: $FRONTEND_URL"
+          
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code}" $FRONTEND_URL)
+          if [ "$RESPONSE" != "200" ]; then
+            echo "❌ Frontend health check failed (HTTP $RESPONSE)"
+            exit 1
+          fi
+          echo "✅ Frontend is healthy"
+
+  update-dns:
+    name: Update DNS Records
+    runs-on: ubuntu-latest
+    needs: [detect-environment, deploy]
+    if: success()
+    
+    steps:
+      - name: Update Cloudflare DNS
+        env:
+          CF_ZONE_ID: ${{ needs.detect-environment.outputs.cf_zone_id }}
+          CF_API_TOKEN: ${{ needs.detect-environment.outputs.cf_api_token }}
+          CF_RECORD_ID_API: ${{ needs.detect-environment.outputs.cf_record_id_api }}
+          CF_RECORD_ID_WWW: ${{ needs.detect-environment.outputs.cf_record_id_www }}
+          DROPLET_IP: ${{ needs.detect-environment.outputs.droplet_ip }}
+          ENVIRONMENT: ${{ needs.detect-environment.outputs.environment }}
+        run: |
+          echo "🌐 Updating DNS records for $ENVIRONMENT..."
+          
+          # Determine subdomain suffix
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            SUBDOMAIN_API="api"
+            SUBDOMAIN_WWW="www"
+          else
+            SUBDOMAIN_API="api-$ENVIRONMENT"
+            SUBDOMAIN_WWW="www-$ENVIRONMENT"
+          fi
+          
+          # Update API subdomain
+          echo "Updating $SUBDOMAIN_API.advancia.com → $DROPLET_IP"
+          API_RESPONSE=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_API" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{
+              \"type\": \"A\",
+              \"name\": \"$SUBDOMAIN_API.advancia.com\",
+              \"content\": \"$DROPLET_IP\",
+              \"ttl\": 120,
+              \"proxied\": true
+            }")
+          
+          if echo "$API_RESPONSE" | grep -q '"success":true'; then
+            echo "✅ API DNS record updated"
+          else
+            echo "❌ API DNS update failed"
+            echo "$API_RESPONSE"
+            exit 1
+          fi
+          
+          # Update WWW subdomain
+          echo "Updating $SUBDOMAIN_WWW.advancia.com → $DROPLET_IP"
+          WWW_RESPONSE=$(curl -s -X PATCH \
+            "https://api.cloudflare.com/client/v4/zones/$CF_ZONE_ID/dns_records/$CF_RECORD_ID_WWW" \
+            -H "Authorization: Bearer $CF_API_TOKEN" \
+            -H "Content-Type: application/json" \
+            --data "{
+              \"type\": \"A\",
+              \"name\": \"$SUBDOMAIN_WWW.advancia.com\",
+              \"content\": \"$DROPLET_IP\",
+              \"ttl\": 120,
+              \"proxied\": true
+            }")
+          
+          if echo "$WWW_RESPONSE" | grep -q '"success":true'; then
+            echo "✅ WWW DNS record updated"
+          else
+            echo "❌ WWW DNS update failed"
+            echo "$WWW_RESPONSE"
+            exit 1
+          fi
+          
+          echo "🎯 DNS propagation may take 1-2 minutes"
+
+  notify:
+    name: Send Deployment Notification
+    runs-on: ubuntu-latest
+    needs: [detect-environment, deploy, update-dns]
+    if: always()
+    
+    steps:
+      - name: Determine deployment status
+        id: status
+        run: |
+          if [[ "${{ needs.deploy.result }}" == "success" && "${{ needs.update-dns.result }}" == "success" ]]; then
+            echo "status=success" >> $GITHUB_OUTPUT
+            echo "color=good" >> $GITHUB_OUTPUT
+            echo "emoji=✅" >> $GITHUB_OUTPUT
+          else
+            echo "status=failure" >> $GITHUB_OUTPUT
+            echo "color=danger" >> $GITHUB_OUTPUT
+            echo "emoji=❌" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Send Slack notification
+        if: needs.detect-environment.outputs.slack_webhook != ''
+        env:
+          SLACK_WEBHOOK: ${{ needs.detect-environment.outputs.slack_webhook }}
+          ENVIRONMENT: ${{ needs.detect-environment.outputs.environment }}
+          STATUS: ${{ steps.status.outputs.status }}
+          COLOR: ${{ steps.status.outputs.color }}
+          EMOJI: ${{ steps.status.outputs.emoji }}
+        run: |
+          # Determine URLs
+          if [[ "$ENVIRONMENT" == "production" ]]; then
+            API_URL="https://api.advancia.com"
+            WEB_URL="https://www.advancia.com"
+          else
+            API_URL="https://api-$ENVIRONMENT.advancia.com"
+            WEB_URL="https://www-$ENVIRONMENT.advancia.com"
+          fi
+          
+          curl -X POST "$SLACK_WEBHOOK" \
+            -H 'Content-Type: application/json' \
+            -d "{
+              \"attachments\": [{
+                \"color\": \"$COLOR\",
+                \"title\": \"$EMOJI Deployment to $ENVIRONMENT\",
+                \"text\": \"Status: *$STATUS*\",
+                \"fields\": [
+                  {
+                    \"title\": \"Environment\",
+                    \"value\": \"$ENVIRONMENT\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Branch\",
+                    \"value\": \"${{ github.ref_name }}\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Commit\",
+                    \"value\": \"<https://github.com/${{ github.repository }}/commit/${{ github.sha }}|${GITHUB_SHA:0:7}>\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"Deployed by\",
+                    \"value\": \"${{ github.actor }}\",
+                    \"short\": true
+                  },
+                  {
+                    \"title\": \"API URL\",
+                    \"value\": \"<$API_URL|$API_URL>\",
+                    \"short\": false
+                  },
+                  {
+                    \"title\": \"Web URL\",
+                    \"value\": \"<$WEB_URL|$WEB_URL>\",
+                    \"short\": false
+                  }
+                ],
+                \"footer\": \"GitHub Actions\",
+                \"ts\": $(date +%s)
+              }]
+            }"
+          
+          echo "📣 Slack notification sent"

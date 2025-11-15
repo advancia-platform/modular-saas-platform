@@ -5,6 +5,7 @@ import * as nodemailer from "nodemailer";
 import { z } from "zod";
 import { config } from "../jobs/config";
 import { authenticateToken, requireApiKey } from "../middleware/auth";
+import { strictRateLimiter } from "../middleware/rateLimiterRedis";
 import { rateLimit } from "../middleware/security";
 import prisma from "../prismaClient";
 import {
@@ -67,7 +68,9 @@ router.post("/register", requireApiKey, async (req, res) => {
       data: {
         type: "NEW_USER",
         title: "🎉 New User Registration",
-        message: `${firstName || email} just signed up and is waiting for approval!`,
+        message: `${
+          firstName || email
+        } just signed up and is waiting for approval!`,
         userId: user.id,
         metadata: { email, firstName, lastName, username },
         actionUrl: `/admin/users/${user.id}`,
@@ -116,7 +119,7 @@ router.post("/register", requireApiKey, async (req, res) => {
 });
 
 // POST /api/auth/login
-router.post("/login", requireApiKey, async (req, res) => {
+router.post("/login", strictRateLimiter, requireApiKey, async (req, res) => {
   try {
     const { email, password } = req.body || {};
     if (!email || !password) {
@@ -314,58 +317,65 @@ router.post("/register-doctor", requireApiKey, async (req, res) => {
 });
 
 // POST /api/auth/login-doctor
-router.post("/login-doctor", requireApiKey, async (req, res) => {
-  try {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
+router.post(
+  "/login-doctor",
+  strictRateLimiter,
+  requireApiKey,
+  async (req, res) => {
+    try {
+      const { email, password } = req.body || {};
+      if (!email || !password) {
+        return res
+          .status(400)
+          .json({ error: "Email and password are required" });
+      }
+
+      const doctor = await prisma.doctor.findFirst({
+        where: { email },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          specialization: true,
+          status: true,
+          passwordHash: true,
+        },
+      });
+
+      if (!doctor || !doctor.passwordHash) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const valid = await bcrypt.compare(password, doctor.passwordHash);
+      if (!valid) {
+        return res.status(401).json({ error: "Invalid credentials" });
+      }
+
+      const token = jwt.sign(
+        { doctorId: doctor.id, email: doctor.email, type: "doctor" },
+        config.jwtSecret,
+        { expiresIn: "7d" }
+      );
+
+      return res.json({
+        message: "Doctor login successful",
+        token,
+        doctor: {
+          id: doctor.id,
+          email: doctor.email,
+          firstName: doctor.firstName,
+          lastName: doctor.lastName,
+          specialization: doctor.specialization,
+          status: doctor.status,
+        },
+      });
+    } catch (err) {
+      console.error("Doctor login error:", err);
+      return res.status(500).json({ error: "Failed to login doctor" });
     }
-
-    const doctor = await prisma.doctor.findFirst({
-      where: { email },
-      select: {
-        id: true,
-        email: true,
-        firstName: true,
-        lastName: true,
-        specialization: true,
-        status: true,
-        passwordHash: true,
-      },
-    });
-
-    if (!doctor || !doctor.passwordHash) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const valid = await bcrypt.compare(password, doctor.passwordHash);
-    if (!valid) {
-      return res.status(401).json({ error: "Invalid credentials" });
-    }
-
-    const token = jwt.sign(
-      { doctorId: doctor.id, email: doctor.email, type: "doctor" },
-      config.jwtSecret,
-      { expiresIn: "7d" }
-    );
-
-    return res.json({
-      message: "Doctor login successful",
-      token,
-      doctor: {
-        id: doctor.id,
-        email: doctor.email,
-        firstName: doctor.firstName,
-        lastName: doctor.lastName,
-        specialization: doctor.specialization,
-        status: doctor.status,
-      },
-    });
-  } catch (err) {
-    console.error("Doctor login error:", err);
-    return res.status(500).json({ error: "Failed to login doctor" });
   }
-});
+);
 
 // ------- OTP (Email Only) Flows (Redis-backed) ------- //
 const otpLimiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
@@ -686,7 +696,9 @@ router.post("/forgot-password", otpLimiter, async (req, res) => {
         from: process.env.SMTP_FROM_EMAIL || process.env.GMAIL_EMAIL,
         to: email,
         subject: "Reset your Advancia password",
-        html: `<p>Hi ${user.firstName || "there"},</p><p>You requested a password reset for your Advancia account.</p><p>Click the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p><p>This link will expire in 1 hour.</p><p>If you didn't request this reset, please ignore this email.</p><p>Best,<br>The Advancia Team</p>`,
+        html: `<p>Hi ${
+          user.firstName || "there"
+        },</p><p>You requested a password reset for your Advancia account.</p><p>Click the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p><p>This link will expire in 1 hour.</p><p>If you didn't request this reset, please ignore this email.</p><p>Best,<br>The Advancia Team</p>`,
       });
     } else {
       console.log(`[DEV] Password reset for ${email}: ${resetLink}`);
@@ -908,7 +920,9 @@ async function sendPasswordResetEmail(email: string, token: string) {
     },
   });
 
-  const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/reset-password?token=${token}`;
+  const resetUrl = `${
+    process.env.FRONTEND_URL || "http://localhost:3000"
+  }/reset-password?token=${token}`;
 
   await transporter.sendMail({
     from: process.env.SMTP_FROM_EMAIL || process.env.GMAIL_EMAIL,

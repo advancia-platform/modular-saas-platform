@@ -1,0 +1,201 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database - Staging
+  postgres-staging:
+    image: postgres:15-alpine
+    container_name: advancia-postgres-staging
+    environment:
+      POSTGRES_USER: ${STAGING_DB_USER:-staging_user}
+      POSTGRES_PASSWORD: ${STAGING_DB_PASSWORD:-staging_secure_pass_2024}
+      POSTGRES_DB: ${STAGING_DB_NAME:-advancia_staging}
+      POSTGRES_HOST_AUTH_METHOD: md5
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_staging_data:/var/lib/postgresql/data
+      - ./scripts/init-staging-db.sh:/docker-entrypoint-initdb.d/init.sh
+    networks:
+      - advancia-staging
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${STAGING_DB_USER:-staging_user}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  # Redis Cache - Staging
+  redis-staging:
+    image: redis:7-alpine
+    container_name: advancia-redis-staging
+    command: redis-server --requirepass ${STAGING_REDIS_PASSWORD:-staging_redis_pass_2024}
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis_staging_data:/data
+    networks:
+      - advancia-staging
+    healthcheck:
+      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+
+  # Backend API - Staging
+  backend-staging:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+      target: production
+    container_name: advancia-backend-staging
+    environment:
+      NODE_ENV: staging
+      PORT: 4001
+      DATABASE_URL: postgresql://${STAGING_DB_USER:-staging_user}:${STAGING_DB_PASSWORD:-staging_secure_pass_2024}@postgres-staging:5432/${STAGING_DB_NAME:-advancia_staging}
+      REDIS_URL: redis://:${STAGING_REDIS_PASSWORD:-staging_redis_pass_2024}@redis-staging:6379
+      JWT_SECRET: ${STAGING_JWT_SECRET}
+      JWT_REFRESH_SECRET: ${STAGING_JWT_REFRESH_SECRET}
+      FRONTEND_URL: ${STAGING_FRONTEND_URL:-https://staging.advancia.com}
+      API_URL: ${STAGING_API_URL:-https://staging-api.advancia.com}
+      
+      # Email Configuration
+      SMTP_HOST: ${STAGING_SMTP_HOST}
+      SMTP_PORT: ${STAGING_SMTP_PORT:-587}
+      SMTP_USER: ${STAGING_SMTP_USER}
+      SMTP_PASSWORD: ${STAGING_SMTP_PASSWORD}
+      SMTP_FROM: ${STAGING_SMTP_FROM:-noreply@staging.advancia.com}
+      
+      # Monitoring
+      SENTRY_DSN: ${STAGING_SENTRY_DSN}
+      SENTRY_ENVIRONMENT: staging
+      
+      # Payment Gateways (Test Mode)
+      CRYPTOMUS_API_KEY: ${STAGING_CRYPTOMUS_API_KEY}
+      CRYPTOMUS_MERCHANT_ID: ${STAGING_CRYPTOMUS_MERCHANT_ID}
+      STRIPE_SECRET_KEY: ${STAGING_STRIPE_SECRET_KEY}
+      STRIPE_WEBHOOK_SECRET: ${STAGING_STRIPE_WEBHOOK_SECRET}
+      
+      # Feature Flags
+      ENABLE_2FA: true
+      ENABLE_EMAIL_VERIFICATION: true
+      ENABLE_RATE_LIMITING: true
+      
+      # Logging
+      LOG_LEVEL: debug
+      ENABLE_REQUEST_LOGGING: true
+      
+    ports:
+      - "4001:4001"
+    depends_on:
+      postgres-staging:
+        condition: service_healthy
+      redis-staging:
+        condition: service_healthy
+    networks:
+      - advancia-staging
+    volumes:
+      - ./backend/logs:/app/logs
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:4001/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: unless-stopped
+
+  # Frontend - Staging
+  frontend-staging:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        NEXT_PUBLIC_API_URL: ${STAGING_API_URL:-https://staging-api.advancia.com}
+        NEXT_PUBLIC_ENV: staging
+    container_name: advancia-frontend-staging
+    environment:
+      NODE_ENV: production
+      NEXT_PUBLIC_API_URL: ${STAGING_API_URL:-https://staging-api.advancia.com}
+      NEXT_PUBLIC_SENTRY_DSN: ${STAGING_SENTRY_DSN}
+      NEXT_PUBLIC_SENTRY_ENVIRONMENT: staging
+      NEXT_PUBLIC_GA_ID: ${STAGING_GA_ID}
+    ports:
+      - "3001:3000"
+    depends_on:
+      - backend-staging
+    networks:
+      - advancia-staging
+    restart: unless-stopped
+
+  # Nginx Reverse Proxy - Staging
+  nginx-staging:
+    image: nginx:alpine
+    container_name: advancia-nginx-staging
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/staging.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+      - nginx_staging_logs:/var/log/nginx
+    depends_on:
+      - backend-staging
+      - frontend-staging
+    networks:
+      - advancia-staging
+    restart: unless-stopped
+
+  # Prometheus - Monitoring
+  prometheus-staging:
+    image: prom/prometheus:latest
+    container_name: advancia-prometheus-staging
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+      - '--web.console.templates=/usr/share/prometheus/consoles'
+    ports:
+      - "9091:9090"
+    volumes:
+      - ./monitoring/prometheus-staging.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_staging_data:/prometheus
+    networks:
+      - advancia-staging
+    restart: unless-stopped
+
+  # Grafana - Dashboards
+  grafana-staging:
+    image: grafana/grafana:latest
+    container_name: advancia-grafana-staging
+    environment:
+      GF_SECURITY_ADMIN_USER: ${STAGING_GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${STAGING_GRAFANA_PASSWORD}
+      GF_SERVER_ROOT_URL: ${STAGING_GRAFANA_URL:-https://staging-grafana.advancia.com}
+    ports:
+      - "3001:3000"
+    volumes:
+      - grafana_staging_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    depends_on:
+      - prometheus-staging
+    networks:
+      - advancia-staging
+    restart: unless-stopped
+
+networks:
+  advancia-staging:
+    driver: bridge
+    name: advancia-staging
+
+volumes:
+  postgres_staging_data:
+    name: advancia_postgres_staging_data
+  redis_staging_data:
+    name: advancia_redis_staging_data
+  prometheus_staging_data:
+    name: advancia_prometheus_staging_data
+  grafana_staging_data:
+    name: advancia_grafana_staging_data
+  nginx_staging_logs:
+    name: advancia_nginx_staging_logs

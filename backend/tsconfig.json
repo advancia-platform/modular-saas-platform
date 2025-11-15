@@ -4,7 +4,7 @@
     "module": "Node16",
     "moduleResolution": "Node16",
     "lib": ["ES2020"],
-    "types": ["jest", "node"],
+    "types": ["node"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": false,
@@ -19,9 +19,5 @@
     "outDir": "./dist"
   },
   "include": ["src/**/*", "tests/**/*"],
-  "exclude": [
-    "node_modules",
-    "dist",
-    "src/routes.bak"
-  ]
+  "exclude": ["node_modules", "dist", "src/routes.bak"]
 }

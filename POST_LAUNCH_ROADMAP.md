@@ -155,11 +155,12 @@ By pacing rollout this way:
 ---
 
 ## 🔹 Breakdown
-- **Auth & Security** → must be complete before payments (JWT, bcrypt, WAF, audit logs).  
-- **Payments** → depends on secure auth (Stripe, Plaid, webhooks).  
-- **Dashboard & UX** → depends on payments data (profiles, analytics, notifications).  
-- **Monitoring & Ops** → needed before scaling (Sentry, Datadog, backups).  
-- **Scale & Enhancements** → only after monitoring is solid (multi‑tenancy, Kubernetes, Zero Trust).  
+
+- **Auth & Security** → must be complete before payments (JWT, bcrypt, WAF, audit logs).
+- **Payments** → depends on secure auth (Stripe, Plaid, webhooks).
+- **Dashboard & UX** → depends on payments data (profiles, analytics, notifications).
+- **Monitoring & Ops** → needed before scaling (Sentry, Datadog, backups).
+- **Scale & Enhancements** → only after monitoring is solid (multi‑tenancy, Kubernetes, Zero Trust).
 
 ---
 

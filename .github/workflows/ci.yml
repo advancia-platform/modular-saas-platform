@@ -8,39 +8,40 @@ on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy to'
+        description: "Environment to deploy to"
         required: true
-        default: 'staging'
+        default: "staging"
         type: choice
         options:
           - staging
           - production
       skip_tests:
-        description: 'Skip running tests'
+        description: "Skip running tests"
         type: boolean
         default: false
 
 jobs:
-  backend:
-    name: Backend Build
+  build:
+    name: Build Frontend & Backend
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
     env:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/test_db"
       JWT_SECRET: "test-jwt-secret-key-for-ci-only"
       API_KEY: "ci-api-key-123"
       NODE_ENV: "test"
+      NEXT_PUBLIC_API_URL: https://api.advanciapayledger.com
+      NEXT_PUBLIC_API_KEY: dev-api-key-123
     steps:
       - uses: actions/checkout@v4
-      
+
       - uses: actions/setup-node@v4
         with:
           node-version: 22
           cache: "npm"
-          cache-dependency-path: backend/package-lock.json
-      
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
       # Cache Prisma generated client
       - name: Cache Prisma Client
         uses: actions/cache@v4
@@ -51,7 +52,7 @@ jobs:
           key: ${{ runner.os }}-prisma-${{ hashFiles('backend/prisma/schema.prisma') }}
           restore-keys: |
             ${{ runner.os }}-prisma-
-      
+
       # Cache TypeScript build output
       - name: Cache TypeScript Build
         uses: actions/cache@v4
@@ -60,29 +61,7 @@ jobs:
           key: ${{ runner.os }}-backend-build-${{ hashFiles('backend/src/**/*.ts', 'backend/tsconfig.json') }}
           restore-keys: |
             ${{ runner.os }}-backend-build-
-      
-      - run: npm ci
-      - run: npx prisma generate
-      - run: npm run build
 
-  frontend:
-    name: Frontend Build
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: frontend
-    env:
-      NEXT_PUBLIC_API_URL: https://api.advanciapayledger.com
-      NEXT_PUBLIC_API_KEY: dev-api-key-123
-    steps:
-      - uses: actions/checkout@v4
-      
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: "npm"
-          cache-dependency-path: frontend/package-lock.json
-      
       # Cache Next.js build output
       - name: Cache Next.js Build
         uses: actions/cache@v4
@@ -94,6 +73,111 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-nextjs-${{ hashFiles('frontend/package-lock.json') }}-
             ${{ runner.os }}-nextjs-
-      
-      - run: npm ci
-      - run: npm run build
+
+      # Install dependencies for both
+      - name: Install Backend Dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      # Build Backend
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        working-directory: backend
+
+      - name: Build Backend
+        run: npm run build
+        working-directory: backend
+
+      # Build Frontend
+      - name: Build Frontend
+        run: npm run build
+        working-directory: frontend
+
+  coverage:
+    name: Run Tests with Coverage
+    runs-on: ubuntu-latest
+    needs: build
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: advancia_payledger_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/advancia_payledger_test
+      TEST_DATABASE_URL: postgresql://postgres:postgres@localhost:5432/advancia_payledger_test
+      NODE_ENV: test
+      JWT_SECRET: test-jwt-secret-for-ci
+      API_KEY: test-api-key-ci
+      NEXT_PUBLIC_API_URL: https://api.advanciapayledger.com
+      NEXT_PUBLIC_API_KEY: dev-api-key-123
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "npm"
+          cache-dependency-path: |
+            backend/package-lock.json
+            frontend/package-lock.json
+
+      # Install dependencies
+      - name: Install Backend Dependencies
+        run: npm ci
+        working-directory: backend
+
+      - name: Install Frontend Dependencies
+        run: npm ci
+        working-directory: frontend
+
+      # Setup backend
+      - name: Generate Prisma Client
+        run: npx prisma generate
+        working-directory: backend
+
+      - name: Run database migrations
+        run: npx prisma migrate deploy
+        working-directory: backend
+
+      # Run backend tests with coverage
+      - name: Run Backend Tests with Coverage
+        run: npm run test:coverage
+        working-directory: backend
+
+      # Run frontend tests with coverage
+      - name: Run Frontend Tests with Coverage
+        run: npm run test -- --coverage
+        working-directory: frontend
+
+      # Merge coverage reports
+      - name: Merge Coverage Reports
+        run: |
+          npm install -g lcov-result-merger
+          lcov-result-merger \
+            ./backend/coverage/lcov.info \
+            ./frontend/coverage/lcov.info \
+            > ./coverage/lcov.info
+
+      # Upload merged coverage to Codecov
+      - name: Upload Coverage to Codecov
+        uses: codecov/codecov-action@v4
+        with:
+          flags: combined
+          name: full-project-coverage
+          fail_ci_if_error: false
+          files: ./coverage/lcov.info

@@ -1,5 +1,11 @@
 import * as Sentry from "@sentry/node";
-import { httpIntegration, consoleIntegration, onUncaughtExceptionIntegration, onUnhandledRejectionIntegration } from "@sentry/node";
+import {
+  consoleIntegration,
+  httpIntegration,
+  onUncaughtExceptionIntegration,
+  onUnhandledRejectionIntegration,
+} from "@sentry/node";
+// @ts-ignore - Optional profiling package
 import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 // Initialize Sentry for error tracking and performance monitoring
@@ -33,7 +39,11 @@ export function initSentry() {
       // Filter out common non-errors
       if (event.exception) {
         const error = hint.originalException;
-        if (error && error instanceof Error && typeof error.message === "string") {
+        if (
+          error &&
+          error instanceof Error &&
+          typeof error.message === "string"
+        ) {
           // Filter out network errors that are expected
           if (
             error.message.includes("ECONNREFUSED") ||
@@ -118,11 +128,3 @@ export function addBreadcrumb(
     });
   }
 }
-
-
-
-
-
-
-
-

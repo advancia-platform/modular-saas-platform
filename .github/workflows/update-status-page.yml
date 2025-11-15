@@ -1,0 +1,71 @@
+name: Update Status Page
+
+on:
+  schedule:
+    # Run every 5 minutes
+    - cron: "*/5 * * * *"
+  workflow_dispatch: # Allow manual trigger
+  push:
+    branches:
+      - main
+    paths:
+      - "backend/logs/**"
+      - "backend/scripts/generate-status.js"
+
+jobs:
+  update-status:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Download logs from server (optional)
+        if: ${{ secrets.SERVER_SSH_KEY != '' }}
+        run: |
+          mkdir -p backend/logs
+          echo "${{ secrets.SERVER_SSH_KEY }}" > /tmp/ssh_key
+          chmod 600 /tmp/ssh_key
+          scp -i /tmp/ssh_key -o StrictHostKeyChecking=no \
+            ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_HOST }}:/var/log/advancia/*.log \
+            backend/logs/ || echo "Could not download logs from server"
+          rm /tmp/ssh_key
+
+      - name: Generate status.json
+        run: |
+          cd backend
+          node scripts/generate-status.js
+
+      - name: Commit and push status.json
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+          git add backend/public/status.json
+          git diff --quiet && git diff --staged --quiet || \
+            (git commit -m "chore: update status.json [skip ci]" && git push)
+
+      - name: Upload status as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: status-report
+          path: backend/public/status.json
+          retention-days: 7
+
+      - name: Print status summary
+        run: |
+          echo "📊 Status Page Updated"
+          cat backend/public/status.json | jq '.overallStatus, .metrics.uptime'

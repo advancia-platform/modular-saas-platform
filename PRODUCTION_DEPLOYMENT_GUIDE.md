@@ -1,11 +1,13 @@
 # 🚀 Production Deployment Guide - Advancia PayLedger
 
 ## Overview
+
 Complete production deployment workflow using PM2 with built-in log rotation, environment management, and auto-restart capabilities.
 
 ## 📋 Prerequisites
 
 ### Server Requirements
+
 - Ubuntu 20.04+ or CentOS 7+
 - Node.js 18+ installed
 - PM2 installed globally (`npm install -g pm2`)
@@ -14,6 +16,7 @@ Complete production deployment workflow using PM2 with built-in log rotation, en
 - Environment files prepared
 
 ### Environment Setup
+
 ```bash
 # Clone repository
 git clone https://github.com/muchaeljohn739337-cloud/-modular-saas-platform.git
@@ -35,6 +38,7 @@ nano frontend/.env.production
 ### Phase 1: Staging Deployment & Testing
 
 #### 1. Deploy to Staging
+
 ```bash
 # Switch to staging branch (if using branches)
 git checkout staging
@@ -47,6 +51,7 @@ git pull origin main
 ```
 
 #### 2. Build and Start Services
+
 ```bash
 # Make deploy script executable
 chmod +x deploy.sh
@@ -56,6 +61,7 @@ chmod +x deploy.sh
 ```
 
 #### 3. Verify Log Rotation Setup
+
 ```bash
 # Check PM2 status
 pm2 list
@@ -72,6 +78,7 @@ pm2 show advancia-backend | grep -A 10 logrotate
 ```
 
 #### 4. Test Health Endpoints
+
 ```bash
 # Backend health check
 curl http://localhost:4000/health
@@ -84,6 +91,7 @@ curl http://localhost:4000/api/health/db
 ```
 
 #### 5. Load Testing (Optional)
+
 ```bash
 # Simple load test
 ab -n 1000 -c 10 http://localhost:4000/health
@@ -97,6 +105,7 @@ pm2 monit
 ### Phase 2: Production Deployment
 
 #### 1. Pre-Deployment Checklist
+
 - [ ] Environment variables configured
 - [ ] SSL certificates valid
 - [ ] Database backups created
@@ -104,6 +113,7 @@ pm2 monit
 - [ ] Monitoring alerts configured
 
 #### 2. Zero-Downtime Deployment
+
 ```bash
 # Connect to production server
 ssh user@production-server
@@ -119,6 +129,7 @@ git pull origin main
 ```
 
 #### 3. Post-Deployment Verification
+
 ```bash
 # Check all services are running
 pm2 list
@@ -139,12 +150,14 @@ openssl s_client -connect advanciapayledger.com:443 -servername advanciapayledge
 ## 🔧 PM2 Ecosystem Configuration
 
 ### Key Features
+
 - **Log Rotation**: 10MB max, 7 day retention, gzip compression
 - **Auto-Restart**: Memory limits, health checks, graceful restarts
 - **Environment Management**: Separate configs for staging/production
 - **Process Monitoring**: Built-in monitoring and alerting
 
 ### Configuration Details
+
 ```javascript
 // ecosystem.config.js highlights
 {
@@ -168,6 +181,7 @@ openssl s_client -connect advanciapayledger.com:443 -servername advanciapayledge
 ```
 
 ### PM2 Commands Reference
+
 ```bash
 # Start all services
 pm2 start ecosystem.config.js
@@ -204,6 +218,7 @@ pm2 startup
 ## 📊 Monitoring & Maintenance
 
 ### Log Management
+
 ```bash
 # View current logs
 pm2 logs advancia-backend
@@ -221,6 +236,7 @@ pm2 reloadLogs
 ```
 
 ### Performance Monitoring
+
 ```bash
 # PM2 monitoring
 pm2 monit
@@ -235,6 +251,7 @@ curl http://localhost:4000/metrics  # If implemented
 ```
 
 ### Backup Strategy
+
 ```bash
 # Database backup
 pg_dump -U postgres -h localhost advancia_payledger > backup_$(date +%Y%m%d_%H%M%S).sql
@@ -253,6 +270,7 @@ cp ecosystem.config.js ecosystem.config.js.backup
 ### Common Issues
 
 #### Services Not Starting
+
 ```bash
 # Check PM2 status
 pm2 list
@@ -268,6 +286,7 @@ pm2 restart ecosystem.config.js --log-level debug
 ```
 
 #### Log Rotation Not Working
+
 ```bash
 # Check if pm2-logrotate is installed
 pm2 list | grep logrotate
@@ -283,6 +302,7 @@ pm2 reloadLogs
 ```
 
 #### Memory Issues
+
 ```bash
 # Check memory usage
 pm2 monit
@@ -295,6 +315,7 @@ pm2 set advancia-backend max_memory_restart 2G
 ```
 
 #### Port Conflicts
+
 ```bash
 # Check what's using ports
 netstat -tulpn | grep :4000
@@ -307,6 +328,7 @@ sudo kill -9 <PID>
 ```
 
 ### Health Check Failures
+
 ```bash
 # Manual health check
 curl http://localhost:4000/health
@@ -326,6 +348,7 @@ curl http://localhost:4000/api/health/db
 ## 🔄 Rollback Procedures
 
 ### Quick Rollback
+
 ```bash
 # Stop current deployment
 pm2 stop ecosystem.config.js
@@ -339,6 +362,7 @@ git checkout <previous-commit-hash>
 ```
 
 ### Emergency Rollback
+
 ```bash
 # Stop all services
 pm2 kill
@@ -356,6 +380,7 @@ pm2 start ecosystem.config.js
 ## 📈 Scaling Considerations
 
 ### Horizontal Scaling
+
 ```javascript
 // ecosystem.config.js for multiple instances
 {
@@ -367,6 +392,7 @@ pm2 start ecosystem.config.js
 ```
 
 ### Vertical Scaling
+
 ```javascript
 // Increase memory limits
 {
@@ -376,6 +402,7 @@ pm2 start ecosystem.config.js
 ```
 
 ### Database Scaling
+
 - Implement connection pooling
 - Add read replicas
 - Consider database clustering
@@ -385,6 +412,7 @@ pm2 start ecosystem.config.js
 ## 🔒 Security Checklist
 
 ### Pre-Deployment
+
 - [ ] SSL certificates valid and current
 - [ ] Environment variables encrypted
 - [ ] Database credentials rotated
@@ -392,6 +420,7 @@ pm2 start ecosystem.config.js
 - [ ] SSH keys updated
 
 ### Post-Deployment
+
 - [ ] Security headers enabled
 - [ ] Rate limiting active
 - [ ] CORS properly configured
@@ -402,6 +431,7 @@ pm2 start ecosystem.config.js
 ## 📞 Support & Monitoring
 
 ### Alert Configuration
+
 ```bash
 # PM2 alerts (requires PM2 Plus)
 pm2 link <secret> <public>
@@ -415,6 +445,7 @@ pm2 link <secret> <public>
 ```
 
 ### Contact Information
+
 - **DevOps Team**: devops@advanciapayledger.com
 - **Emergency**: +1-XXX-XXX-XXXX
 - **Documentation**: https://github.com/muchaeljohn739337-cloud/-modular-saas-platform
@@ -424,6 +455,7 @@ pm2 link <secret> <public>
 ## ✅ Success Metrics
 
 After successful deployment, verify:
+
 - [ ] All services running (pm2 list)
 - [ ] Health checks passing
 - [ ] Logs rotating properly
@@ -434,6 +466,6 @@ After successful deployment, verify:
 
 ---
 
-*Last updated: November 14, 2025*
-*Version: 1.0.0*</content>
+_Last updated: November 14, 2025_
+_Version: 1.0.0_</content>
 <parameter name="filePath">c:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\-modular-saas-platform\PRODUCTION_DEPLOYMENT_GUIDE.md

@@ -174,7 +174,8 @@ sudo chown deployer:deployer /app
 cd /app
 
 # Clone your repository
-git clone https://github.com/pdtribe181-prog/-modular-saas-platform.git
+# Clone repository
+git clone https://github.com/muchaeljohn739337-cloud/-modular-saas-platform.git
 cd -modular-saas-platform
 
 # Checkout main branch

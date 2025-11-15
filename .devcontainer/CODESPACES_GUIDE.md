@@ -4,7 +4,9 @@
 
 ### 1. Create a Codespace
 
-- Go to: https://github.com/pdtribe181-prog/-modular-saas-platform
+## Quick Start
+
+- Go to: https://github.com/muchaeljohn739337-cloud/-modular-saas-platform
 - Click **Code** → **Codespaces** → **Create codespace on main**
 
 ### 2. Automatic Setup

@@ -1,0 +1,169 @@
+# Alertmanager Configuration for Advancia Pay Ledger
+# Routes Prometheus alerts to Slack + Email channels
+
+global:
+  resolve_timeout: 5m
+
+  # Email settings (Gmail SMTP)
+  smtp_smarthost: "smtp.gmail.com:587"
+  smtp_from: "advancia.alerts@gmail.com"
+  smtp_auth_username: "advancia.alerts@gmail.com"
+  smtp_auth_password: "YOUR_APP_PASSWORD" # Replace with actual Gmail App Password
+  smtp_require_tls: true
+
+# Routing tree
+route:
+  # Default receiver for all alerts
+  receiver: "slack-notifications"
+
+  # Group alerts by name to reduce noise
+  group_by: ["alertname", "severity"]
+
+  # Wait 30s before sending initial notification (collect grouped alerts)
+  group_wait: 30s
+
+  # Wait 5m before sending new alerts for existing group
+  group_interval: 5m
+
+  # Resend alerts every 1 hour if still firing
+  repeat_interval: 1h
+
+  # Child routes for specific alert types
+  routes:
+    # Critical alerts go to both Slack and Email
+    - match:
+        severity: critical
+      receiver: "slack-and-email"
+      repeat_interval: 30m # More frequent notifications for critical
+
+    # Warning alerts go to Slack only
+    - match:
+        severity: warning
+      receiver: "slack-notifications"
+      repeat_interval: 1h
+
+# Receivers (notification channels)
+receivers:
+  # ─── Slack Only ──────────────────────────────────
+  - name: "slack-notifications"
+    slack_configs:
+      - send_resolved: true
+        channel: "#ops-alerts"
+        api_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+        title: '{{ if eq .Status "firing" }}🚨{{ else }}✅{{ end }} {{ .CommonAnnotations.summary }}'
+        text: |
+          *Alert:* {{ .CommonAnnotations.summary }}
+          *Status:* {{ .Status | toUpper }}
+          *Severity:* {{ .CommonLabels.severity }}
+          *Details:* {{ .CommonAnnotations.description }}
+          {{ range .Alerts }}
+          • *Instance:* {{ .Labels.instance }}
+          • *Value:* {{ .Annotations.value }}
+          {{ end }}
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+
+  # ─── Email Only ──────────────────────────────────
+  - name: "email-notifications"
+    email_configs:
+      - to: "ops@advanciapayledger.com"
+        send_resolved: true
+        headers:
+          Subject: '{{ if eq .Status "firing" }}[ALERT]{{ else }}[RESOLVED]{{ end }} {{ .CommonAnnotations.summary }}'
+        html: |
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family: Arial, sans-serif;">
+            <h2 style="color: {{ if eq .Status "firing" }}#d32f2f{{ else }}#388e3c{{ end }};">
+              {{ if eq .Status "firing" }}🚨 Alert Triggered{{ else }}✅ Alert Resolved{{ end }}
+            </h2>
+            <p><strong>Alert:</strong> {{ .CommonAnnotations.summary }}</p>
+            <p><strong>Status:</strong> {{ .Status | toUpper }}</p>
+            <p><strong>Severity:</strong> {{ .CommonLabels.severity }}</p>
+            <p><strong>Details:</strong> {{ .CommonAnnotations.description }}</p>
+            
+            <h3>Affected Instances:</h3>
+            <ul>
+            {{ range .Alerts }}
+              <li>
+                <strong>{{ .Labels.instance }}</strong><br>
+                Value: {{ .Annotations.value }}<br>
+                Started: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+              </li>
+            {{ end }}
+            </ul>
+            
+            <hr>
+            <p style="font-size: 12px; color: #666;">
+              Sent by Advancia Alertmanager at {{ .CommonAnnotations.timestamp }}
+            </p>
+          </body>
+          </html>
+
+  # ─── Slack + Email (Critical Alerts) ────────────
+  - name: "slack-and-email"
+    slack_configs:
+      - send_resolved: true
+        channel: "#ops-alerts"
+        api_url: "https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX"
+        title: '{{ if eq .Status "firing" }}🚨 CRITICAL{{ else }}✅{{ end }} {{ .CommonAnnotations.summary }}'
+        text: |
+          *Alert:* {{ .CommonAnnotations.summary }}
+          *Status:* {{ .Status | toUpper }}
+          *Severity:* {{ .CommonLabels.severity }}
+          *Details:* {{ .CommonAnnotations.description }}
+          {{ range .Alerts }}
+          • *Instance:* {{ .Labels.instance }}
+          • *Value:* {{ .Annotations.value }}
+          {{ end }}
+
+          📧 *Email sent to ops team*
+        color: '{{ if eq .Status "firing" }}danger{{ else }}good{{ end }}'
+    email_configs:
+      - to: "ops@advanciapayledger.com,cto@advanciapayledger.com"
+        send_resolved: true
+        headers:
+          Subject: '[CRITICAL] {{ if eq .Status "firing" }}ALERT{{ else }}RESOLVED{{ end }}: {{ .CommonAnnotations.summary }}'
+        html: |
+          <!DOCTYPE html>
+          <html>
+          <body style="font-family: Arial, sans-serif;">
+            <div style="background: #d32f2f; color: white; padding: 20px; border-radius: 5px;">
+              <h1 style="margin: 0;">🚨 CRITICAL ALERT</h1>
+            </div>
+            <div style="padding: 20px; background: #f5f5f5; margin-top: 10px;">
+              <h2 style="color: {{ if eq .Status "firing" }}#d32f2f{{ else }}#388e3c{{ end }};">
+                {{ if eq .Status "firing" }}Alert Triggered{{ else }}Alert Resolved{{ end }}
+              </h2>
+              <p><strong>Alert:</strong> {{ .CommonAnnotations.summary }}</p>
+              <p><strong>Status:</strong> {{ .Status | toUpper }}</p>
+              <p><strong>Severity:</strong> CRITICAL</p>
+              <p><strong>Details:</strong> {{ .CommonAnnotations.description }}</p>
+              
+              <h3>Affected Instances:</h3>
+              <ul>
+              {{ range .Alerts }}
+                <li>
+                  <strong>{{ .Labels.instance }}</strong><br>
+                  Value: {{ .Annotations.value }}<br>
+                  Started: {{ .StartsAt.Format "2006-01-02 15:04:05" }}
+                </li>
+              {{ end }}
+              </ul>
+            </div>
+            <div style="padding: 10px; background: #fff3cd; border-left: 4px solid #ffc107; margin-top: 20px;">
+              <strong>⚠️ Action Required:</strong> Please investigate immediately and update the incident status.
+            </div>
+            <hr>
+            <p style="font-size: 12px; color: #666;">
+              Sent by Advancia Alertmanager • <a href="https://status.advanciapayledger.com">View Status Page</a>
+            </p>
+          </body>
+          </html>
+
+# Inhibition rules (suppress less severe alerts when critical firing)
+inhibit_rules:
+  - source_match:
+      severity: "critical"
+    target_match:
+      severity: "warning"
+    equal: ["alertname", "instance"]

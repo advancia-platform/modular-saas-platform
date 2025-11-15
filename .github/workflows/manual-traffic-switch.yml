@@ -1,0 +1,107 @@
+name: Manual Traffic Switch
+
+on:
+  workflow_dispatch:
+    inputs:
+      target_environment:
+        description: 'Switch traffic to which environment?'
+        required: true
+        type: choice
+        options:
+          - green
+          - blue
+      reason:
+        description: 'Reason for traffic switch'
+        required: true
+        type: string
+
+jobs:
+  confirm-and-switch:
+    name: Switch Production Traffic
+    runs-on: ubuntu-latest
+    environment: production
+    
+    steps:
+      - name: Set environment variables
+        id: set-env
+        run: |
+          if [ "${{ github.event.inputs.target_environment }}" == "green" ]; then
+            echo "TARGET_IP=${{ secrets.DROPLET_IP_GREEN }}" >> $GITHUB_OUTPUT
+            echo "TARGET_URL=https://green.advancia.com" >> $GITHUB_OUTPUT
+            echo "ENV_COLOR=🟢 Green" >> $GITHUB_OUTPUT
+            echo "OLD_ENV=🔵 Blue" >> $GITHUB_OUTPUT
+          else
+            echo "TARGET_IP=${{ secrets.DROPLET_IP_BLUE }}" >> $GITHUB_OUTPUT
+            echo "TARGET_URL=https://blue.advancia.com" >> $GITHUB_OUTPUT
+            echo "ENV_COLOR=🔵 Blue" >> $GITHUB_OUTPUT
+            echo "OLD_ENV=🟢 Green" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Pre-switch health check
+        run: |
+          echo "Checking health of target environment..."
+          if curl -f -s "${{ steps.set-env.outputs.TARGET_URL }}/api/health" | grep -q "ok"; then
+            echo "✅ Target environment is healthy"
+          else
+            echo "❌ Target environment health check failed"
+            exit 1
+          fi
+
+      - name: Notify traffic switch start
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"⚠️ *MANUAL TRAFFIC SWITCH INITIATED*\n\n*Target:* ${{ steps.set-env.outputs.ENV_COLOR }}\n*Reason:* ${{ github.event.inputs.reason }}\n*Initiated by:* ${{ github.actor }}\n*Status:* In Progress...\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Update DNS records
+        run: |
+          # Update main production DNS
+          curl -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/dns_records/${{ secrets.CF_PROD_RECORD_ID }}" \
+          -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data "{\"type\":\"A\",\"name\":\"api.advancia.com\",\"content\":\"${{ steps.set-env.outputs.TARGET_IP }}\",\"ttl\":120,\"proxied\":true}"
+          
+          # Update www record
+          curl -X PATCH "https://api.cloudflare.com/client/v4/zones/${{ secrets.CF_ZONE_ID }}/dns_records/${{ secrets.CF_WWW_RECORD_ID }}" \
+          -H "Authorization: Bearer ${{ secrets.CF_API_TOKEN }}" \
+          -H "Content-Type: application/json" \
+          --data "{\"type\":\"A\",\"name\":\"www.advancia.com\",\"content\":\"${{ steps.set-env.outputs.TARGET_IP }}\",\"ttl\":120,\"proxied\":true}"
+          
+          echo "✅ DNS records updated"
+
+      - name: Wait for DNS propagation
+        run: |
+          echo "Waiting for DNS propagation..."
+          sleep 30
+
+      - name: Verify production endpoint
+        run: |
+          max_attempts=20
+          attempt=0
+          
+          while [ $attempt -lt $max_attempts ]; do
+            if curl -f -s "https://api.advancia.com/api/health" | grep -q "ok"; then
+              echo "✅ Production endpoint responding correctly"
+              exit 0
+            fi
+            echo "Attempt $((attempt+1))/$max_attempts..."
+            sleep 3
+            attempt=$((attempt+1))
+          done
+          
+          echo "❌ Production endpoint verification failed"
+          exit 1
+
+      - name: Traffic switch success
+        if: success()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"✅ *TRAFFIC SWITCH SUCCESSFUL*\n\n*Active Environment:* ${{ steps.set-env.outputs.ENV_COLOR }}\n*Previous:* ${{ steps.set-env.outputs.OLD_ENV }}\n*Reason:* ${{ github.event.inputs.reason }}\n*Executed by:* ${{ github.actor }}\n*Time:* $(date -u +'%Y-%m-%d %H:%M:%S UTC')\n\n✅ Zero downtime achieved\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
+
+      - name: Traffic switch failure
+        if: failure()
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+          --data "{\"text\":\"❌ *TRAFFIC SWITCH FAILED*\n\n*Target:* ${{ steps.set-env.outputs.ENV_COLOR }}\n*Status:* FAILED\n*Action:* Manual intervention required\n*Contact:* DevOps team immediately\"}" \
+          ${{ secrets.SLACK_WEBHOOK_URL }}
