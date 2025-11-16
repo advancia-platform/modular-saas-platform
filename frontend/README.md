@@ -376,3 +376,5 @@ npx tsc --noEmit
 ## 📄 License
 
 MIT License - see [LICENSE](../LICENSE) file for details.
+
+<!-- Build trigger: 2025-11-16 09:32:08 -->
