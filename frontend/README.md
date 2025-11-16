@@ -5,12 +5,14 @@ Modern fintech dashboard built with Next.js 14, TypeScript, Tailwind CSS, and Fr
 ## 🎨 Features
 
 - **💼 Dashboard Overview**
+
   - Animated summary cards (Credits, Debits, Net Balance, Bonus)
   - Click-to-expand balance breakdown modal
   - Real-time transaction updates via Socket.IO
   - Sound and haptic feedback on interactions
 
 - **📊 Components**
+
   - Summary Cards with animated counters
   - Balance Dropdown with detailed breakdown
   - Transaction List with filters (All, Credits, Debits, Bonus)
@@ -117,14 +119,17 @@ The dashboard connects to the backend API at `http://localhost:4000`:
 ## 🎯 Components
 
 ### Dashboard
+
 Main container with summary cards, balance dropdown, and transaction list.
 
 **Props**: None (uses userId from hooks)
 
 ### SummaryCard
+
 Displays a metric with an animated counter.
 
 **Props**:
+
 - `title: string` - Card title
 - `value: number` - Numeric value to display
 - `icon: ReactNode` - Icon component
@@ -135,40 +140,49 @@ Displays a metric with an animated counter.
 - `badge?: ReactNode` - Optional badge element
 
 ### BonusCard
+
 Shows bonus earnings with tooltip on hover.
 
 **Props**:
+
 - `earnings: number` - Bonus amount
 - `percentage: number` - Bonus percentage
 - `delay?: number` - Animation delay
 
 ### BalanceDropdown
+
 Modal showing balance breakdown (Main, Earnings, Referrals).
 
 **Props**:
+
 - `balance: Balance` - Balance object
 - `onClose: () => void` - Close handler
 
 ### TransactionList
+
 Displays recent transactions with filter options.
 
 **Props**:
+
 - `transactions: Transaction[]` - Array of transactions
 - `loading: boolean` - Loading state
 
 ## 🪝 Custom Hooks
 
 ### useBalance(userId)
+
 Fetches and manages user balance data with real-time updates.
 
 **Returns**: `{ balance, loading, error }`
 
 ### useTransactions(userId)
+
 Fetches and manages transactions with Socket.IO updates.
 
 **Returns**: `{ transactions, loading, error }`
 
 ### useSoundFeedback()
+
 Provides sound and haptic feedback functions.
 
 **Returns**: `{ playClick, playSuccess, playError, hapticFeedback }`
@@ -200,6 +214,7 @@ animation: {
 - Desktop: 4-column grid for summary cards
 
 Breakpoints:
+
 - `sm`: 640px
 - `md`: 768px
 - `lg`: 1024px
@@ -235,9 +250,10 @@ NEXT_PUBLIC_SMARTSUPP_KEY=your_smartsupp_public_key
 const nextConfig = {
   reactStrictMode: true,
   env: {
-    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000',
+    NEXT_PUBLIC_API_URL:
+      process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000",
   },
-}
+};
 ```
 
 ## 🚀 Build & Deploy
@@ -256,22 +272,28 @@ npm run lint
 ## 🎭 Features in Detail
 
 ### Animated Counter
+
 Summary cards feature smooth number transitions from 0 to target value.
 
 ### Balance Breakdown
+
 Click "Net Balance" card to open detailed breakdown modal showing:
+
 - Main Account balance
 - Earnings (bonus)
 - Rewards / Adjustments
 - Total Available
 
 ### Real-time Updates
+
 Socket.IO integration provides instant updates when:
+
 - New transactions are created
 - Balance changes
 - Global transaction broadcasts
 
 ### Sound Feedback
+
 - **Click**: Short beep on interactions
 - **Success**: Two-tone chime for successful actions
 - **Error**: Low tone for errors
@@ -282,6 +304,7 @@ Socket.IO integration provides instant updates when:
 ### Socket.IO Connection Issues
 
 Check that backend is running on port 4000:
+
 ```bash
 curl http://localhost:4000/health
 ```
@@ -289,6 +312,7 @@ curl http://localhost:4000/health
 ### Tailwind Classes Not Working
 
 Ensure PostCSS is configured:
+
 ```javascript
 // postcss.config.js
 module.exports = {
@@ -296,12 +320,13 @@ module.exports = {
     tailwindcss: {},
     autoprefixer: {},
   },
-}
+};
 ```
 
 ### TypeScript Errors
 
 Run type checking:
+
 ```bash
 npx tsc --noEmit
 ```
@@ -309,25 +334,30 @@ npx tsc --noEmit
 ## 📚 Dependencies
 
 **Core**:
+
 - `next` ^14.2.0
 - `react` ^18.3.0
 - `typescript` ^5.9.0
 
 **UI**:
+
 - `framer-motion` ^11.3.0
 - `lucide-react` ^0.400.0
 - `tailwindcss` ^3.4.4
 
 **API**:
+
 - `socket.io-client` ^4.8.1
 - `axios` ^1.7.2
 
 **Auth & Crypto**:
+
 - `next-auth` ^4.24.7
 - `ethers` ^6.13.0
 - `@stripe/stripe-js` ^4.0.0
 
 **Utils**:
+
 - `clsx` ^2.1.1
 - `date-fns` ^3.6.0
 - `qrcode.react` ^3.1.0
