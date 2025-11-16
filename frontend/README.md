@@ -212,7 +212,18 @@ Breakpoints:
 Create `.env.local`:
 
 ```env
+# Development
 NEXT_PUBLIC_API_URL=http://localhost:4000
+
+# Production
+NEXT_PUBLIC_API_URL=http://157.245.8.131:4000
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_51SCXq1CnLcSzsQoTOLHBWMBDs2B1So1zAVwGZUmkvUAviP2CwNr3OrxU5Ws6bmygNOhe06PSxsDGGPUEU1XWaAy100vt5KK4we
+
+# Authentication
+NEXTAUTH_URL=https://your-frontend-url.vercel.app
+NEXTAUTH_SECRET=your-generated-secret
+CRON_SECRET=your-cron-secret
+
 # Optional: enable SmartSupp live chat bubble
 NEXT_PUBLIC_SMARTSUPP_KEY=your_smartsupp_public_key
 ```
@@ -303,16 +314,25 @@ npx tsc --noEmit
 - `typescript` ^5.9.0
 
 **UI**:
-- `framer-motion` ^11.0.0
-- `lucide-react` ^0.344.0
-- `tailwindcss` ^3.4.1
+- `framer-motion` ^11.3.0
+- `lucide-react` ^0.400.0
+- `tailwindcss` ^3.4.4
 
 **API**:
 - `socket.io-client` ^4.8.1
+- `axios` ^1.7.2
+
+**Auth & Crypto**:
+- `next-auth` ^4.24.7
+- `ethers` ^6.13.0
+- `@stripe/stripe-js` ^4.0.0
 
 **Utils**:
-- `clsx` ^2.1.0
-- `tailwind-merge` ^2.2.0
+- `clsx` ^2.1.1
+- `date-fns` ^3.6.0
+- `qrcode.react` ^3.1.0
+- `react-hot-toast` ^2.4.1
+- `recharts` ^2.12.0
 
 ## 🎯 Next Steps
 
