@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Flame, TrendingUp, TrendingDown, Activity } from 'lucide-react';
+import { Activity, Flame, TrendingDown, TrendingUp } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface GasPriceData {
   gasPriceGwei: number;
@@ -31,12 +31,14 @@ export default function GasPriceWidget() {
       // Update trend based on history
       if (history.length > 0) {
         const lastPrice = history[history.length - 1];
-        if (newGasPrice > lastPrice * 1.05) {
-          setTrend('up');
-        } else if (newGasPrice < lastPrice * 0.95) {
-          setTrend('down');
-        } else {
-          setTrend('stable');
+        if (lastPrice !== undefined) {
+          if (newGasPrice > lastPrice * 1.05) {
+            setTrend('up');
+          } else if (newGasPrice < lastPrice * 0.95) {
+            setTrend('down');
+          } else {
+            setTrend('stable');
+          }
         }
       }
 
