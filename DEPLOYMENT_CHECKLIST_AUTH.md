@@ -174,7 +174,83 @@ curl $PROD_URL/api/auth/v2/me \
 # Should return 200 with user profile ✅
 ```
 
-### **Step 7: Monitor Deployment**
+### **Step 7: Production Smoke Tests** 🔥
+
+Run these **immediately after deployment** to validate production:
+
+#### **Test 1: Signup**
+```bash
+curl -X POST https://api.your-domain.com/api/auth/v2/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"smoketest@example.com","username":"smoketest","password":"StrongPass123!","fullName":"Smoke Test"}'
+
+# Expected: Status 201
+# Response includes: { success: true, user: { id, email, username, role }, tokens: { accessToken, refreshToken } }
+# ✅ SAVE accessToken and refreshToken for next tests
+```
+
+#### **Test 2: Login**
+```bash
+curl -X POST https://api.your-domain.com/api/auth/v2/login \
+  -H "Content-Type: application/json" \
+  -d '{"emailOrUsername":"smoketest@example.com","password":"StrongPass123!"}'
+
+# Expected: Status 200
+# Response includes: { success: true, message: "Login successful", user: {...}, tokens: {...} }
+# ✅ SAVE new tokens
+```
+
+#### **Test 3: Protected Route (`/me`)**
+```bash
+curl https://api.your-domain.com/api/auth/v2/me \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Expected: Status 200
+# Response includes: { success: true, user: { id, email, username, role, emailVerified, totpEnabled } }
+# ✅ Confirms token validation works
+```
+
+#### **Test 4: Refresh Token**
+```bash
+curl -X POST https://api.your-domain.com/api/auth/v2/refresh \
+  -H "Content-Type: application/json" \
+  -d '{"refreshToken":"YOUR_REFRESH_TOKEN"}'
+
+# Expected: Status 200
+# Response includes: { success: true, tokens: { accessToken, refreshToken } }
+# ✅ Confirms refresh mechanism works
+```
+
+#### **Test 5: Logout**
+```bash
+curl -X POST https://api.your-domain.com/api/auth/v2/logout \
+  -H "Authorization: Bearer YOUR_ACCESS_TOKEN"
+
+# Expected: Status 200
+# Response: { success: true, message: "Logged out successfully" }
+# ✅ Confirms logout endpoint works
+```
+
+#### **Test 6: Invalid Token (403)**
+```bash
+curl https://api.your-domain.com/api/auth/v2/me \
+  -H "Authorization: Bearer invalid_token_here"
+
+# Expected: Status 403
+# Response: { error: "Invalid or expired token" }
+# ✅ Confirms token validation rejects invalid tokens
+```
+
+#### **Test 7: No Token (401)**
+```bash
+curl https://api.your-domain.com/api/auth/v2/me
+
+# Expected: Status 401
+# Response: { error: "Access token required" }
+# ✅ Confirms protected routes require authentication
+```
+
+### **Step 8: Monitor Deployment**
 
 ```bash
 # Check logs for errors:
