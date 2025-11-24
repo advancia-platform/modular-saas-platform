@@ -29,12 +29,31 @@
           "listen": "test",
           "script": {
             "exec": [
+              "pm.test('Signup successful', function () {",
+              "    pm.response.to.have.status(201);",
+              "});",
+              "",
+              "pm.test('Returns user object and tokens', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('success', true);",
+              "    pm.expect(json).to.have.property('user');",
+              "    pm.expect(json.user).to.have.property('id');",
+              "    pm.expect(json.user).to.have.property('email');",
+              "    pm.expect(json.user).to.have.property('username');",
+              "    pm.expect(json.user).to.have.property('role');",
+              "    pm.expect(json).to.have.property('tokens');",
+              "    pm.expect(json.tokens).to.have.property('accessToken');",
+              "    pm.expect(json.tokens).to.have.property('refreshToken');",
+              "});",
+              "",
               "if (pm.response.code === 201) {",
               "    const data = pm.response.json();",
               "    pm.collectionVariables.set('accessToken', data.tokens.accessToken);",
               "    pm.collectionVariables.set('refreshToken', data.tokens.refreshToken);",
               "    pm.environment.set('userId', data.user.id);",
               "    console.log('✅ Tokens saved to collection variables');",
+              "    console.log('User ID:', data.user.id);",
+              "    console.log('Role:', data.user.role);",
               "}"
             ]
           }
@@ -68,12 +87,31 @@
           "listen": "test",
           "script": {
             "exec": [
+              "pm.test('Login successful', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Returns tokens and user info', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('success', true);",
+              "    pm.expect(json).to.have.property('message', 'Login successful');",
+              "    pm.expect(json).to.have.property('user');",
+              "    pm.expect(json.user).to.have.property('id');",
+              "    pm.expect(json.user).to.have.property('email');",
+              "    pm.expect(json.user).to.have.property('role');",
+              "    pm.expect(json.user).to.have.property('emailVerified');",
+              "    pm.expect(json).to.have.property('tokens');",
+              "    pm.expect(json.tokens).to.have.property('accessToken');",
+              "    pm.expect(json.tokens).to.have.property('refreshToken');",
+              "});",
+              "",
               "if (pm.response.code === 200) {",
               "    const data = pm.response.json();",
               "    pm.collectionVariables.set('accessToken', data.tokens.accessToken);",
               "    pm.collectionVariables.set('refreshToken', data.tokens.refreshToken);",
               "    pm.environment.set('userId', data.user.id);",
-              "    console.log('✅ Tokens saved to collection variables');",
+              "    console.log('✅ Login successful - Tokens saved');",
+              "    console.log('User:', data.user.email, '| Role:', data.user.role);",
               "}"
             ]
           }
@@ -102,6 +140,32 @@
     },
     {
       "name": "3. Get Current User (Protected)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Access protected route with valid token', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Returns complete user profile', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('success', true);",
+              "    pm.expect(json).to.have.property('user');",
+              "    pm.expect(json.user).to.have.property('id');",
+              "    pm.expect(json.user).to.have.property('email');",
+              "    pm.expect(json.user).to.have.property('username');",
+              "    pm.expect(json.user).to.have.property('role');",
+              "    pm.expect(json.user).to.have.property('emailVerified');",
+              "    pm.expect(json.user).to.have.property('totpEnabled');",
+              "    console.log('✅ Protected route accessed successfully');",
+              "    console.log('User:', json.user.username, '| Email:', json.user.email);",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "auth": {
           "type": "bearer",
@@ -131,11 +195,24 @@
           "listen": "test",
           "script": {
             "exec": [
+              "pm.test('Refresh returns new access token', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Returns new token pair', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('success', true);",
+              "    pm.expect(json).to.have.property('tokens');",
+              "    pm.expect(json.tokens).to.have.property('accessToken');",
+              "    pm.expect(json.tokens).to.have.property('refreshToken');",
+              "    console.log('✅ Tokens refreshed successfully');",
+              "});",
+              "",
               "if (pm.response.code === 200) {",
               "    const data = pm.response.json();",
               "    pm.collectionVariables.set('accessToken', data.tokens.accessToken);",
               "    pm.collectionVariables.set('refreshToken', data.tokens.refreshToken);",
-              "    console.log('✅ Tokens refreshed and saved');",
+              "    console.log('New tokens saved to collection variables');",
               "}"
             ]
           }
@@ -164,6 +241,25 @@
     },
     {
       "name": "5. Logout",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Logout successful', function () {",
+              "    pm.response.to.have.status(200);",
+              "});",
+              "",
+              "pm.test('Returns success message', function () {",
+              "    const json = pm.response.json();",
+              "    pm.expect(json).to.have.property('success', true);",
+              "    pm.expect(json).to.have.property('message', 'Logged out successfully');",
+              "    console.log('✅ Logout successful');",
+              "});"
+            ]
+          }
+        }
+      ],
       "request": {
         "auth": {
           "type": "bearer",
