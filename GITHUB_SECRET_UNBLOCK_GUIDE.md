@@ -13,21 +13,25 @@ Your push is blocked because **old commits** in git history contain rotated test
 Visit each URL and click **"Allow secret"** button:
 
 1. **GitHub Personal Access Token** (revoked 2025-11-17):
+
    ```
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh343m3zGig9pxSpeHuMCD9C
    ```
 
 2. **Stripe Test Key #1** (test mode, rotated):
+
    ```
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh0n48f6cW6vsUwb1KWbH74V
    ```
 
 3. **Stripe Test Key #2** (test mode, rotated):
+
    ```
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh4CIoDQRQ71ECBuZhVqxH7e
    ```
 
 4. **Slack Webhook URL** (test webhook, rotated):
+
    ```
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh2JoASEMPMi5X2PWWKgCmqH
    ```
@@ -49,12 +53,12 @@ git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 
 ## 📋 Why These Secrets Are Safe to Whitelist
 
-| Secret | Status | Justification |
-|--------|--------|---------------|
-| GitHub PAT `ghp_0YWx9...` | ✅ Revoked | Revoked on 2025-11-17, documented in SECURITY_AUDIT_2025-11-17.md |
-| Stripe Test Keys | ✅ Test Mode | Test keys only, not production. Rotated 2025-11-17 |
-| Slack Webhook | ✅ Rotated | Test webhook, replaced with new production webhook |
-| Email Password | ✅ Rotated | Gmail app password changed 2025-11-17 |
+| Secret                    | Status       | Justification                                                     |
+| ------------------------- | ------------ | ----------------------------------------------------------------- |
+| GitHub PAT `ghp_0YWx9...` | ✅ Revoked   | Revoked on 2025-11-17, documented in SECURITY_AUDIT_2025-11-17.md |
+| Stripe Test Keys          | ✅ Test Mode | Test keys only, not production. Rotated 2025-11-17                |
+| Slack Webhook             | ✅ Rotated   | Test webhook, replaced with new production webhook                |
+| Email Password            | ✅ Rotated   | Gmail app password changed 2025-11-17                             |
 
 ### Current State of Files
 
