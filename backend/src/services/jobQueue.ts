@@ -370,26 +370,24 @@ class JobQueueManager {
 
   private async sendOTP(data: { email: string; code: string }): Promise<void> {
     // Import email service
-    const { sendOTPEmail } = await import("../services/emailService.js");
-    await sendOTPEmail(data.email, data.code);
+    const emailService = (await import("../services/emailService.js")) as any;
+    await emailService.sendOTPEmail(data.email, data.code);
   }
 
   private async sendPasswordReset(data: {
     email: string;
     token: string;
   }): Promise<void> {
-    const { sendPasswordResetEmail } = await import(
-      "../services/emailService.js"
-    );
-    await sendPasswordResetEmail(data.email, data.token);
+    const emailService = (await import("../services/emailService.js")) as any;
+    await emailService.sendPasswordResetEmail(data.email, data.token);
   }
 
   private async verify2FA(data: {
     userId: string;
     code: string;
   }): Promise<boolean> {
-    const { verify2FACode } = await import("../services/authService.js");
-    return verify2FACode(data.userId, data.code);
+    const authService = (await import("../services/authService.js")) as any;
+    return authService.verify2FACode(data.userId, data.code);
   }
 
   // ==========================================================================
@@ -397,17 +395,17 @@ class JobQueueManager {
   // ==========================================================================
 
   private async processPayment(data: any): Promise<any> {
-    const { processPaymentTransaction } = await import(
+    const paymentService = (await import(
       "../services/paymentService.js"
-    );
-    return processPaymentTransaction(data);
+    )) as any;
+    return paymentService.processPaymentTransaction(data);
   }
 
   private async sendPaymentNotification(data: any): Promise<void> {
-    const { sendNotification } = await import(
+    const notificationService = (await import(
       "../services/notificationService.js"
-    );
-    await sendNotification(data.userId, {
+    )) as any;
+    await notificationService.sendNotification(data.userId, {
       type: "payment",
       title: "Payment Received",
       message: `You received $${data.amount}`,
@@ -415,17 +413,17 @@ class JobQueueManager {
   }
 
   private async processCryptomusWebhook(data: any): Promise<any> {
-    const { handleCryptomusWebhook } = await import(
+    const cryptomusService = (await import(
       "../services/cryptomusService.js"
-    );
-    return handleCryptomusWebhook(data);
+    )) as any;
+    return cryptomusService.handleCryptomusWebhook(data);
   }
 
   private async processNOWPaymentsWebhook(data: any): Promise<any> {
-    const { handleNOWPaymentsWebhook } = await import(
+    const nowpaymentsService = (await import(
       "../services/nowpaymentsService.js"
-    );
-    return handleNOWPaymentsWebhook(data);
+    )) as any;
+    return nowpaymentsService.handleNOWPaymentsWebhook(data);
   }
 
   // ==========================================================================
@@ -444,13 +442,13 @@ class JobQueueManager {
     subject: string;
     body: string;
   }): Promise<void> {
-    const { sendEmail } = await import("../services/emailService.js");
-    await sendEmail(data.to, data.subject, data.body);
+    const emailService = (await import("../services/emailService.js")) as any;
+    await emailService.sendEmail(data.to, data.subject, data.body);
   }
 
   private async syncWalletBalance(data: { walletId: string }): Promise<any> {
-    const { syncWalletBalance } = await import("../services/walletService.js");
-    return syncWalletBalance(data.walletId);
+    const walletService = (await import("../services/walletService.js")) as any;
+    return walletService.syncWalletBalance(data.walletId);
   }
 
   // ==========================================================================
@@ -458,22 +456,20 @@ class JobQueueManager {
   // ==========================================================================
 
   private async generateReport(data: any): Promise<string> {
-    const { generateTransactionReport } = await import(
-      "../services/reportService.js"
-    );
-    return generateTransactionReport(data);
+    const reportService = (await import("../services/reportService.js")) as any;
+    return reportService.generateTransactionReport(data);
   }
 
   private async exportTransactions(data: any): Promise<string> {
-    const { exportToCSV } = await import("../services/exportService.js");
-    return exportToCSV(data);
+    const exportService = (await import("../services/exportService.js")) as any;
+    return exportService.exportToCSV(data);
   }
 
   private async calculateAnalytics(data: any): Promise<any> {
-    const { calculateUserAnalytics } = await import(
+    const analyticsService = (await import(
       "../services/analyticsService.js"
-    );
-    return calculateUserAnalytics(data);
+    )) as any;
+    return analyticsService.calculateUserAnalytics(data);
   }
 
   // ==========================================================================
@@ -536,8 +532,8 @@ class JobQueueManager {
   }
 
   private async databaseBackup(data: any): Promise<string> {
-    const { createBackup } = await import("../services/backupService.js");
-    return createBackup(data);
+    const backupService = (await import("../services/backupService.js")) as any;
+    return backupService.createBackup(data);
   }
 
   // ==========================================================================

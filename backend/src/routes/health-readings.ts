@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/index-browser";
 import { Router } from "express";
 import { authenticateToken } from "../middleware/auth";
 import prisma from "../prismaClient";

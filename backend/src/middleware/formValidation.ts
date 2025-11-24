@@ -4,10 +4,23 @@
  * Server-side validation, CSRF verification, rate limiting
  */
 
-import crypto from 'crypto';
-import { NextFunction, Request, Response } from 'express';
-import rateLimit from 'express-rate-limit';
-import { body, ValidationChain, validationResult } from 'express-validator';
+import crypto from "crypto";
+import { NextFunction, Request, Response } from "express";
+import rateLimit from "express-rate-limit";
+import "express-session";
+import { body, ValidationChain, validationResult } from "express-validator";
+import multer from "multer";
+
+// Extend Express Request type
+declare global {
+  namespace Express {
+    interface Request {
+      sessionID?: string;
+      rateLimit?: { resetTime?: Date };
+      file?: multer.File;
+    }
+  }
+}
 
 // ============================================
 // 1. VALIDATION RULES
@@ -19,26 +32,26 @@ import { body, ValidationChain, validationResult } from 'express-validator';
 export const ValidationRules = {
   // Email validation
   email: () =>
-    body('email')
+    body("email")
       .trim()
       .isEmail()
       .normalizeEmail()
-      .withMessage('Valid email is required'),
+      .withMessage("Valid email is required"),
 
   // Password validation
   password: () =>
-    body('password')
+    body("password")
       .isLength({ min: 8 })
-      .withMessage('Password must be at least 8 characters')
+      .withMessage("Password must be at least 8 characters")
       .matches(/[a-z]/)
-      .withMessage('Password must contain lowercase letter')
+      .withMessage("Password must contain lowercase letter")
       .matches(/[A-Z]/)
-      .withMessage('Password must contain uppercase letter')
+      .withMessage("Password must contain uppercase letter")
       .matches(/[0-9]/)
-      .withMessage('Password must contain number'),
+      .withMessage("Password must contain number"),
 
   // Name validation
-  name: (fieldName: string = 'name') =>
+  name: (fieldName: string = "name") =>
     body(fieldName)
       .trim()
       .isLength({ min: 2, max: 100 })
@@ -48,29 +61,29 @@ export const ValidationRules = {
 
   // Phone validation
   phone: () =>
-    body('phone')
+    body("phone")
       .optional()
       .trim()
-      .isMobilePhone('any')
-      .withMessage('Valid phone number is required'),
+      .isMobilePhone("any")
+      .withMessage("Valid phone number is required"),
 
   // Amount validation (for financial transactions)
   amount: () =>
-    body('amount')
+    body("amount")
       .isFloat({ min: 0.01 })
-      .withMessage('Amount must be greater than 0')
+      .withMessage("Amount must be greater than 0")
       .toFloat(),
 
   // URL validation
-  url: (fieldName: string = 'url') =>
+  url: (fieldName: string = "url") =>
     body(fieldName)
       .optional()
       .trim()
-      .isURL({ protocols: ['http', 'https'] })
+      .isURL({ protocols: ["http", "https"] })
       .withMessage(`${fieldName} must be a valid URL`),
 
   // Date validation
-  date: (fieldName: string = 'date') =>
+  date: (fieldName: string = "date") =>
     body(fieldName)
       .optional()
       .isISO8601()
@@ -115,7 +128,7 @@ export const validate = (req: Request, res: Response, next: NextFunction) => {
     return res.status(400).json({
       success: false,
       errors: errors.array().map((err) => ({
-        field: err.type === 'field' ? (err as any).path : 'unknown',
+        field: err.type === "field" ? (err as any).path : "unknown",
         message: err.msg,
       })),
     });
@@ -143,7 +156,7 @@ export class CSRFProtection {
    * Generate CSRF token
    */
   static generateToken(sessionId: string): string {
-    const token = crypto.randomBytes(32).toString('hex');
+    const token = crypto.randomBytes(32).toString("hex");
     const expiry = Date.now() + this.TOKEN_EXPIRY;
 
     this.tokens.set(sessionId, { token, expiry });
@@ -196,27 +209,27 @@ export class CSRFProtection {
     return (req: Request, res: Response, next: NextFunction) => {
       // Skip for GET requests
       if (
-        req.method === 'GET' ||
-        req.method === 'HEAD' ||
-        req.method === 'OPTIONS'
+        req.method === "GET" ||
+        req.method === "HEAD" ||
+        req.method === "OPTIONS"
       ) {
         return next();
       }
 
-      const token = (req.headers['x-csrf-token'] as string) || req.body._csrf;
+      const token = (req.headers["x-csrf-token"] as string) || req.body._csrf;
       const sessionId = req.sessionID || req.ip;
 
       if (!token) {
         return res.status(403).json({
           success: false,
-          error: 'CSRF token missing',
+          error: "CSRF token missing",
         });
       }
 
       if (!this.verifyToken(sessionId, token)) {
         return res.status(403).json({
           success: false,
-          error: 'Invalid CSRF token',
+          error: "Invalid CSRF token",
         });
       }
 
@@ -252,14 +265,14 @@ export const formRateLimiter = rateLimit({
   max: 5, // 5 requests per minute
   message: {
     success: false,
-    error: 'Too many form submissions. Please try again later.',
+    error: "Too many form submissions. Please try again later.",
   },
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
     res.status(429).json({
       success: false,
-      error: 'Too many form submissions. Please try again later.',
+      error: "Too many form submissions. Please try again later.",
       retryAfter: Math.ceil(req.rateLimit.resetTime?.getTime() || 0 / 1000),
     });
   },
@@ -273,7 +286,7 @@ export const strictRateLimiter = rateLimit({
   max: 3, // 3 requests per 15 minutes
   message: {
     success: false,
-    error: 'Too many attempts. Please try again later.',
+    error: "Too many attempts. Please try again later.",
   },
 });
 
@@ -289,7 +302,7 @@ export const sanitizeBody = (
   res: Response,
   next: NextFunction,
 ) => {
-  if (req.body && typeof req.body === 'object') {
+  if (req.body && typeof req.body === "object") {
     req.body = sanitizeObject(req.body);
   }
   next();
@@ -299,7 +312,7 @@ export const sanitizeBody = (
  * Recursively sanitize object
  */
 function sanitizeObject(obj: any): any {
-  if (typeof obj !== 'object' || obj === null) {
+  if (typeof obj !== "object" || obj === null) {
     return obj;
   }
 
@@ -309,10 +322,10 @@ function sanitizeObject(obj: any): any {
 
   const sanitized: any = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (typeof value === 'string') {
+    if (typeof value === "string") {
       // Remove null bytes
-      sanitized[key] = value.replace(/\0/g, '');
-    } else if (typeof value === 'object') {
+      sanitized[key] = value.replace(/\0/g, "");
+    } else if (typeof value === "object") {
       sanitized[key] = sanitizeObject(value);
     } else {
       sanitized[key] = value;
@@ -338,20 +351,20 @@ export const loginValidation = createValidation([
  * Registration form validation
  */
 export const registrationValidation = createValidation([
-  ValidationRules.name('firstName'),
-  ValidationRules.name('lastName'),
+  ValidationRules.name("firstName"),
+  ValidationRules.name("lastName"),
   ValidationRules.email(),
   ValidationRules.password(),
-  body('confirmPassword')
+  body("confirmPassword")
     .custom((value, { req }) => value === req.body.password)
-    .withMessage('Passwords do not match'),
+    .withMessage("Passwords do not match"),
 ]);
 
 /**
  * Profile update validation
  */
 export const profileUpdateValidation = createValidation([
-  ValidationRules.name('name').optional(),
+  ValidationRules.name("name").optional(),
   ValidationRules.email().optional(),
   ValidationRules.phone().optional(),
 ]);
@@ -361,13 +374,13 @@ export const profileUpdateValidation = createValidation([
  */
 export const transactionValidation = createValidation([
   ValidationRules.amount(),
-  body('description')
+  body("description")
     .trim()
     .isLength({ min: 1, max: 500 })
-    .withMessage('Description is required (max 500 characters)'),
-  body('type')
-    .isIn(['credit', 'debit'])
-    .withMessage('Type must be credit or debit'),
+    .withMessage("Description is required (max 500 characters)"),
+  body("type")
+    .isIn(["credit", "debit"])
+    .withMessage("Type must be credit or debit"),
 ]);
 
 /**
@@ -376,14 +389,14 @@ export const transactionValidation = createValidation([
 export const contactFormValidation = createValidation([
   ValidationRules.name(),
   ValidationRules.email(),
-  body('subject')
+  body("subject")
     .trim()
     .isLength({ min: 5, max: 200 })
-    .withMessage('Subject must be 5-200 characters'),
-  body('message')
+    .withMessage("Subject must be 5-200 characters"),
+  body("message")
     .trim()
     .isLength({ min: 10, max: 5000 })
-    .withMessage('Message must be 10-5000 characters'),
+    .withMessage("Message must be 10-5000 characters"),
 ]);
 
 /**
@@ -397,13 +410,13 @@ export const passwordResetValidation = createValidation([
  * Change password validation
  */
 export const changePasswordValidation = createValidation([
-  body('currentPassword')
+  body("currentPassword")
     .notEmpty()
-    .withMessage('Current password is required'),
+    .withMessage("Current password is required"),
   ValidationRules.password(),
-  body('confirmPassword')
+  body("confirmPassword")
     .custom((value, { req }) => value === req.body.password)
-    .withMessage('Passwords do not match'),
+    .withMessage("Passwords do not match"),
 ]);
 
 // ============================================
@@ -421,7 +434,7 @@ export const validateFileUpload = (
     if (!req.file) {
       return res.status(400).json({
         success: false,
-        error: 'No file uploaded',
+        error: "No file uploaded",
       });
     }
 
@@ -429,7 +442,7 @@ export const validateFileUpload = (
     if (!allowedTypes.includes(req.file.mimetype)) {
       return res.status(400).json({
         success: false,
-        error: `Invalid file type. Allowed types: ${allowedTypes.join(', ')}`,
+        error: `Invalid file type. Allowed types: ${allowedTypes.join(", ")}`,
       });
     }
 
@@ -459,11 +472,11 @@ export const formSecurityHeaders = (
 ) => {
   // Prevent caching of form responses
   res.setHeader(
-    'Cache-Control',
-    'no-store, no-cache, must-revalidate, proxy-revalidate',
+    "Cache-Control",
+    "no-store, no-cache, must-revalidate, proxy-revalidate",
   );
-  res.setHeader('Pragma', 'no-cache');
-  res.setHeader('Expires', '0');
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
 
   next();
 };
@@ -475,13 +488,13 @@ export const formSecurityHeaders = (
 /**
  * Validate honeypot field (bot detection)
  */
-export const validateHoneypot = (fieldName: string = 'website') => {
+export const validateHoneypot = (fieldName: string = "website") => {
   return (req: Request, res: Response, next: NextFunction) => {
     // If honeypot field is filled, it's likely a bot
-    if (req.body[fieldName] && req.body[fieldName].trim() !== '') {
+    if (req.body[fieldName] && req.body[fieldName].trim() !== "") {
       return res.status(400).json({
         success: false,
-        error: 'Invalid form submission',
+        error: "Invalid form submission",
       });
     }
 

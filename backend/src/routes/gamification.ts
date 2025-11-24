@@ -152,15 +152,18 @@ router.get(
 
       const unlockedAchievements = achievements.filter((achievement) => {
         if (achievement.id.startsWith("transactions_")) {
-          const required = parseInt(achievement.id.split("_")[1]);
+          const parts = achievement.id.split("_");
+          const required = parseInt(parts[1] || "0");
           return transactionCount >= required;
         }
         if (achievement.id.startsWith("referral_")) {
-          const required = parseInt(achievement.id.split("_")[1]);
+          const parts = achievement.id.split("_");
+          const required = parseInt(parts[1] || "0");
           return referralCount >= required;
         }
         if (achievement.id.startsWith("streak_")) {
-          const required = parseInt(achievement.id.split("_")[1]);
+          const parts = achievement.id.split("_");
+          const required = parseInt(parts[1] || "0");
           return currentStreak >= required;
         }
         return true; // first_login, first_transaction
@@ -430,9 +433,9 @@ router.get(
         where: { userId },
       });
 
-      challenges[0].progress = weeklySpend._sum.amount || 0;
-      challenges[1].progress = monthlyTransactions;
-      challenges[2].progress = cryptoPurchases > 0 ? 1 : 0;
+      if (challenges[0]) challenges[0].progress = weeklySpend._sum.amount || 0;
+      if (challenges[1]) challenges[1].progress = monthlyTransactions;
+      if (challenges[2]) challenges[2].progress = cryptoPurchases > 0 ? 1 : 0;
 
       res.json({
         success: true,

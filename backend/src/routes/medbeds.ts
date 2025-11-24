@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/index-browser";
 import { Router } from "express";
 import type { Server as IOServer } from "socket.io";
 import Stripe from "stripe";

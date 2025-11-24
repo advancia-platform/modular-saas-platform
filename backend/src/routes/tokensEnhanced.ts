@@ -342,8 +342,8 @@ router.get("/chart", authenticateToken, async (req: Request, res: Response) => {
     });
 
     const n = history.length;
-    const lastPrice = n ? history[n - 1].price : 0;
-    const prevPrice = n > 1 ? history[n - 2].price : lastPrice;
+    const lastPrice = n ? history[n - 1]?.price || 0 : 0;
+    const prevPrice = n > 1 ? history[n - 2]?.price || lastPrice : lastPrice;
     const change24h =
       n > 1 && prevPrice !== 0
         ? ((lastPrice - prevPrice) / prevPrice) * 100

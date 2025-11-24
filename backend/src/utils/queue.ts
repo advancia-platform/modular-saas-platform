@@ -10,7 +10,9 @@ export async function initQueue(): Promise<void> {
     const conn = await amqp.connect(url);
     connection = conn as any;
     // createChannel exists on amqplib Connection; use any to avoid typing mismatches from ESM/CJS
-    channel = await (connection as amqp.Connection).createChannel();
+    const ch = await (connection as any).createChannel?.();
+    if (!ch) throw new Error("Failed to create channel");
+    channel = ch;
 
     // Assert queues (create if they don't exist)
     await channel.assertQueue("notifications", { durable: true });
