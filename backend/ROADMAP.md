@@ -1,6 +1,13 @@
 # 🗺️ Backend Project Roadmap
 
-This roadmap outlines the planned evolution of the backend API, grouped by time horizon. It serves as a contributor guide and planning artifact. For execution tracking, mirror these items in a GitHub Project board (see "GitHub Project Board Setup" below).
+This roadmap outlines the planned evolution of the backend API, grouped by time horizon. It serves as a contributor guide and planning artifact.
+
+> **📋 Quick Links:**
+>
+> - [Sprint Board](../SPRINT_BOARD.md) - Current sprint tracking and metrics
+> - [Issues Templates](../ISSUES_TEMPLATE.md) - Copy-paste GitHub issue templates
+> - [Execution Plan](../EXECUTION_PLAN.md) - Day-by-day implementation guide
+> - [Branching Strategy](../BRANCHING_STRATEGY.md) - Git workflow and branch protection
 
 ---
 
