@@ -1,29 +1,29 @@
-import express from 'express';
-import { adminAuth } from '../middleware/adminAuth';
+import express from "express";
+import { adminAuth } from "../middleware/adminAuth";
 import {
   authenticateToken,
   logAdminAction,
   requireAdmin,
-} from '../middleware/auth';
-import prisma from '../prismaClient';
+} from "../middleware/auth";
+import prisma from "../prismaClient";
 
 // Guard admin logging middleware to avoid crashes if import resolves undefined
 const safeLogAdmin: any =
-  typeof logAdminAction === 'function'
+  typeof logAdminAction === "function"
     ? logAdminAction
     : (_req: any, _res: any, next: any) => next();
 
 const router = express.Router();
 
 // GET /api/admin/doctors - List all doctors with filtering
-router.get('/doctors', adminAuth, async (req, res) => {
+router.get("/doctors", adminAuth, async (req, res) => {
   try {
     const { status } = req.query;
 
     const where: any = {};
     if (
       status &&
-      ['PENDING', 'VERIFIED', 'SUSPENDED'].includes(status as string)
+      ["PENDING", "VERIFIED", "SUSPENDED"].includes(status as string)
     ) {
       where.status = status;
     }
@@ -44,7 +44,7 @@ router.get('/doctors', adminAuth, async (req, res) => {
         createdAt: true,
         updatedAt: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return res.json({
@@ -52,13 +52,13 @@ router.get('/doctors', adminAuth, async (req, res) => {
       count: doctors.length,
     });
   } catch (err) {
-    console.error('Fetch doctors error:', err);
-    return res.status(500).json({ error: 'Failed to fetch doctors' });
+    console.error("Fetch doctors error:", err);
+    return res.status(500).json({ error: "Failed to fetch doctors" });
   }
 });
 
 // GET /api/admin/doctor/:id - Get single doctor details
-router.get('/doctor/:id', adminAuth, async (req, res) => {
+router.get("/doctor/:id", adminAuth, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -67,7 +67,7 @@ router.get('/doctor/:id', adminAuth, async (req, res) => {
     });
 
     if (!doctor) {
-      return res.status(404).json({ error: 'Doctor not found' });
+      return res.status(404).json({ error: "Doctor not found" });
     }
 
     // Fetch consultations separately since relation is not defined in schema
@@ -79,7 +79,7 @@ router.get('/doctor/:id', adminAuth, async (req, res) => {
         scheduledAt: true,
         patientId: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 10,
     });
 
@@ -93,13 +93,13 @@ router.get('/doctor/:id', adminAuth, async (req, res) => {
 
     return res.json({ doctor: doctorData });
   } catch (err) {
-    console.error('Fetch doctor error:', err);
-    return res.status(500).json({ error: 'Failed to fetch doctor' });
+    console.error("Fetch doctor error:", err);
+    return res.status(500).json({ error: "Failed to fetch doctor" });
   }
 });
 
 // POST /api/admin/doctor/:id/verify - Verify a doctor
-router.post('/doctor/:id/verify', adminAuth, safeLogAdmin, async (req, res) => {
+router.post("/doctor/:id/verify", adminAuth, safeLogAdmin, async (req, res) => {
   try {
     const { id } = req.params;
     const { adminId } = req.body || {};
@@ -110,19 +110,19 @@ router.post('/doctor/:id/verify', adminAuth, safeLogAdmin, async (req, res) => {
     });
 
     if (!doctor) {
-      return res.status(404).json({ error: 'Doctor not found' });
+      return res.status(404).json({ error: "Doctor not found" });
     }
 
-    if (doctor.status === 'VERIFIED') {
-      return res.status(400).json({ error: 'Doctor is already verified' });
+    if (doctor.status === "VERIFIED") {
+      return res.status(400).json({ error: "Doctor is already verified" });
     }
 
     const updated = await prisma.doctors.update({
       where: { id },
       data: {
-        status: 'VERIFIED',
+        status: "VERIFIED",
         verifiedAt: new Date(),
-        verifiedBy: adminId || 'admin',
+        verifiedBy: adminId || "admin",
       },
       select: {
         id: true,
@@ -137,18 +137,18 @@ router.post('/doctor/:id/verify', adminAuth, safeLogAdmin, async (req, res) => {
     });
 
     return res.json({
-      message: 'Doctor verified successfully',
+      message: "Doctor verified successfully",
       doctor: updated,
     });
   } catch (err) {
-    console.error('Verify doctor error:', err);
-    return res.status(500).json({ error: 'Failed to verify doctor' });
+    console.error("Verify doctor error:", err);
+    return res.status(500).json({ error: "Failed to verify doctor" });
   }
 });
 
 // POST /api/admin/doctor/:id/suspend - Suspend a doctor
 router.post(
-  '/doctor/:id/suspend',
+  "/doctor/:id/suspend",
   adminAuth,
   safeLogAdmin,
   async (req, res) => {
@@ -161,12 +161,12 @@ router.post(
       });
 
       if (!doctor) {
-        return res.status(404).json({ error: 'Doctor not found' });
+        return res.status(404).json({ error: "Doctor not found" });
       }
 
       const updated = await prisma.doctors.update({
         where: { id },
-        data: { status: 'SUSPENDED' },
+        data: { status: "SUSPENDED" },
         select: {
           id: true,
           email: true,
@@ -178,18 +178,18 @@ router.post(
       });
 
       return res.json({
-        message: 'Doctor suspended successfully',
+        message: "Doctor suspended successfully",
         doctor: updated,
       });
     } catch (err) {
-      console.error('Suspend doctor error:', err);
-      return res.status(500).json({ error: 'Failed to suspend doctor' });
+      console.error("Suspend doctor error:", err);
+      return res.status(500).json({ error: "Failed to suspend doctor" });
     }
   },
 );
 
 // DELETE /api/admin/doctor/:id - Delete a doctor (hard delete)
-router.delete('/doctor/:id', adminAuth, safeLogAdmin, async (req, res) => {
+router.delete("/doctor/:id", adminAuth, safeLogAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -199,23 +199,23 @@ router.delete('/doctor/:id', adminAuth, safeLogAdmin, async (req, res) => {
     });
 
     if (!doctor) {
-      return res.status(404).json({ error: 'Doctor not found' });
+      return res.status(404).json({ error: "Doctor not found" });
     }
 
     await prisma.doctors.delete({
       where: { id },
     });
 
-    return res.json({ message: 'Doctor deleted successfully' });
+    return res.json({ message: "Doctor deleted successfully" });
   } catch (err) {
-    console.error('Delete doctor error:', err);
-    return res.status(500).json({ error: 'Failed to delete doctor' });
+    console.error("Delete doctor error:", err);
+    return res.status(500).json({ error: "Failed to delete doctor" });
   }
 });
 
 // GET /api/admin/settings - Get current admin settings
 router.get(
-  '/settings',
+  "/settings",
   authenticateToken as any,
   requireAdmin as any,
   async (req, res) => {
@@ -226,33 +226,33 @@ router.get(
       if (!settings) {
         // Create default settings if none exist
         settings = await prisma.admin_settings.create({
-          data: {
+          data: withDefaults({
             processingFeePercent: 2.5,
             minPurchaseAmount: 10,
             debitCardPriceUSD: 1000,
-          },
+          }),
         });
       }
 
       return res.json({
         id: settings.id,
         crypto: {
-          btcAddress: settings.btcAddress || '',
-          ethAddress: settings.ethAddress || '',
-          usdtAddress: settings.usdtAddress || '',
-          ltcAddress: settings.ltcAddress || '',
-          otherAddresses: settings.otherAddresses || '',
+          btcAddress: settings.btcAddress || "",
+          ethAddress: settings.ethAddress || "",
+          usdtAddress: settings.usdtAddress || "",
+          ltcAddress: settings.ltcAddress || "",
+          otherAddresses: settings.otherAddresses || "",
         },
         exchangeRates: {
-          btc: settings.exchangeRateBtc?.toString() || '0',
-          eth: settings.exchangeRateEth?.toString() || '0',
-          usdt: settings.exchangeRateUsdt?.toString() || '0',
+          btc: settings.exchangeRateBtc?.toString() || "0",
+          eth: settings.exchangeRateEth?.toString() || "0",
+          usdt: settings.exchangeRateUsdt?.toString() || "0",
         },
         fees: {
           processingFeePercent:
-            settings.processingFeePercent?.toString() || '2.5',
-          minPurchaseAmount: settings.minPurchaseAmount?.toString() || '10',
-          debitCardPriceUSD: settings.debitCardPriceUSD?.toString() || '1000',
+            settings.processingFeePercent?.toString() || "2.5",
+          minPurchaseAmount: settings.minPurchaseAmount?.toString() || "10",
+          debitCardPriceUSD: settings.debitCardPriceUSD?.toString() || "1000",
         },
         system: {
           maintenanceMode: false,
@@ -263,15 +263,15 @@ router.get(
         createdAt: settings.createdAt,
       });
     } catch (err) {
-      console.error('Error fetching admin settings:', err);
-      return res.status(500).json({ error: 'Failed to fetch settings' });
+      console.error("Error fetching admin settings:", err);
+      return res.status(500).json({ error: "Failed to fetch settings" });
     }
   },
 );
 
 // PATCH /api/admin/settings - Update admin settings
 router.patch(
-  '/settings',
+  "/settings",
   authenticateToken as any,
   requireAdmin as any,
   logAdminAction as any,
@@ -284,11 +284,11 @@ router.patch(
 
       if (!settings) {
         settings = await prisma.admin_settings.create({
-          data: {
+          data: withDefaults({
             processingFeePercent: 2.5,
             minPurchaseAmount: 10,
             debitCardPriceUSD: 1000,
-          },
+          }),
         });
       }
 
@@ -338,40 +338,40 @@ router.patch(
       });
 
       return res.json({
-        message: 'Settings updated successfully',
+        message: "Settings updated successfully",
         settings: {
           id: updated.id,
           crypto: {
-            btcAddress: updated.btcAddress || '',
-            ethAddress: updated.ethAddress || '',
-            usdtAddress: updated.usdtAddress || '',
-            ltcAddress: updated.ltcAddress || '',
-            otherAddresses: updated.otherAddresses || '',
+            btcAddress: updated.btcAddress || "",
+            ethAddress: updated.ethAddress || "",
+            usdtAddress: updated.usdtAddress || "",
+            ltcAddress: updated.ltcAddress || "",
+            otherAddresses: updated.otherAddresses || "",
           },
           exchangeRates: {
-            btc: updated.exchangeRateBtc?.toString() || '0',
-            eth: updated.exchangeRateEth?.toString() || '0',
-            usdt: updated.exchangeRateUsdt?.toString() || '0',
+            btc: updated.exchangeRateBtc?.toString() || "0",
+            eth: updated.exchangeRateEth?.toString() || "0",
+            usdt: updated.exchangeRateUsdt?.toString() || "0",
           },
           fees: {
             processingFeePercent:
-              updated.processingFeePercent?.toString() || '2.5',
-            minPurchaseAmount: updated.minPurchaseAmount?.toString() || '10',
-            debitCardPriceUSD: updated.debitCardPriceUSD?.toString() || '1000',
+              updated.processingFeePercent?.toString() || "2.5",
+            minPurchaseAmount: updated.minPurchaseAmount?.toString() || "10",
+            debitCardPriceUSD: updated.debitCardPriceUSD?.toString() || "1000",
           },
           updatedAt: updated.updatedAt,
         },
       });
     } catch (err) {
-      console.error('Error updating admin settings:', err);
-      return res.status(500).json({ error: 'Failed to update settings' });
+      console.error("Error updating admin settings:", err);
+      return res.status(500).json({ error: "Failed to update settings" });
     }
   },
 );
 
 // GET /api/admin/analytics/overview - Get high-level analytics
 router.get(
-  '/analytics/overview',
+  "/analytics/overview",
   authenticateToken as any,
   requireAdmin as any,
   async (req, res) => {
@@ -419,28 +419,28 @@ router.get(
         },
         transactions: {
           total: transactions._count || 0,
-          volume: transactions._sum?.amount?.toString() || '0',
+          volume: transactions._sum?.amount?.toString() || "0",
         },
         tokens: {
-          totalBalance: tokenStats._sum?.balance?.toString() || '0',
-          totalEarned: tokenStats._sum?.lifetimeEarned?.toString() || '0',
+          totalBalance: tokenStats._sum?.balance?.toString() || "0",
+          totalEarned: tokenStats._sum?.lifetimeEarned?.toString() || "0",
         },
       });
     } catch (err) {
-      console.error('Error fetching analytics overview:', err);
-      return res.status(500).json({ error: 'Failed to fetch analytics' });
+      console.error("Error fetching analytics overview:", err);
+      return res.status(500).json({ error: "Failed to fetch analytics" });
     }
   },
 );
 
 // GET /api/admin/analytics/user-growth - Get user growth over time
 router.get(
-  '/analytics/user-growth',
+  "/analytics/user-growth",
   authenticateToken as any,
   requireAdmin as any,
   async (req, res) => {
     try {
-      const { days = '30' } = req.query;
+      const { days = "30" } = req.query;
       const daysNum = Math.min(365, Math.max(1, Number(days)));
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - daysNum);
@@ -449,13 +449,13 @@ router.get(
       const users = await prisma.user.findMany({
         where: { createdAt: { gte: startDate } },
         select: { createdAt: true },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
       });
 
       // Aggregate by day
       const dailyCounts: Record<string, number> = {};
       users.forEach((user) => {
-        const day = user.createdAt.toISOString().split('T')[0];
+        const day = user.createdAt.toISOString().split("T")[0];
         dailyCounts[day] = (dailyCounts[day] || 0) + 1;
       });
 
@@ -466,20 +466,20 @@ router.get(
 
       return res.json({ data });
     } catch (err) {
-      console.error('Error fetching user growth:', err);
-      return res.status(500).json({ error: 'Failed to fetch user growth' });
+      console.error("Error fetching user growth:", err);
+      return res.status(500).json({ error: "Failed to fetch user growth" });
     }
   },
 );
 
 // GET /api/admin/analytics/transaction-volume - Get transaction volume over time
 router.get(
-  '/analytics/transaction-volume',
+  "/analytics/transaction-volume",
   authenticateToken as any,
   requireAdmin as any,
   async (req, res) => {
     try {
-      const { days = '30' } = req.query;
+      const { days = "30" } = req.query;
       const daysNum = Math.min(365, Math.max(1, Number(days)));
       const startDate = new Date();
       startDate.setDate(startDate.getDate() - daysNum);
@@ -487,13 +487,13 @@ router.get(
       const transactions = await prisma.transactions.findMany({
         where: { createdAt: { gte: startDate } },
         select: { createdAt: true, amount: true },
-        orderBy: { createdAt: 'asc' },
+        orderBy: { createdAt: "asc" },
       });
 
       // Aggregate by day
       const dailyVolume: Record<string, number> = {};
       transactions.forEach((tx) => {
-        const day = tx.createdAt.toISOString().split('T')[0];
+        const day = tx.createdAt.toISOString().split("T")[0];
         dailyVolume[day] = (dailyVolume[day] || 0) + Number(tx.amount || 0);
       });
 
@@ -504,16 +504,16 @@ router.get(
 
       return res.json({ data });
     } catch (err) {
-      console.error('Error fetching transaction volume:', err);
+      console.error("Error fetching transaction volume:", err);
       return res
         .status(500)
-        .json({ error: 'Failed to fetch transaction volume' });
+        .json({ error: "Failed to fetch transaction volume" });
     }
   },
 );
 
 // GET /api/admin/stats - Get admin dashboard statistics
-router.get('/stats', adminAuth, async (req, res) => {
+router.get("/stats", adminAuth, async (req, res) => {
   try {
     // Total users count
     const totalUsers = await prisma.user.count();
@@ -535,7 +535,7 @@ router.get('/stats', adminAuth, async (req, res) => {
     // Pending withdrawals count
     const pendingWithdrawals = await prisma.crypto_withdrawals.count({
       where: {
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
 
@@ -545,17 +545,17 @@ router.get('/stats', adminAuth, async (req, res) => {
         amount: true,
       },
       where: {
-        status: 'COMPLETED',
+        status: "COMPLETED",
       },
     });
 
-    const totalRevenue = revenueData._sum.amount?.toString() || '0';
+    const totalRevenue = revenueData._sum.amount?.toString() || "0";
 
     // Recent activity (last 5 transactions)
     const recentActivity = await prisma.transactions.findMany({
       take: 5,
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       select: {
         id: true,
@@ -607,24 +607,24 @@ router.get('/stats', adminAuth, async (req, res) => {
             status: activity.status,
             createdAt: activity.createdAt,
             user: user
-              ? `${user.firstName || ''} ${user.lastName || ''}`.trim() ||
+              ? `${user.firstName || ""} ${user.lastName || ""}`.trim() ||
                 user.email
-              : 'Unknown',
+              : "Unknown",
           };
         }),
       },
     });
   } catch (err) {
-    console.error('Error fetching admin stats:', err);
-    return res.status(500).json({ error: 'Failed to fetch admin statistics' });
+    console.error("Error fetching admin stats:", err);
+    return res.status(500).json({ error: "Failed to fetch admin statistics" });
   }
 });
 
 // GET /api/admin/transactions - Get transaction history
-router.get('/transactions', adminAuth, async (req, res) => {
+router.get("/transactions", adminAuth, async (req, res) => {
   try {
     const transactions = await prisma.transactions.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 1000,
       select: {
         id: true,
@@ -639,22 +639,22 @@ router.get('/transactions', adminAuth, async (req, res) => {
 
     return res.json(transactions);
   } catch (err) {
-    console.error('Transaction fetch error:', err);
-    return res.status(500).json({ error: 'Failed to load transactions' });
+    console.error("Transaction fetch error:", err);
+    return res.status(500).json({ error: "Failed to load transactions" });
   }
 });
 
 // POST /api/admin/users/:userId/update-balance - Update user balance
-router.post('/users/:userId/update-balance', adminAuth, async (req, res) => {
+router.post("/users/:userId/update-balance", adminAuth, async (req, res) => {
   try {
     const { userId } = req.params;
     const { currency, amount } = req.body;
 
     if (!userId || !currency || amount === undefined) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const validCurrencies = ['USD', 'BTC', 'ETH', 'USDT'];
+    const validCurrencies = ["USD", "BTC", "ETH", "USDT"];
     const currencyUpper = currency.toUpperCase();
 
     if (!validCurrencies.includes(currencyUpper)) {
@@ -664,14 +664,14 @@ router.post('/users/:userId/update-balance', adminAuth, async (req, res) => {
     }
 
     const user = await prisma.user.findUnique({ where: { id: userId } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     const balanceField = `${currencyUpper.toLowerCase()}Balance`;
     const currentBalance = Number(user[balanceField as keyof typeof user] || 0);
     const newBalance = currentBalance + Number(amount);
 
     if (newBalance < 0) {
-      return res.status(400).json({ error: 'Insufficient balance' });
+      return res.status(400).json({ error: "Insufficient balance" });
     }
 
     const updateData: Record<string, number> = {};
@@ -680,27 +680,27 @@ router.post('/users/:userId/update-balance', adminAuth, async (req, res) => {
     await prisma.user.update({ where: { id: userId }, data: updateData });
 
     await prisma.transactions.create({
-      data: {
+      data: withDefaults({
         userId,
         amount: Number(amount),
-        type: 'ADMIN_ADJUSTMENT',
+        type: "ADMIN_ADJUSTMENT",
         description: `Admin adjusted ${currencyUpper} by ${amount}`,
-        status: 'completed',
-      },
+        status: "completed",
+      }),
     });
 
     return res.json({ success: true, newBalance });
   } catch (err) {
     console.error(err);
-    return res.status(500).json({ error: 'Server error' });
+    return res.status(500).json({ error: "Server error" });
   }
 });
 
 // GET /api/admin/transactions - Get transaction history
-router.get('/transactions', adminAuth, async (req, res) => {
+router.get("/transactions", adminAuth, async (req, res) => {
   try {
     const transactions = await prisma.transactions.findMany({
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 1000,
       select: {
         id: true,
@@ -715,8 +715,8 @@ router.get('/transactions', adminAuth, async (req, res) => {
 
     return res.json(transactions);
   } catch (err) {
-    console.error('Transaction fetch error:', err);
-    return res.status(500).json({ error: 'Failed to load transactions' });
+    console.error("Transaction fetch error:", err);
+    return res.status(500).json({ error: "Failed to load transactions" });
   }
 });
 
@@ -724,12 +724,12 @@ router.get('/transactions', adminAuth, async (req, res) => {
 
 // GET /api/admin/users/pending-approvals - List pending user registrations
 router.get(
-  '/users/pending-approvals',
+  "/users/pending-approvals",
   authenticateToken as any,
   requireAdmin as any,
   async (req, res) => {
     try {
-      const { page = '1', limit = '20' } = req.query;
+      const { page = "1", limit = "20" } = req.query;
       const pageNum = Math.max(1, Number(page));
       const limitNum = Math.min(100, Math.max(1, Number(limit)));
       const skip = (pageNum - 1) * limitNum;
@@ -746,7 +746,7 @@ router.get(
             createdAt: true,
             updatedAt: true,
           },
-          orderBy: { createdAt: 'asc' },
+          orderBy: { createdAt: "asc" },
           skip,
           take: limitNum,
         }),
@@ -754,7 +754,7 @@ router.get(
       ]);
 
       return res.json({
-        message: 'Pending user registrations retrieved successfully',
+        message: "Pending user registrations retrieved successfully",
         data: pendingUsers,
         pagination: {
           page: pageNum,
@@ -764,17 +764,17 @@ router.get(
         },
       });
     } catch (err) {
-      console.error('Error fetching pending approvals:', err);
+      console.error("Error fetching pending approvals:", err);
       return res
         .status(500)
-        .json({ error: 'Failed to fetch pending approvals' });
+        .json({ error: "Failed to fetch pending approvals" });
     }
   },
 );
 
 // POST /api/admin/users/approve-registration - Approve or reject a registration
 router.post(
-  '/users/approve-registration',
+  "/users/approve-registration",
   authenticateToken as any,
   requireAdmin as any,
   logAdminAction as any,
@@ -783,10 +783,10 @@ router.post(
       const { userId, action, reason } = req.body;
       const adminId = (req as any).user?.userId;
 
-      if (!userId || !action || !['approve', 'reject'].includes(action)) {
+      if (!userId || !action || !["approve", "reject"].includes(action)) {
         return res.status(400).json({
           error:
-            'Invalid request. userId and action (approve/reject) required.',
+            "Invalid request. userId and action (approve/reject) required.",
         });
       }
 
@@ -802,14 +802,14 @@ router.post(
       });
 
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: "User not found" });
       }
 
       if (user.active) {
-        return res.status(400).json({ error: 'User is already approved' });
+        return res.status(400).json({ error: "User is already approved" });
       }
 
-      if (action === 'approve') {
+      if (action === "approve") {
         const approvedUser = await prisma.user.update({
           where: { id: userId },
           data: { active: true },
@@ -823,7 +823,7 @@ router.post(
         });
 
         return res.json({
-          message: 'User registration approved successfully',
+          message: "User registration approved successfully",
           user: approvedUser,
         });
       } else {
@@ -833,21 +833,21 @@ router.post(
         });
 
         return res.json({
-          message: 'User registration rejected and account deleted',
+          message: "User registration rejected and account deleted",
           userId,
-          reason: reason || 'No reason provided',
+          reason: reason || "No reason provided",
         });
       }
     } catch (err) {
-      console.error('Error processing approval:', err);
-      return res.status(500).json({ error: 'Failed to process approval' });
+      console.error("Error processing approval:", err);
+      return res.status(500).json({ error: "Failed to process approval" });
     }
   },
 );
 
 // POST /api/admin/users/bulk-approve - Bulk approve or reject registrations
 router.post(
-  '/users/bulk-approve',
+  "/users/bulk-approve",
   authenticateToken as any,
   requireAdmin as any,
   logAdminAction as any,
@@ -860,11 +860,11 @@ router.post(
         !Array.isArray(userIds) ||
         userIds.length === 0 ||
         !action ||
-        !['approve', 'reject'].includes(action)
+        !["approve", "reject"].includes(action)
       ) {
         return res.status(400).json({
           error:
-            'Invalid request. userIds (array) and action (approve/reject) required.',
+            "Invalid request. userIds (array) and action (approve/reject) required.",
         });
       }
 
@@ -882,7 +882,7 @@ router.post(
 
       if (users.length === 0) {
         return res.status(400).json({
-          error: 'No pending users found in the provided list',
+          error: "No pending users found in the provided list",
         });
       }
 
@@ -893,7 +893,7 @@ router.post(
         errors: [] as string[],
       };
 
-      if (action === 'approve') {
+      if (action === "approve") {
         // Approve users
         const updated = await prisma.user.updateMany({
           where: { id: { in: users.map((u) => u.id) }, active: false },
@@ -923,8 +923,8 @@ router.post(
         results,
       });
     } catch (err) {
-      console.error('Error processing bulk approval:', err);
-      return res.status(500).json({ error: 'Failed to process bulk approval' });
+      console.error("Error processing bulk approval:", err);
+      return res.status(500).json({ error: "Failed to process bulk approval" });
     }
   },
 );

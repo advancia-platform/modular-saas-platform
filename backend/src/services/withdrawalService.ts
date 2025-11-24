@@ -9,12 +9,13 @@
  * 5. System updates withdrawal status
  */
 
-import crypto from 'crypto';
-import prisma from '../prismaClient';
+import crypto from "crypto";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 export interface WithdrawalRequest {
   userId: string;
-  currency: 'BTC' | 'ETH' | 'USDT';
+  currency: "BTC" | "ETH" | "USDT";
   amount: number;
   destinationAddress: string;
   network?: string; // e.g., "ERC20" for USDT, "TRC20", etc.
@@ -39,7 +40,7 @@ export async function createWithdrawalRequest(request: WithdrawalRequest) {
   });
 
   if (!userWallet || Number(userWallet.balance) < amount) {
-    throw new Error('Insufficient balance');
+    throw new Error("Insufficient balance");
   }
 
   // Get admin wallet info to show in approval UI
@@ -58,7 +59,7 @@ export async function createWithdrawalRequest(request: WithdrawalRequest) {
 
   // Create withdrawal record
   const withdrawal = await prisma.crypto_withdrawals.create({
-    data: {
+    data: withDefaults({
       userId,
       currency,
       amount,
@@ -67,9 +68,9 @@ export async function createWithdrawalRequest(request: WithdrawalRequest) {
       cryptoAmount: amount,
       usdEquivalent: 0, // Can be calculated if needed
       withdrawalAddress: destinationAddress, // Legacy field
-      status: 'pending', // pending → approved → completed
+      status: "pending", // pending → approved → completed
       requestedAt: new Date(),
-    },
+    }),
   });
 
   // Deduct from user's balance (hold until confirmed)
@@ -86,8 +87,8 @@ export async function createWithdrawalRequest(request: WithdrawalRequest) {
     data: {
       id: crypto.randomUUID(),
       userId,
-      action: 'WITHDRAWAL_REQUEST',
-      resourceType: 'CRYPTO_WITHDRAWAL',
+      action: "WITHDRAWAL_REQUEST",
+      resourceType: "CRYPTO_WITHDRAWAL",
       resourceId: withdrawal.id,
       details: JSON.stringify({
         withdrawalId: withdrawal.id,
@@ -96,7 +97,7 @@ export async function createWithdrawalRequest(request: WithdrawalRequest) {
         destinationAddress,
         adminWallet: adminWallet.walletAddress,
       }),
-      ipAddress: 'system',
+      ipAddress: "system",
     },
   });
 
@@ -106,7 +107,7 @@ export async function createWithdrawalRequest(request: WithdrawalRequest) {
       address: adminWallet.walletAddress,
       provider: adminWallet.walletProvider,
       instructions: `Send ${amount} ${currency} from your ${
-        adminWallet.walletProvider || 'crypto wallet'
+        adminWallet.walletProvider || "crypto wallet"
       } (${
         adminWallet.walletAddress
       }) to user's address: ${destinationAddress}`,
@@ -133,10 +134,10 @@ export async function approveWithdrawal(approval: WithdrawalApproval) {
   });
 
   if (!withdrawal) {
-    throw new Error('Withdrawal not found');
+    throw new Error("Withdrawal not found");
   }
 
-  if (withdrawal.status !== 'pending') {
+  if (withdrawal.status !== "pending") {
     throw new Error(`Withdrawal already ${withdrawal.status}`);
   }
 
@@ -144,12 +145,12 @@ export async function approveWithdrawal(approval: WithdrawalApproval) {
   const updated = await prisma.crypto_withdrawals.update({
     where: { id: withdrawalId },
     data: {
-      status: 'completed',
+      status: "completed",
       txHash, // External transaction hash from admin's wallet
       approvedBy: adminId,
       approvedAt: new Date(),
       completedAt: new Date(),
-      adminNotes: adminNotes || 'Sent from admin wallet',
+      adminNotes: adminNotes || "Sent from admin wallet",
     },
   });
 
@@ -179,14 +180,14 @@ export async function approveWithdrawal(approval: WithdrawalApproval) {
 
   if (adminWallet) {
     await prisma.admin_wallet_transactions.create({
-      data: {
+      data: withDefaults({
         adminWalletId: adminWallet.id,
         userId: withdrawal.userId,
         amount: withdrawal.amount,
         currency: withdrawal.currency,
-        type: 'credit', // Credit given to user (sent from admin wallet)
+        type: "credit", // Credit given to user (sent from admin wallet)
         description: `Withdrawal to ${withdrawal.destinationAddress}. TxHash: ${txHash}`,
-      },
+      }),
     });
   }
 
@@ -195,8 +196,8 @@ export async function approveWithdrawal(approval: WithdrawalApproval) {
     data: {
       id: crypto.randomUUID(),
       userId: adminId,
-      action: 'WITHDRAWAL_APPROVED',
-      resourceType: 'CRYPTO_WITHDRAWAL',
+      action: "WITHDRAWAL_APPROVED",
+      resourceType: "CRYPTO_WITHDRAWAL",
       resourceId: withdrawalId,
       details: JSON.stringify({
         withdrawalId,
@@ -206,7 +207,7 @@ export async function approveWithdrawal(approval: WithdrawalApproval) {
         txHash,
         userEmail: withdrawal.user.email,
       }),
-      ipAddress: 'admin',
+      ipAddress: "admin",
     },
   });
 
@@ -226,10 +227,10 @@ export async function rejectWithdrawal(
   });
 
   if (!withdrawal) {
-    throw new Error('Withdrawal not found');
+    throw new Error("Withdrawal not found");
   }
 
-  if (withdrawal.status !== 'pending') {
+  if (withdrawal.status !== "pending") {
     throw new Error(`Withdrawal already ${withdrawal.status}`);
   }
 
@@ -237,7 +238,7 @@ export async function rejectWithdrawal(
   const updated = await prisma.crypto_withdrawals.update({
     where: { id: withdrawalId },
     data: {
-      status: 'rejected',
+      status: "rejected",
       approvedBy: adminId,
       approvedAt: new Date(),
       adminNotes: reason,
@@ -267,8 +268,8 @@ export async function rejectWithdrawal(
     data: {
       id: crypto.randomUUID(),
       userId: adminId,
-      action: 'WITHDRAWAL_REJECTED',
-      resourceType: 'CRYPTO_WITHDRAWAL',
+      action: "WITHDRAWAL_REJECTED",
+      resourceType: "CRYPTO_WITHDRAWAL",
       resourceId: withdrawalId,
       details: JSON.stringify({
         withdrawalId,
@@ -276,7 +277,7 @@ export async function rejectWithdrawal(
         amount: withdrawal.amount.toString(),
         reason,
       }),
-      ipAddress: 'admin',
+      ipAddress: "admin",
     },
   });
 
@@ -315,7 +316,7 @@ export async function getAdminWalletInfo(currency: string) {
  */
 export async function getPendingWithdrawals() {
   const withdrawals = await prisma.crypto_withdrawals.findMany({
-    where: { status: 'pending' },
+    where: { status: "pending" },
     include: {
       user: {
         select: {
@@ -326,7 +327,7 @@ export async function getPendingWithdrawals() {
         },
       },
     },
-    orderBy: { requestedAt: 'asc' },
+    orderBy: { requestedAt: "asc" },
   });
 
   // Get admin wallet info for each currency
@@ -353,8 +354,8 @@ export async function getPendingWithdrawals() {
     adminWallet: walletMap[withdrawal.currency],
     instructions: walletMap[withdrawal.currency]
       ? `Send ${withdrawal.amount} ${withdrawal.currency} from your ${
-          walletMap[withdrawal.currency]!.walletProvider || 'crypto wallet'
+          walletMap[withdrawal.currency]!.walletProvider || "crypto wallet"
         } to: ${withdrawal.destinationAddress}`
-      : 'Admin wallet not configured',
+      : "Admin wallet not configured",
   }));
 }

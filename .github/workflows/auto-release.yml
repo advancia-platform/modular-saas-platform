@@ -1,0 +1,89 @@
+name: Auto Release
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: auto-release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine next semantic version
+        id: version
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { execSync } = require('child_process');
+            const fs = require('fs');
+
+            try { execSync('git fetch --tags --force', { stdio: 'ignore' }); } catch {}
+
+            let latestTag = 'v0.0.0';
+            try {
+              latestTag = execSync('git describe --tags --abbrev=0').toString().trim();
+            } catch {}
+
+            const [major, minor, patch] = (latestTag.replace(/^v/, '') || '0.0.0')
+              .split('.')
+              .map(n => parseInt(n || '0', 10));
+
+            let newMajor = isNaN(major) ? 0 : major;
+            let newMinor = isNaN(minor) ? 0 : minor;
+            let newPatch = (isNaN(patch) ? 0 : patch) + 1;
+
+            let content = '';
+            try { content = fs.readFileSync('CHANGELOG.md', 'utf8'); } catch {}
+
+            if (content.includes('BREAKING CHANGE')) {
+              newMajor = newMajor + 1; newMinor = 0; newPatch = 0;
+            } else if (content.includes('type: feature')) {
+              newMinor = newMinor + 1; newPatch = 0;
+            }
+
+            const newTag = `v${newMajor}.${newMinor}.${newPatch}`;
+            core.setOutput('newTag', newTag);
+
+      - name: Create and push tag
+        env:
+          TAG: ${{ steps.version.outputs.newTag }}
+        run: |
+          if git rev-parse "$TAG" >/dev/null 2>&1; then
+            echo "Tag $TAG already exists; skipping tag creation."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git tag -a "$TAG" -m "Release $TAG"
+            git push origin "$TAG"
+          fi
+
+      - name: Read changelog snippet
+        id: changelog
+        run: |
+          echo "notes<<EOF" >> $GITHUB_OUTPUT
+          if [ -f CHANGELOG.md ]; then
+            tail -n 100 CHANGELOG.md >> $GITHUB_OUTPUT
+          else
+            echo "Automated release." >> $GITHUB_OUTPUT
+          fi
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.newTag }}
+          name: Release ${{ steps.version.outputs.newTag }}
+          body: ${{ steps.changelog.outputs.notes }}
+          draft: false
+          prerelease: false

@@ -1,11 +1,12 @@
-import express from 'express';
-import { authenticateToken, requireAdmin } from '../middleware/auth';
-import prisma from '../prismaClient';
+import express from "express";
+import { authenticateToken, requireAdmin } from "../middleware/auth";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const router = express.Router();
 
 // Get all admin wallet addresses
-router.get('/', authenticateToken, requireAdmin, async (req, res) => {
+router.get("/", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const wallets = await prisma.admin_wallets.findMany({
       select: {
@@ -19,20 +20,20 @@ router.get('/', authenticateToken, requireAdmin, async (req, res) => {
         walletNotes: true,
         updatedAt: true,
       },
-      orderBy: { currency: 'asc' },
+      orderBy: { currency: "asc" },
     });
 
     res.json({ success: true, wallets });
   } catch (error) {
-    console.error('Error fetching admin wallets:', error);
+    console.error("Error fetching admin wallets:", error);
     res
       .status(500)
-      .json({ success: false, error: 'Failed to fetch admin wallets' });
+      .json({ success: false, error: "Failed to fetch admin wallets" });
   }
 });
 
 // Configure wallet address for a specific currency
-router.put('/:currency', authenticateToken, requireAdmin, async (req, res) => {
+router.put("/:currency", authenticateToken, requireAdmin, async (req, res) => {
   try {
     const { currency } = req.params;
     const { walletAddress, walletProvider, walletNotes } = req.body;
@@ -41,7 +42,7 @@ router.put('/:currency', authenticateToken, requireAdmin, async (req, res) => {
     if (!walletAddress) {
       return res.status(400).json({
         success: false,
-        error: 'walletAddress is required',
+        error: "walletAddress is required",
       });
     }
 
@@ -53,7 +54,7 @@ router.put('/:currency', authenticateToken, requireAdmin, async (req, res) => {
     if (!wallet) {
       // Create new wallet
       wallet = await prisma.admin_wallets.create({
-        data: {
+        data: withDefaults({
           currency: currency.toUpperCase(),
           balance: 0,
           totalIn: 0,
@@ -61,7 +62,7 @@ router.put('/:currency', authenticateToken, requireAdmin, async (req, res) => {
           walletAddress,
           walletProvider: walletProvider || null,
           walletNotes: walletNotes || null,
-        },
+        }),
       });
     } else {
       // Update existing wallet
@@ -86,32 +87,32 @@ router.put('/:currency', authenticateToken, requireAdmin, async (req, res) => {
       },
     });
   } catch (error) {
-    console.error('Error configuring admin wallet:', error);
+    console.error("Error configuring admin wallet:", error);
     res.status(500).json({
       success: false,
-      error: 'Failed to configure admin wallet',
+      error: "Failed to configure admin wallet",
     });
   }
 });
 
 // Initialize default wallet addresses from environment variables
 router.post(
-  '/init-from-env',
+  "/init-from-env",
   authenticateToken,
   requireAdmin,
   async (req, res) => {
     try {
       const envWallets = [
         {
-          currency: 'BTC',
+          currency: "BTC",
           address: process.env.ADMIN_BTC_WALLET_ADDRESS,
         },
         {
-          currency: 'ETH',
+          currency: "ETH",
           address: process.env.ADMIN_ETH_WALLET_ADDRESS,
         },
         {
-          currency: 'USDT',
+          currency: "USDT",
           address: process.env.ADMIN_USDT_WALLET_ADDRESS,
         },
       ];
@@ -129,22 +130,22 @@ router.post(
           where: { currency },
           update: {
             walletAddress: address,
-            walletProvider: 'Environment Variable',
+            walletProvider: "Environment Variable",
           },
-          create: {
+          create: withDefaults({
             currency,
             balance: 0,
             totalIn: 0,
             totalOut: 0,
             walletAddress: address,
-            walletProvider: 'Environment Variable',
-          },
+            walletProvider: "Environment Variable",
+          }),
         });
 
         results.push({
           currency: wallet.currency as string,
           walletAddress: wallet.walletAddress as string,
-          status: 'configured' as const,
+          status: "configured" as const,
         });
       }
 
@@ -154,10 +155,10 @@ router.post(
         wallets: results,
       });
     } catch (error) {
-      console.error('Error initializing wallets from env:', error);
+      console.error("Error initializing wallets from env:", error);
       res.status(500).json({
         success: false,
-        error: 'Failed to initialize wallet addresses',
+        error: "Failed to initialize wallet addresses",
       });
     }
   },

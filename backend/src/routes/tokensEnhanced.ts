@@ -1,7 +1,7 @@
-import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/auth';
-import logger from '../logger';
+import { PrismaClient } from "@prisma/client";
+import { Request, Response, Router } from "express";
+import logger from "../logger";
+import { authenticateToken } from "../middleware/auth";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -11,7 +11,7 @@ const prisma = new PrismaClient();
  * Withdraw tokens to USD balance
  */
 router.post(
-  '/withdraw',
+  "/withdraw",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
@@ -19,7 +19,7 @@ router.post(
       const { amount } = req.body;
 
       if (!amount || amount <= 0) {
-        return res.status(400).json({ error: 'Invalid amount' });
+        return res.status(400).json({ error: "Invalid amount" });
       }
 
       // Get token wallet
@@ -27,7 +27,7 @@ router.post(
         where: { userId },
       });
       if (!wallet || wallet.balance < amount) {
-        return res.status(400).json({ error: 'Insufficient token balance' });
+        return res.status(400).json({ error: "Insufficient token balance" });
       }
 
       // Calculate USD value (1 token = $0.10 for example)
@@ -53,8 +53,8 @@ router.post(
           data: {
             walletId: wallet.id,
             amount: -amount,
-            type: 'WITHDRAWAL',
-            status: 'completed',
+            type: "WITHDRAWAL",
+            status: "completed",
             description: `Withdrew ${amount} tokens to USD ($${usdAmount.toFixed(2)})`,
           },
         });
@@ -66,8 +66,8 @@ router.post(
         exchangeRate,
       });
     } catch (error) {
-      logger.error('Token withdrawal error:', error);
-      res.status(500).json({ error: 'Failed to withdraw tokens' });
+      logger.error("Token withdrawal error:", error);
+      res.status(500).json({ error: "Failed to withdraw tokens" });
     }
   },
 );
@@ -77,7 +77,7 @@ router.post(
  * Transfer tokens to another user
  */
 router.post(
-  '/transfer',
+  "/transfer",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
@@ -85,7 +85,7 @@ router.post(
       const { toUserId, toEmail, amount, message } = req.body;
 
       if (!amount || amount <= 0) {
-        return res.status(400).json({ error: 'Invalid amount' });
+        return res.status(400).json({ error: "Invalid amount" });
       }
 
       // Find recipient
@@ -97,11 +97,11 @@ router.post(
       }
 
       if (!recipient) {
-        return res.status(404).json({ error: 'Recipient not found' });
+        return res.status(404).json({ error: "Recipient not found" });
       }
 
       if (recipient.id === userId) {
-        return res.status(400).json({ error: 'Cannot transfer to yourself' });
+        return res.status(400).json({ error: "Cannot transfer to yourself" });
       }
 
       // Get sender wallet
@@ -109,7 +109,7 @@ router.post(
         where: { userId },
       });
       if (!senderWallet || senderWallet.balance < amount) {
-        return res.status(400).json({ error: 'Insufficient token balance' });
+        return res.status(400).json({ error: "Insufficient token balance" });
       }
 
       // Get or create recipient wallet
@@ -118,7 +118,7 @@ router.post(
       });
       if (!recipientWallet) {
         recipientWallet = await prisma.token_wallets.create({
-          data: { userId: recipient.id },
+          data: withDefaults({ userId: recipient.id }),
         });
       }
 
@@ -141,8 +141,8 @@ router.post(
           data: {
             walletId: senderWallet.id,
             amount: -amount,
-            type: 'TRANSFER_OUT',
-            status: 'completed',
+            type: "TRANSFER_OUT",
+            status: "completed",
             description: message || `Transferred to ${recipient.email}`,
             toAddress: recipient.email,
           },
@@ -153,9 +153,9 @@ router.post(
           data: {
             walletId: recipientWallet!.id,
             amount,
-            type: 'TRANSFER_IN',
-            status: 'completed',
-            description: message || 'Received from sender',
+            type: "TRANSFER_IN",
+            status: "completed",
+            description: message || "Received from sender",
             fromAddress: (req as any).user.email,
           },
         });
@@ -166,8 +166,8 @@ router.post(
         message: `Transferred ${amount} tokens to ${recipient.email}`,
       });
     } catch (error) {
-      logger.error('Token transfer error:', error);
-      res.status(500).json({ error: 'Failed to transfer tokens' });
+      logger.error("Token transfer error:", error);
+      res.status(500).json({ error: "Failed to transfer tokens" });
     }
   },
 );
@@ -176,19 +176,19 @@ router.post(
  * POST /api/tokens/buy
  * Buy tokens with USD balance
  */
-router.post('/buy', authenticateToken, async (req: Request, res: Response) => {
+router.post("/buy", authenticateToken, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
     const { usdAmount } = req.body;
 
     if (!usdAmount || usdAmount <= 0) {
-      return res.status(400).json({ error: 'Invalid USD amount' });
+      return res.status(400).json({ error: "Invalid USD amount" });
     }
 
     // Check USD balance
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (!user || user.usdBalance < usdAmount) {
-      return res.status(400).json({ error: 'Insufficient USD balance' });
+      return res.status(400).json({ error: "Insufficient USD balance" });
     }
 
     // Calculate tokens (1 USD = 10 tokens for example)
@@ -198,7 +198,9 @@ router.post('/buy', authenticateToken, async (req: Request, res: Response) => {
     // Get or create wallet
     let wallet = await prisma.token_wallets.findUnique({ where: { userId } });
     if (!wallet) {
-      wallet = await prisma.token_wallets.create({ data: { userId } });
+      wallet = await prisma.token_wallets.create({
+        data: withDefaults({ userId }),
+      });
     }
 
     // Transaction
@@ -223,8 +225,8 @@ router.post('/buy', authenticateToken, async (req: Request, res: Response) => {
         data: {
           walletId: wallet!.id,
           amount: tokenAmount,
-          type: 'PURCHASE',
-          status: 'completed',
+          type: "PURCHASE",
+          status: "completed",
           description: `Purchased ${tokenAmount} tokens with $${usdAmount}`,
           metadata: JSON.stringify({ exchangeRate, usdAmount }),
         },
@@ -237,8 +239,8 @@ router.post('/buy', authenticateToken, async (req: Request, res: Response) => {
       exchangeRate,
     });
   } catch (error) {
-    logger.error('Token purchase error:', error);
-    res.status(500).json({ error: 'Failed to purchase tokens' });
+    logger.error("Token purchase error:", error);
+    res.status(500).json({ error: "Failed to purchase tokens" });
   }
 });
 
@@ -247,7 +249,7 @@ router.post('/buy', authenticateToken, async (req: Request, res: Response) => {
  * Stake tokens to earn rewards
  */
 router.post(
-  '/stake',
+  "/stake",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
@@ -255,14 +257,14 @@ router.post(
       const { amount, duration = 30 } = req.body; // duration in days
 
       if (!amount || amount <= 0) {
-        return res.status(400).json({ error: 'Invalid amount' });
+        return res.status(400).json({ error: "Invalid amount" });
       }
 
       const wallet = await prisma.token_wallets.findUnique({
         where: { userId },
       });
       if (!wallet || wallet.balance < amount) {
-        return res.status(400).json({ error: 'Insufficient token balance' });
+        return res.status(400).json({ error: "Insufficient token balance" });
       }
 
       // Calculate staking reward (5% APY for example)
@@ -286,8 +288,8 @@ router.post(
           data: {
             walletId: wallet.id,
             amount: -amount,
-            type: 'STAKE',
-            status: 'completed',
+            type: "STAKE",
+            status: "completed",
             description: `Staked ${amount} tokens for ${duration} days`,
             metadata: JSON.stringify({
               duration,
@@ -307,8 +309,8 @@ router.post(
         apy: annualRate * 100,
       });
     } catch (error) {
-      logger.error('Token staking error:', error);
-      res.status(500).json({ error: 'Failed to stake tokens' });
+      logger.error("Token staking error:", error);
+      res.status(500).json({ error: "Failed to stake tokens" });
     }
   },
 );
@@ -317,9 +319,9 @@ router.post(
  * GET /api/tokens/chart
  * Get token price history
  */
-router.get('/chart', authenticateToken, async (req: Request, res: Response) => {
+router.get("/chart", authenticateToken, async (req: Request, res: Response) => {
   try {
-    const { days = '30' } = req.query;
+    const { days = "30" } = req.query;
 
     // Generate mock price history (replace with real data)
     const history = Array.from({ length: parseInt(days as string) }, (_, i) => {
@@ -332,7 +334,7 @@ router.get('/chart', authenticateToken, async (req: Request, res: Response) => {
       const price = basePrice + variation;
 
       return {
-        date: date.toISOString().split('T')[0],
+        date: date.toISOString().split("T")[0],
         price: parseFloat(price.toFixed(4)),
         volume: Math.floor(Math.random() * 10000),
       };
@@ -349,8 +351,8 @@ router.get('/chart', authenticateToken, async (req: Request, res: Response) => {
         100,
     });
   } catch (error) {
-    logger.error('Token chart error:', error);
-    res.status(500).json({ error: 'Failed to fetch token chart' });
+    logger.error("Token chart error:", error);
+    res.status(500).json({ error: "Failed to fetch token chart" });
   }
 });
 

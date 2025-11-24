@@ -1,28 +1,29 @@
-import * as nodemailer from 'nodemailer';
-import { Server as SocketServer } from 'socket.io';
-import webpush from 'web-push';
-import prisma from '../prismaClient';
+import * as nodemailer from "nodemailer";
+import { Server as SocketServer } from "socket.io";
+import webpush from "web-push";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 // Configure VAPID (will be set from env)
-const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || '';
-const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || '';
+const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "";
+const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY || "";
 const vapidSubject =
-  process.env.VAPID_SUBJECT || 'mailto:support@advanciapayledger.com';
+  process.env.VAPID_SUBJECT || "mailto:support@advanciapayledger.com";
 
 if (vapidPublicKey && vapidPrivateKey) {
   webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
 }
 
 // Email configuration
-const EMAIL_USER = process.env.EMAIL_USER || ''; // Gmail account used for SMTP auth
-const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || ''; // Gmail App Password recommended
+const EMAIL_USER = process.env.EMAIL_USER || ""; // Gmail account used for SMTP auth
+const EMAIL_PASSWORD = process.env.EMAIL_PASSWORD || ""; // Gmail App Password recommended
 // Custom From/Reply-To to present your domain (e.g., support@yourdomain)
 const EMAIL_FROM = process.env.EMAIL_FROM || EMAIL_USER;
 const EMAIL_REPLY_TO = process.env.EMAIL_REPLY_TO || EMAIL_USER;
 
 // Email transporter (Gmail SMTP)
 const emailTransporter = nodemailer.createTransport({
-  service: 'gmail',
+  service: "gmail",
   auth: {
     user: EMAIL_USER,
     pass: EMAIL_PASSWORD,
@@ -34,14 +35,14 @@ let io: SocketServer | null = null;
 
 export function setSocketIO(socketServer: SocketServer) {
   io = socketServer;
-  console.log('✅ Socket.IO injected into notification service');
+  console.log("✅ Socket.IO injected into notification service");
 }
 
 interface NotificationPayload {
   userId: string;
-  type?: 'email' | 'sms' | 'in-app' | 'push' | 'all';
-  priority?: 'low' | 'normal' | 'high' | 'urgent';
-  category: 'transaction' | 'security' | 'system' | 'reward' | 'admin';
+  type?: "email" | "sms" | "in-app" | "push" | "all";
+  priority?: "low" | "normal" | "high" | "urgent";
+  category: "transaction" | "security" | "system" | "reward" | "admin";
   title: string;
   message: string;
   data?: Record<string, any>;
@@ -50,8 +51,8 @@ interface NotificationPayload {
 export async function createNotification(payload: NotificationPayload) {
   const {
     userId,
-    type = 'all',
-    priority = 'normal',
+    type = "all",
+    priority = "normal",
     category,
     title,
     message,
@@ -67,7 +68,7 @@ export async function createNotification(payload: NotificationPayload) {
     // Create default preferences if none exist
     if (!userPrefs) {
       userPrefs = await prisma.notification_preferences.create({
-        data: { userId },
+        data: withDefaults({ userId }),
       });
     }
 
@@ -82,7 +83,7 @@ export async function createNotification(payload: NotificationPayload) {
 
     // Create notification record
     const notification = await prisma.notifications.create({
-      data: {
+      data: withDefaults({
         userId,
         type,
         priority,
@@ -90,7 +91,7 @@ export async function createNotification(payload: NotificationPayload) {
         title,
         message,
         data: data || {},
-      },
+      }),
     });
 
     console.log(
@@ -99,23 +100,23 @@ export async function createNotification(payload: NotificationPayload) {
 
     // Determine which channels to use
     const channels: string[] = [];
-    if (type === 'all') {
-      if (userPrefs?.emailEnabled) channels.push('email');
-      if (userPrefs?.inAppEnabled) channels.push('in-app');
-      if (userPrefs?.pushEnabled) channels.push('push');
+    if (type === "all") {
+      if (userPrefs?.emailEnabled) channels.push("email");
+      if (userPrefs?.inAppEnabled) channels.push("in-app");
+      if (userPrefs?.pushEnabled) channels.push("push");
     } else {
       channels.push(type);
     }
 
     // Send via each channel (non-blocking)
     Promise.allSettled([
-      channels.includes('email')
+      channels.includes("email")
         ? sendEmail(notification.id, userId, title, message)
         : Promise.resolve(),
-      channels.includes('in-app')
+      channels.includes("in-app")
         ? sendInApp(notification.id, userId, notification)
         : Promise.resolve(),
-      channels.includes('push')
+      channels.includes("push")
         ? sendPush(notification.id, userId, title, message, data)
         : Promise.resolve(),
     ]).then(async (results) => {
@@ -124,15 +125,15 @@ export async function createNotification(payload: NotificationPayload) {
         where: { id: notification.id },
         data: {
           emailSent:
-            channels.includes('email') && results[0]?.status === 'fulfilled',
+            channels.includes("email") && results[0]?.status === "fulfilled",
           emailSentAt:
-            channels.includes('email') && results[0]?.status === 'fulfilled'
+            channels.includes("email") && results[0]?.status === "fulfilled"
               ? new Date()
               : undefined,
           pushSent:
-            channels.includes('push') && results[2]?.status === 'fulfilled',
+            channels.includes("push") && results[2]?.status === "fulfilled",
           pushSentAt:
-            channels.includes('push') && results[2]?.status === 'fulfilled'
+            channels.includes("push") && results[2]?.status === "fulfilled"
               ? new Date()
               : undefined,
         },
@@ -141,7 +142,7 @@ export async function createNotification(payload: NotificationPayload) {
 
     return notification;
   } catch (error) {
-    console.error('❌ Error creating notification:', error);
+    console.error("❌ Error creating notification:", error);
     throw error;
   }
 }
@@ -173,7 +174,7 @@ async function sendEmail(
             <p style="font-size: 12px; color: #6B7280;">
               This is an automated notification from Advancia Pay Ledger.
               <a href="${
-                process.env.FRONTEND_URL || 'http://localhost:3000'
+                process.env.FRONTEND_URL || "http://localhost:3000"
               }/settings/notifications" style="color: #3B82F6; text-decoration: none;">Manage preferences</a>
             </p>
           </div>
@@ -181,12 +182,12 @@ async function sendEmail(
       `,
     });
 
-    await logDelivery(notificationId, 'email', 'sent');
+    await logDelivery(notificationId, "email", "sent");
     console.log(`✅ Email sent to ${user.email}`);
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    await logDelivery(notificationId, 'email', 'failed', errorMsg);
-    console.error('❌ Email send failed:', error);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    await logDelivery(notificationId, "email", "failed", errorMsg);
+    console.error("❌ Email send failed:", error);
   }
 }
 
@@ -197,12 +198,12 @@ async function sendInApp(
 ) {
   try {
     if (!io) {
-      console.warn('⚠️  Socket.IO not initialized');
+      console.warn("⚠️  Socket.IO not initialized");
       return;
     }
 
     // Emit to user's room (convention: user-${userId})
-    io.to(`user-${userId}`).emit('notification', {
+    io.to(`user-${userId}`).emit("notification", {
       id: notification.id,
       title: notification.title,
       message: notification.message,
@@ -213,7 +214,7 @@ async function sendInApp(
 
     console.log(`✅ In-app notification sent to user ${userId}`);
   } catch (error) {
-    console.error('❌ In-app notification failed:', error);
+    console.error("❌ In-app notification failed:", error);
   }
 }
 
@@ -226,7 +227,7 @@ async function sendPush(
 ) {
   try {
     if (!vapidPublicKey || !vapidPrivateKey) {
-      console.warn('⚠️  VAPID keys not configured, skipping push notification');
+      console.warn("⚠️  VAPID keys not configured, skipping push notification");
       return;
     }
 
@@ -252,12 +253,12 @@ async function sendPush(
           JSON.stringify({
             title,
             body: message,
-            icon: '/icons/icon-192x192.png',
-            badge: '/icons/badge-72x72.png',
+            icon: "/icons/icon-192x192.png",
+            badge: "/icons/badge-72x72.png",
             data: { notificationId, ...data },
           }),
         );
-        await logDelivery(notificationId, 'push', 'sent');
+        await logDelivery(notificationId, "push", "sent");
       } catch (error: any) {
         if (error.statusCode === 410) {
           // Subscription expired
@@ -278,9 +279,9 @@ async function sendPush(
       `✅ Push notifications sent to ${subscriptions.length} device(s)`,
     );
   } catch (error) {
-    const errorMsg = error instanceof Error ? error.message : 'Unknown error';
-    await logDelivery(notificationId, 'push', 'failed', errorMsg);
-    console.error('❌ Push notification failed:', error);
+    const errorMsg = error instanceof Error ? error.message : "Unknown error";
+    await logDelivery(notificationId, "push", "failed", errorMsg);
+    console.error("❌ Push notification failed:", error);
   }
 }
 
@@ -291,23 +292,23 @@ async function logDelivery(
   errorMessage?: string,
 ) {
   try {
-    await prisma.notifications.create({
-      data: {
+    await prisma.notification_logs.create({
+      data: withDefaults({
         notificationId,
         channel,
         status,
         errorMessage,
-        deliveredAt: status === 'sent' ? new Date() : undefined,
-      },
+        deliveredAt: status === "sent" ? new Date() : undefined,
+      }),
     });
   } catch (error) {
-    console.error('❌ Failed to log delivery:', error);
+    console.error("❌ Failed to log delivery:", error);
   }
 }
 
 // Email fallback for unread notifications
 export async function sendFallbackEmails() {
-  const delay = parseInt(process.env.EMAIL_FALLBACK_DELAY || '10');
+  const delay = parseInt(process.env.EMAIL_FALLBACK_DELAY || "10");
   const cutoff = new Date(Date.now() - delay * 60 * 1000);
 
   try {
@@ -358,8 +359,8 @@ export async function sendFallbackEmails() {
                   notification.message
                 }</p>
                 <a href="${
-                  process.env.FRONTEND_URL || 'http://localhost:3000'
-                }/notifications" 
+                  process.env.FRONTEND_URL || "http://localhost:3000"
+                }/notifications"
                    style="display: inline-block; padding: 12px 24px; background: #3B82F6; color: white; text-decoration: none; border-radius: 6px; margin-top: 20px;">
                   View Notification
                 </a>
@@ -382,7 +383,7 @@ export async function sendFallbackEmails() {
       }
     }
   } catch (error) {
-    console.error('❌ Error in fallback email job:', error);
+    console.error("❌ Error in fallback email job:", error);
   }
 }
 
@@ -406,7 +407,7 @@ export async function getUserNotifications(
   const [notifications, total] = await Promise.all([
     prisma.notifications.findMany({
       where,
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       skip,
       take: limit,
     }),
@@ -430,15 +431,15 @@ export async function markAsRead(notificationId: string, userId: string) {
   try {
     if (io) {
       const unread = await getUnreadCount(userId);
-      io.to(`user-${userId}`).emit('notifications:read', {
+      io.to(`user-${userId}`).emit("notifications:read", {
         id: notificationId,
       });
-      io.to(`user-${userId}`).emit('notifications:unread-count', {
+      io.to(`user-${userId}`).emit("notifications:unread-count", {
         count: unread,
       });
     }
   } catch (e) {
-    console.warn('Socket emit failed for markAsRead:', e);
+    console.warn("Socket emit failed for markAsRead:", e);
   }
   return updated;
 }
@@ -450,11 +451,11 @@ export async function markAllAsRead(userId: string) {
   });
   try {
     if (io) {
-      io.to(`user-${userId}`).emit('notifications:all-read');
-      io.to(`user-${userId}`).emit('notifications:unread-count', { count: 0 });
+      io.to(`user-${userId}`).emit("notifications:all-read");
+      io.to(`user-${userId}`).emit("notifications:unread-count", { count: 0 });
     }
   } catch (e) {
-    console.warn('Socket emit failed for markAllAsRead:', e);
+    console.warn("Socket emit failed for markAllAsRead:", e);
   }
   return res;
 }
@@ -480,8 +481,10 @@ export async function getUserPreferences(userId: string) {
   });
 
   if (!prefs) {
-    prefs = await prisma.notification_preferences.create({
-      data: { userId },
+    await prisma.notification_preferences.upsert({
+      where: { userId },
+      update: {},
+      create: withDefaults({ userId }),
     });
   }
 
@@ -501,17 +504,17 @@ export async function updateUserPreferences(userId: string, updates: any) {
  * @param payload - Notification payload (userId will be ignored, all admins will be notified)
  */
 export async function notifyAllAdmins(
-  payload: Omit<NotificationPayload, 'userId'>,
+  payload: Omit<NotificationPayload, "userId">,
 ) {
   try {
     // Find all admin users
     const adminUsers = await prisma.user.findMany({
-      where: { role: 'ADMIN' },
+      where: { role: "ADMIN" },
       select: { id: true, email: true, firstName: true, lastName: true },
     });
 
     if (adminUsers.length === 0) {
-      console.log('⚠️  No admin users found to notify');
+      console.log("⚠️  No admin users found to notify");
       return [];
     }
 
@@ -529,7 +532,7 @@ export async function notifyAllAdmins(
 
     // Also send to admins room via Socket.IO
     if (io) {
-      io.to('admins').emit('admin-notification', {
+      io.to("admins").emit("admin-notification", {
         title: payload.title,
         message: payload.message,
         priority: payload.priority,
@@ -537,12 +540,12 @@ export async function notifyAllAdmins(
         data: payload.data,
         timestamp: new Date().toISOString(),
       });
-      console.log('✅ Socket notification sent to admins room');
+      console.log("✅ Socket notification sent to admins room");
     }
 
     return notifications;
   } catch (error) {
-    console.error('❌ Error notifying admins:', error);
+    console.error("❌ Error notifying admins:", error);
     throw error;
   }
 }

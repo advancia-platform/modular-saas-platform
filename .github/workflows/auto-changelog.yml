@@ -1,0 +1,38 @@
+name: Auto Changelog
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  changelog:
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Update CHANGELOG.md
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const pr = context.payload.pull_request;
+            const labels = pr.labels.map(l => l.name).join(', ');
+            const entry = `- ${pr.title} (#${pr.number}) [${labels}]`;
+
+            let changelog = '';
+            try {
+              changelog = fs.readFileSync('CHANGELOG.md', 'utf8');
+            } catch (e) {
+              changelog = '# Changelog\n\n';
+            }
+
+            const newContent = changelog + '\n' + entry;
+            fs.writeFileSync('CHANGELOG.md', newContent);
+
+      - name: Commit changelog update
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "Update CHANGELOG.md for PR #${{ github.event.pull_request.number }}"
+          git push origin HEAD:main

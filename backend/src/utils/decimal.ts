@@ -1,4 +1,5 @@
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from "@prisma/client";
+type Decimal = Prisma.Decimal;
 
 /**
  * Type guard to check if a value is a Prisma Decimal instance.
@@ -6,9 +7,9 @@ import { Decimal } from '@prisma/client/runtime/library';
 function isDecimal(value: any): value is Decimal {
   return (
     value &&
-    typeof value === 'object' &&
+    typeof value === "object" &&
     value.constructor &&
-    value.constructor.name === 'Decimal'
+    value.constructor.name === "Decimal"
   );
 }
 
@@ -25,7 +26,7 @@ function isDecimal(value: any): value is Decimal {
  */
 export function serializeDecimal(value: Decimal | null | undefined): string {
   if (value === null || value === undefined) {
-    return '0';
+    return "0";
   }
   return value.toString();
 }
@@ -44,7 +45,7 @@ export function serializeDecimal(value: Decimal | null | undefined): string {
 export function serializeDecimalFields<T extends Record<string, any>>(
   obj: T,
 ): T {
-  if (!obj || typeof obj !== 'object') {
+  if (!obj || typeof obj !== "object") {
     return obj;
   }
 
@@ -55,7 +56,7 @@ export function serializeDecimalFields<T extends Record<string, any>>(
 
     if (isDecimal(value)) {
       serialized[key] = value.toString();
-    } else if (value && typeof value === 'object') {
+    } else if (value && typeof value === "object") {
       serialized[key] = serializeDecimalFields(value);
     } else {
       serialized[key] = value;
@@ -97,7 +98,7 @@ export function serializeDecimalArray<T extends Record<string, any>>(
       amount } });
  */
 export function parseToDecimal(value: string | number): Decimal {
-  return new Decimal(value);
+  return new Prisma.Decimal(value);
 }
 
 /**

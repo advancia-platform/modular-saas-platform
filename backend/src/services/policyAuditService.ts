@@ -4,13 +4,14 @@
  * Uses SHA-256 hash chains to detect tampering
  */
 
-import { createHash } from 'crypto';
-import prisma from '../prismaClient';
-import { captureError } from '../utils/sentry';
+import { createHash } from "crypto";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
+import { captureError } from "../utils/sentry";
 
 export interface PolicyAuditData {
   policyId: string;
-  action: 'created' | 'updated' | 'deleted' | 'enabled' | 'disabled';
+  action: "created" | "updated" | "deleted" | "enabled" | "disabled";
   changedBy: string;
   userEmail: string;
   userRole: string;
@@ -36,7 +37,7 @@ function computeEntryHash(entry: any, prevHash: string): string {
     prevHash,
   });
 
-  return createHash('sha256').update(data).digest('hex');
+  return createHash("sha256").update(data).digest("hex");
 }
 
 /**
@@ -45,14 +46,14 @@ function computeEntryHash(entry: any, prevHash: string): string {
 async function getLastEntryHash(): Promise<string> {
   try {
     const lastEntry = await prisma.policy_audit_logs.findFirst({
-      orderBy: { timestamp: 'desc' },
+      orderBy: { timestamp: "desc" },
       select: { entryHash: true },
     });
 
-    return lastEntry?.entryHash || 'genesis'; // Genesis block for first entry
+    return lastEntry?.entryHash || "genesis"; // Genesis block for first entry
   } catch (err) {
-    console.error('Failed to get last entry hash:', err);
-    return 'genesis';
+    console.error("Failed to get last entry hash:", err);
+    return "genesis";
   }
 }
 
@@ -85,11 +86,11 @@ export async function logPolicyChange(data: PolicyAuditData): Promise<void> {
 
     // Store entry with hash chain
     await prisma.policy_audit_logs.create({
-      data: {
+      data: withDefaults({
         ...entryData,
         entryHash,
         prevHash,
-      },
+      }),
     });
 
     console.log(
@@ -100,13 +101,13 @@ export async function logPolicyChange(data: PolicyAuditData): Promise<void> {
 
     // Also log to Sentry for critical actions
     if (
-      ['deleted', 'disabled'].includes(data.action) ||
-      data.userRole === 'SUPERADMIN'
+      ["deleted", "disabled"].includes(data.action) ||
+      data.userRole === "SUPERADMIN"
     ) {
       captureError(new Error(`Policy ${data.action}: ${data.policyId}`), {
-        level: 'info',
+        level: "info",
         tags: {
-          type: 'policy_audit',
+          type: "policy_audit",
           action: data.action,
           userRole: data.userRole,
         },
@@ -114,12 +115,12 @@ export async function logPolicyChange(data: PolicyAuditData): Promise<void> {
       });
     }
   } catch (err) {
-    console.error('Failed to log policy change:', err);
+    console.error("Failed to log policy change:", err);
 
     // Critical: if audit logging fails, we need to know
     captureError(err as Error, {
-      level: 'error',
-      tags: { type: 'audit_failure', component: 'policy-audit' },
+      level: "error",
+      tags: { type: "audit_failure", component: "policy-audit" },
       extra: data,
     });
   }
@@ -135,7 +136,7 @@ export async function getPolicyAuditHistory(
   try {
     const logs = await prisma.policy_audit_logs.findMany({
       where: { policyId },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { timestamp: "desc" },
       take: limit,
       include: {
         policy: {
@@ -148,7 +149,7 @@ export async function getPolicyAuditHistory(
 
     return logs;
   } catch (err) {
-    console.error('Failed to fetch policy audit history:', err);
+    console.error("Failed to fetch policy audit history:", err);
     return [];
   }
 }
@@ -159,7 +160,7 @@ export async function getPolicyAuditHistory(
 export async function getAllAuditLogs(limit: number = 500) {
   try {
     const logs = await prisma.policy_audit_logs.findMany({
-      orderBy: { timestamp: 'desc' },
+      orderBy: { timestamp: "desc" },
       take: limit,
       include: {
         policy: {
@@ -172,7 +173,7 @@ export async function getAllAuditLogs(limit: number = 500) {
 
     return logs;
   } catch (err) {
-    console.error('Failed to fetch audit logs:', err);
+    console.error("Failed to fetch audit logs:", err);
     return [];
   }
 }
@@ -184,7 +185,7 @@ export async function getUserAuditLogs(userId: string, limit: number = 100) {
   try {
     const logs = await prisma.policy_audit_logs.findMany({
       where: { changedBy: userId },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { timestamp: "desc" },
       take: limit,
       include: {
         policy: {
@@ -197,7 +198,7 @@ export async function getUserAuditLogs(userId: string, limit: number = 100) {
 
     return logs;
   } catch (err) {
-    console.error('Failed to fetch user audit logs:', err);
+    console.error("Failed to fetch user audit logs:", err);
     return [];
   }
 }
@@ -216,7 +217,7 @@ export async function detectAnomalies(): Promise<{
     // Detect rapid changes (>5 changes in 1 hour by same user)
     const recentLogs = await prisma.policy_audit_logs.findMany({
       where: { timestamp: { gte: last24h } },
-      orderBy: { timestamp: 'desc' },
+      orderBy: { timestamp: "desc" },
     });
 
     const changesByUser = new Map<string, any[]>();
@@ -239,12 +240,12 @@ export async function detectAnomalies(): Promise<{
 
     // Detect recent deletions or disables
     const deletions = recentLogs.filter((log) =>
-      ['deleted', 'disabled'].includes(log.action),
+      ["deleted", "disabled"].includes(log.action),
     );
 
     return { rapidChanges, unusualTimes, deletions };
   } catch (err) {
-    console.error('Failed to detect audit anomalies:', err);
+    console.error("Failed to detect audit anomalies:", err);
     return { rapidChanges: [], unusualTimes: [], deletions: [] };
   }
 }
@@ -260,11 +261,11 @@ export async function verifyAuditLogIntegrity(): Promise<{
 }> {
   try {
     const logs = await prisma.policy_audit_logs.findMany({
-      orderBy: { timestamp: 'asc' },
+      orderBy: { timestamp: "asc" },
     });
 
     const errors: string[] = [];
-    let prevHash = 'genesis';
+    let prevHash = "genesis";
 
     for (const log of logs) {
       // Check if prevHash matches
@@ -275,23 +276,23 @@ export async function verifyAuditLogIntegrity(): Promise<{
       }
 
       // Recompute hash and verify
-      const expectedHash = computeEntryHash(log, log.prevHash || 'genesis');
+      const expectedHash = computeEntryHash(log, log.prevHash || "genesis");
       if (log.entryHash !== expectedHash) {
         errors.push(
           `Entry ${log.id} has invalid hash (expected: ${expectedHash}, got: ${log.entryHash})`,
         );
       }
 
-      prevHash = log.entryHash || '';
+      prevHash = log.entryHash || "";
     }
 
     const valid = errors.length === 0;
 
     if (!valid) {
       // Critical: audit log tampering detected
-      captureError(new Error('Audit log integrity check failed'), {
-        level: 'fatal',
-        tags: { type: 'security', event: 'audit_tampering' },
+      captureError(new Error("Audit log integrity check failed"), {
+        level: "fatal",
+        tags: { type: "security", event: "audit_tampering" },
         extra: { errors, totalEntries: logs.length },
       });
     }
@@ -302,7 +303,7 @@ export async function verifyAuditLogIntegrity(): Promise<{
       errors,
     };
   } catch (err) {
-    console.error('Failed to verify audit log integrity:', err);
+    console.error("Failed to verify audit log integrity:", err);
     return {
       valid: false,
       totalEntries: 0,

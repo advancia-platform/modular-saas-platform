@@ -3,7 +3,8 @@
  * Handles fee calculations for all transaction types with admin-configurable rules
  */
 
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from "@prisma/client";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const prisma = new PrismaClient();
 
@@ -37,7 +38,7 @@ export async function calculateTransactionFee(
   amount: number,
 ): Promise<FeeCalculation> {
   if (amount <= 0) {
-    throw new Error('Amount must be greater than 0');
+    throw new Error("Amount must be greater than 0");
   }
 
   // Get active fee configuration
@@ -49,9 +50,9 @@ export async function calculateTransactionFee(
       active: true,
     },
     orderBy: [
-      { currency: 'desc' }, // null comes last, so specific currency first
-      { priority: 'desc' },
-      { createdAt: 'desc' },
+      { currency: "desc" }, // null comes last, so specific currency first
+      { priority: "desc" },
+      { createdAt: "desc" },
     ],
   });
 
@@ -121,8 +122,8 @@ export async function recordFeeRevenue(params: RecordRevenueParams) {
 
   const revenueUSD = fee.totalFee * usdConversionRate;
 
-  const revenue = await prisma.feeRevenue.create({
-    data: {
+  const revenue = await prisma.fee_revenues.create({
+    data: withDefaults({
       transactionId,
       transactionType,
       userId,
@@ -134,7 +135,7 @@ export async function recordFeeRevenue(params: RecordRevenueParams) {
       netAmount: fee.netAmount,
       revenueUSD,
       feeRuleId: fee.appliedRuleId,
-    },
+    }),
   });
 
   return revenue;
@@ -164,14 +165,14 @@ export async function getFeeRevenueStats(
 
   const [totalRevenueUSD, byType, byCurrency, count] = await Promise.all([
     // Total revenue in USD
-    prisma.feeRevenue.aggregate({
+    prisma.fee_revenues.aggregate({
       where,
       _sum: { revenueUSD: true },
     }),
 
     // Revenue by transaction type
-    prisma.feeRevenue.groupBy({
-      by: ['transactionType'],
+    prisma.fee_revenues.groupBy({
+      by: ["transactionType"],
       where,
       _sum: {
         totalFee: true,
@@ -181,8 +182,8 @@ export async function getFeeRevenueStats(
     }),
 
     // Revenue by currency
-    prisma.feeRevenue.groupBy({
-      by: ['baseCurrency'],
+    prisma.fee_revenues.groupBy({
+      by: ["baseCurrency"],
       where,
       _sum: {
         totalFee: true,
@@ -192,7 +193,7 @@ export async function getFeeRevenueStats(
     }),
 
     // Total transaction count
-    prisma.feeRevenue.count({ where }),
+    prisma.fee_revenues.count({ where }),
   ]);
 
   return {
@@ -216,8 +217,8 @@ export async function getTopRevenueUsers(
     where.createdAt = { gte: startDate, lte: endDate };
   }
 
-  const topUsers = await prisma.feeRevenue.groupBy({
-    by: ['userId'],
+  const topUsers = await prisma.fee_revenues.groupBy({
+    by: ["userId"],
     where,
     _sum: {
       revenueUSD: true,
@@ -225,7 +226,7 @@ export async function getTopRevenueUsers(
     _count: true,
     orderBy: {
       _sum: {
-        revenueUSD: 'desc',
+        revenueUSD: "desc",
       },
     },
     take: limit,
@@ -279,7 +280,7 @@ export async function createFeeRule(params: {
   } = params;
 
   const feeRule = await prisma.transaction_fees.create({
-    data: {
+    data: withDefaults({
       feeType,
       currency: currency ? currency.toUpperCase() : null,
       feePercent,
@@ -289,7 +290,7 @@ export async function createFeeRule(params: {
       priority,
       description,
       createdBy,
-    },
+    }),
   });
 
   return feeRule;
@@ -338,7 +339,7 @@ export async function getAllFeeRules(activeOnly: boolean = false) {
 
   return prisma.transaction_fees.findMany({
     where,
-    orderBy: [{ feeType: 'asc' }, { currency: 'asc' }, { priority: 'desc' }],
+    orderBy: [{ feeType: "asc" }, { currency: "asc" }, { priority: "desc" }],
   });
 }
 

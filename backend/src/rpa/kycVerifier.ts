@@ -1,10 +1,10 @@
 // RPA Module - KYC / Identity Verification
 // Auto-verify new users' identity documents using OCR and external APIs
 
-import prisma from '../prismaClient';
-import { rpaConfig } from './config';
-import fs from 'fs/promises';
-import path from 'path';
+import fs from "fs/promises";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
+import { rpaConfig } from "./config";
 
 interface KYCResult {
   verified: boolean;
@@ -32,15 +32,15 @@ export class KYCVerifier {
 
       // Simulated OCR result
       const ocrResult = {
-        text: 'PASSPORT\nJOHN DOE\nDate of Birth: 01/01/1990\nPassport No: AB1234567\nExpiry: 01/01/2030',
+        text: "PASSPORT\nJOHN DOE\nDate of Birth: 01/01/1990\nPassport No: AB1234567\nExpiry: 01/01/2030",
         confidence: 0.95,
       };
 
       return ocrResult;
     } catch (error) {
-      console.error('OCR error:', error);
+      console.error("OCR error:", error);
       throw new Error(
-        `OCR failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `OCR failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
     }
   }
@@ -51,8 +51,8 @@ export class KYCVerifier {
   parseDocumentData(
     ocrText: string,
     documentType: string,
-  ): KYCResult['extractedData'] {
-    const extracted: KYCResult['extractedData'] = {};
+  ): KYCResult["extractedData"] {
+    const extracted: KYCResult["extractedData"] = {};
 
     try {
       // Simple regex-based extraction (in production, use more sophisticated NLP)
@@ -68,12 +68,12 @@ export class KYCVerifier {
         extracted.dateOfBirth = dobMatch[1];
       }
 
-      if (documentType === 'passport') {
+      if (documentType === "passport") {
         const passportMatch = ocrText.match(/Passport No:?\s*([A-Z0-9]+)/i);
         if (passportMatch) {
           extracted.documentNumber = passportMatch[1];
         }
-      } else if (documentType === 'drivers_license') {
+      } else if (documentType === "drivers_license") {
         const licenseMatch = ocrText.match(/License No:?\s*([A-Z0-9]+)/i);
         if (licenseMatch) {
           extracted.documentNumber = licenseMatch[1];
@@ -87,7 +87,7 @@ export class KYCVerifier {
 
       extracted.documentType = documentType;
     } catch (error) {
-      console.error('Error parsing document data:', error);
+      console.error("Error parsing document data:", error);
     }
 
     return extracted;
@@ -97,18 +97,18 @@ export class KYCVerifier {
    * Verify document with external API
    */
   async verifyWithExternalAPI(
-    extractedData: KYCResult['extractedData'],
+    extractedData: KYCResult["extractedData"],
   ): Promise<{ valid: boolean; confidence: number }> {
     try {
       if (!rpaConfig.kyc.verificationApi) {
         console.warn(
-          '⚠️  No external verification API configured, skipping...',
+          "⚠️  No external verification API configured, skipping...",
         );
         return { valid: true, confidence: 0.7 };
       }
 
       // In production, call external API (e.g., Onfido, Jumio, Trulioo)
-      console.log('🌐 Verifying with external API...');
+      console.log("🌐 Verifying with external API...");
 
       // Simulated API response
       const apiResponse = {
@@ -127,7 +127,7 @@ export class KYCVerifier {
         confidence: apiResponse.confidence,
       };
     } catch (error) {
-      console.error('External API verification error:', error);
+      console.error("External API verification error:", error);
       return { valid: false, confidence: 0 };
     }
   }
@@ -155,7 +155,7 @@ export class KYCVerifier {
       try {
         await fs.access(documentPath);
       } catch {
-        result.errors.push('Document file not found');
+        result.errors.push("Document file not found");
         return result;
       }
 
@@ -163,7 +163,7 @@ export class KYCVerifier {
       const ocrResult = await this.performOCR(documentPath);
 
       if (ocrResult.confidence < 0.7) {
-        result.warnings.push('Low OCR confidence - document may be unclear');
+        result.warnings.push("Low OCR confidence - document may be unclear");
       }
 
       // Step 3: Extract document data
@@ -174,20 +174,20 @@ export class KYCVerifier {
 
       // Step 4: Validate extracted data
       if (!result.extractedData.fullName) {
-        result.errors.push('Could not extract full name');
+        result.errors.push("Could not extract full name");
       }
       if (!result.extractedData.dateOfBirth) {
-        result.errors.push('Could not extract date of birth');
+        result.errors.push("Could not extract date of birth");
       }
       if (!result.extractedData.documentNumber) {
-        result.errors.push('Could not extract document number');
+        result.errors.push("Could not extract document number");
       }
 
       // Step 5: Check document expiry
       if (result.extractedData.expiryDate) {
         const expiryDate = new Date(result.extractedData.expiryDate);
         if (expiryDate < new Date()) {
-          result.errors.push('Document has expired');
+          result.errors.push("Document has expired");
         }
       }
 
@@ -217,10 +217,10 @@ export class KYCVerifier {
 
         // Log KYC approval
         await prisma.audit_logs.create({
-          data: {
+          data: withDefaults({
             userId,
-            action: 'KYC_APPROVED',
-            resourceType: 'User',
+            action: "KYC_APPROVED",
+            resourceType: "User",
             resourceId: userId,
             metadata: JSON.stringify({
               documentType,
@@ -228,10 +228,10 @@ export class KYCVerifier {
               autoApproved: true,
               extractedData: result.extractedData,
             }),
-            ipAddress: 'SYSTEM-RPA',
-            userAgent: 'RPA-KYCVerifier',
+            ipAddress: "SYSTEM-RPA",
+            userAgent: "RPA-KYCVerifier",
             timestamp: new Date(),
-          },
+          }),
         });
 
         console.log(
@@ -239,14 +239,14 @@ export class KYCVerifier {
         );
       } else {
         result.verified = false;
-        result.warnings.push('Manual review required');
+        result.warnings.push("Manual review required");
 
         // Log for manual review
         await prisma.audit_logs.create({
-          data: {
+          data: withDefaults({
             userId,
-            action: 'KYC_PENDING_REVIEW',
-            resourceType: 'User',
+            action: "KYC_PENDING_REVIEW",
+            resourceType: "User",
             resourceId: userId,
             metadata: JSON.stringify({
               documentType,
@@ -254,10 +254,10 @@ export class KYCVerifier {
               errors: result.errors,
               warnings: result.warnings,
             }),
-            ipAddress: 'SYSTEM-RPA',
-            userAgent: 'RPA-KYCVerifier',
+            ipAddress: "SYSTEM-RPA",
+            userAgent: "RPA-KYCVerifier",
             timestamp: new Date(),
-          },
+          }),
         });
 
         console.log(
@@ -266,9 +266,9 @@ export class KYCVerifier {
       }
     } catch (error) {
       result.errors.push(
-        `Verification failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        `Verification failed: ${error instanceof Error ? error.message : "Unknown error"}`,
       );
-      console.error('❌ KYC verification error:', error);
+      console.error("❌ KYC verification error:", error);
     }
 
     return result;
@@ -279,13 +279,13 @@ export class KYCVerifier {
    */
   async batchProcessKYC(): Promise<void> {
     try {
-      console.log('📦 Starting batch KYC processing...');
+      console.log("📦 Starting batch KYC processing...");
 
       // In production, fetch users with pending KYC from database
       // For now, this is a placeholder
-      console.log('✅ Batch KYC processing complete');
+      console.log("✅ Batch KYC processing complete");
     } catch (error) {
-      console.error('❌ Batch KYC processing error:', error);
+      console.error("❌ Batch KYC processing error:", error);
     }
   }
 }

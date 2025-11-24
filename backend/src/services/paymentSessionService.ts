@@ -3,13 +3,14 @@
  * Handles creation, tracking, and lifecycle of payment sessions
  */
 
-import { PrismaClient } from '@prisma/client';
-import { randomBytes } from 'crypto';
+import { PrismaClient } from "@prisma/client";
+import { randomBytes } from "crypto";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const prisma = new PrismaClient();
 
 const SESSION_EXPIRY_MINUTES = parseInt(
-  process.env.PAYMENT_SESSION_EXPIRY || '30',
+  process.env.PAYMENT_SESSION_EXPIRY || "30",
   10,
 );
 
@@ -34,7 +35,7 @@ export interface PaymentSessionResult {
  */
 function generateSessionId(): string {
   const timestamp = Date.now().toString(36).toUpperCase();
-  const random = randomBytes(4).toString('hex').toUpperCase();
+  const random = randomBytes(4).toString("hex").toUpperCase();
   return `DEP-${timestamp}-${random}`;
 }
 
@@ -49,7 +50,7 @@ export async function createPaymentSession(
 
   // Validate amount
   if (amount <= 0) {
-    throw new Error('Amount must be greater than 0');
+    throw new Error("Amount must be greater than 0");
   }
 
   // Generate session
@@ -57,17 +58,17 @@ export async function createPaymentSession(
   const expiresAt = new Date(Date.now() + SESSION_EXPIRY_MINUTES * 60 * 1000);
 
   const session = await prisma.payment_sessions.create({
-    data: {
+    data: withDefaults({
       sessionId,
       userId,
       amount,
       currency: currency.toUpperCase(),
       paymentMethod,
-      status: 'pending',
+      status: "pending",
       expiresAt,
       callbackUrl,
       metadata: metadata || {},
-    },
+    }),
   });
 
   // Generate provider-specific redirect URL
@@ -96,16 +97,16 @@ export async function getPaymentSession(sessionId: string) {
   });
 
   if (!session) {
-    throw new Error('Payment session not found');
+    throw new Error("Payment session not found");
   }
 
   // Auto-expire if past expiry time
-  if (session.status === 'pending' && new Date() > session.expiresAt) {
+  if (session.status === "pending" && new Date() > session.expiresAt) {
     await prisma.payment_sessions.update({
       where: { id: session.id },
-      data: { status: 'expired' },
+      data: { status: "expired" },
     });
-    session.status = 'expired';
+    session.status = "expired";
   }
 
   return session;
@@ -124,17 +125,17 @@ export async function completePaymentSession(
   });
 
   if (!session) {
-    throw new Error('Payment session not found');
+    throw new Error("Payment session not found");
   }
 
-  if (session.status !== 'pending') {
+  if (session.status !== "pending") {
     throw new Error(`Cannot complete session with status: ${session.status}`);
   }
 
   await prisma.payment_sessions.update({
     where: { id: session.id },
     data: {
-      status: 'completed',
+      status: "completed",
       completedAt: new Date(),
       transactionId,
       provider,
@@ -151,7 +152,7 @@ export async function failPaymentSession(sessionId: string, reason: string) {
   await prisma.payment_sessions.update({
     where: { sessionId },
     data: {
-      status: 'failed',
+      status: "failed",
       failedReason: reason,
       completedAt: new Date(),
     },
@@ -167,20 +168,20 @@ export async function cancelPaymentSession(sessionId: string, userId: string) {
   });
 
   if (!session) {
-    throw new Error('Payment session not found');
+    throw new Error("Payment session not found");
   }
 
   if (session.userId !== userId) {
-    throw new Error('Unauthorized to cancel this session');
+    throw new Error("Unauthorized to cancel this session");
   }
 
-  if (session.status !== 'pending') {
+  if (session.status !== "pending") {
     throw new Error(`Cannot cancel session with status: ${session.status}`);
   }
 
   await prisma.payment_sessions.update({
     where: { id: session.id },
-    data: { status: 'cancelled' },
+    data: { status: "cancelled" },
   });
 }
 
@@ -193,7 +194,7 @@ export async function getUserPaymentSessions(
 ) {
   return prisma.payment_sessions.findMany({
     where: { userId },
-    orderBy: { createdAt: 'desc' },
+    orderBy: { createdAt: "desc" },
     take: limit,
   });
 }
@@ -204,10 +205,10 @@ export async function getUserPaymentSessions(
 export async function cleanupExpiredSessions() {
   const result = await prisma.payment_sessions.updateMany({
     where: {
-      status: 'pending',
+      status: "pending",
       expiresAt: { lt: new Date() },
     },
-    data: { status: 'expired' },
+    data: { status: "expired" },
   });
 
   console.log(`Expired ${result.count} payment sessions`);
@@ -225,20 +226,20 @@ async function generateProviderRedirect(
 
   // Return appropriate URL based on payment method
   // For now, return placeholder
-  const baseUrl = process.env.BACKEND_URL || 'http://localhost:4000';
+  const baseUrl = process.env.BACKEND_URL || "http://localhost:4000";
   const callbackUrl = `${baseUrl}/api/payments/callback/${sessionId}`;
 
   switch (paymentMethod) {
-    case 'stripe':
+    case "stripe":
       // Will integrate with Stripe Checkout Session API
       return `${baseUrl}/api/payments/stripe/checkout/${sessionId}`;
 
-    case 'coinbase':
-    case 'cryptomus':
+    case "coinbase":
+    case "cryptomus":
       // Will integrate with crypto payment gateway
       return `${baseUrl}/api/payments/crypto/checkout/${sessionId}`;
 
-    case 'paystack':
+    case "paystack":
       // Will integrate with Paystack
       return `${baseUrl}/api/payments/paystack/checkout/${sessionId}`;
 
@@ -263,21 +264,21 @@ export async function getPaymentSessionStats(startDate?: Date, endDate?: Date) {
     prisma.payment_sessions.count({ where }),
 
     prisma.payment_sessions.groupBy({
-      by: ['status'],
+      by: ["status"],
       where,
       _count: true,
       _sum: { amount: true },
     }),
 
     prisma.payment_sessions.groupBy({
-      by: ['paymentMethod'],
-      where: { ...where, status: 'completed' },
+      by: ["paymentMethod"],
+      where: { ...where, status: "completed" },
       _count: true,
       _sum: { amount: true },
     }),
 
     prisma.payment_sessions.aggregate({
-      where: { ...where, status: 'completed' },
+      where: { ...where, status: "completed" },
       _sum: { amount: true },
     }),
   ]);

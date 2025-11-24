@@ -1,7 +1,8 @@
-import express from 'express';
-import prisma from '../prismaClient';
-import { authenticateToken } from '../middleware/auth';
-import { z } from 'zod';
+import express from "express";
+import { z } from "zod";
+import { authenticateToken } from "../middleware/auth";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const router = express.Router();
 
@@ -19,13 +20,13 @@ const getDoctorId = (req: any): string | null => {
 // ============================================
 
 // GET /api/consultation - List consultations (filtered by role)
-router.get('/', authenticateToken, async (req, res) => {
+router.get("/", authenticateToken, async (req, res) => {
   try {
     const userId = getUserId(req);
     const doctorId = getDoctorId(req);
 
     if (!userId && !doctorId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const where: any = {};
@@ -53,18 +54,18 @@ router.get('/', authenticateToken, async (req, res) => {
         createdAt: true,
         updatedAt: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return res.json({ consultations });
   } catch (err) {
-    console.error('Fetch consultations error:', err);
-    return res.status(500).json({ error: 'Failed to fetch consultations' });
+    console.error("Fetch consultations error:", err);
+    return res.status(500).json({ error: "Failed to fetch consultations" });
   }
 });
 
 // GET /api/consultation/:id - Get consultation details
-router.get('/:id', authenticateToken, async (req, res) => {
+router.get("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const userId = getUserId(req);
@@ -75,7 +76,7 @@ router.get('/:id', authenticateToken, async (req, res) => {
     });
 
     if (!consultation) {
-      return res.status(404).json({ error: 'Consultation not found' });
+      return res.status(404).json({ error: "Consultation not found" });
     }
 
     // Verify access
@@ -83,13 +84,13 @@ router.get('/:id', authenticateToken, async (req, res) => {
       consultation.patientId !== userId &&
       consultation.doctorId !== doctorId
     ) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({ error: "Access denied" });
     }
 
     return res.json({ consultation });
   } catch (err) {
-    console.error('Fetch consultation error:', err);
-    return res.status(500).json({ error: 'Failed to fetch consultation' });
+    console.error("Fetch consultation error:", err);
+    return res.status(500).json({ error: "Failed to fetch consultation" });
   }
 });
 
@@ -100,13 +101,13 @@ const createConsultationSchema = z.object({
   scheduledAt: z.string().optional(), // ISO date string
 });
 
-router.post('/', authenticateToken, async (req, res) => {
+router.post("/", authenticateToken, async (req, res) => {
   try {
     const userId = getUserId(req);
     if (!userId) {
       return res
         .status(401)
-        .json({ error: 'Only patients can create consultations' });
+        .json({ error: "Only patients can create consultations" });
     }
 
     const data = createConsultationSchema.parse(req.body);
@@ -118,45 +119,45 @@ router.post('/', authenticateToken, async (req, res) => {
     });
 
     if (!doctor) {
-      return res.status(404).json({ error: 'Doctor not found' });
+      return res.status(404).json({ error: "Doctor not found" });
     }
 
-    if (doctor.status !== 'VERIFIED') {
-      return res.status(400).json({ error: 'Doctor is not verified' });
+    if (doctor.status !== "VERIFIED") {
+      return res.status(400).json({ error: "Doctor is not verified" });
     }
 
     const consultation = await prisma.consultations.create({
-      data: {
+      data: withDefaults({
         patientId: userId,
         doctorId: data.doctorId,
         symptoms: data.symptoms || null,
         scheduledAt: data.scheduledAt ? new Date(data.scheduledAt) : null,
-        status: 'SCHEDULED',
-      },
+        status: "SCHEDULED",
+      }),
     });
 
     return res.status(201).json({
-      message: 'Consultation created successfully',
+      message: "Consultation created successfully",
       consultation,
     });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('Create consultation error:', err);
-    return res.status(500).json({ error: 'Failed to create consultation' });
+    console.error("Create consultation error:", err);
+    return res.status(500).json({ error: "Failed to create consultation" });
   }
 });
 
 // PATCH /api/consultation/:id - Update consultation (status, diagnosis, etc.)
 const updateConsultationSchema = z.object({
-  status: z.enum(['SCHEDULED', 'ACTIVE', 'COMPLETED', 'CANCELLED']).optional(),
+  status: z.enum(["SCHEDULED", "ACTIVE", "COMPLETED", "CANCELLED"]).optional(),
   diagnosis: z.string().optional(),
   prescription: z.string().optional(),
   notes: z.string().optional(),
 });
 
-router.patch('/:id', authenticateToken, async (req, res) => {
+router.patch("/:id", authenticateToken, async (req, res) => {
   try {
     const { id } = req.params;
     const doctorId = getDoctorId(req);
@@ -164,7 +165,7 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     if (!doctorId) {
       return res
         .status(403)
-        .json({ error: 'Only doctors can update consultations' });
+        .json({ error: "Only doctors can update consultations" });
     }
 
     const consultation = await prisma.consultations.findUnique({
@@ -173,11 +174,11 @@ router.patch('/:id', authenticateToken, async (req, res) => {
     });
 
     if (!consultation) {
-      return res.status(404).json({ error: 'Consultation not found' });
+      return res.status(404).json({ error: "Consultation not found" });
     }
 
     if (consultation.doctorId !== doctorId) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({ error: "Access denied" });
     }
 
     const data = updateConsultationSchema.parse(req.body);
@@ -186,23 +187,23 @@ router.patch('/:id', authenticateToken, async (req, res) => {
       where: { id },
       data: {
         ...data,
-        ...(data.status === 'ACTIVE' && !consultation
+        ...(data.status === "ACTIVE" && !consultation
           ? { startedAt: new Date() }
           : {}),
-        ...(data.status === 'COMPLETED' ? { completedAt: new Date() } : {}),
+        ...(data.status === "COMPLETED" ? { completedAt: new Date() } : {}),
       },
     });
 
     return res.json({
-      message: 'Consultation updated successfully',
+      message: "Consultation updated successfully",
       consultation: updated,
     });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('Update consultation error:', err);
-    return res.status(500).json({ error: 'Failed to update consultation' });
+    console.error("Update consultation error:", err);
+    return res.status(500).json({ error: "Failed to update consultation" });
   }
 });
 
@@ -217,13 +218,13 @@ const sendMessageSchema = z.object({
   attachmentUrl: z.string().url().optional(),
 });
 
-router.post('/message', authenticateToken, async (req, res) => {
+router.post("/message", authenticateToken, async (req, res) => {
   try {
     const userId = getUserId(req);
     const doctorId = getDoctorId(req);
 
     if (!userId && !doctorId) {
-      return res.status(401).json({ error: 'Unauthorized' });
+      return res.status(401).json({ error: "Unauthorized" });
     }
 
     const data = sendMessageSchema.parse(req.body);
@@ -235,20 +236,20 @@ router.post('/message', authenticateToken, async (req, res) => {
     });
 
     if (!consultation) {
-      return res.status(404).json({ error: 'Consultation not found' });
+      return res.status(404).json({ error: "Consultation not found" });
     }
 
     if (
       consultation.patientId !== userId &&
       consultation.doctorId !== doctorId
     ) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({ error: "Access denied" });
     }
 
     const message = await prisma.consultationMessage.create({
       data: {
         consultationId: data.consultationId,
-        senderType: userId ? 'patient' : 'doctor',
+        senderType: userId ? "patient" : "doctor",
         senderId: userId || doctorId!,
         content: data.content,
         attachmentUrl: data.attachmentUrl || null,
@@ -256,15 +257,15 @@ router.post('/message', authenticateToken, async (req, res) => {
     });
 
     return res.status(201).json({
-      message: 'Message sent successfully',
+      message: "Message sent successfully",
       data: message,
     });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('Send message error:', err);
-    return res.status(500).json({ error: 'Failed to send message' });
+    console.error("Send message error:", err);
+    return res.status(500).json({ error: "Failed to send message" });
   }
 });
 
@@ -273,7 +274,7 @@ router.post('/message', authenticateToken, async (req, res) => {
 // ============================================
 
 // GET /api/consultation/video/:consultationId - Generate Jitsi video link
-router.get('/video/:consultationId', authenticateToken, async (req, res) => {
+router.get("/video/:consultationId", authenticateToken, async (req, res) => {
   try {
     const { consultationId } = req.params;
     const userId = getUserId(req);
@@ -291,14 +292,14 @@ router.get('/video/:consultationId', authenticateToken, async (req, res) => {
     });
 
     if (!consultation) {
-      return res.status(404).json({ error: 'Consultation not found' });
+      return res.status(404).json({ error: "Consultation not found" });
     }
 
     if (
       consultation.patientId !== userId &&
       consultation.doctorId !== doctorId
     ) {
-      return res.status(403).json({ error: 'Access denied' });
+      return res.status(403).json({ error: "Access denied" });
     }
 
     // Generate or retrieve video room ID
@@ -312,7 +313,7 @@ router.get('/video/:consultationId', authenticateToken, async (req, res) => {
     }
 
     // Generate Jitsi Meet URL
-    const jitsiDomain = process.env.JITSI_DOMAIN || 'meet.jit.si';
+    const jitsiDomain = process.env.JITSI_DOMAIN || "meet.jit.si";
     const videoUrl = `https://${jitsiDomain}/${roomId}`;
 
     return res.json({
@@ -321,8 +322,8 @@ router.get('/video/:consultationId', authenticateToken, async (req, res) => {
       embedUrl: `https://${jitsiDomain}/${roomId}?parentNode=jitsi-container`,
     });
   } catch (err) {
-    console.error('Generate video link error:', err);
-    return res.status(500).json({ error: 'Failed to generate video link' });
+    console.error("Generate video link error:", err);
+    return res.status(500).json({ error: "Failed to generate video link" });
   }
 });
 

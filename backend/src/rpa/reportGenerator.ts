@@ -1,11 +1,11 @@
 // RPA Module - Report Generation
 // Generate periodic reports (balances, crypto recovery logs, admin actions) and email to admin
 
-import prisma from '../prismaClient';
-import { rpaConfig } from './config';
-import fs from 'fs/promises';
-import path from 'path';
-import nodemailer from 'nodemailer';
+import fs from "fs/promises";
+import nodemailer from "nodemailer";
+import path from "path";
+import prisma from "../prismaClient";
+import { rpaConfig } from "./config";
 
 interface ReportData {
   title: string;
@@ -34,16 +34,16 @@ export class ReportGenerator {
     try {
       if (rpaConfig.notifications.email.enabled) {
         this.transporter = nodemailer.createTransport({
-          service: 'gmail',
+          service: "gmail",
           auth: {
             user: process.env.EMAIL_USER,
             pass: process.env.EMAIL_PASSWORD,
           },
         });
-        console.log('✅ Email transporter initialized');
+        console.log("✅ Email transporter initialized");
       }
     } catch (error) {
-      console.error('❌ Failed to initialize email transporter:', error);
+      console.error("❌ Failed to initialize email transporter:", error);
     }
   }
 
@@ -68,14 +68,14 @@ export class ReportGenerator {
     });
 
     sections.push({
-      title: 'Overall User Balances',
+      title: "Overall User Balances",
       data: {
         totalUsers: totalBalances._count.id,
-        totalUsdBalance: totalBalances._sum.usdBalance?.toString() || '0',
-        averageBalance: totalBalances._avg.usdBalance?.toString() || '0',
+        totalUsdBalance: totalBalances._sum.usdBalance?.toString() || "0",
+        averageBalance: totalBalances._avg.usdBalance?.toString() || "0",
       },
       summary: `Total users: ${totalBalances._count.id}, Total USD: $${
-        totalBalances._sum.usdBalance?.toString() || '0'
+        totalBalances._sum.usdBalance?.toString() || "0"
       }`,
     });
 
@@ -90,22 +90,22 @@ export class ReportGenerator {
     });
 
     sections.push({
-      title: 'Token Wallet Summary',
+      title: "Token Wallet Summary",
       data: {
         totalWallets: tokenBalances._count.id,
-        totalBalance: tokenBalances._sum.balance?.toString() || '0',
-        totalLocked: tokenBalances._sum.lockedBalance?.toString() || '0',
+        totalBalance: tokenBalances._sum.balance?.toString() || "0",
+        totalLocked: tokenBalances._sum.lockedBalance?.toString() || "0",
         totalLifetimeEarned:
-          tokenBalances._sum.lifetimeEarned?.toString() || '0',
+          tokenBalances._sum.lifetimeEarned?.toString() || "0",
       },
       summary: `Total tokens in circulation: ${
-        tokenBalances._sum.balance?.toString() || '0'
+        tokenBalances._sum.balance?.toString() || "0"
       }`,
     });
 
     // Section 3: Transaction summary
     const transactions = await prisma.transactions.groupBy({
-      by: ['type'],
+      by: ["type"],
       _sum: { amount: true },
       _count: { id: true },
       where: {
@@ -117,11 +117,11 @@ export class ReportGenerator {
     });
 
     sections.push({
-      title: 'Transaction Summary',
+      title: "Transaction Summary",
       data: transactions.map((t) => ({
         type: t.type,
         count: t._count.id,
-        totalAmount: t._sum.amount?.toString() || '0',
+        totalAmount: t._sum.amount?.toString() || "0",
       })),
       summary: `Total transactions in period: ${transactions.reduce(
         (sum, t) => sum + t._count.id,
@@ -130,7 +130,7 @@ export class ReportGenerator {
     });
 
     const report: ReportData = {
-      title: 'Balance and Financial Summary Report',
+      title: "Balance and Financial Summary Report",
       generatedAt: new Date(),
       period: { start: startDate, end: endDate },
       sections,
@@ -146,12 +146,12 @@ export class ReportGenerator {
     startDate: Date,
     endDate: Date,
   ): Promise<ReportData> {
-    console.log('🔐 Generating crypto orders report...');
+    console.log("🔐 Generating crypto orders report...");
 
     const sections: ReportSection[] = [];
 
     // Section 1: Crypto orders
-    const cryptoOrders = await prisma.cryptoOrder.findMany({
+    const cryptoOrders = await prisma.crypto_orders.findMany({
       where: {
         createdAt: {
           gte: startDate,
@@ -167,12 +167,12 @@ export class ReportGenerator {
         status: true,
         createdAt: true,
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 100,
     });
 
     sections.push({
-      title: 'Crypto Orders',
+      title: "Crypto Orders",
       data: cryptoOrders.map((order) => ({
         id: order.id,
         userId: order.userId,
@@ -186,8 +186,8 @@ export class ReportGenerator {
     });
 
     // Section 2: Status breakdown
-    const statusBreakdown = await prisma.cryptoOrder.groupBy({
-      by: ['status'],
+    const statusBreakdown = await prisma.crypto_orders.groupBy({
+      by: ["status"],
       _count: { id: true },
       where: {
         createdAt: {
@@ -198,7 +198,7 @@ export class ReportGenerator {
     });
 
     sections.push({
-      title: 'Order Status Breakdown',
+      title: "Order Status Breakdown",
       data: statusBreakdown.map((s) => ({
         status: s.status,
         count: s._count.id,
@@ -206,7 +206,7 @@ export class ReportGenerator {
     });
 
     const report: ReportData = {
-      title: 'Crypto Orders Report',
+      title: "Crypto Orders Report",
       generatedAt: new Date(),
       period: { start: startDate, end: endDate },
       sections,
@@ -222,13 +222,13 @@ export class ReportGenerator {
     startDate: Date,
     endDate: Date,
   ): Promise<ReportData> {
-    console.log('👤 Generating admin actions report...');
+    console.log("👤 Generating admin actions report...");
 
     const sections: ReportSection[] = [];
 
     // Get admin users
     const adminUsers = await prisma.user.findMany({
-      where: { role: 'ADMIN' },
+      where: { role: "ADMIN" },
       select: { id: true, email: true, username: true },
     });
 
@@ -243,14 +243,14 @@ export class ReportGenerator {
           lte: endDate,
         },
       },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
       take: 100, // Limit to latest 100 actions
     });
 
     sections.push({
-      title: 'Admin Actions',
+      title: "Admin Actions",
       data: adminLogs.map((log) => ({
-        admin: adminUsers.find((u) => u.id === log.userId)?.email || 'Unknown',
+        admin: adminUsers.find((u) => u.id === log.userId)?.email || "Unknown",
         action: log.action,
         resource: log.resourceType,
         timestamp: log.createdAt,
@@ -261,7 +261,7 @@ export class ReportGenerator {
 
     // Section 2: Action type breakdown
     const actionBreakdown = await prisma.audit_logs.groupBy({
-      by: ['action'],
+      by: ["action"],
       _count: { id: true },
       where: {
         userId: { in: adminIds },
@@ -273,7 +273,7 @@ export class ReportGenerator {
     });
 
     sections.push({
-      title: 'Action Type Breakdown',
+      title: "Action Type Breakdown",
       data: actionBreakdown.map((a) => ({
         action: a.action,
         count: a._count.id,
@@ -281,7 +281,7 @@ export class ReportGenerator {
     });
 
     const report: ReportData = {
-      title: 'Admin Actions Report',
+      title: "Admin Actions Report",
       generatedAt: new Date(),
       period: { start: startDate, end: endDate },
       sections,
@@ -326,7 +326,7 @@ export class ReportGenerator {
       }
 
       if (Array.isArray(section.data)) {
-        html += '<table><thead><tr>';
+        html += "<table><thead><tr>";
 
         // Table headers
         if (section.data.length > 0) {
@@ -334,19 +334,19 @@ export class ReportGenerator {
           for (const key of keys) {
             html += `<th>${key}</th>`;
           }
-          html += '</tr></thead><tbody>';
+          html += "</tr></thead><tbody>";
 
           // Table rows
           for (const row of section.data) {
-            html += '<tr>';
+            html += "<tr>";
             for (const key of keys) {
-              html += `<td>${row[key] || ''}</td>`;
+              html += `<td>${row[key] || ""}</td>`;
             }
-            html += '</tr>';
+            html += "</tr>";
           }
         }
 
-        html += '</tbody></table>';
+        html += "</tbody></table>";
       } else {
         html += `<pre>${JSON.stringify(section.data, null, 2)}</pre>`;
       }
@@ -365,31 +365,31 @@ export class ReportGenerator {
    */
   private async saveReport(
     report: ReportData,
-    format: string = 'html',
+    format: string = "html",
   ): Promise<string> {
     const storageDir = rpaConfig.reportGeneration.storageLocation;
 
     // Ensure directory exists
     await fs.mkdir(storageDir, { recursive: true });
 
-    const timestamp = new Date().toISOString().replace(/:/g, '-').split('.')[0];
+    const timestamp = new Date().toISOString().replace(/:/g, "-").split(".")[0];
     const filename = `${report.title.replace(
       /\s+/g,
-      '_',
+      "_",
     )}_${timestamp}.${format}`;
     const filepath = path.join(storageDir, filename);
 
     let content: string;
 
-    if (format === 'html') {
+    if (format === "html") {
       content = this.formatReportHTML(report);
-    } else if (format === 'json') {
+    } else if (format === "json") {
       content = JSON.stringify(report, null, 2);
     } else {
       content = JSON.stringify(report, null, 2);
     }
 
-    await fs.writeFile(filepath, content, 'utf-8');
+    await fs.writeFile(filepath, content, "utf-8");
     console.log(`📁 Report saved: ${filepath}`);
 
     return filepath;
@@ -403,13 +403,13 @@ export class ReportGenerator {
     filepath: string,
   ): Promise<void> {
     if (!this.transporter) {
-      console.warn('⚠️  Email transporter not initialized, skipping email...');
+      console.warn("⚠️  Email transporter not initialized, skipping email...");
       return;
     }
 
     const recipients = rpaConfig.reportGeneration.recipients;
     if (recipients.length === 0) {
-      console.warn('⚠️  No report recipients configured');
+      console.warn("⚠️  No report recipients configured");
       return;
     }
 
@@ -418,7 +418,7 @@ export class ReportGenerator {
 
       await this.transporter.sendMail({
         from: rpaConfig.notifications.email.from,
-        to: recipients.join(', '),
+        to: recipients.join(", "),
         subject: `${report.title} - ${report.generatedAt.toLocaleDateString()}`,
         html: htmlContent,
         attachments: [
@@ -431,7 +431,7 @@ export class ReportGenerator {
 
       console.log(`✅ Report emailed to ${recipients.length} recipient(s)`);
     } catch (error) {
-      console.error('❌ Failed to email report:', error);
+      console.error("❌ Failed to email report:", error);
     }
   }
 
@@ -450,13 +450,13 @@ export class ReportGenerator {
       let report: ReportData;
 
       switch (reportType) {
-        case 'balance':
+        case "balance":
           report = await this.generateBalanceReport(start, end);
           break;
-        case 'crypto_recovery':
+        case "crypto_recovery":
           report = await this.generateCryptoRecoveryReport(start, end);
           break;
-        case 'admin_actions':
+        case "admin_actions":
           report = await this.generateAdminActionsReport(start, end);
           break;
         default:
@@ -482,7 +482,7 @@ export class ReportGenerator {
    * Generate all scheduled reports
    */
   async generateAllReports(): Promise<void> {
-    console.log('📊 Generating all scheduled reports...');
+    console.log("📊 Generating all scheduled reports...");
 
     const reportTypes = rpaConfig.reportGeneration.reportTypes;
     const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000);
@@ -492,7 +492,7 @@ export class ReportGenerator {
       await this.generateAndDistribute(reportType, yesterday, today);
     }
 
-    console.log('✅ All reports generated successfully');
+    console.log("✅ All reports generated successfully");
   }
 }
 

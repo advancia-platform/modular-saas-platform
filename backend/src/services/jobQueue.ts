@@ -15,10 +15,10 @@
  * - Job throttling and batching
  */
 
-import Bull, { Job, Queue, QueueOptions } from 'bull';
-import Redis from 'ioredis';
-import logger from '../logger';
-import prisma from '../prismaClient';
+import Bull, { Job, Queue, QueueOptions } from "bull";
+import Redis from "ioredis";
+import logger from "../logger";
+import prisma from "../prismaClient";
 
 // ============================================================================
 // TYPES & INTERFACES
@@ -34,31 +34,31 @@ export enum JobPriority {
 
 export enum JobType {
   // CRITICAL (< 1 second)
-  SEND_OTP = 'send_otp',
-  SEND_PASSWORD_RESET = 'send_password_reset',
-  VERIFY_2FA = 'verify_2fa',
+  SEND_OTP = "send_otp",
+  SEND_PASSWORD_RESET = "send_password_reset",
+  VERIFY_2FA = "verify_2fa",
 
   // HIGH (< 5 seconds)
-  PROCESS_PAYMENT = 'process_payment',
-  SEND_PAYMENT_NOTIFICATION = 'send_payment_notification',
-  WEBHOOK_CRYPTOMUS = 'webhook_cryptomus',
-  WEBHOOK_NOWPAYMENTS = 'webhook_nowpayments',
+  PROCESS_PAYMENT = "process_payment",
+  SEND_PAYMENT_NOTIFICATION = "send_payment_notification",
+  WEBHOOK_CRYPTOMUS = "webhook_cryptomus",
+  WEBHOOK_NOWPAYMENTS = "webhook_nowpayments",
 
   // MEDIUM (< 30 seconds)
-  UPDATE_TRANSACTION = 'update_transaction',
-  SEND_EMAIL = 'send_email',
-  SYNC_WALLET_BALANCE = 'sync_wallet_balance',
+  UPDATE_TRANSACTION = "update_transaction",
+  SEND_EMAIL = "send_email",
+  SYNC_WALLET_BALANCE = "sync_wallet_balance",
 
   // LOW (< 5 minutes)
-  GENERATE_REPORT = 'generate_report',
-  EXPORT_TRANSACTIONS = 'export_transactions',
-  CALCULATE_ANALYTICS = 'calculate_analytics',
+  GENERATE_REPORT = "generate_report",
+  EXPORT_TRANSACTIONS = "export_transactions",
+  CALCULATE_ANALYTICS = "calculate_analytics",
 
   // BATCH (background)
-  CLEANUP_OLD_LOGS = 'cleanup_old_logs',
-  ARCHIVE_TRANSACTIONS = 'archive_transactions',
-  SEND_BULK_EMAILS = 'send_bulk_emails',
-  DATABASE_BACKUP = 'database_backup',
+  CLEANUP_OLD_LOGS = "cleanup_old_logs",
+  ARCHIVE_TRANSACTIONS = "archive_transactions",
+  SEND_BULK_EMAILS = "send_bulk_emails",
+  DATABASE_BACKUP = "database_backup",
 }
 
 interface JobData {
@@ -84,8 +84,8 @@ interface JobResult {
 // ============================================================================
 
 const redisConfig = {
-  host: process.env.REDIS_HOST || 'localhost',
-  port: parseInt(process.env.REDIS_PORT || '6379'),
+  host: process.env.REDIS_HOST || "localhost",
+  port: parseInt(process.env.REDIS_PORT || "6379"),
   password: process.env.REDIS_PASSWORD,
   maxRetriesPerRequest: 3,
   enableReadyCheck: true,
@@ -108,7 +108,7 @@ const queueOptions: QueueOptions = {
     removeOnFail: 500, // Keep last 500 failed
     attempts: 3, // Default retry attempts
     backoff: {
-      type: 'exponential',
+      type: "exponential",
       delay: 2000, // Start with 2 seconds
     },
   },
@@ -133,7 +133,7 @@ class JobQueueManager {
     // Create separate queue for each priority
     this.queues.set(
       JobPriority.CRITICAL,
-      new Bull('critical-jobs', {
+      new Bull("critical-jobs", {
         ...queueOptions,
         defaultJobOptions: {
           ...queueOptions.defaultJobOptions,
@@ -146,7 +146,7 @@ class JobQueueManager {
 
     this.queues.set(
       JobPriority.HIGH,
-      new Bull('high-jobs', {
+      new Bull("high-jobs", {
         ...queueOptions,
         defaultJobOptions: {
           ...queueOptions.defaultJobOptions,
@@ -159,7 +159,7 @@ class JobQueueManager {
 
     this.queues.set(
       JobPriority.MEDIUM,
-      new Bull('medium-jobs', {
+      new Bull("medium-jobs", {
         ...queueOptions,
         defaultJobOptions: {
           ...queueOptions.defaultJobOptions,
@@ -172,7 +172,7 @@ class JobQueueManager {
 
     this.queues.set(
       JobPriority.LOW,
-      new Bull('low-jobs', {
+      new Bull("low-jobs", {
         ...queueOptions,
         defaultJobOptions: {
           ...queueOptions.defaultJobOptions,
@@ -185,7 +185,7 @@ class JobQueueManager {
 
     this.queues.set(
       JobPriority.BATCH,
-      new Bull('batch-jobs', {
+      new Bull("batch-jobs", {
         ...queueOptions,
         defaultJobOptions: {
           ...queueOptions.defaultJobOptions,
@@ -196,7 +196,7 @@ class JobQueueManager {
       }),
     );
 
-    logger.info('Job queues initialized', {
+    logger.info("Job queues initialized", {
       queues: Array.from(this.queues.keys()),
     });
   }
@@ -246,7 +246,7 @@ class JobQueueManager {
     const jobData = job.data;
 
     try {
-      logger.info('Processing job', {
+      logger.info("Processing job", {
         id: job.id,
         type: jobData.type,
         priority,
@@ -263,7 +263,7 @@ class JobQueueManager {
 
       const duration = Date.now() - startTime;
 
-      logger.info('Job completed', {
+      logger.info("Job completed", {
         id: job.id,
         type: jobData.type,
         duration,
@@ -279,7 +279,7 @@ class JobQueueManager {
     } catch (error: any) {
       const duration = Date.now() - startTime;
 
-      logger.error('Job failed', {
+      logger.error("Job failed", {
         id: job.id,
         type: jobData.type,
         error: error.message,
@@ -370,7 +370,7 @@ class JobQueueManager {
 
   private async sendOTP(data: { email: string; code: string }): Promise<void> {
     // Import email service
-    const { sendOTPEmail } = await import('../services/emailService');
+    const { sendOTPEmail } = await import("../services/emailService.js");
     await sendOTPEmail(data.email, data.code);
   }
 
@@ -378,7 +378,9 @@ class JobQueueManager {
     email: string;
     token: string;
   }): Promise<void> {
-    const { sendPasswordResetEmail } = await import('../services/emailService');
+    const { sendPasswordResetEmail } = await import(
+      "../services/emailService.js"
+    );
     await sendPasswordResetEmail(data.email, data.token);
   }
 
@@ -386,7 +388,7 @@ class JobQueueManager {
     userId: string;
     code: string;
   }): Promise<boolean> {
-    const { verify2FACode } = await import('../services/authService');
+    const { verify2FACode } = await import("../services/authService.js");
     return verify2FACode(data.userId, data.code);
   }
 
@@ -396,32 +398,32 @@ class JobQueueManager {
 
   private async processPayment(data: any): Promise<any> {
     const { processPaymentTransaction } = await import(
-      '../services/paymentService'
+      "../services/paymentService.js"
     );
     return processPaymentTransaction(data);
   }
 
   private async sendPaymentNotification(data: any): Promise<void> {
     const { sendNotification } = await import(
-      '../services/notificationService'
+      "../services/notificationService.js"
     );
     await sendNotification(data.userId, {
-      type: 'payment',
-      title: 'Payment Received',
+      type: "payment",
+      title: "Payment Received",
       message: `You received $${data.amount}`,
     });
   }
 
   private async processCryptomusWebhook(data: any): Promise<any> {
     const { handleCryptomusWebhook } = await import(
-      '../services/cryptomusService'
+      "../services/cryptomusService.js"
     );
     return handleCryptomusWebhook(data);
   }
 
   private async processNOWPaymentsWebhook(data: any): Promise<any> {
     const { handleNOWPaymentsWebhook } = await import(
-      '../services/nowpaymentsService'
+      "../services/nowpaymentsService.js"
     );
     return handleNOWPaymentsWebhook(data);
   }
@@ -442,12 +444,12 @@ class JobQueueManager {
     subject: string;
     body: string;
   }): Promise<void> {
-    const { sendEmail } = await import('../services/emailService');
+    const { sendEmail } = await import("../services/emailService.js");
     await sendEmail(data.to, data.subject, data.body);
   }
 
   private async syncWalletBalance(data: { walletId: string }): Promise<any> {
-    const { syncWalletBalance } = await import('../services/walletService');
+    const { syncWalletBalance } = await import("../services/walletService.js");
     return syncWalletBalance(data.walletId);
   }
 
@@ -457,19 +459,19 @@ class JobQueueManager {
 
   private async generateReport(data: any): Promise<string> {
     const { generateTransactionReport } = await import(
-      '../services/reportService'
+      "../services/reportService.js"
     );
     return generateTransactionReport(data);
   }
 
   private async exportTransactions(data: any): Promise<string> {
-    const { exportToCSV } = await import('../services/exportService');
+    const { exportToCSV } = await import("../services/exportService.js");
     return exportToCSV(data);
   }
 
   private async calculateAnalytics(data: any): Promise<any> {
     const { calculateUserAnalytics } = await import(
-      '../services/analyticsService'
+      "../services/analyticsService.js"
     );
     return calculateUserAnalytics(data);
   }
@@ -501,7 +503,7 @@ class JobQueueManager {
     const transactions = await prisma.transactions.findMany({
       where: {
         createdAt: { lt: cutoffDate },
-        status: 'completed',
+        status: "completed",
       },
     });
 
@@ -534,7 +536,7 @@ class JobQueueManager {
   }
 
   private async databaseBackup(data: any): Promise<string> {
-    const { createBackup } = await import('../services/backupService');
+    const { createBackup } = await import("../services/backupService.js");
     return createBackup(data);
   }
 
@@ -579,7 +581,7 @@ class JobQueueManager {
     if (limiter.count >= limit.max) {
       // Rate limit exceeded, wait
       const waitMs = limiter.resetAt - now;
-      logger.warn('Rate limit reached, waiting', {
+      logger.warn("Rate limit reached, waiting", {
         jobType,
         waitMs,
       });
@@ -604,24 +606,24 @@ class JobQueueManager {
     try {
       await prisma.failedJob.create({
         data: {
-          jobId: job.id?.toString() || 'unknown',
+          jobId: job.id?.toString() || "unknown",
           type: job.data.type,
           priority: job.data.priority,
           data: JSON.stringify(job.data),
           error: error.message,
-          stackTrace: error.stack || '',
+          stackTrace: error.stack || "",
           attempts: job.attemptsMade,
           failedAt: new Date(),
         },
       });
 
-      logger.error('Job sent to dead letter queue', {
+      logger.error("Job sent to dead letter queue", {
         id: job.id,
         type: job.data.type,
         error: error.message,
       });
     } catch (dlqError) {
-      logger.error('Failed to send job to dead letter queue', dlqError);
+      logger.error("Failed to send job to dead letter queue", dlqError);
     }
   }
 
@@ -631,8 +633,8 @@ class JobQueueManager {
 
   private setupEventHandlers() {
     this.queues.forEach((queue, priority) => {
-      queue.on('completed', (job: Job, result: JobResult) => {
-        logger.info('Job completed', {
+      queue.on("completed", (job: Job, result: JobResult) => {
+        logger.info("Job completed", {
           id: job.id,
           type: job.data.type,
           priority,
@@ -640,8 +642,8 @@ class JobQueueManager {
         });
       });
 
-      queue.on('failed', (job: Job, error: Error) => {
-        logger.error('Job failed', {
+      queue.on("failed", (job: Job, error: Error) => {
+        logger.error("Job failed", {
           id: job.id,
           type: job.data.type,
           priority,
@@ -650,8 +652,8 @@ class JobQueueManager {
         });
       });
 
-      queue.on('stalled', (job: Job) => {
-        logger.warn('Job stalled', {
+      queue.on("stalled", (job: Job) => {
+        logger.warn("Job stalled", {
           id: job.id,
           type: job.data.type,
           priority,
@@ -688,7 +690,7 @@ class JobQueueManager {
       options,
     );
 
-    logger.info('Job added to queue', {
+    logger.info("Job added to queue", {
       id: job.id,
       type,
       priority,
@@ -744,13 +746,13 @@ class JobQueueManager {
   async pauseQueue(priority: JobPriority): Promise<void> {
     const queue = this.queues.get(priority);
     await queue?.pause();
-    logger.info('Queue paused', { priority });
+    logger.info("Queue paused", { priority });
   }
 
   async resumeQueue(priority: JobPriority): Promise<void> {
     const queue = this.queues.get(priority);
     await queue?.resume();
-    logger.info('Queue resumed', { priority });
+    logger.info("Queue resumed", { priority });
   }
 
   async close(): Promise<void> {
@@ -758,7 +760,7 @@ class JobQueueManager {
       Array.from(this.queues.values()).map((queue) => queue.close()),
     );
     await redisClient.quit();
-    logger.info('Job queue manager closed');
+    logger.info("Job queue manager closed");
   }
 }
 

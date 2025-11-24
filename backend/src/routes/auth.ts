@@ -1,30 +1,31 @@
-import express from 'express';
-import jwt from 'jsonwebtoken';
-import * as nodemailer from 'nodemailer';
-import { z } from 'zod';
-import { config } from '../jobs/config';
-import { authenticateToken, requireApiKey } from '../middleware/auth';
-import { strictRateLimiter } from '../middleware/rateLimiterRedis';
-import { rateLimit } from '../middleware/security';
-import { validateSchema } from '../middleware/validateSchema';
-import prisma from '../prismaClient';
+import express from "express";
+import jwt from "jsonwebtoken";
+import * as nodemailer from "nodemailer";
+import { z } from "zod";
+import { config } from "../jobs/config";
+import { authenticateToken, requireApiKey } from "../middleware/auth";
+import { strictRateLimiter } from "../middleware/rateLimiterRedis";
+import { rateLimit } from "../middleware/security";
+import { validateSchema } from "../middleware/validateSchema";
+import prisma from "../prismaClient";
 import {
   createNotification,
   notifyAllAdmins,
-} from '../services/notificationService';
-import { getRedis } from '../services/redisClient';
+} from "../services/notificationService";
+import { getRedis } from "../services/redisClient";
 import {
   hashPassword,
   migratePasswordIfNeeded,
   verifyPassword,
-} from '../utils/password';
-import { AuthLoginSchema, AuthRegisterSchema } from '../validation/schemas';
+} from "../utils/password";
+import { withDefaults } from "../utils/prismaHelpers";
+import { AuthLoginSchema, AuthRegisterSchema } from "../validation/schemas";
 
 const router = express.Router();
 
 // POST /api/auth/register - WITH ADMIN APPROVAL WORKFLOW
 router.post(
-  '/register',
+  "/register",
   requireApiKey,
   validateSchema(AuthRegisterSchema),
   async (req, res) => {
@@ -36,17 +37,17 @@ router.post(
         select: { id: true },
       });
       if (existing) {
-        return res.status(400).json({ error: 'User already exists' });
+        return res.status(400).json({ error: "User already exists" });
       }
 
       const passwordHash = await hashPassword(password);
       const user = await prisma.user.create({
         data: {
           email,
-          username: username || email.split('@')[0],
+          username: username || email.split("@")[0],
           passwordHash,
-          firstName: firstName || '',
-          lastName: lastName || '',
+          firstName: firstName || "",
+          lastName: lastName || "",
           termsAccepted: true,
           termsAcceptedAt: new Date(),
           active: true,
@@ -75,15 +76,15 @@ router.post(
           `✅ Custodial wallets temporarily disabled for user ${user.id}`,
         );
       } catch (walletErr) {
-        console.error('⚠️ Failed to initialize user wallets:', walletErr);
+        console.error("⚠️ Failed to initialize user wallets:", walletErr);
         // Don't fail registration if wallet initialization fails
       }
 
       // Create admin notification
       await prisma.adminNotification.create({
         data: {
-          type: 'NEW_USER',
-          title: '🎉 New User Registration',
+          type: "NEW_USER",
+          title: "🎉 New User Registration",
           message: `${
             firstName || email
           } just signed up and is waiting for approval!`,
@@ -96,28 +97,28 @@ router.post(
       // Notify admins via push notifications
       try {
         await notifyAllAdmins({
-          type: 'all',
-          category: 'admin',
-          title: 'New User Registration - Pending Approval',
+          type: "all",
+          category: "admin",
+          title: "New User Registration - Pending Approval",
           message: `User ${email} (${firstName} ${lastName}) has registered and is awaiting approval.`,
-          priority: 'high',
+          priority: "high",
           data: { userId: user.id, email, firstName, lastName },
         });
       } catch (notifyErr) {
-        console.error('Failed to notify admins of registration:', notifyErr);
+        console.error("Failed to notify admins of registration:", notifyErr);
       }
 
       const token = jwt.sign(
         { userId: user.id, email: user.email },
         config.jwtSecret,
         {
-          expiresIn: '7d',
+          expiresIn: "7d",
         },
       );
 
       return res.status(201).json({
-        message: 'Registration submitted. Awaiting admin approval.',
-        status: 'pending_approval',
+        message: "Registration submitted. Awaiting admin approval.",
+        status: "pending_approval",
         token,
         user: {
           id: user.id,
@@ -129,15 +130,15 @@ router.post(
         },
       });
     } catch (err) {
-      console.error('Registration error:', err);
-      return res.status(500).json({ error: 'Failed to register user' });
+      console.error("Registration error:", err);
+      return res.status(500).json({ error: "Failed to register user" });
     }
   },
 );
 
 // POST /api/auth/login
 router.post(
-  '/login',
+  "/login",
   strictRateLimiter,
   requireApiKey,
   validateSchema(AuthLoginSchema),
@@ -160,12 +161,12 @@ router.post(
         },
       });
       if (!user || !user.passwordHash) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: "Invalid credentials" });
       }
 
       const valid = await verifyPassword(password, user.passwordHash);
       if (!valid) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: "Invalid credentials" });
       }
 
       // Optional password hash migration (bcrypt -> argon2)
@@ -181,20 +182,20 @@ router.post(
           });
         }
       } catch (e) {
-        console.warn('Password migration skipped:', (e as Error)?.message);
+        console.warn("Password migration skipped:", (e as Error)?.message);
       }
 
       if (!user.emailVerified) {
         return res.status(403).json({
-          error: 'Email not verified. Please verify your email to continue.',
-          status: 'email_unverified',
+          error: "Email not verified. Please verify your email to continue.",
+          status: "email_unverified",
         });
       }
 
       if (!user.active) {
         return res.status(403).json({
-          error: 'Account pending admin approval.',
-          status: 'pending_approval',
+          error: "Account pending admin approval.",
+          status: "pending_approval",
         });
       }
 
@@ -210,12 +211,12 @@ router.post(
         { userId: user.id, email: user.email },
         config.jwtSecret,
         {
-          expiresIn: '7d',
+          expiresIn: "7d",
         },
       );
 
       return res.json({
-        message: 'Login successful',
+        message: "Login successful",
         token,
         user: {
           id: user.id,
@@ -223,12 +224,12 @@ router.post(
           username: user.username,
           firstName: user.firstName,
           lastName: user.lastName,
-          usdBalance: (user as any).usdBalance?.toString?.() ?? '0',
+          usdBalance: (user as any).usdBalance?.toString?.() ?? "0",
         },
       });
     } catch (err) {
-      console.error('Login error:', err);
-      return res.status(500).json({ error: 'Failed to login' });
+      console.error("Login error:", err);
+      return res.status(500).json({ error: "Failed to login" });
     }
   },
 );
@@ -239,17 +240,17 @@ router.post(
 
 const registerDoctorSchema = z.object({
   email: z.string().email(),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  password: z.string().min(8, "Password must be at least 8 characters"),
   firstName: z.string().min(1),
   lastName: z.string().min(1),
   specialization: z.string().min(1),
   licenseNumber: z.string().min(1),
   phoneNumber: z.string().optional(),
-  inviteCode: z.string().min(1, 'Invite code is required'),
+  inviteCode: z.string().min(1, "Invite code is required"),
 });
 
 // POST /api/auth/register-doctor
-router.post('/register-doctor', requireApiKey, async (req, res) => {
+router.post("/register-doctor", requireApiKey, async (req, res) => {
   try {
     const data = registerDoctorSchema.parse(req.body);
 
@@ -257,12 +258,12 @@ router.post('/register-doctor', requireApiKey, async (req, res) => {
     const expectedCode = process.env.DOCTOR_INVITE_CODE;
     if (!expectedCode) {
       return res.status(500).json({
-        error: 'Server configuration error: DOCTOR_INVITE_CODE not set',
+        error: "Server configuration error: DOCTOR_INVITE_CODE not set",
       });
     }
 
     if (data.inviteCode !== expectedCode) {
-      return res.status(403).json({ error: 'Invalid invite code' });
+      return res.status(403).json({ error: "Invalid invite code" });
     }
 
     // Check if doctor already exists
@@ -273,7 +274,7 @@ router.post('/register-doctor', requireApiKey, async (req, res) => {
     if (existing) {
       return res
         .status(400)
-        .json({ error: 'Doctor with this email already exists' });
+        .json({ error: "Doctor with this email already exists" });
     }
 
     // Check license number uniqueness
@@ -284,7 +285,7 @@ router.post('/register-doctor', requireApiKey, async (req, res) => {
     if (existingLicense) {
       return res
         .status(400)
-        .json({ error: 'License number already registered' });
+        .json({ error: "License number already registered" });
     }
 
     // Hash password
@@ -292,7 +293,7 @@ router.post('/register-doctor', requireApiKey, async (req, res) => {
 
     // Create doctor (status: PENDING by default)
     const doctor = await prisma.doctors.create({
-      data: {
+      data: withDefaults({
         email: data.email,
         passwordHash,
         firstName: data.firstName,
@@ -301,25 +302,25 @@ router.post('/register-doctor', requireApiKey, async (req, res) => {
         licenseNumber: data.licenseNumber,
         phoneNumber: data.phoneNumber || null,
         inviteCode: data.inviteCode,
-        status: 'PENDING',
-      },
+        status: "PENDING",
+      }),
     });
 
     // Generate JWT for doctor
     const token = jwt.sign(
-      { doctorId: doctor.id, email: doctor.email, type: 'doctor' },
+      { doctorId: doctor.id, email: doctor.email, type: "doctor" },
       config.jwtSecret,
-      { expiresIn: '7d' },
+      { expiresIn: "7d" },
     );
 
     // Notify all admins about new doctor registration
     try {
       await notifyAllAdmins({
-        type: 'all',
-        category: 'admin',
-        title: 'New Doctor Registration',
+        type: "all",
+        category: "admin",
+        title: "New Doctor Registration",
         message: `Dr. ${doctor.firstName} ${doctor.lastName} (${doctor.specialization}) has registered. Review their credentials and verify their account.`,
-        priority: 'high',
+        priority: "high",
         data: {
           doctorId: doctor.id,
           email: doctor.email,
@@ -328,11 +329,11 @@ router.post('/register-doctor', requireApiKey, async (req, res) => {
         },
       });
     } catch (e) {
-      console.error('Admin notify failed (doctor registered):', e);
+      console.error("Admin notify failed (doctor registered):", e);
     }
 
     return res.status(201).json({
-      message: 'Doctor registered successfully. Awaiting admin verification.',
+      message: "Doctor registered successfully. Awaiting admin verification.",
       token,
       doctor: {
         id: doctor.id,
@@ -344,17 +345,17 @@ router.post('/register-doctor', requireApiKey, async (req, res) => {
       },
     });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('Doctor registration error:', err);
-    return res.status(500).json({ error: 'Failed to register doctor' });
+    console.error("Doctor registration error:", err);
+    return res.status(500).json({ error: "Failed to register doctor" });
   }
 });
 
 // POST /api/auth/login-doctor
 router.post(
-  '/login-doctor',
+  "/login-doctor",
   strictRateLimiter,
   requireApiKey,
   async (req, res) => {
@@ -363,7 +364,7 @@ router.post(
       if (!email || !password) {
         return res
           .status(400)
-          .json({ error: 'Email and password are required' });
+          .json({ error: "Email and password are required" });
       }
 
       const doctor = await prisma.doctors.findFirst({
@@ -380,12 +381,12 @@ router.post(
       });
 
       if (!doctor || !doctor.passwordHash) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: "Invalid credentials" });
       }
 
       const valid = await verifyPassword(password, doctor.passwordHash);
       if (!valid) {
-        return res.status(401).json({ error: 'Invalid credentials' });
+        return res.status(401).json({ error: "Invalid credentials" });
       }
 
       // Optional password hash migration for doctor
@@ -402,19 +403,19 @@ router.post(
         }
       } catch (e) {
         console.warn(
-          'Doctor password migration skipped:',
+          "Doctor password migration skipped:",
           (e as Error)?.message,
         );
       }
 
       const token = jwt.sign(
-        { doctorId: doctor.id, email: doctor.email, type: 'doctor' },
+        { doctorId: doctor.id, email: doctor.email, type: "doctor" },
         config.jwtSecret,
-        { expiresIn: '7d' },
+        { expiresIn: "7d" },
       );
 
       return res.json({
-        message: 'Doctor login successful',
+        message: "Doctor login successful",
         token,
         doctor: {
           id: doctor.id,
@@ -426,8 +427,8 @@ router.post(
         },
       });
     } catch (err) {
-      console.error('Doctor login error:', err);
-      return res.status(500).json({ error: 'Failed to login doctor' });
+      console.error("Doctor login error:", err);
+      return res.status(500).json({ error: "Failed to login doctor" });
     }
   },
 );
@@ -436,23 +437,23 @@ router.post(
 const otpLimiter = rateLimit({ windowMs: 60_000, maxRequests: 5 });
 
 const sendOtpSchema = z.object({
-  email: z.string().email({ message: 'Valid email required' }),
+  email: z.string().email({ message: "Valid email required" }),
 });
 
 const verifyOtpSchema = z.object({
-  email: z.string().email({ message: 'Valid email required' }),
+  email: z.string().email({ message: "Valid email required" }),
   code: z.string().length(6),
 });
 
 const forgotPasswordSchema = z.object({
-  email: z.string().email({ message: 'Valid email required' }),
+  email: z.string().email({ message: "Valid email required" }),
 });
 
 const resetPasswordSchema = z.object({
-  token: z.string().min(1, { message: 'Reset token is required' }),
+  token: z.string().min(1, { message: "Reset token is required" }),
   newPassword: z
     .string()
-    .min(6, { message: 'Password must be at least 6 characters' }),
+    .min(6, { message: "Password must be at least 6 characters" }),
 });
 
 // Simple SMTP test payload
@@ -467,11 +468,11 @@ function generateCode(): string {
 }
 
 function generateResetToken(): string {
-  return require('crypto').randomBytes(32).toString('hex');
+  return require("crypto").randomBytes(32).toString("hex");
 }
 
 // POST /api/auth/send-otp
-router.post('/send-otp', otpLimiter, async (req, res) => {
+router.post("/send-otp", otpLimiter, async (req, res) => {
   try {
     const { email } = sendOtpSchema.parse(req.body || {});
 
@@ -479,7 +480,7 @@ router.post('/send-otp', otpLimiter, async (req, res) => {
       where: { email },
     });
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const code = generateCode();
@@ -500,14 +501,14 @@ router.post('/send-otp', otpLimiter, async (req, res) => {
     if (redis) {
       const locked = await redis.get(lockKey);
       if (locked)
-        return res.status(429).json({ error: 'Too many attempts. Try later.' });
+        return res.status(429).json({ error: "Too many attempts. Try later." });
       const cnt = await redis.incr(countKey);
       if (cnt === 1) await redis.expire(countKey, maxAttemptsWindow);
       if (cnt > maxSendPerWindow) {
-        await redis.set(lockKey, '1', 'EX', 30 * 60); // 30 min lockout
+        await redis.set(lockKey, "1", "EX", 30 * 60); // 30 min lockout
         return res
           .status(429)
-          .json({ error: 'Too many OTP requests. Try again later.' });
+          .json({ error: "Too many OTP requests. Try again later." });
       }
       await redis.setex(`otp:${key}`, ttlSeconds, code);
     } else {
@@ -521,7 +522,7 @@ router.post('/send-otp', otpLimiter, async (req, res) => {
       if (entry.count > maxSendPerWindow) {
         return res
           .status(429)
-          .json({ error: 'Too many OTP requests. Try again later.' });
+          .json({ error: "Too many OTP requests. Try again later." });
       }
       mem.set(key, { ...entry, code, exp: now + ttlSeconds * 1000 });
     }
@@ -529,9 +530,9 @@ router.post('/send-otp', otpLimiter, async (req, res) => {
     // Send via nodemailer if configured, else log
     if (process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD) {
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true', // false for 587, true for 465
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: process.env.SMTP_SECURE === "true", // false for 587, true for 465
         auth: {
           user: process.env.GMAIL_EMAIL,
           pass: process.env.GMAIL_APP_PASSWORD,
@@ -540,26 +541,26 @@ router.post('/send-otp', otpLimiter, async (req, res) => {
       await transporter.sendMail({
         from: process.env.SMTP_FROM_EMAIL || process.env.GMAIL_EMAIL,
         to: email,
-        subject: 'Your verification code',
+        subject: "Your verification code",
         text: `Your Advancia verification code is ${code}`,
       });
     } else {
       console.log(`[DEV] OTP for ${email}: ${code}`);
     }
 
-    return res.json({ message: 'OTP sent' });
+    return res.json({ message: "OTP sent" });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('send-otp error:', err);
-    return res.status(500).json({ error: 'Failed to send OTP' });
+    console.error("send-otp error:", err);
+    return res.status(500).json({ error: "Failed to send OTP" });
   }
 });
 
 // POST /api/auth/test-smtp
 // Sends a direct SMTP email using configured Gmail credentials; does NOT require DB
-router.post('/test-smtp', requireApiKey, async (req, res) => {
+router.post("/test-smtp", requireApiKey, async (req, res) => {
   try {
     const { to, subject, message } = testSmtpSchema.parse(req.body || {});
 
@@ -572,14 +573,14 @@ router.post('/test-smtp', requireApiKey, async (req, res) => {
     if (!EMAIL_USER || !EMAIL_PASSWORD) {
       return res.status(500).json({
         error:
-          'SMTP not configured. Set GMAIL_EMAIL and GMAIL_APP_PASSWORD (Gmail App Password) in backend/.env',
+          "SMTP not configured. Set GMAIL_EMAIL and GMAIL_APP_PASSWORD (Gmail App Password) in backend/.env",
       });
     }
 
     const transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: process.env.SMTP_SECURE === 'true', // false for 587, true for 465
+      host: process.env.SMTP_HOST || "smtp.gmail.com",
+      port: parseInt(process.env.SMTP_PORT || "587"),
+      secure: process.env.SMTP_SECURE === "true", // false for 587, true for 465
       auth: { user: EMAIL_USER, pass: EMAIL_PASSWORD },
     });
 
@@ -587,24 +588,24 @@ router.post('/test-smtp', requireApiKey, async (req, res) => {
       from: EMAIL_FROM,
       replyTo: EMAIL_REPLY_TO,
       to,
-      subject: subject || 'SMTP Test from Advancia',
+      subject: subject || "SMTP Test from Advancia",
       text:
         message ||
-        'This is a direct SMTP test using Gmail. If you see this, your GMAIL_EMAIL/GMAIL_APP_PASSWORD work.',
+        "This is a direct SMTP test using Gmail. If you see this, your GMAIL_EMAIL/GMAIL_APP_PASSWORD work.",
     });
 
-    return res.json({ message: 'SMTP test email sent', to });
+    return res.json({ message: "SMTP test email sent", to });
   } catch (err: any) {
-    if (err?.name === 'ZodError') {
+    if (err?.name === "ZodError") {
       return res.status(400).json({ error: err.issues });
     }
-    console.error('test-smtp error:', err);
-    return res.status(500).json({ error: 'Failed to send SMTP test email' });
+    console.error("test-smtp error:", err);
+    return res.status(500).json({ error: "Failed to send SMTP test email" });
   }
 });
 
 // POST /api/auth/verify-otp
-router.post('/verify-otp', otpLimiter, async (req, res) => {
+router.post("/verify-otp", otpLimiter, async (req, res) => {
   try {
     const { email, code } = verifyOtpSchema.parse(req.body || {});
     const key = email;
@@ -616,9 +617,9 @@ router.post('/verify-otp', otpLimiter, async (req, res) => {
       if (!stored)
         return res
           .status(400)
-          .json({ error: 'No OTP requested or OTP expired' });
+          .json({ error: "No OTP requested or OTP expired" });
       if (String(code) !== stored)
-        return res.status(400).json({ error: 'Invalid OTP' });
+        return res.status(400).json({ error: "Invalid OTP" });
       await redis.del(`otp:${key}`);
     } else {
       const mem: any =
@@ -628,14 +629,14 @@ router.post('/verify-otp', otpLimiter, async (req, res) => {
       if (!entry || Date.now() > entry.exp)
         return res
           .status(400)
-          .json({ error: 'No OTP requested or OTP expired' });
+          .json({ error: "No OTP requested or OTP expired" });
       if (String(code) !== entry.code)
-        return res.status(400).json({ error: 'Invalid OTP' });
+        return res.status(400).json({ error: "Invalid OTP" });
       mem.delete(key);
     }
 
     const user = await prisma.user.findFirst({ where: { email } });
-    if (!user) return res.status(404).json({ error: 'User not found' });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     await prisma.user.update({
       where: { id: user.id },
@@ -645,38 +646,38 @@ router.post('/verify-otp', otpLimiter, async (req, res) => {
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       config.jwtSecret,
-      { expiresIn: '7d' },
+      { expiresIn: "7d" },
     );
 
     try {
       await notifyAllAdmins({
-        type: 'all',
-        category: 'admin',
-        title: 'User Email Verified',
+        type: "all",
+        category: "admin",
+        title: "User Email Verified",
         message: `User ${user.email} has verified their email and is awaiting approval.`,
-        priority: 'normal',
+        priority: "normal",
         data: { userId: user.id, email: user.email },
       });
     } catch (e) {
-      console.error('Admin notify failed (email verified):', e);
+      console.error("Admin notify failed (email verified):", e);
     }
 
     return res.json({
-      message: 'OTP verified',
-      status: 'pending_approval',
+      message: "OTP verified",
+      status: "pending_approval",
       token,
     });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('verify-otp error:', err);
-    return res.status(500).json({ error: 'Failed to verify OTP' });
+    console.error("verify-otp error:", err);
+    return res.status(500).json({ error: "Failed to verify OTP" });
   }
 });
 
 // POST /api/auth/forgot-password
-router.post('/forgot-password', otpLimiter, async (req, res) => {
+router.post("/forgot-password", otpLimiter, async (req, res) => {
   try {
     const { email } = forgotPasswordSchema.parse(req.body || {});
 
@@ -684,7 +685,7 @@ router.post('/forgot-password', otpLimiter, async (req, res) => {
       where: { email },
     });
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     const resetToken = generateResetToken();
@@ -705,13 +706,13 @@ router.post('/forgot-password', otpLimiter, async (req, res) => {
     if (redis) {
       const locked = await redis.get(lockKey);
       if (locked)
-        return res.status(429).json({ error: 'Too many attempts. Try later.' });
+        return res.status(429).json({ error: "Too many attempts. Try later." });
       const cnt = await redis.incr(countKey);
       if (cnt === 1) await redis.expire(countKey, maxAttemptsWindow);
       if (cnt > maxRequestsPerWindow) {
-        await redis.set(lockKey, '1', 'EX', 30 * 60); // 30 min lockout
+        await redis.set(lockKey, "1", "EX", 30 * 60); // 30 min lockout
         return res.status(429).json({
-          error: 'Too many password reset requests. Try again later.',
+          error: "Too many password reset requests. Try again later.",
         });
       }
       await redis.setex(key, ttlSeconds, resetToken);
@@ -725,7 +726,7 @@ router.post('/forgot-password', otpLimiter, async (req, res) => {
       entry.count += 1;
       if (entry.count > maxRequestsPerWindow) {
         return res.status(429).json({
-          error: 'Too many password reset requests. Try again later.',
+          error: "Too many password reset requests. Try again later.",
         });
       }
       mem.set(key, {
@@ -739,9 +740,9 @@ router.post('/forgot-password', otpLimiter, async (req, res) => {
     const resetLink = `http://localhost:3000/auth/reset-password?token=${resetToken}`;
     if (process.env.GMAIL_EMAIL && process.env.GMAIL_APP_PASSWORD) {
       const transporter = nodemailer.createTransport({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: process.env.SMTP_SECURE === 'true', // false for 587, true for 465
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.SMTP_PORT || "587"),
+        secure: process.env.SMTP_SECURE === "true", // false for 587, true for 465
         auth: {
           user: process.env.GMAIL_EMAIL,
           pass: process.env.GMAIL_APP_PASSWORD,
@@ -750,27 +751,27 @@ router.post('/forgot-password', otpLimiter, async (req, res) => {
       await transporter.sendMail({
         from: process.env.SMTP_FROM_EMAIL || process.env.GMAIL_EMAIL,
         to: email,
-        subject: 'Reset your Advancia password',
+        subject: "Reset your Advancia password",
         html: `<p>Hi ${
-          user.firstName || 'there'
+          user.firstName || "there"
         },</p><p>You requested a password reset for your Advancia account.</p><p>Click the link below to reset your password:</p><p><a href="${resetLink}">Reset Password</a></p><p>This link will expire in 1 hour.</p><p>If you didn't request this reset, please ignore this email.</p><p>Best,<br>The Advancia Team</p>`,
       });
     } else {
       console.log(`[DEV] Password reset for ${email}: ${resetLink}`);
     }
 
-    return res.json({ message: 'Password reset email sent' });
+    return res.json({ message: "Password reset email sent" });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('forgot-password error:', err);
-    return res.status(500).json({ error: 'Failed to send reset email' });
+    console.error("forgot-password error:", err);
+    return res.status(500).json({ error: "Failed to send reset email" });
   }
 });
 
 // POST /api/auth/reset-password
-router.post('/reset-password', async (req, res) => {
+router.post("/reset-password", async (req, res) => {
   try {
     const { token, newPassword } = resetPasswordSchema.parse(req.body || {});
 
@@ -784,16 +785,16 @@ router.post('/reset-password', async (req, res) => {
 
     if (redis) {
       // Find the user ID by scanning all reset:* keys
-      const keys = await redis.keys('reset:*');
+      const keys = await redis.keys("reset:*");
       for (const key of keys) {
         if (
-          key.startsWith('reset:') &&
-          !key.includes(':cnt:') &&
-          !key.includes(':lock:')
+          key.startsWith("reset:") &&
+          !key.includes(":cnt:") &&
+          !key.includes(":lock:")
         ) {
           const stored = await redis.get(key);
           if (stored === token) {
-            userId = key.replace('reset:', '');
+            userId = key.replace("reset:", "");
             storedToken = stored;
             break;
           }
@@ -803,11 +804,11 @@ router.post('/reset-password', async (req, res) => {
       // Check in-memory store
       for (const [key, entry] of mem.entries()) {
         if (
-          key.startsWith('reset:') &&
+          key.startsWith("reset:") &&
           entry.token === token &&
           entry.exp > Date.now()
         ) {
-          userId = key.replace('reset:', '');
+          userId = key.replace("reset:", "");
           storedToken = entry.token;
           break;
         }
@@ -815,7 +816,7 @@ router.post('/reset-password', async (req, res) => {
     }
 
     if (!userId || !storedToken) {
-      return res.status(400).json({ error: 'Invalid or expired reset token' });
+      return res.status(400).json({ error: "Invalid or expired reset token" });
     }
 
     // Update user password
@@ -832,56 +833,56 @@ router.post('/reset-password', async (req, res) => {
       mem.delete(`reset:${userId}`);
     }
 
-    return res.json({ message: 'Password reset successfully' });
+    return res.json({ message: "Password reset successfully" });
   } catch (err) {
-    if ((err as any)?.name === 'ZodError') {
+    if ((err as any)?.name === "ZodError") {
       return res.status(400).json({ error: (err as any).issues });
     }
-    console.error('reset-password error:', err);
-    return res.status(500).json({ error: 'Failed to reset password' });
+    console.error("reset-password error:", err);
+    return res.status(500).json({ error: "Failed to reset password" });
   }
 });
 
 // POST /api/auth/test-email// POST /api/auth/test-email
 // Sends a simple email notification to the authenticated user to verify SMTP configuration
 router.post(
-  '/test-email',
+  "/test-email",
   requireApiKey,
   authenticateToken,
   async (req: any, res) => {
     try {
       const user = req.user;
       if (!user?.userId) {
-        return res.status(401).json({ error: 'Authentication required' });
+        return res.status(401).json({ error: "Authentication required" });
       }
 
-      const subject = req.body?.subject || 'Test Email from Advancia';
+      const subject = req.body?.subject || "Test Email from Advancia";
       const message =
         req.body?.message ||
-        'This is a test email sent from the Advancia backend to verify SMTP settings.';
+        "This is a test email sent from the Advancia backend to verify SMTP settings.";
 
       await createNotification({
         userId: user.userId,
-        type: 'email',
-        category: 'system',
+        type: "email",
+        category: "system",
         title: subject,
         message,
       });
 
-      return res.json({ message: 'Test email enqueued' });
+      return res.json({ message: "Test email enqueued" });
     } catch (err) {
-      console.error('test-email error:', err);
-      return res.status(500).json({ error: 'Failed to send test email' });
+      console.error("test-email error:", err);
+      return res.status(500).json({ error: "Failed to send test email" });
     }
   },
 );
 
 // GET /api/auth/me - Get current user data from token
-router.get('/me', authenticateToken, async (req: any, res) => {
+router.get("/me", authenticateToken, async (req: any, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: "Authentication required" });
     }
 
     const user = await prisma.user.findUnique({
@@ -900,22 +901,22 @@ router.get('/me', authenticateToken, async (req: any, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     return res.json({ user });
   } catch (err) {
-    console.error('auth/me error:', err);
-    return res.status(500).json({ error: 'Failed to fetch user data' });
+    console.error("auth/me error:", err);
+    return res.status(500).json({ error: "Failed to fetch user data" });
   }
 });
 
 // PUT /api/auth/me - Update current user profile
-router.put('/me', authenticateToken, async (req: any, res) => {
+router.put("/me", authenticateToken, async (req: any, res) => {
   try {
     const userId = req.user?.userId;
     if (!userId) {
-      return res.status(401).json({ error: 'Authentication required' });
+      return res.status(401).json({ error: "Authentication required" });
     }
 
     const { firstName, lastName, username } = req.body;
@@ -929,7 +930,7 @@ router.put('/me', authenticateToken, async (req: any, res) => {
         },
       });
       if (existingUser) {
-        return res.status(400).json({ error: 'Username already taken' });
+        return res.status(400).json({ error: "Username already taken" });
       }
     }
 
@@ -957,8 +958,8 @@ router.put('/me', authenticateToken, async (req: any, res) => {
 
     return res.json(updatedUser);
   } catch (err) {
-    console.error('auth/me PUT error:', err);
-    return res.status(500).json({ error: 'Failed to update user profile' });
+    console.error("auth/me PUT error:", err);
+    return res.status(500).json({ error: "Failed to update user profile" });
   }
 });
 
@@ -966,9 +967,9 @@ router.put('/me', authenticateToken, async (req: any, res) => {
 
 async function sendPasswordResetEmail(email: string, token: string) {
   const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.gmail.com',
-    port: parseInt(process.env.SMTP_PORT || '587'),
-    secure: process.env.SMTP_SECURE === 'true', // false for 587, true for 465
+    host: process.env.SMTP_HOST || "smtp.gmail.com",
+    port: parseInt(process.env.SMTP_PORT || "587"),
+    secure: process.env.SMTP_SECURE === "true", // false for 587, true for 465
     auth: {
       user: process.env.GMAIL_EMAIL,
       pass: process.env.GMAIL_APP_PASSWORD,
@@ -976,13 +977,13 @@ async function sendPasswordResetEmail(email: string, token: string) {
   });
 
   const resetUrl = `${
-    process.env.FRONTEND_URL || 'http://localhost:3000'
+    process.env.FRONTEND_URL || "http://localhost:3000"
   }/reset-password?token=${token}`;
 
   await transporter.sendMail({
     from: process.env.SMTP_FROM_EMAIL || process.env.GMAIL_EMAIL,
     to: email,
-    subject: 'Password Reset - Advancia PayLedger',
+    subject: "Password Reset - Advancia PayLedger",
     html: `
       <h2>Password Reset Request</h2>
       <p>You requested a password reset for your Advancia PayLedger account.</p>
@@ -997,7 +998,7 @@ async function sendPasswordResetEmail(email: string, token: string) {
 // Password reset routes removed - use Redis-based implementation
 
 // GET /api/auth/check-approval - Check if user is approved
-router.get('/check-approval', authenticateToken, async (req: any, res) => {
+router.get("/check-approval", authenticateToken, async (req: any, res) => {
   try {
     const user = await prisma.user.findUnique({
       where: { id: req.user.userId },
@@ -1010,7 +1011,7 @@ router.get('/check-approval', authenticateToken, async (req: any, res) => {
     });
 
     if (!user) {
-      return res.status(404).json({ error: 'User not found' });
+      return res.status(404).json({ error: "User not found" });
     }
 
     return res.json({
@@ -1020,8 +1021,8 @@ router.get('/check-approval', authenticateToken, async (req: any, res) => {
       approvedAt: user.approvedAt,
     });
   } catch (error) {
-    console.error('Error checking approval:', error);
-    return res.status(500).json({ error: 'Failed to check approval status' });
+    console.error("Error checking approval:", error);
+    return res.status(500).json({ error: "Failed to check approval status" });
   }
 });
 

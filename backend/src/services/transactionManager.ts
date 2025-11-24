@@ -1,7 +1,8 @@
-import prisma from '../prismaClient';
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 export interface TransactionData {
-  provider: 'stripe' | 'cryptomus';
+  provider: "stripe" | "cryptomus";
   orderId: string;
   amount: number;
   currency: string;
@@ -16,7 +17,7 @@ export interface UnifiedTransaction {
   orderId: string;
   amount: number;
   currency: string;
-  status: 'pending' | 'confirmed' | 'failed';
+  status: "pending" | "confirmed" | "failed";
   userId: string;
   description?: string;
   metadata?: any;
@@ -38,36 +39,36 @@ export class TransactionManager {
     try {
       // Create transaction record
       const transaction = await prisma.transactions.create({
-        data: {
+        data: withDefaults({
           userId: txData.userId,
           amount: txData.amount,
-          type: 'credit',
+          type: "credit",
           description:
             txData.description ||
             `Payment via ${txData.provider} - Order: ${txData.orderId}`,
           category: `${txData.provider}_payment`,
-          status: 'confirmed', // Assume confirmed since webhook verified it
-        },
+          status: "confirmed", // Assume confirmed since webhook verified it
+        }),
       });
 
       // Credit admin wallet
       await this.creditAdminWallet(txData.amount, txData.currency);
 
       // Credit user account (crypto wallet for crypto payments, USD balance for fiat)
-      if (txData.provider === 'cryptomus') {
+      if (txData.provider === "cryptomus") {
         await this.creditUserCryptoWallet(
           txData.userId,
           txData.amount,
           txData.currency,
         );
-      } else if (txData.provider === 'stripe') {
+      } else if (txData.provider === "stripe") {
         await this.creditUserUsdBalance(txData.userId, txData.amount);
       }
 
       // Emit real-time notification
       const io = (global as any).io;
       if (io) {
-        io.to(`user-${txData.userId}`).emit('payment_confirmed', {
+        io.to(`user-${txData.userId}`).emit("payment_confirmed", {
           provider: txData.provider,
           amount: txData.amount,
           currency: txData.currency,
@@ -85,14 +86,14 @@ export class TransactionManager {
         orderId: txData.orderId,
         amount: txData.amount,
         currency: txData.currency,
-        status: 'confirmed',
+        status: "confirmed",
         userId: txData.userId,
         description: transaction.description || undefined,
         createdAt: transaction.createdAt,
         updatedAt: transaction.updatedAt,
       };
     } catch (error) {
-      console.error('Error creating transaction:', error);
+      console.error("Error creating transaction:", error);
       throw error;
     }
   }
@@ -116,11 +117,11 @@ export class TransactionManager {
       if (transaction) {
         return {
           id: transaction.id,
-          provider: transaction.category?.replace('_payment', '') || 'unknown',
+          provider: transaction.category?.replace("_payment", "") || "unknown",
           orderId: orderId,
           amount: transaction.amount,
-          currency: 'USD', // Default, could be enhanced
-          status: transaction.status as 'pending' | 'confirmed' | 'failed',
+          currency: "USD", // Default, could be enhanced
+          status: transaction.status as "pending" | "confirmed" | "failed",
           userId: transaction.userId,
           description: transaction.description || undefined,
           createdAt: transaction.createdAt,
@@ -138,16 +139,16 @@ export class TransactionManager {
       if (cryptoPayment) {
         return {
           id: cryptoPayment.id,
-          provider: 'cryptomus',
+          provider: "cryptomus",
           orderId: orderId,
           amount: cryptoPayment.amount,
           currency: cryptoPayment.currency,
           status:
-            cryptoPayment.status === 'paid'
-              ? 'confirmed'
-              : cryptoPayment.status === 'pending'
-                ? 'pending'
-                : 'failed',
+            cryptoPayment.status === "paid"
+              ? "confirmed"
+              : cryptoPayment.status === "pending"
+                ? "pending"
+                : "failed",
           userId: cryptoPayment.user_id,
           description: cryptoPayment.description || undefined,
           createdAt: cryptoPayment.created_at || new Date(),
@@ -157,7 +158,7 @@ export class TransactionManager {
 
       return null;
     } catch (error) {
-      console.error('Error getting transaction status:', error);
+      console.error("Error getting transaction status:", error);
       throw error;
     }
   }
@@ -173,11 +174,11 @@ export class TransactionManager {
 
       if (!adminWallet) {
         adminWallet = await prisma.admin_wallets.create({
-          data: {
+          data: withDefaults({
             currency: currency.toUpperCase(),
             balance: 0,
             totalIn: 0,
-          },
+          }),
         });
       }
 
@@ -191,7 +192,7 @@ export class TransactionManager {
 
       console.log(`Admin wallet credited: +${amount} ${currency}`);
     } catch (error) {
-      console.error('Error crediting admin wallet:', error);
+      console.error("Error crediting admin wallet:", error);
       throw error;
     }
   }
@@ -214,12 +215,12 @@ export class TransactionManager {
 
       if (!userWallet) {
         userWallet = await prisma.crypto_wallets.create({
-          data: {
+          data: withDefaults({
             userId: userId,
             currency: currency.toUpperCase(),
             balance: 0,
-            address: '',
-          },
+            address: "",
+          }),
         });
       }
 
@@ -234,7 +235,7 @@ export class TransactionManager {
         `User ${userId} crypto wallet credited: +${amount} ${currency}`,
       );
     } catch (error) {
-      console.error('Error crediting user crypto wallet:', error);
+      console.error("Error crediting user crypto wallet:", error);
       throw error;
     }
   }
@@ -253,7 +254,7 @@ export class TransactionManager {
 
       console.log(`User ${userId} USD balance credited: +${amount}`);
     } catch (error) {
-      console.error('Error crediting user USD balance:', error);
+      console.error("Error crediting user USD balance:", error);
       throw error;
     }
   }

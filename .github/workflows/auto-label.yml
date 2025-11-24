@@ -1,0 +1,92 @@
+name: Auto Label Issues and PRs
+
+on:
+  issues:
+    types: [opened]
+  # Use pull_request_target so labeling works for PRs from forks
+  pull_request_target:
+    types: [opened, synchronize]
+
+permissions:
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: auto-label-${{ github.event_name }}-${{ github.event.number || github.run_id }}
+  cancel-in-progress: false
+
+jobs:
+  default-label:
+    name: Apply default triage label
+    runs-on: ubuntu-latest
+    steps:
+      - name: Apply default label
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const issue = context.payload.issue || context.payload.pull_request;
+            if (!issue) return;
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: issue.number,
+              labels: ["needs triage"]
+            });
+
+  size-label:
+    name: Label PR size
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+      - name: Determine PR size
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) return;
+            // Fetch full PR to ensure stats are populated
+            const { data } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: pr.number,
+            });
+            const additions = data.additions || 0;
+            const deletions = data.deletions || 0;
+            const changes = additions + deletions;
+            let label = "size: small";
+            if (changes > 100) label = "size: large";
+            else if (changes > 10) label = "size: medium";
+
+            await github.rest.issues.addLabels({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: pr.number,
+              labels: [label]
+            });
+
+  type-label:
+    name: Label PR type
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request_target'
+    steps:
+      - name: Determine PR type from branch name
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const pr = context.payload.pull_request;
+            if (!pr) return;
+            const branch = pr.head.ref || "";
+            let label = null;
+            if (branch.startsWith("feature/")) label = "type: feature";
+            else if (branch.startsWith("bugfix/") || branch.startsWith("fix/")) label = "type: bug";
+            else if (branch.startsWith("docs/")) label = "type: docs";
+            else if (branch.startsWith("chore/")) label = "type: chore";
+
+            if (label) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: pr.number,
+                labels: [label]
+              });
+            }

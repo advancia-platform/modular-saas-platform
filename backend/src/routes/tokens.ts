@@ -1,13 +1,14 @@
-import { Decimal } from '@prisma/client/runtime/library';
-import { Router } from 'express';
-import { Server as SocketServer } from 'socket.io';
-import { authenticateToken } from '../middleware/auth';
-import prisma from '../prismaClient';
-import { serializeDecimalFields } from '../utils/decimal';
+import { Decimal } from "@prisma/client/runtime/library";
+import { Router } from "express";
+import { Server as SocketServer } from "socket.io";
+import { authenticateToken } from "../middleware/auth";
+import prisma from "../prismaClient";
+import { serializeDecimalFields } from "../utils/decimal";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
 const safeAuth: any =
-  typeof authenticateToken === 'function'
+  typeof authenticateToken === "function"
     ? authenticateToken
     : (_req: any, _res: any, next: any) => next();
 
@@ -16,10 +17,10 @@ let io: SocketServer | null = null;
 
 export function setTokenSocketIO(socketServer: SocketServer) {
   io = socketServer;
-  console.log('✅ Socket.IO injected into token service');
+  console.log("✅ Socket.IO injected into token service");
 }
 
-router.get('/balance/:userId', safeAuth as any, async (req, res) => {
+router.get("/balance/:userId", safeAuth as any, async (req, res) => {
   try {
     const { userId } = req.params;
 
@@ -29,18 +30,18 @@ router.get('/balance/:userId', safeAuth as any, async (req, res) => {
 
     if (!wallet) {
       wallet = await prisma.token_wallets.create({
-        data: { userId },
+        data: withDefaults({ userId }),
       });
     }
 
     res.json(serializeDecimalFields(wallet));
   } catch (error: any) {
-    console.error('[TOKENS] Error fetching balance:', error);
-    res.status(500).json({ error: 'Failed to fetch balance' });
+    console.error("[TOKENS] Error fetching balance:", error);
+    res.status(500).json({ error: "Failed to fetch balance" });
   }
 });
 
-router.get('/history/:userId', safeAuth as any, async (req, res) => {
+router.get("/history/:userId", safeAuth as any, async (req, res) => {
   try {
     const { userId } = req.params;
     const limit = Math.min(100, Number(req.query.limit) || 50);
@@ -57,7 +58,7 @@ router.get('/history/:userId', safeAuth as any, async (req, res) => {
     const [transactions, total] = await Promise.all([
       prisma.tokenTransaction.findMany({
         where: { walletId: wallet.id },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
       }),
@@ -73,23 +74,23 @@ router.get('/history/:userId', safeAuth as any, async (req, res) => {
       offset,
     });
   } catch (error: any) {
-    console.error('[TOKENS] Error fetching history:', error);
-    res.status(500).json({ error: 'Failed to fetch transaction history' });
+    console.error("[TOKENS] Error fetching history:", error);
+    res.status(500).json({ error: "Failed to fetch transaction history" });
   }
 });
 
-router.post('/transfer', safeAuth as any, async (req, res) => {
+router.post("/transfer", safeAuth as any, async (req, res) => {
   try {
     const { fromUserId, toUserId, amount, description } = req.body;
 
     if (!fromUserId || !toUserId || !amount) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     const transferAmount = new Decimal(amount);
 
     if (transferAmount.lte(0)) {
-      return res.status(400).json({ error: 'Amount must be positive' });
+      return res.status(400).json({ error: "Amount must be positive" });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -104,7 +105,7 @@ router.post('/transfer', safeAuth as any, async (req, res) => {
       }
 
       if (fromWallet.balance.lt(transferAmount)) {
-        throw new Error('Insufficient balance');
+        throw new Error("Insufficient balance");
       }
 
       let toWallet = await tx.tokenWallet.findUnique({
@@ -134,8 +135,8 @@ router.post('/transfer', safeAuth as any, async (req, res) => {
         data: {
           walletId: fromWallet.id,
           amount: transferAmount.neg(),
-          type: 'transfer',
-          status: 'completed',
+          type: "transfer",
+          status: "completed",
           description: description || `Transfer to ${toUserId}`,
           toAddress: toUserId,
           metadata: JSON.stringify({
@@ -149,8 +150,8 @@ router.post('/transfer', safeAuth as any, async (req, res) => {
         data: {
           walletId: toWallet.id,
           amount: transferAmount,
-          type: 'transfer',
-          status: 'completed',
+          type: "transfer",
+          status: "completed",
           description: description || `Transfer from ${fromUserId}`,
           fromAddress: fromUserId,
           metadata: JSON.stringify({
@@ -165,15 +166,15 @@ router.post('/transfer', safeAuth as any, async (req, res) => {
 
     // Emit Socket.IO events to notify users
     if (io) {
-      io.to(`user-${fromUserId}`).emit('token:transfer', {
-        type: 'sent',
+      io.to(`user-${fromUserId}`).emit("token:transfer", {
+        type: "sent",
         amount: transferAmount.toString(),
         to: toUserId,
         transactionId: result.fromTx.id,
       });
 
-      io.to(`user-${toUserId}`).emit('token:transfer', {
-        type: 'received',
+      io.to(`user-${toUserId}`).emit("token:transfer", {
+        type: "received",
         amount: transferAmount.toString(),
         from: fromUserId,
         transactionId: result.toTx.id,
@@ -183,34 +184,34 @@ router.post('/transfer', safeAuth as any, async (req, res) => {
     res.json({
       success: true,
       transactionId: result.fromTx.id,
-      message: 'Transfer completed successfully',
+      message: "Transfer completed successfully",
     });
   } catch (error: any) {
-    console.error('[TOKENS] Error processing transfer:', error);
+    console.error("[TOKENS] Error processing transfer:", error);
     res
       .status(500)
-      .json({ error: error.message || 'Failed to process transfer' });
+      .json({ error: error.message || "Failed to process transfer" });
   }
 });
 
 // Withdraw tokens to a blockchain address
-router.post('/withdraw', safeAuth as any, async (req, res) => {
+router.post("/withdraw", safeAuth as any, async (req, res) => {
   try {
     const { userId, amount, toAddress } = req.body;
 
     if (!userId || !amount || !toAddress) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     const withdrawAmount = new Decimal(amount);
 
     if (withdrawAmount.lte(0)) {
-      return res.status(400).json({ error: 'Amount must be positive' });
+      return res.status(400).json({ error: "Amount must be positive" });
     }
 
     // Validate address format (basic check)
     if (!toAddress.match(/^0x[a-fA-F0-9]{40}$/)) {
-      return res.status(400).json({ error: 'Invalid blockchain address' });
+      return res.status(400).json({ error: "Invalid blockchain address" });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -219,11 +220,11 @@ router.post('/withdraw', safeAuth as any, async (req, res) => {
       });
 
       if (!wallet) {
-        throw new Error('Wallet not found');
+        throw new Error("Wallet not found");
       }
 
       if (wallet.balance.lt(withdrawAmount)) {
-        throw new Error('Insufficient balance for withdrawal');
+        throw new Error("Insufficient balance for withdrawal");
       }
 
       // Deduct from wallet
@@ -237,8 +238,8 @@ router.post('/withdraw', safeAuth as any, async (req, res) => {
         data: {
           walletId: wallet.id,
           amount: withdrawAmount.neg(),
-          type: 'withdraw',
-          status: 'pending',
+          type: "withdraw",
+          status: "pending",
           description: `Withdrawal to ${toAddress.substring(0, 10)}...`,
           toAddress: toAddress,
           metadata: JSON.stringify({
@@ -253,11 +254,11 @@ router.post('/withdraw', safeAuth as any, async (req, res) => {
 
     // Emit Socket.IO event
     if (io) {
-      io.to(`user-${userId}`).emit('token:withdrawn', {
+      io.to(`user-${userId}`).emit("token:withdrawn", {
         amount: withdrawAmount.toString(),
         toAddress,
         transactionId: result.id,
-        status: 'pending',
+        status: "pending",
       });
     }
 
@@ -266,31 +267,31 @@ router.post('/withdraw', safeAuth as any, async (req, res) => {
       transactionId: result.id,
       amount: withdrawAmount.toString(),
       toAddress,
-      status: 'pending',
-      message: 'Withdrawal initiated. Processing...',
+      status: "pending",
+      message: "Withdrawal initiated. Processing...",
     });
   } catch (error: any) {
-    console.error('[TOKENS] Error processing withdrawal:', error);
+    console.error("[TOKENS] Error processing withdrawal:", error);
     res
       .status(500)
-      .json({ error: error.message || 'Failed to process withdrawal' });
+      .json({ error: error.message || "Failed to process withdrawal" });
   }
 });
 
 // Cashout tokens to USD (convert to fiat)
-router.post('/cashout', safeAuth as any, async (req, res) => {
+router.post("/cashout", safeAuth as any, async (req, res) => {
   try {
     const { userId, amount } = req.body;
 
     if (!userId || !amount) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     const cashoutAmount = new Decimal(amount);
-    const conversionRate = new Decimal('0.10'); // 1 token = $0.10 USD
+    const conversionRate = new Decimal("0.10"); // 1 token = $0.10 USD
 
     if (cashoutAmount.lte(0)) {
-      return res.status(400).json({ error: 'Amount must be positive' });
+      return res.status(400).json({ error: "Amount must be positive" });
     }
 
     const result = await prisma.$transaction(async (tx) => {
@@ -299,11 +300,11 @@ router.post('/cashout', safeAuth as any, async (req, res) => {
       });
 
       if (!wallet) {
-        throw new Error('Wallet not found');
+        throw new Error("Wallet not found");
       }
 
       if (wallet.balance.lt(cashoutAmount)) {
-        throw new Error('Insufficient balance for cashout');
+        throw new Error("Insufficient balance for cashout");
       }
 
       const usdValue = cashoutAmount.mul(conversionRate);
@@ -319,8 +320,8 @@ router.post('/cashout', safeAuth as any, async (req, res) => {
         data: {
           walletId: wallet.id,
           amount: cashoutAmount.neg(),
-          type: 'cashout',
-          status: 'completed',
+          type: "cashout",
+          status: "completed",
           description: `Cashed out ${cashoutAmount.toString()} tokens for $${usdValue.toString()}`,
           metadata: JSON.stringify({
             usdValue: usdValue.toString(),
@@ -335,7 +336,7 @@ router.post('/cashout', safeAuth as any, async (req, res) => {
 
     // Emit Socket.IO event
     if (io) {
-      io.to(`user-${userId}`).emit('token:cashout', {
+      io.to(`user-${userId}`).emit("token:cashout", {
         tokensSpent: cashoutAmount.toString(),
         usdReceived: result.usdValue.toString(),
         transactionId: result.transaction.id,
@@ -350,10 +351,10 @@ router.post('/cashout', safeAuth as any, async (req, res) => {
       message: `Successfully cashed out $${result.usdValue.toString()}!`,
     });
   } catch (error: any) {
-    console.error('[TOKENS] Error processing cashout:', error);
+    console.error("[TOKENS] Error processing cashout:", error);
     res
       .status(500)
-      .json({ error: error.message || 'Failed to process cashout' });
+      .json({ error: error.message || "Failed to process cashout" });
   }
 });
 

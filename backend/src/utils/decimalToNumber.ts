@@ -1,4 +1,5 @@
-import { Decimal } from '@prisma/client/runtime/library';
+import { Prisma } from "@prisma/client";
+type Decimal = Prisma.Decimal;
 
 /**
  * Recursively converts Prisma Decimal objects to numbers in an object/array
@@ -11,17 +12,17 @@ export function decimalToNumber(obj: any): any {
     return obj.map(decimalToNumber);
   }
 
-  if (typeof obj === 'object') {
+  if (typeof obj === "object") {
     // Check if it's a Decimal instance
     if (
-      obj instanceof Decimal ||
-      (obj.constructor && obj.constructor.name === 'Decimal')
+      obj instanceof Prisma.Decimal ||
+      (obj.constructor && obj.constructor.name === "Decimal")
     ) {
       return obj.toNumber();
     }
 
     // Check for toNumber method (Decimal compatibility)
-    if ('toNumber' in obj && typeof obj.toNumber === 'function') {
+    if ("toNumber" in obj && typeof obj.toNumber === "function") {
       return obj.toNumber();
     }
 
@@ -43,14 +44,14 @@ export function decimalToNumber(obj: any): any {
  */
 export function decimalFieldToNumber(value: any): number | null {
   if (value === null || value === undefined) return null;
-  if (typeof value === 'number') return value;
+  if (typeof value === "number") return value;
   if (
-    value instanceof Decimal ||
-    (value.constructor && value.constructor.name === 'Decimal')
+    value instanceof Prisma.Decimal ||
+    (value.constructor && value.constructor.name === "Decimal")
   ) {
     return value.toNumber();
   }
-  if ('toNumber' in value && typeof value.toNumber === 'function') {
+  if ("toNumber" in value && typeof value.toNumber === "function") {
     return value.toNumber();
   }
   return Number(value);

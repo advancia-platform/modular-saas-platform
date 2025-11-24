@@ -1,29 +1,30 @@
-import { Response, Router } from 'express';
-import type { Server as IOServer } from 'socket.io';
+import { Response, Router } from "express";
+import type { Server as IOServer } from "socket.io";
 import {
   authenticateToken,
   AuthRequest,
   logAdminAction,
   requireAdmin,
-} from '../middleware/auth';
-import { validateSchema } from '../middleware/validateSchema';
-import prisma from '../prismaClient';
+} from "../middleware/auth";
+import { validateSchema } from "../middleware/validateSchema";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 import {
   WithdrawalAdminActionSchema,
   WithdrawalRequestSchema,
-} from '../validation/schemas';
+} from "../validation/schemas";
 
 const router = Router();
 const safeAuth: any =
-  typeof authenticateToken === 'function'
+  typeof authenticateToken === "function"
     ? authenticateToken
     : (_req: any, _res: any, next: any) => next();
 const safeAdmin: any =
-  typeof requireAdmin === 'function'
+  typeof requireAdmin === "function"
     ? requireAdmin
     : (_req: any, _res: any, next: any) => next();
 const safeLogAdmin: any =
-  typeof logAdminAction === 'function'
+  typeof logAdminAction === "function"
     ? logAdminAction
     : (_req: any, _res: any, next: any) => next();
 
@@ -35,55 +36,55 @@ export function setWithdrawalSocketIO(io: IOServer) {
 // GET /api/withdrawals/methods
 // Get available payment providers for withdrawals
 router.get(
-  '/methods',
+  "/methods",
   safeAuth as any,
   async (req: AuthRequest, res: Response) => {
     try {
       const methods = [
         {
-          provider: 'cryptomus',
-          name: 'Cryptomus',
-          description: '50+ cryptocurrencies supported',
-          currencies: ['btc', 'eth', 'usdt', 'bnb', 'ltc', 'doge'],
+          provider: "cryptomus",
+          name: "Cryptomus",
+          description: "50+ cryptocurrencies supported",
+          currencies: ["btc", "eth", "usdt", "bnb", "ltc", "doge"],
           minAmount: 10,
-          fees: '1%',
-          processingTime: '5-30 minutes',
+          fees: "1%",
+          processingTime: "5-30 minutes",
           features: [
-            'Fast processing',
-            'Popular currencies',
-            'Instant payouts',
+            "Fast processing",
+            "Popular currencies",
+            "Instant payouts",
           ],
         },
         {
-          provider: 'nowpayments',
-          name: 'NOWPayments',
-          description: '200+ cryptocurrencies supported',
+          provider: "nowpayments",
+          name: "NOWPayments",
+          description: "200+ cryptocurrencies supported",
           currencies: [
-            'btc',
-            'eth',
-            'usdt',
-            'trx',
-            'ltc',
-            'xmr',
-            'doge',
-            'ada',
-            'dot',
-            'matic',
+            "btc",
+            "eth",
+            "usdt",
+            "trx",
+            "ltc",
+            "xmr",
+            "doge",
+            "ada",
+            "dot",
+            "matic",
           ],
           minAmount: 10,
-          fees: '0.5%',
-          processingTime: '10-60 minutes',
-          features: ['Lowest fees', 'Most currencies', 'Mass payouts'],
+          fees: "0.5%",
+          processingTime: "10-60 minutes",
+          features: ["Lowest fees", "Most currencies", "Mass payouts"],
           recommended: true,
         },
       ];
 
       return res.json({ success: true, methods });
     } catch (err) {
-      console.error('Error fetching withdrawal methods:', err);
+      console.error("Error fetching withdrawal methods:", err);
       return res
         .status(500)
-        .json({ error: 'Failed to fetch withdrawal methods' });
+        .json({ error: "Failed to fetch withdrawal methods" });
     }
   },
 );
@@ -91,7 +92,7 @@ router.get(
 // POST /api/withdrawals/request
 // User creates a withdrawal request for USD, BTC, ETH, or USDT
 router.post(
-  '/request',
+  "/request",
   safeAuth as any,
   validateSchema(WithdrawalRequestSchema),
   async (req: AuthRequest, res: Response) => {
@@ -101,24 +102,24 @@ router.post(
         balanceType,
         amount,
         withdrawalAddress,
-        paymentProvider = 'cryptomus',
+        paymentProvider = "cryptomus",
       } = req.body as any;
       const amountNum =
-        typeof amount === 'number' ? amount : parseFloat(amount);
+        typeof amount === "number" ? amount : parseFloat(amount);
 
       // Validate payment provider
-      if (!['cryptomus', 'nowpayments'].includes(paymentProvider)) {
+      if (!["cryptomus", "nowpayments"].includes(paymentProvider)) {
         return res.status(400).json({
-          error: 'Invalid payment provider. Choose: cryptomus or nowpayments',
+          error: "Invalid payment provider. Choose: cryptomus or nowpayments",
         });
       }
 
       // Get client IP
       const clientIP =
-        (req.headers['x-forwarded-for'] as string)?.split(',')[0] ||
-        (req.headers['x-real-ip'] as string) ||
+        (req.headers["x-forwarded-for"] as string)?.split(",")[0] ||
+        (req.headers["x-real-ip"] as string) ||
         req.socket.remoteAddress ||
-        'Unknown';
+        "Unknown";
 
       // Get user and check balance
       const user = await prisma.user.findUnique({
@@ -136,7 +137,7 @@ router.post(
       });
 
       if (!user) {
-        return res.status(404).json({ error: 'User not found' });
+        return res.status(404).json({ error: "User not found" });
       }
 
       // ============= SECURITY CHECK: IP Whitelist =============
@@ -153,14 +154,14 @@ router.post(
         // await sendSecurityAlert(user.email, `Withdrawal attempt blocked from unauthorized IP: ${clientIP}`);
 
         return res.status(403).json({
-          error: 'Withdrawal blocked: IP not whitelisted',
-          hint: 'Add this IP via /api/security/whitelist/ip',
+          error: "Withdrawal blocked: IP not whitelisted",
+          hint: "Add this IP via /api/security/whitelist/ip",
           clientIP,
         });
       }
 
       // ============= SECURITY CHECK: Address Whitelist (for crypto only) =============
-      if (withdrawalAddress && balanceType.toUpperCase() !== 'USD') {
+      if (withdrawalAddress && balanceType.toUpperCase() !== "USD") {
         const isWhitelisted = await prisma.whitelistedAddress.findFirst({
           where: {
             userId,
@@ -176,8 +177,8 @@ router.post(
           );
 
           return res.status(403).json({
-            error: 'Withdrawal address not whitelisted',
-            hint: 'Add and verify this address via /api/security/whitelist/address',
+            error: "Withdrawal address not whitelisted",
+            hint: "Add and verify this address via /api/security/whitelist/address",
             address: withdrawalAddress,
           });
         }
@@ -185,13 +186,13 @@ router.post(
 
       // Determine balance field
       const balanceField =
-        balanceType.toUpperCase() === 'USD'
-          ? 'usdBalance'
-          : balanceType.toUpperCase() === 'BTC'
-            ? 'btcBalance'
-            : balanceType.toUpperCase() === 'ETH'
-              ? 'ethBalance'
-              : 'usdtBalance';
+        balanceType.toUpperCase() === "USD"
+          ? "usdBalance"
+          : balanceType.toUpperCase() === "BTC"
+            ? "btcBalance"
+            : balanceType.toUpperCase() === "ETH"
+              ? "ethBalance"
+              : "usdtBalance";
 
       // Check if user has sufficient balance
       if (user[balanceField].toNumber() < amountNum) {
@@ -204,18 +205,18 @@ router.post(
 
       // Create withdrawal request
       const withdrawal = await prisma.crypto_withdrawals.create({
-        data: {
+        data: withDefaults({
           userId,
           currency: balanceType.toUpperCase(),
           amount: amountNum,
-          destinationAddress: withdrawalAddress || '',
+          destinationAddress: withdrawalAddress || "",
           cryptoType: balanceType.toUpperCase(), // Legacy field for backward compatibility
           cryptoAmount: amountNum,
-          usdEquivalent: balanceType.toUpperCase() === 'USD' ? amountNum : 0, // Can be calculated if needed
-          withdrawalAddress: withdrawalAddress || '', // Legacy field
-          status: 'pending',
+          usdEquivalent: balanceType.toUpperCase() === "USD" ? amountNum : 0, // Can be calculated if needed
+          withdrawalAddress: withdrawalAddress || "", // Legacy field
+          status: "pending",
           paymentProvider: paymentProvider, // Store selected provider
-        },
+        }),
       });
 
       // Deduct from user balance immediately (locked until processed)
@@ -230,25 +231,25 @@ router.post(
 
       // Create transaction record
       await prisma.transactions.create({
-        data: {
+        data: withDefaults({
           userId,
           amount: amountNum,
-          type: 'withdrawal',
-          category: 'withdrawal_request',
+          type: "withdrawal",
+          category: "withdrawal_request",
           description: `Withdrawal request for ${amountNum} ${balanceType.toUpperCase()}`,
-          status: 'pending',
-        },
+          status: "pending",
+        }),
       });
 
       // Notify admins via socket
       if (ioRef) {
         const admins = await prisma.user.findMany({
-          where: { role: 'ADMIN' },
+          where: { role: "ADMIN" },
           select: { id: true },
         });
 
         for (const admin of admins) {
-          ioRef.to(`user-${admin.id}`).emit('new-withdrawal-request', {
+          ioRef.to(`user-${admin.id}`).emit("new-withdrawal-request", {
             withdrawalId: withdrawal.id,
             userId,
             userEmail: user.email,
@@ -260,20 +261,20 @@ router.post(
 
       return res.json({
         success: true,
-        message: 'Withdrawal request created successfully',
+        message: "Withdrawal request created successfully",
         withdrawal: {
           id: withdrawal.id,
           balanceType: balanceType.toUpperCase(),
           amount: amountNum,
-          status: 'pending',
+          status: "pending",
           createdAt: withdrawal.createdAt,
         },
       });
     } catch (err) {
-      console.error('Error creating withdrawal request:', err);
+      console.error("Error creating withdrawal request:", err);
       return res
         .status(500)
-        .json({ error: 'Failed to create withdrawal request' });
+        .json({ error: "Failed to create withdrawal request" });
     }
   },
 );
@@ -281,7 +282,7 @@ router.post(
 // GET /api/withdrawals/my-requests
 // User views their own withdrawal requests
 router.get(
-  '/my-requests',
+  "/my-requests",
   safeAuth as any,
   async (req: AuthRequest, res: Response) => {
     try {
@@ -289,7 +290,7 @@ router.get(
 
       const withdrawals = await prisma.crypto_withdrawals.findMany({
         where: { userId },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         select: {
           id: true,
           cryptoType: true,
@@ -311,10 +312,10 @@ router.get(
         })),
       });
     } catch (err) {
-      console.error('Error fetching user withdrawal requests:', err);
+      console.error("Error fetching user withdrawal requests:", err);
       return res
         .status(500)
-        .json({ error: 'Failed to fetch withdrawal requests' });
+        .json({ error: "Failed to fetch withdrawal requests" });
     }
   },
 );
@@ -322,7 +323,7 @@ router.get(
 // GET /api/withdrawals/admin/all
 // Admin views all withdrawal requests with filters
 router.get(
-  '/admin/all',
+  "/admin/all",
   safeAuth as any,
   safeAdmin as any,
   async (req: AuthRequest, res: Response) => {
@@ -330,13 +331,13 @@ router.get(
       const { status } = req.query;
 
       const where: any = {};
-      if (status && typeof status === 'string') {
+      if (status && typeof status === "string") {
         where.status = status;
       }
 
       const withdrawals = await prisma.crypto_withdrawals.findMany({
         where,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
         include: {
           user: {
             select: {
@@ -357,10 +358,10 @@ router.get(
         })),
       });
     } catch (err) {
-      console.error('Error fetching all withdrawal requests:', err);
+      console.error("Error fetching all withdrawal requests:", err);
       return res
         .status(500)
-        .json({ error: 'Failed to fetch withdrawal requests' });
+        .json({ error: "Failed to fetch withdrawal requests" });
     }
   },
 );
@@ -368,7 +369,7 @@ router.get(
 // PATCH /api/withdrawals/admin/:id
 // Admin approves or rejects a withdrawal request
 router.patch(
-  '/admin/:id',
+  "/admin/:id",
   safeAuth as any,
   safeAdmin as any,
   safeLogAdmin as any,
@@ -378,9 +379,9 @@ router.patch(
       const { id } = req.params;
       const { action, adminNotes, txHash, networkFee } = req.body as any;
 
-      if (!action || !['approve', 'reject'].includes(action)) {
+      if (!action || !["approve", "reject"].includes(action)) {
         return res.status(400).json({
-          error: 'Invalid action. Must be \'approve\' or \'reject\'',
+          error: "Invalid action. Must be 'approve' or 'reject'",
         });
       }
 
@@ -403,32 +404,32 @@ router.patch(
       });
 
       if (!withdrawal) {
-        return res.status(404).json({ error: 'Withdrawal request not found' });
+        return res.status(404).json({ error: "Withdrawal request not found" });
       }
 
-      if (withdrawal.status !== 'pending') {
+      if (withdrawal.status !== "pending") {
         return res.status(400).json({
           error: `Cannot process withdrawal with status: ${withdrawal.status}`,
         });
       }
 
       const balanceField =
-        withdrawal.cryptoType === 'USD'
-          ? 'usdBalance'
-          : withdrawal.cryptoType === 'BTC'
-            ? 'btcBalance'
-            : withdrawal.cryptoType === 'ETH'
-              ? 'ethBalance'
-              : 'usdtBalance';
+        withdrawal.cryptoType === "USD"
+          ? "usdBalance"
+          : withdrawal.cryptoType === "BTC"
+            ? "btcBalance"
+            : withdrawal.cryptoType === "ETH"
+              ? "ethBalance"
+              : "usdtBalance";
 
-      if (action === 'approve') {
+      if (action === "approve") {
         // Update withdrawal to approved/completed
         const updatedWithdrawal = await prisma.crypto_withdrawals.update({
           where: { id },
           data: {
-            status: 'completed',
+            status: "completed",
             adminApprovedBy: req.user!.userId,
-            adminNotes: adminNotes || 'Approved by admin',
+            adminNotes: adminNotes || "Approved by admin",
             txHash: txHash || null,
             networkFee: networkFee ? parseFloat(networkFee) : null,
             approvedAt: new Date(),
@@ -440,19 +441,19 @@ router.patch(
         await prisma.transactions.updateMany({
           where: {
             userId: withdrawal.userId,
-            type: 'withdrawal',
+            type: "withdrawal",
             amount: withdrawal.cryptoAmount.toNumber(),
-            status: 'pending',
+            status: "pending",
           },
           data: {
-            status: 'completed',
+            status: "completed",
             description: `Withdrawal approved: ${withdrawal.cryptoAmount} ${withdrawal.cryptoType}`,
           },
         });
 
         // Notify user
         if (ioRef) {
-          ioRef.to(`user-${withdrawal.userId}`).emit('withdrawal-approved', {
+          ioRef.to(`user-${withdrawal.userId}`).emit("withdrawal-approved", {
             withdrawalId: id,
             balanceType: withdrawal.cryptoType,
             amount: withdrawal.cryptoAmount.toString(),
@@ -462,11 +463,11 @@ router.patch(
 
         // Log audit
         await prisma.audit_logs.create({
-          data: {
+          data: withDefaults({
             userId: req.user!.userId,
-            action: 'approve_withdrawal',
-            resourceType: 'withdrawal',
-            resourceId: id,
+            action: "approve_withdrawal",
+            resourceType: "withdrawal",
+            resourceId: id || "unknown",
             metadata: JSON.stringify({
               userId: withdrawal.userId,
               balanceType: withdrawal.cryptoType,
@@ -475,12 +476,12 @@ router.patch(
               networkFee,
               adminNotes,
             }),
-          },
+          }),
         });
 
         return res.json({
           success: true,
-          message: 'Withdrawal approved successfully',
+          message: "Withdrawal approved successfully",
           withdrawal: {
             ...updatedWithdrawal,
             cryptoAmount: updatedWithdrawal.cryptoAmount.toString(),
@@ -501,9 +502,9 @@ router.patch(
         const updatedWithdrawal = await prisma.crypto_withdrawals.update({
           where: { id },
           data: {
-            status: 'rejected',
+            status: "rejected",
             adminApprovedBy: req.user!.userId,
-            adminNotes: adminNotes || 'Rejected by admin',
+            adminNotes: adminNotes || "Rejected by admin",
             rejectedAt: new Date(),
           },
         });
@@ -512,21 +513,21 @@ router.patch(
         await prisma.transactions.updateMany({
           where: {
             userId: withdrawal.userId,
-            type: 'withdrawal',
+            type: "withdrawal",
             amount: withdrawal.cryptoAmount.toNumber(),
-            status: 'pending',
+            status: "pending",
           },
           data: {
-            status: 'failed',
+            status: "failed",
             description: `Withdrawal rejected: ${withdrawal.cryptoAmount} ${
               withdrawal.cryptoType
-            }. Reason: ${adminNotes || 'Admin decision'}`,
+            }. Reason: ${adminNotes || "Admin decision"}`,
           },
         });
 
         // Notify user
         if (ioRef) {
-          ioRef.to(`user-${withdrawal.userId}`).emit('withdrawal-rejected', {
+          ioRef.to(`user-${withdrawal.userId}`).emit("withdrawal-rejected", {
             withdrawalId: id,
             balanceType: withdrawal.cryptoType,
             amount: withdrawal.cryptoAmount.toString(),
@@ -536,11 +537,11 @@ router.patch(
 
         // Log audit
         await prisma.audit_logs.create({
-          data: {
+          data: withDefaults({
             userId: req.user!.userId,
-            action: 'reject_withdrawal',
-            resourceType: 'withdrawal',
-            resourceId: id,
+            action: "reject_withdrawal",
+            resourceType: "withdrawal",
+            resourceId: id || "unknown",
             metadata: JSON.stringify({
               userId: withdrawal.userId,
               balanceType: withdrawal.cryptoType,
@@ -548,12 +549,12 @@ router.patch(
               adminNotes,
               refunded: true,
             }),
-          },
+          }),
         });
 
         return res.json({
           success: true,
-          message: 'Withdrawal rejected and balance refunded',
+          message: "Withdrawal rejected and balance refunded",
           withdrawal: {
             ...updatedWithdrawal,
             cryptoAmount: updatedWithdrawal.cryptoAmount.toString(),
@@ -561,8 +562,8 @@ router.patch(
         });
       }
     } catch (err) {
-      console.error('Error processing withdrawal:', err);
-      return res.status(500).json({ error: 'Failed to process withdrawal' });
+      console.error("Error processing withdrawal:", err);
+      return res.status(500).json({ error: "Failed to process withdrawal" });
     }
   },
 );
