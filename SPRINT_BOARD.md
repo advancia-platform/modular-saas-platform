@@ -7,6 +7,80 @@
 
 ---
 
+## 🚀 Sprint Kickoff Checklist
+
+### 1. Sprint Planning ✅
+
+- [ ] Review **ROADMAP_README.md** and **SPRINT_BOARD.md** together as a team
+- [ ] Define sprint **goal(s)** (e.g., TypeScript 0 errors, Zod validation, Sentry redaction)
+- [ ] Break down roadmap items into **user stories** or tasks on the sprint board
+- [ ] Assign **story points** or effort estimates (use Fibonacci: 1, 2, 3, 5, 8)
+- [ ] Identify dependencies and blockers upfront
+- [ ] Create GitHub issues from **ISSUES_TEMPLATE.md** (11 templates available)
+
+### 2. Roles & Responsibilities 👥
+
+- [ ] **Product Owner**: Confirms priorities and sprint goal
+- [ ] **Scrum Master / Facilitator**: Ensures ceremonies run smoothly
+- [ ] **Backend Developers**: Own TypeScript cleanup, validation, API routes
+- [ ] **DevOps Engineer**: Own Docker deployment, CI/CD, R2 integration
+- [ ] **QA / Reviewer**: Validates staging deploys, tests, and docs accuracy
+- [ ] **Security Lead**: Reviews Sentry redaction, secret management
+
+### 3. Environment & Secrets 🔐
+
+- [ ] Verify **GitHub Actions secrets** are configured (25+ required):
+  - Cloudflare R2: `CLOUDFLARE_ACCOUNT_ID`, `CLOUDFLARE_R2_ACCESS_KEY_ID`, etc.
+  - Database: `DATABASE_URL`, `REDIS_URL`
+  - Auth: `JWT_SECRET`, `SESSION_SECRET`, `API_KEY`
+  - Payments: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `CRYPTOMUS_API_KEY`
+  - Monitoring: `SENTRY_DSN`, `SLACK_WEBHOOK_URL`
+  - Deployment: `STAGING_HOST`, `STAGING_USER`, `STAGING_SSH_KEY`
+- [ ] Confirm staging server accessible: `ssh deploy@staging.advancia.io`
+- [ ] Verify CI/CD pipeline runs: Check `.github/workflows/docker-build-push.yml`
+- [ ] Ensure `.env.production.example` updated with all required placeholders
+- [ ] Test local Docker deployment: `docker-compose up -d`
+
+### 4. Sprint Ceremonies 📅
+
+- [ ] **Daily stand-up** (15 minutes max):
+  - What did I complete yesterday?
+  - What will I work on today?
+  - Any blockers?
+- [ ] **Mid-sprint review** (Day 3):
+  - Check progress against **EXECUTION_PLAN.md**
+  - Adjust priorities if needed
+  - Update **SPRINT_BOARD.md** with actual progress
+- [ ] **Sprint demo** (Day 5):
+  - Showcase completed features/docs
+  - Demo staging deployment
+  - Review TypeScript error reduction (47 → 0 target)
+- [ ] **Retrospective** (Day 5):
+  - What went well?
+  - What could be improved?
+  - Action items for next sprint
+
+### 5. Deliverables 📦
+
+- [ ] **Backend**: TypeScript 0 errors, Zod validation implemented
+- [ ] **Infrastructure**: Docker deployed with Cloudflare R2 integration
+- [ ] **Documentation**: Updated guides (SECRET_MANAGEMENT, PROMETHEUS, SLACK_WEBHOOK)
+- [ ] **Testing**: Integration tests for validation, Sentry redaction tests
+- [ ] **CI/CD**: GitHub Actions pipeline passing on staging
+- [ ] **Roadmap**: SPRINT_BOARD.md and EXECUTION_PLAN.md maintained daily
+- [ ] **Release notes**: Drafted using commit prefixes (`feat:`, `fix:`, `docs:`)
+
+### 6. Success Metrics 📊
+
+- [ ] TypeScript errors: 47 → 0 (100% reduction)
+- [ ] Code coverage: Maintain 80%+ (unit + integration)
+- [ ] Sprint velocity: Track story points completed vs. committed
+- [ ] Deployment frequency: 1+ staging deploy per day
+- [ ] Lead time: Issue created → deployed to staging < 2 days
+- [ ] Build time: CI/CD pipeline < 10 minutes
+
+---
+
 ## 📋 Backlog
 
 ### High Priority
