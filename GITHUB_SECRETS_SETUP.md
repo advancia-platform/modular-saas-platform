@@ -74,22 +74,26 @@
 
 -   **Description**: Cloudflare Zone ID for your domain
 -   **How to get**:
+
   1. Login to Cloudflare dashboard
   2. Select your domain (advancia.com)
   3. Scroll down on Overview page
   4. Copy **Zone ID** from API section (right sidebar)
+
 -   **Example**: `a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6`
 
 #### `CF_API_TOKEN`
 
 -   **Description**: Cloudflare API token with DNS edit permissions
 -   **How to get**:
+
   1. Cloudflare Dashboard → Profile → API Tokens
   2. Click **Create Token**
   3. Use **Edit zone DNS** template
   4. **Zone Resources**: Include → Specific zone → advancia.com
   5. Click **Continue to summary** → **Create Token**
   6. Copy the token (you'll only see it once!)
+
 -   **Example**: `a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0`
 -   **Permissions needed**: Zone.DNS (Edit)
 
@@ -129,6 +133,7 @@
 
 -   **Description**: Slack incoming webhook URL for deployment notifications
 -   **How to get**:
+
   1. Go to <https://api.slack.com/apps>
   2. Click **Create New App** → **From scratch**
   3. Name: "Advancia Deployments", Select workspace
@@ -136,6 +141,7 @@
   5. Click **Add New Webhook to Workspace**
   6. Select channel (e.g., #deployments)
   7. Copy **Webhook URL**
+
 -   **Example**: `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXX`
 -   **Optional**: Can use Discord webhook or other notification services
 

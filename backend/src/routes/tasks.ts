@@ -1,10 +1,18 @@
 import express, { Response } from "express";
 import { z } from "zod";
-import { authenticateToken } from "../middleware/auth";
-import { validateInput } from "../middleware/security";
-import prisma from "../prismaClient";
-import { serializeDecimalFields } from "../utils/decimal";
 import logger from "../logger";
+import { authenticateToken } from "../middleware/auth";
+import { validateInput } from "../middleware/validateInput";
+import { validateSchema } from "../middleware/validateSchema";
+import prisma from "../prismaClient";
+import { TaskResponse } from "../types";
+import {
+  ErrorResponse,
+  PaginatedResponse,
+  SuccessResponse,
+} from "../types/responses";
+import { serializeDecimalFields } from "../utils/decimal";
+import { paginationQuerySchema } from "../validation/schemas";
 
 const router = express.Router();
 
@@ -115,10 +123,11 @@ async function checkTaskAccess(taskId: string, userId: string) {
   return task;
 }
 
-// Get all tasks for current user or project
+// Get all tasks for current user or project (with typed pagination)
 router.get("/", authenticateToken as any, async (req: any, res: Response) => {
   try {
     const userId = req.user.userId;
+    const { page, pageSize } = validateInput(paginationQuerySchema, req.query);
     const { projectId, assigneeId, status, priority, search } = req.query;
 
     let whereCondition: any = {
@@ -164,62 +173,81 @@ router.get("/", authenticateToken as any, async (req: any, res: Response) => {
       ];
     }
 
-    const tasks = await prisma.task.findMany({
-      where: whereCondition,
-      include: {
-        project: {
-          select: {
-            id: true,
-            name: true,
-            team: {
-              select: {
-                id: true,
-                name: true,
+    const [tasks, total] = await Promise.all([
+      prisma.task.findMany({
+        where: whereCondition,
+        skip: (page - 1) * pageSize,
+        take: pageSize,
+        include: {
+          project: {
+            select: {
+              id: true,
+              name: true,
+              team: {
+                select: {
+                  id: true,
+                  name: true,
+                },
               },
             },
           },
-        },
-        assignee: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
+          assignee: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+            },
+          },
+          reporter: {
+            select: {
+              id: true,
+              username: true,
+              firstName: true,
+              lastName: true,
+            },
           },
         },
-        reporter: {
-          select: {
-            id: true,
-            username: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
+        orderBy: [
+          { priority: "desc" },
+          { dueDate: "asc" },
+          { createdAt: "desc" },
+        ],
+      }),
+      prisma.task.count({ where: whereCondition }),
+    ]);
+
+    const serializedTasks = tasks.map((task) =>
+      serializeDecimalFields(task),
+    ) as TaskResponse[];
+
+    const response: PaginatedResponse<TaskResponse> = {
+      data: serializedTasks,
+      pagination: {
+        total,
+        page,
+        pageSize,
+        totalPages: Math.ceil(total / pageSize),
+        hasNextPage: page * pageSize < total,
+        hasPrevPage: page > 1,
       },
-      orderBy: [
-        { priority: "desc" },
-        { dueDate: "asc" },
-        { createdAt: "desc" },
-      ],
-    });
+    };
 
-    const serializedTasks = tasks.map((task) => serializeDecimalFields(task));
-
-    return res.json({
-      success: true,
-      tasks: serializedTasks,
-      count: tasks.length,
-    });
+    return res.json(response);
   } catch (error) {
     logger.error("Error fetching tasks:", error);
-    return res.status(500).json({
-      success: false,
-      error: "Failed to fetch tasks",
-    });
+    const errorResponse: ErrorResponse = {
+      error: {
+        code: "INTERNAL_ERROR",
+        message: "Failed to fetch tasks",
+        details: error instanceof Error ? error.message : undefined,
+      },
+    };
+    return res.status(500).json(errorResponse);
   }
 });
 
-// Get specific task details
+// Get specific task details (with typed success/error response)
 router.get(
   "/:taskId",
   authenticateToken as any,
@@ -231,10 +259,13 @@ router.get(
       const task = await checkTaskAccess(taskId, userId);
 
       if (!task) {
-        return res.status(404).json({
-          success: false,
-          error: "Task not found or access denied",
-        });
+        const errorResponse: ErrorResponse = {
+          error: {
+            code: "NOT_FOUND",
+            message: "Task not found or access denied",
+          },
+        };
+        return res.status(404).json(errorResponse);
       }
 
       const taskDetails = await prisma.task.findUnique({
@@ -273,18 +304,39 @@ router.get(
         },
       });
 
-      const serializedTask = serializeDecimalFields(taskDetails);
+      if (!taskDetails) {
+        const errorResponse: ErrorResponse = {
+          error: {
+            code: "NOT_FOUND",
+            message: "Task not found",
+          },
+        };
+        return res.status(404).json(errorResponse);
+      }
 
-      return res.json({
-        success: true,
-        task: serializedTask,
-      });
+      const serializedTask = serializeDecimalFields(
+        taskDetails,
+      ) as TaskResponse;
+
+      const successResponse: SuccessResponse<TaskResponse> = {
+        data: serializedTask,
+        meta: {
+          requestId: (req as any).id,
+          timestamp: new Date(),
+        },
+      };
+
+      return res.json(successResponse);
     } catch (error) {
       logger.error("Error fetching task details:", error);
-      return res.status(500).json({
-        success: false,
-        error: "Failed to fetch task details",
-      });
+      const errorResponse: ErrorResponse = {
+        error: {
+          code: "INTERNAL_ERROR",
+          message: "Failed to fetch task details",
+          details: error instanceof Error ? error.message : undefined,
+        },
+      };
+      return res.status(500).json(errorResponse);
     }
   },
 );
@@ -293,7 +345,7 @@ router.get(
 router.post(
   "/",
   authenticateToken as any,
-  validateInput(createTaskSchema),
+  validateSchema(createTaskSchema),
   async (req: any, res: Response) => {
     try {
       const {
@@ -424,7 +476,7 @@ router.post(
 router.put(
   "/:taskId",
   authenticateToken as any,
-  validateInput(updateTaskSchema),
+  validateSchema(updateTaskSchema),
   async (req: any, res: Response) => {
     try {
       const { taskId } = req.params;

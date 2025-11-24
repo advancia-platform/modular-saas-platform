@@ -3,7 +3,7 @@
 ## Advancia Pay Ledger - Authentication Recovery System
 
 **Domain**: advanciapayledger.com  
-**API Base URL**: https://api.advanciapayledger.com  
+**API Base URL**: <https://api.advanciapayledger.com>  
 **Version**: 1.0  
 **Last Updated**: October 18, 2025
 
@@ -33,7 +33,7 @@ Authorization: Bearer <your-jwt-token>
 
 Generates 8 new backup codes for the authenticated user. Any existing backup codes are invalidated.
 
-#### Headers:
+#### Headers
 
 ```json
 {
@@ -43,7 +43,7 @@ Generates 8 new backup codes for the authenticated user. Any existing backup cod
 }
 ```
 
-#### Request Body:
+#### Request Body
 
 ```json
 {}
@@ -51,7 +51,7 @@ Generates 8 new backup codes for the authenticated user. Any existing backup cod
 
 (No body required - user is identified from JWT token)
 
-#### Success Response (200 OK):
+#### Success Response (200 OK)
 
 ```json
 {
@@ -62,7 +62,7 @@ Generates 8 new backup codes for the authenticated user. Any existing backup cod
 }
 ```
 
-#### Error Responses:
+#### Error Responses
 
 **401 Unauthorized:**
 
@@ -88,15 +88,15 @@ Generates 8 new backup codes for the authenticated user. Any existing backup cod
 }
 ```
 
-#### Notes:
+#### Notes
 
-- ⚠️ **CRITICAL**: Codes are only shown once during generation
-- All previous backup codes are invalidated when new ones are generated
-- Codes are 9-digit numbers
-- Codes are hashed using bcrypt before storage
-- Each code can only be used once
+-   ⚠️ **CRITICAL**: Codes are only shown once during generation
+-   All previous backup codes are invalidated when new ones are generated
+-   Codes are 9-digit numbers
+-   Codes are hashed using bcrypt before storage
+-   Each code can only be used once
 
-#### Example Usage (curl):
+#### Example Usage (curl)
 
 ```bash
 curl -X POST https://api.advanciapayledger.com/api/auth/generate-backup-codes \
@@ -105,7 +105,7 @@ curl -X POST https://api.advanciapayledger.com/api/auth/generate-backup-codes \
   -H "Content-Type: application/json"
 ```
 
-#### Example Usage (JavaScript):
+#### Example Usage (JavaScript)
 
 ```javascript
 const response = await fetch("https://api.advanciapayledger.com/api/auth/generate-backup-codes", {
@@ -130,7 +130,7 @@ console.log("Backup codes:", data.codes);
 
 Authenticates a user using a backup code. The code is marked as used after successful verification.
 
-#### Headers:
+#### Headers
 
 ```json
 {
@@ -139,7 +139,7 @@ Authenticates a user using a backup code. The code is marked as used after succe
 }
 ```
 
-#### Request Body:
+#### Request Body
 
 ```json
 {
@@ -148,7 +148,7 @@ Authenticates a user using a backup code. The code is marked as used after succe
 }
 ```
 
-#### Success Response (200 OK):
+#### Success Response (200 OK)
 
 ```json
 {
@@ -167,7 +167,7 @@ Authenticates a user using a backup code. The code is marked as used after succe
 }
 ```
 
-#### Error Responses:
+#### Error Responses
 
 **400 Bad Request:**
 
@@ -209,15 +209,15 @@ Authenticates a user using a backup code. The code is marked as used after succe
 }
 ```
 
-#### Notes:
+#### Notes
 
-- The backup code is marked as used immediately after successful verification
-- A JWT token is issued with 7-day expiration
-- User's `lastLogin` timestamp is updated
-- Warning is shown when 3 or fewer codes remain
-- Once used, a code cannot be used again
+-   The backup code is marked as used immediately after successful verification
+-   A JWT token is issued with 7-day expiration
+-   User's `lastLogin` timestamp is updated
+-   Warning is shown when 3 or fewer codes remain
+-   Once used, a code cannot be used again
 
-#### Example Usage (curl):
+#### Example Usage (curl)
 
 ```bash
 curl -X POST https://api.advanciapayledger.com/api/auth/verify-backup-code \
@@ -229,7 +229,7 @@ curl -X POST https://api.advanciapayledger.com/api/auth/verify-backup-code \
   }'
 ```
 
-#### Example Usage (JavaScript):
+#### Example Usage (JavaScript)
 
 ```javascript
 const response = await fetch("https://api.advanciapayledger.com/api/auth/verify-backup-code", {
@@ -260,7 +260,7 @@ if (data.success) {
 
 Retrieves the status of backup codes for the authenticated user (without revealing the codes themselves).
 
-#### Headers:
+#### Headers
 
 ```json
 {
@@ -269,11 +269,11 @@ Retrieves the status of backup codes for the authenticated user (without reveali
 }
 ```
 
-#### Request Body:
+#### Request Body
 
 None (GET request)
 
-#### Success Response (200 OK):
+#### Success Response (200 OK)
 
 ```json
 {
@@ -312,7 +312,7 @@ None (GET request)
 }
 ```
 
-#### Error Responses:
+#### Error Responses
 
 **401 Unauthorized:**
 
@@ -338,14 +338,14 @@ None (GET request)
 }
 ```
 
-#### Notes:
+#### Notes
 
-- Does not reveal actual backup codes
-- `needsRegeneration` is `true` when 3 or fewer codes remain
-- Use this endpoint to display status in user settings
-- Safe to call frequently for UI updates
+-   Does not reveal actual backup codes
+-   `needsRegeneration` is `true` when 3 or fewer codes remain
+-   Use this endpoint to display status in user settings
+-   Safe to call frequently for UI updates
 
-#### Example Usage (curl):
+#### Example Usage (curl)
 
 ```bash
 curl -X GET https://api.advanciapayledger.com/api/auth/backup-codes-status \
@@ -353,7 +353,7 @@ curl -X GET https://api.advanciapayledger.com/api/auth/backup-codes-status \
   -H "x-api-key: your-api-key"
 ```
 
-#### Example Usage (JavaScript):
+#### Example Usage (JavaScript)
 
 ```javascript
 const response = await fetch("https://api.advanciapayledger.com/api/auth/backup-codes-status", {
@@ -443,27 +443,27 @@ CREATE INDEX "backup_codes_isUsed_idx" ON "backup_codes"("isUsed");
 
 ### Storage
 
-- ✅ Codes are hashed with bcrypt before storage
-- ✅ Plain codes are ONLY returned during generation
-- ✅ Codes cannot be retrieved after generation
-- ✅ Used codes are marked and cannot be reused
+-   ✅ Codes are hashed with bcrypt before storage
+-   ✅ Plain codes are ONLY returned during generation
+-   ✅ Codes cannot be retrieved after generation
+-   ✅ Used codes are marked and cannot be reused
 
 ### Rate Limiting
 
 Consider implementing:
 
-- Max 3 failed verification attempts per hour
-- Max 5 code generations per day
-- Exponential backoff on failed attempts
+-   Max 3 failed verification attempts per hour
+-   Max 5 code generations per day
+-   Exponential backoff on failed attempts
 
 ### Best Practices
 
-- ✅ Always use HTTPS in production
-- ✅ Require API key for all requests
-- ✅ Validate JWT tokens properly
-- ✅ Log all backup code usage for audit
-- ✅ Notify users via email when codes are used
-- ✅ Implement account lockout after too many failures
+-   ✅ Always use HTTPS in production
+-   ✅ Require API key for all requests
+-   ✅ Validate JWT tokens properly
+-   ✅ Log all backup code usage for audit
+-   ✅ Notify users via email when codes are used
+-   ✅ Implement account lockout after too many failures
 
 ---
 
@@ -552,39 +552,39 @@ curl -X GET https://api.advanciapayledger.com/api/auth/backup-codes-status \
 
 **Solution**:
 
-- Verify the code hasn't been used before
-- Check for typos or extra spaces
-- Ensure code belongs to the correct user
-- Confirm backup codes were generated for this account
+-   Verify the code hasn't been used before
+-   Check for typos or extra spaces
+-   Ensure code belongs to the correct user
+-   Confirm backup codes were generated for this account
 
 ### Issue: "No backup codes available"
 
 **Solution**:
 
-- User needs to generate backup codes first
-- OR all codes have been used (generate new ones)
-- Use alternative authentication method
+-   User needs to generate backup codes first
+-   OR all codes have been used (generate new ones)
+-   Use alternative authentication method
 
 ### Issue: Codes not working after generation
 
 **Solution**:
 
-- Wait a few seconds for database sync
-- Check database migration was run
-- Verify codes were saved correctly
-- Check server logs for errors
+-   Wait a few seconds for database sync
+-   Check database migration was run
+-   Verify codes were saved correctly
+-   Check server logs for errors
 
 ---
 
 ## 📞 Support
 
-**Questions?** Contact support@advanciapayledger.com
+**Questions?** Contact <support@advanciapayledger.com>
 
 **Documentation**:
 
-- Main Guide: `BACKUP_CODES_GUIDE.md`
-- Storage Info: `BACKUP_CODES_STORED.md`
-- Your Codes: `AUTH_BACKUP_KEYS.md` (local only, not in Git)
+-   Main Guide: `BACKUP_CODES_GUIDE.md`
+-   Storage Info: `BACKUP_CODES_STORED.md`
+-   Your Codes: `AUTH_BACKUP_KEYS.md` (local only, not in Git)
 
 ---
 
@@ -592,12 +592,12 @@ curl -X GET https://api.advanciapayledger.com/api/auth/backup-codes-status \
 
 ### Version 1.0 (October 18, 2025)
 
-- ✅ Initial implementation
-- ✅ Generate backup codes endpoint
-- ✅ Verify backup code endpoint
-- ✅ Get status endpoint
-- ✅ Database migration
-- ✅ Comprehensive documentation
+-   ✅ Initial implementation
+-   ✅ Generate backup codes endpoint
+-   ✅ Verify backup code endpoint
+-   ✅ Get status endpoint
+-   ✅ Database migration
+-   ✅ Comprehensive documentation
 
 ---
 

@@ -11,19 +11,19 @@
 
 **Release Information**:
 
-- **Release Version**: v1.2.0
-- **Release Name**: Infrastructure & Planning Sprint
-- **Branch Tested**: `chore/ci-auto-release-auto-label-decimal-fixes`
-- **PR Number**: ******\_\_\_******
-- **Environment Tested**: Staging
-- **Test Date**: ******\_\_\_******
-- **Test Duration**: **\_** minutes
+-   **Release Version**: v1.2.0
+-   **Release Name**: Infrastructure & Planning Sprint
+-   **Branch Tested**: `chore/ci-auto-release-auto-label-decimal-fixes`
+-   **PR Number**: ******\_\_\_******
+-   **Environment Tested**: Staging
+-   **Test Date**: ******\_\_\_******
+-   **Test Duration**: **\_** minutes
 
 **Testing Team**:
 
-- **QA Lead Name**: ******\_\_\_******
-- **QA Engineer(s)**: ******\_\_\_******
-- **DevOps Witness**: ******\_\_\_******
+-   **QA Lead Name**: ******\_\_\_******
+-   **QA Engineer(s)**: ******\_\_\_******
+-   **DevOps Witness**: ******\_\_\_******
 
 ---
 
@@ -109,15 +109,15 @@
 
 ### Pre-Production Checklist
 
-- [ ] All 18 smoke tests completed and documented
-- [ ] All test results recorded above (no blanks)
-- [ ] No blocker issues identified
-- [ ] Team consensus reached on readiness
-- [ ] Rollback plan verified and ready
-- [ ] On-call team notified
-- [ ] Staging has been stable overnight (24+ hours)
-- [ ] Production database backups current
-- [ ] Blue-green deployment infrastructure ready
+-   [ ] All 18 smoke tests completed and documented
+-   [ ] All test results recorded above (no blanks)
+-   [ ] No blocker issues identified
+-   [ ] Team consensus reached on readiness
+-   [ ] Rollback plan verified and ready
+-   [ ] On-call team notified
+-   [ ] Staging has been stable overnight (24+ hours)
+-   [ ] Production database backups current
+-   [ ] Blue-green deployment infrastructure ready
 
 ### Known Issues (If Any)
 
@@ -151,10 +151,10 @@
 
 ### Overall Assessment
 
-- **Total Tests Run**: 18 + Performance metrics
-- **Tests Passed**: **\_**
-- **Tests Failed**: **\_**
-- **Pass Rate**: **\_**%
+-   **Total Tests Run**: 18 + Performance metrics
+-   **Tests Passed**: **\_**
+-   **Tests Failed**: **\_**
+-   **Pass Rate**: **\_**%
 
 ### Recommendation
 
@@ -249,10 +249,11 @@ Chrome: __________ | Firefox: __________ | Safari: __________ | Mobile: ________
 
 **Before clicking "Merge" on GitHub:**
 
-- [ ] All 3 sign-offs complete (QA + DevOps witness)
-- [ ] This form saved to deployment records
-- [ ] Copy this form to deployment notes
-- [ ] Post approval in `#deployments` Slack channel:
+-   [ ] All 3 sign-offs complete (QA + DevOps witness)
+-   [ ] This form saved to deployment records
+-   [ ] Copy this form to deployment notes
+-   [ ] Post approval in `#deployments` Slack channel:
+
   ```
   ✅ **QA SIGN-OFF COMPLETE**
   Version: v1.2.0
@@ -261,7 +262,8 @@ Chrome: __________ | Firefox: __________ | Safari: __________ | Mobile: ________
   Status: APPROVED FOR PRODUCTION
   All 18 tests passed, ready to merge
   ```
-- [ ] Proceed with Phase 7: Merge staging → main
+
+-   [ ] Proceed with Phase 7: Merge staging → main
 
 ---
 
@@ -269,11 +271,11 @@ Chrome: __________ | Firefox: __________ | Safari: __________ | Mobile: ________
 
 **After deployment to production, track:**
 
-- [ ] Production health check passes (within 5 min)
-- [ ] Sentry shows no spike in errors
-- [ ] User reports monitored (first 2 hours)
-- [ ] 24-hour stability check passed
-- [ ] This form archived with deployment records
+-   [ ] Production health check passes (within 5 min)
+-   [ ] Sentry shows no spike in errors
+-   [ ] User reports monitored (first 2 hours)
+-   [ ] 24-hour stability check passed
+-   [ ] This form archived with deployment records
 
 ---
 
@@ -281,9 +283,9 @@ Chrome: __________ | Firefox: __________ | Safari: __________ | Mobile: ________
 
 **Questions during sign-off?**
 
-- **Deployment runbook**: See `POST_WHITELIST_DEPLOYMENT_CHECKLIST.md`
-- **Smoke test guide**: See `QA_SMOKE_TEST_CHECKLIST_DAY2.md`
-- **Escalation**: Ping `@devops-lead` in `#deployments` Slack channel
+-   **Deployment runbook**: See `POST_WHITELIST_DEPLOYMENT_CHECKLIST.md`
+-   **Smoke test guide**: See `QA_SMOKE_TEST_CHECKLIST_DAY2.md`
+-   **Escalation**: Ping `@devops-lead` in `#deployments` Slack channel
 
 ---
 

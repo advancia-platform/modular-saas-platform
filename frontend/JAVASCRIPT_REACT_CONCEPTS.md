@@ -104,8 +104,8 @@ const users = await api.get('/users');
 
 **When to use:**
 
-- ✅ **Fetch**: Simple requests, no dependencies
-- ✅ **Axios**: Complex apps, better error handling, interceptors
+-   ✅ **Fetch**: Simple requests, no dependencies
+-   ✅ **Axios**: Complex apps, better error handling, interceptors
 
 ---
 
@@ -275,11 +275,11 @@ function CreateUser() {
 
 **Benefits:**
 
-- ✅ Auto caching
-- ✅ Auto refetching
-- ✅ Loading/error states
-- ✅ Optimistic updates
-- ✅ Pagination support
+-   ✅ Auto caching
+-   ✅ Auto refetching
+-   ✅ Loading/error states
+-   ✅ Optimistic updates
+-   ✅ Pagination support
 
 ---
 

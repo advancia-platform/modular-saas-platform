@@ -6,30 +6,30 @@ Enterprise-grade API Gateway running on Cloudflare Workers Edge Network.
 
 ### ✅ Security
 
-- **JWT Authentication** - Validates bearer tokens with backend
-- **Rate Limiting** - Per-user, per-IP, tiered limits
-- **CORS Handling** - Configurable cross-origin policies
-- **API Key Validation** - Internal service authentication
+-   **JWT Authentication** - Validates bearer tokens with backend
+-   **Rate Limiting** - Per-user, per-IP, tiered limits
+-   **CORS Handling** - Configurable cross-origin policies
+-   **API Key Validation** - Internal service authentication
 
 ### ✅ Performance
 
-- **Edge Caching** - Response caching at 300+ global locations
-- **Parallel Requests** - Dashboard aggregation with Promise.all()
-- **Request Coalescing** - Deduplicates identical concurrent requests
-- **Sub-10ms Latency** - Average response time
+-   **Edge Caching** - Response caching at 300+ global locations
+-   **Parallel Requests** - Dashboard aggregation with Promise.all()
+-   **Request Coalescing** - Deduplicates identical concurrent requests
+-   **Sub-10ms Latency** - Average response time
 
 ### ✅ Routing
 
-- **Multi-API Aggregation** - Stripe, Cryptomus, CoinGecko, Binance
-- **Smart Proxying** - Routes to backend, payment providers, or generates at edge
-- **Public/Private Routes** - Flexible authentication requirements
-- **Path-based Routing** - Clean URL patterns
+-   **Multi-API Aggregation** - Stripe, Cryptomus, CoinGecko, Binance
+-   **Smart Proxying** - Routes to backend, payment providers, or generates at edge
+-   **Public/Private Routes** - Flexible authentication requirements
+-   **Path-based Routing** - Clean URL patterns
 
 ### ✅ Monitoring
 
-- **Request Logging** - All requests logged to Cloudflare Analytics
-- **Error Tracking** - Centralized error handling
-- **Rate Limit Metrics** - Per-user consumption tracking
+-   **Request Logging** - All requests logged to Cloudflare Analytics
+-   **Error Tracking** - Centralized error handling
+-   **Rate Limit Metrics** - Per-user consumption tracking
 
 ---
 
@@ -260,16 +260,16 @@ wrangler tail
 
 ### Cloudflare Dashboard
 
-- **Analytics**: Workers → advancia-api-gateway → Analytics
-- **Logs**: Workers → advancia-api-gateway → Logs
-- **Metrics**: Requests, errors, latency, CPU time
+-   **Analytics**: Workers → advancia-api-gateway → Analytics
+-   **Logs**: Workers → advancia-api-gateway → Logs
+-   **Metrics**: Requests, errors, latency, CPU time
 
 ### Key Metrics
 
-- **Requests/sec**: Real-time request rate
-- **Error Rate**: 4xx and 5xx responses
-- **P50/P95/P99 Latency**: Response time percentiles
-- **Rate Limit Hits**: 429 responses per minute
+-   **Requests/sec**: Real-time request rate
+-   **Error Rate**: 4xx and 5xx responses
+-   **P50/P95/P99 Latency**: Response time percentiles
+-   **Rate Limit Hits**: 429 responses per minute
 
 ---
 
@@ -334,39 +334,39 @@ console.log(prices.prices.BTC); // Current BTC price
 
 ### 401 Unauthorized
 
-- Check JWT token is valid
-- Verify Authorization header format: `Bearer <token>`
-- Ensure backend `/api/auth/verify` endpoint is working
+-   Check JWT token is valid
+-   Verify Authorization header format: `Bearer <token>`
+-   Ensure backend `/api/auth/verify` endpoint is working
 
 ### 429 Rate Limit Exceeded
 
-- User exceeded tier rate limit
-- Wait for rate limit window to reset (60 seconds)
-- Upgrade user to higher tier
+-   User exceeded tier rate limit
+-   Wait for rate limit window to reset (60 seconds)
+-   Upgrade user to higher tier
 
 ### 502 Bad Gateway
 
-- Backend API is down or unreachable
-- Check `BACKEND_URL` environment variable
-- Verify backend health: `curl https://api.advanciapayledger.com/health`
+-   Backend API is down or unreachable
+-   Check `BACKEND_URL` environment variable
+-   Verify backend health: `curl https://api.advanciapayledger.com/health`
 
 ### 500 Internal Server Error
 
-- Check worker logs: `wrangler tail`
-- Verify all environment variables are set
-- Check Cloudflare Dashboard for errors
+-   Check worker logs: `wrangler tail`
+-   Verify all environment variables are set
+-   Check Cloudflare Dashboard for errors
 
 ---
 
 ## 📚 References
 
-- [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
-- [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/)
-- [Workers KV](https://developers.cloudflare.com/kv/)
-- [Rate Limiting Best Practices](https://developers.cloudflare.com/workers/examples/rate-limiting/)
+-   [Cloudflare Workers Docs](https://developers.cloudflare.com/workers/)
+-   [Wrangler CLI](https://developers.cloudflare.com/workers/wrangler/)
+-   [Workers KV](https://developers.cloudflare.com/kv/)
+-   [Rate Limiting Best Practices](https://developers.cloudflare.com/workers/examples/rate-limiting/)
 
 ---
 
-**Deployed URL:** https://api.advanciapayledger.com  
+**Deployed URL:** <https://api.advanciapayledger.com>  
 **Status:** Production Ready  
 **Last Updated:** 2025-11-18

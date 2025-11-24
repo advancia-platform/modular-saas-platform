@@ -89,9 +89,9 @@ pm2 status
 
 Look for:
 
-- Both processes showing "online"
-- Restart count should stop increasing
-- Memory usage should be stable (not 0)
+-   Both processes showing "online"
+-   Restart count should stop increasing
+-   Memory usage should be stable (not 0)
 
 ### Step 8: Test Endpoints
 
@@ -194,21 +194,21 @@ pm2 restart all
 
 After running all steps above, verify:
 
-- [ ] `.env.production` files exist and have content
-- [ ] PostgreSQL is running (`systemctl status postgresql`)
-- [ ] Database `advancia_prod` exists
-- [ ] PM2 shows both processes as "online"
-- [ ] Restart count stops increasing after 30 seconds
-- [ ] `curl http://localhost:4000/health` returns JSON
-- [ ] `curl http://localhost:3000` returns HTTP 200
-- [ ] No errors in `pm2 logs --lines 20`
+-   [ ] `.env.production` files exist and have content
+-   [ ] PostgreSQL is running (`systemctl status postgresql`)
+-   [ ] Database `advancia_prod` exists
+-   [ ] PM2 shows both processes as "online"
+-   [ ] Restart count stops increasing after 30 seconds
+-   [ ] `curl http://localhost:4000/health` returns JSON
+-   [ ] `curl http://localhost:3000` returns HTTP 200
+-   [ ] No errors in `pm2 logs --lines 20`
 
 ## Final Test
 
 If all checks pass, test from your browser:
 
-- Backend: <http://157.245.8.131:4000/health>
-- Frontend: <http://157.245.8.131:3000>
+-   Backend: <http://157.245.8.131:4000/health>
+-   Frontend: <http://157.245.8.131:3000>
 
 ## Save PM2 Configuration
 

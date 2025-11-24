@@ -10,44 +10,44 @@
 
 ### 1.1 Security & Secrets ✅
 
-- [ ] **No secrets in current files**: Run `grep -r "sk_live\|pk_live\|ghp_" --exclude-dir={node_modules,.git}` → Zero matches
-- [ ] **No secrets in recent commits**: Review last 10 commits with `git log -p -10 | grep -E "(API|SECRET|KEY|TOKEN|PASSWORD)"`
-- [ ] **Rotated secrets whitelisted**: All 5 GitHub secret scanning URLs visited and approved:
-  - [ ] GitHub PAT: [35uGh343m3zGig9pxSpeHuMCD9C](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh343m3zGig9pxSpeHuMCD9C)
-  - [ ] Stripe Test Key #1: [35uGh0n48f6cW6vsUwb1KWbH74V](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh0n48f6cW6vsUwb1KWbH74V)
-  - [ ] Stripe Test Key #2: [35uGh4CIoDQRQ71ECBuZhVqxH7e](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh4CIoDQRQ71ECBuZhVqxH7e)
-  - [ ] Slack Webhook: [35uGh2JoASEMPMi5X2PWWKgCmqH](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh2JoASEMPMi5X2PWWKgCmqH)
-  - [ ] Stripe API Key: [35uGh6dX0l3ozKbcUHCr8rkKGpr](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh6dX0l3ozKbcUHCr8rkKGpr)
-- [ ] **Environment templates valid**: `.env.production.example` files use only placeholders
-- [ ] **GitHub Secrets configured**: All 25+ secrets set in repository settings (see `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`)
+-   [ ] **No secrets in current files**: Run `grep -r "sk_live\|pk_live\|ghp_" --exclude-dir={node_modules,.git}` → Zero matches
+-   [ ] **No secrets in recent commits**: Review last 10 commits with `git log -p -10 | grep -E "(API|SECRET|KEY|TOKEN|PASSWORD)"`
+-   [ ] **Rotated secrets whitelisted**: All 5 GitHub secret scanning URLs visited and approved:
+    -   [ ] GitHub PAT: [35uGh343m3zGig9pxSpeHuMCD9C](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh343m3zGig9pxSpeHuMCD9C)
+    -   [ ] Stripe Test Key #1: [35uGh0n48f6cW6vsUwb1KWbH74V](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh0n48f6cW6vsUwb1KWbH74V)
+    -   [ ] Stripe Test Key #2: [35uGh4CIoDQRQ71ECBuZhVqxH7e](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh4CIoDQRQ71ECBuZhVqxH7e)
+    -   [ ] Slack Webhook: [35uGh2JoASEMPMi5X2PWWKgCmqH](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh2JoASEMPMi5X2PWWKgCmqH)
+    -   [ ] Stripe API Key: [35uGh6dX0l3ozKbcUHCr8rkKGpr](https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh6dX0l3ozKbcUHCr8rkKGpr)
+-   [ ] **Environment templates valid**: `.env.production.example` files use only placeholders
+-   [ ] **GitHub Secrets configured**: All 25+ secrets set in repository settings (see `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`)
 
 ### 1.2 Branch Hygiene 🌿
 
-- [ ] **Branch up to date**: `git fetch origin && git rebase origin/main` (resolve conflicts if any)
-- [ ] **Commit messages follow convention**:
-  - `feat:` for new features
-  - `fix:` for bug fixes
-  - `docs:` for documentation
-  - `chore:` for maintenance
-  - `security:` for security updates
-  - `infra:` for infrastructure changes
-- [ ] **No merge commits in history**: Use rebase workflow to maintain linear history
-- [ ] **All roadmap docs committed**: 8 files staged and pushed (SPRINT_BOARD, ISSUES_TEMPLATE, EXECUTION_PLAN, etc.)
+-   [ ] **Branch up to date**: `git fetch origin && git rebase origin/main` (resolve conflicts if any)
+-   [ ] **Commit messages follow convention**:
+    -   `feat:` for new features
+    -   `fix:` for bug fixes
+    -   `docs:` for documentation
+    -   `chore:` for maintenance
+    -   `security:` for security updates
+    -   `infra:` for infrastructure changes
+-   [ ] **No merge commits in history**: Use rebase workflow to maintain linear history
+-   [ ] **All roadmap docs committed**: 8 files staged and pushed (SPRINT_BOARD, ISSUES_TEMPLATE, EXECUTION_PLAN, etc.)
 
 ### 1.3 Documentation Compliance 📚
 
-- [ ] **Roadmap files reviewed**:
-  - [ ] `SPRINT_BOARD.md` - Current sprint metrics updated
-  - [ ] `EXECUTION_PLAN.md` - Day-by-day tasks verified
-  - [ ] `ROADMAP_CONSOLIDATED.md` - Epics and milestones current
-- [ ] **Security docs redacted**:
-  - [ ] `PRODUCTION_READINESS_REPORT.md` - No real secrets
-  - [ ] `SECURITY_AUDIT_2025-11-17.md` - Placeholders only
-  - [ ] `SECRET_MANAGEMENT_GUIDE.md` - Updated with best practices
-- [ ] **Setup guides validated**:
-  - [ ] `PROMETHEUS_SETUP_GUIDE.md` - Generic webhook examples
-  - [ ] `SLACK_WEBHOOK_SETUP.md` - Template patterns only
-  - [ ] `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` - Complete and accurate
+-   [ ] **Roadmap files reviewed**:
+    -   [ ] `SPRINT_BOARD.md` - Current sprint metrics updated
+    -   [ ] `EXECUTION_PLAN.md` - Day-by-day tasks verified
+    -   [ ] `ROADMAP_CONSOLIDATED.md` - Epics and milestones current
+-   [ ] **Security docs redacted**:
+    -   [ ] `PRODUCTION_READINESS_REPORT.md` - No real secrets
+    -   [ ] `SECURITY_AUDIT_2025-11-17.md` - Placeholders only
+    -   [ ] `SECRET_MANAGEMENT_GUIDE.md` - Updated with best practices
+-   [ ] **Setup guides validated**:
+    -   [ ] `PROMETHEUS_SETUP_GUIDE.md` - Generic webhook examples
+    -   [ ] `SLACK_WEBHOOK_SETUP.md` - Template patterns only
+    -   [ ] `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` - Complete and accurate
 
 ---
 
@@ -132,22 +132,22 @@ docker-compose down
 
 ### 3.1 GitHub Actions Workflows ✅
 
-- [ ] **Pre-push validation**: Husky hooks passed (lint-staged, type-check)
-- [ ] **Workflow file valid**: `.github/workflows/docker-build-push.yml` syntax correct
-- [ ] **Build job succeeds**:
-  - [ ] Docker image builds without errors
-  - [ ] Image pushed to `ghcr.io/advancia-platform/modular-saas-platform/backend`
-  - [ ] Tags applied: `latest`, `<branch>-<sha>`, `<branch>`
-- [ ] **Staging deployment succeeds** (if on `staging` branch):
-  - [ ] SSH connection established
-  - [ ] `.env.production` created from GitHub Secrets
-  - [ ] Container updated via `docker-compose pull && up -d`
-  - [ ] Prisma migrations applied
-  - [ ] Health check passes
-- [ ] **Production deployment ready** (if on `main` branch):
-  - [ ] Manual approval configured in GitHub Environment settings
-  - [ ] Blue-green deployment script tested
-  - [ ] Rollback procedure documented
+-   [ ] **Pre-push validation**: Husky hooks passed (lint-staged, type-check)
+-   [ ] **Workflow file valid**: `.github/workflows/docker-build-push.yml` syntax correct
+-   [ ] **Build job succeeds**:
+    -   [ ] Docker image builds without errors
+    -   [ ] Image pushed to `ghcr.io/advancia-platform/modular-saas-platform/backend`
+    -   [ ] Tags applied: `latest`, `<branch>-<sha>`, `<branch>`
+-   [ ] **Staging deployment succeeds** (if on `staging` branch):
+    -   [ ] SSH connection established
+    -   [ ] `.env.production` created from GitHub Secrets
+    -   [ ] Container updated via `docker-compose pull && up -d`
+    -   [ ] Prisma migrations applied
+    -   [ ] Health check passes
+-   [ ] **Production deployment ready** (if on `main` branch):
+    -   [ ] Manual approval configured in GitHub Environment settings
+    -   [ ] Blue-green deployment script tested
+    -   [ ] Rollback procedure documented
 
 ### 3.2 Deployment Logs Review 📊
 
@@ -173,24 +173,24 @@ curl https://staging.advancia.io/api/version
 
 ### 4.1 Required Documentation Updates ✅
 
-- [ ] **Release notes drafted**: Summarize features, fixes, security updates, infrastructure changes
-- [ ] **CHANGELOG.md updated**: Add entry for this release with version number
-- [ ] **API changes documented**: If endpoints added/changed, update `API_REFERENCE.md`
-- [ ] **Environment variables documented**: New vars added to `.env.production.example` files
-- [ ] **Database migrations documented**: List new migrations in `backend/prisma/migrations/`
+-   [ ] **Release notes drafted**: Summarize features, fixes, security updates, infrastructure changes
+-   [ ] **CHANGELOG.md updated**: Add entry for this release with version number
+-   [ ] **API changes documented**: If endpoints added/changed, update `API_REFERENCE.md`
+-   [ ] **Environment variables documented**: New vars added to `.env.production.example` files
+-   [ ] **Database migrations documented**: List new migrations in `backend/prisma/migrations/`
 
 ### 4.2 Security & Compliance Documentation ✅
 
-- [ ] **Security audit current**: `SECURITY_AUDIT_2025-11-17.md` reflects latest state
-- [ ] **Secret management guide updated**: `SECRET_MANAGEMENT_GUIDE.md` includes new secrets
-- [ ] **Deployment guide accurate**: `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` matches current infrastructure
-- [ ] **Incident response plan reviewed**: Team knows rollback procedure
+-   [ ] **Security audit current**: `SECURITY_AUDIT_2025-11-17.md` reflects latest state
+-   [ ] **Secret management guide updated**: `SECRET_MANAGEMENT_GUIDE.md` includes new secrets
+-   [ ] **Deployment guide accurate**: `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` matches current infrastructure
+-   [ ] **Incident response plan reviewed**: Team knows rollback procedure
 
 ### 4.3 Team Communication 💬
 
-- [ ] **Slack notification sent**: Announce deployment window to #engineering channel
-- [ ] **Stakeholders notified**: Product/Business teams aware of new features
-- [ ] **Documentation shared**: Link to `ROADMAP_QUICK_REF.md` and `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`
+-   [ ] **Slack notification sent**: Announce deployment window to #engineering channel
+-   [ ] **Stakeholders notified**: Product/Business teams aware of new features
+-   [ ] **Documentation shared**: Link to `ROADMAP_QUICK_REF.md` and `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`
 
 ---
 
@@ -217,11 +217,11 @@ git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 
 **PR Checklist**:
 
-- [ ] All CI checks passing (build, test, lint)
-- [ ] At least 2 approvals from code owners
-- [ ] No merge conflicts with `main`
-- [ ] Documentation reviewed and approved
-- [ ] Security team approval (if secrets/auth changes)
+-   [ ] All CI checks passing (build, test, lint)
+-   [ ] At least 2 approvals from code owners
+-   [ ] No merge conflicts with `main`
+-   [ ] Documentation reviewed and approved
+-   [ ] Security team approval (if secrets/auth changes)
 
 ### 5.2 Production Deployment (Post-Merge) 🚀
 
@@ -263,12 +263,12 @@ client.send(new ListObjectsV2Command({ Bucket: process.env.CLOUDFLARE_R2_BUCKET 
 
 ### 5.3 Post-Deployment Validation ✅
 
-- [ ] **Frontend loading**: Visit https://advancia.io and verify app loads
-- [ ] **API responding**: Test key endpoints (auth, transactions, tokens)
-- [ ] **Database healthy**: Check PostgreSQL connections and query performance
-- [ ] **R2 storage working**: Upload/download test file via API
-- [ ] **Monitoring active**: Check Sentry for errors, Slack for alerts
-- [ ] **Performance baseline**: Response times within acceptable range (<200ms)
+-   [ ] **Frontend loading**: Visit <https://advancia.io> and verify app loads
+-   [ ] **API responding**: Test key endpoints (auth, transactions, tokens)
+-   [ ] **Database healthy**: Check PostgreSQL connections and query performance
+-   [ ] **R2 storage working**: Upload/download test file via API
+-   [ ] **Monitoring active**: Check Sentry for errors, Slack for alerts
+-   [ ] **Performance baseline**: Response times within acceptable range (<200ms)
 
 ### 5.4 Tagging & Release Notes 🏷️
 
@@ -363,19 +363,19 @@ git push origin v1.2.0
 
 ### Deployment Health Indicators ✅
 
-- [ ] **Uptime**: 99.9%+ (no downtime during deployment)
-- [ ] **Response time**: <200ms average for API endpoints
-- [ ] **Error rate**: <0.1% (Sentry dashboard)
-- [ ] **Database connections**: Stable pool, no connection leaks
-- [ ] **R2 storage**: <100ms average for object operations
-- [ ] **User experience**: Frontend loads in <2 seconds
+-   [ ] **Uptime**: 99.9%+ (no downtime during deployment)
+-   [ ] **Response time**: <200ms average for API endpoints
+-   [ ] **Error rate**: <0.1% (Sentry dashboard)
+-   [ ] **Database connections**: Stable pool, no connection leaks
+-   [ ] **R2 storage**: <100ms average for object operations
+-   [ ] **User experience**: Frontend loads in <2 seconds
 
 ### Post-Release Monitoring (First 24 Hours) 📈
 
-- [ ] **Hour 1-2**: Actively monitor Slack/Sentry for errors
-- [ ] **Hour 3-6**: Spot-check key user flows (login, transactions, token purchases)
-- [ ] **Hour 7-24**: Review analytics for anomalies (drop in traffic, spike in errors)
-- [ ] **Day 2-7**: Daily checks of error rates, performance metrics, user feedback
+-   [ ] **Hour 1-2**: Actively monitor Slack/Sentry for errors
+-   [ ] **Hour 3-6**: Spot-check key user flows (login, transactions, token purchases)
+-   [ ] **Hour 7-24**: Review analytics for anomalies (drop in traffic, spike in errors)
+-   [ ] **Day 2-7**: Daily checks of error rates, performance metrics, user feedback
 
 ---
 
@@ -415,27 +415,27 @@ git push origin main --no-verify
 
 **Before Merge**:
 
-- ✅ Secrets whitelisted (5 URLs)
-- ✅ TypeScript 0 errors
-- ✅ All tests passing
-- ✅ Docker builds successfully
-- ✅ Documentation complete
+-   ✅ Secrets whitelisted (5 URLs)
+-   ✅ TypeScript 0 errors
+-   ✅ All tests passing
+-   ✅ Docker builds successfully
+-   ✅ Documentation complete
 
 **After Merge**:
 
-- ✅ GitHub Actions deployed to staging
-- ✅ Staging health checks passed
-- ✅ Manual approval for production
-- ✅ Production deployment successful
-- ✅ Tagged release v1.2.0
-- ✅ Release notes published
+-   ✅ GitHub Actions deployed to staging
+-   ✅ Staging health checks passed
+-   ✅ Manual approval for production
+-   ✅ Production deployment successful
+-   ✅ Tagged release v1.2.0
+-   ✅ Release notes published
 
 **Post-Release**:
 
-- ✅ Monitoring active (24h)
-- ✅ Team notified
-- ✅ Metrics within acceptable ranges
-- ✅ No rollback needed
+-   ✅ Monitoring active (24h)
+-   ✅ Team notified
+-   ✅ Metrics within acceptable ranges
+-   ✅ No rollback needed
 
 ---
 
@@ -446,7 +446,7 @@ git push origin main --no-verify
 | Deployment failure     | DevOps Lead      | Slack: #devops-alerts              |
 | API errors             | Backend Team     | Sentry dashboard + Slack: #backend |
 | Database issues        | DBA              | PagerDuty escalation               |
-| Security incident      | Security Team    | Email: security@advancia.io        |
+| Security incident      | Security Team    | Email: <security@advancia.io>        |
 | Customer-facing outage | On-call Engineer | PagerDuty + Slack: #incidents      |
 
 ---

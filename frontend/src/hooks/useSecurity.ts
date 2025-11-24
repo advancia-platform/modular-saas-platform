@@ -40,11 +40,16 @@ export function useSafeInput() {
     return InputSecurity.escapeHTML(text);
   }, []);
 
+  const sanitizeEmail = useCallback((email: string): string => {
+    return email.toLowerCase().trim();
+  }, []);
+
   return {
     sanitize,
     sanitizeHTML,
     sanitizeURL,
     escapeHTML,
+    sanitizeEmail,
   };
 }
 

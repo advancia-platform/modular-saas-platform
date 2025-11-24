@@ -23,16 +23,18 @@
 ## 🏗️ Architecture Overview
 
 ### **Current Stack**
-- **Framework**: Next.js 14 (App Router + Pages Router hybrid)
-- **React Version**: 18.3.1
-- **TypeScript**: Strict mode enabled
-- **Styling**: Tailwind CSS + DaisyUI + CSS Modules
-- **State**: React Context API (ToastProvider, SilentModeProvider) + local state
-- **Forms**: Formik + custom validation
-- **Data Fetching**: Native `fetch` + Socket.IO for realtime
-- **UI Libraries**: Radix UI, Headless UI, Framer Motion, Nivo Charts
+
+-   **Framework**: Next.js 14 (App Router + Pages Router hybrid)
+-   **React Version**: 18.3.1
+-   **TypeScript**: Strict mode enabled
+-   **Styling**: Tailwind CSS + DaisyUI + CSS Modules
+-   **State**: React Context API (ToastProvider, SilentModeProvider) + local state
+-   **Forms**: Formik + custom validation
+-   **Data Fetching**: Native `fetch` + Socket.IO for realtime
+-   **UI Libraries**: Radix UI, Headless UI, Framer Motion, Nivo Charts
 
 ### **Directory Structure**
+
 ```
 frontend/src/
 ├── app/                    # Next.js App Router pages (primary)
@@ -58,21 +60,25 @@ frontend/src/
 ```
 
 ### **Routing Strategy**
-- **App Router (`app/`)**: Use for all new pages (default)
-- **Pages Router (`pages/`)**: Legacy TrustScore demo only (do not expand)
-- **Migration Goal**: Eventually consolidate to App Router only
+
+-   **App Router (`app/`)**: Use for all new pages (default)
+-   **Pages Router (`pages/`)**: Legacy TrustScore demo only (do not expand)
+-   **Migration Goal**: Eventually consolidate to App Router only
 
 ---
 
 ## 🧱 Component Structure
 
 ### **1. Functional Components Only**
+
 ❌ **Bad** (Class components):
+
 ```tsx
 class Dashboard extends React.Component { ... }
 ```
 
 ✅ **Good** (Functional with hooks):
+
 ```tsx
 export default function Dashboard() {
   const [data, setData] = useState<DashboardData | null>(null);
@@ -81,13 +87,14 @@ export default function Dashboard() {
 ```
 
 ### **2. Component Anatomy Template**
-```tsx
-'use client'; // Add for client-side interactivity (App Router)
 
-import { useState, useEffect } from 'react';
-import { DashboardData } from '@/types'; // Import types first
-import { fetchDashboardData } from '@/lib/api'; // Then utilities
-import LoadingSpinner from '@/components/LoadingSpinner'; // Then components
+```tsx
+"use client"; // Add for client-side interactivity (App Router)
+
+import { useState, useEffect } from "react";
+import { DashboardData } from "@/types"; // Import types first
+import { fetchDashboardData } from "@/lib/api"; // Then utilities
+import LoadingSpinner from "@/components/LoadingSpinner"; // Then components
 
 // 1. Type definitions (if not in separate file)
 interface DashboardProps {
@@ -114,7 +121,9 @@ export default function Dashboard({ userId, initialData }: DashboardProps) {
   // 5. Event handlers
   const handleRefresh = () => {
     setLoading(true);
-    fetchDashboardData(userId).then(setData).finally(() => setLoading(false));
+    fetchDashboardData(userId)
+      .then(setData)
+      .finally(() => setLoading(false));
   };
 
   // 6. Early returns (loading, error states)
@@ -136,21 +145,23 @@ export default function Dashboard({ userId, initialData }: DashboardProps) {
 ### **3. Smart vs. Presentational Components**
 
 **Smart Components** (Container, data-fetching):
+
 ```tsx
 // src/app/dashboard/page.tsx
-'use client';
+"use client";
 
-import { useBalance } from '@/hooks/useBalance';
-import BalanceCard from '@/components/dashboard/BalanceCard';
+import { useBalance } from "@/hooks/useBalance";
+import BalanceCard from "@/components/dashboard/BalanceCard";
 
 export default function DashboardPage() {
-  const { balance, loading, error } = useBalance('user-123');
+  const { balance, loading, error } = useBalance("user-123");
 
   return <BalanceCard balance={balance} loading={loading} error={error} />;
 }
 ```
 
 **Presentational Components** (Pure, UI-focused):
+
 ```tsx
 // src/components/dashboard/BalanceCard.tsx
 interface BalanceCardProps {
@@ -174,56 +185,69 @@ export default function BalanceCard({ balance, loading, error }: BalanceCardProp
 ```
 
 ### **4. File Naming Conventions**
-- **Components**: PascalCase (`Dashboard.tsx`, `BalanceCard.tsx`)
-- **Hooks**: camelCase with `use` prefix (`useBalance.ts`, `useNotifications.ts`)
-- **Utilities**: camelCase (`api.ts`, `formatCurrency.ts`)
-- **Types**: PascalCase (`User.ts`, `Transaction.ts`)
-- **Pages (App Router)**: lowercase (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`)
+
+-   **Components**: PascalCase (`Dashboard.tsx`, `BalanceCard.tsx`)
+-   **Hooks**: camelCase with `use` prefix (`useBalance.ts`, `useNotifications.ts`)
+-   **Utilities**: camelCase (`api.ts`, `formatCurrency.ts`)
+-   **Types**: PascalCase (`User.ts`, `Transaction.ts`)
+-   **Pages (App Router)**: lowercase (`page.tsx`, `layout.tsx`, `loading.tsx`, `error.tsx`)
 
 ---
 
 ## 📘 TypeScript Guidelines
 
 ### **1. Strict Type Safety**
+
 ✅ **Current `tsconfig.json` Settings**:
+
 ```jsonc
 {
   "compilerOptions": {
-    "strict": true,                      // Enable all strict checks
+    "strict": true, // Enable all strict checks
     "exactOptionalPropertyTypes": false, // Allow undefined for optional props
-    "noUncheckedIndexedAccess": true,    // Require index signature checks
-    "forceConsistentCasingInFileNames": true
-  }
+    "noUncheckedIndexedAccess": true, // Require index signature checks
+    "forceConsistentCasingInFileNames": true,
+  },
 }
 ```
 
 ### **2. Always Type Props**
+
 ❌ **Bad** (Implicit any):
+
 ```tsx
 function Button({ label, onClick }) { ... }
 ```
 
 ✅ **Good** (Explicit types):
+
 ```tsx
 interface ButtonProps {
   label: string;
   onClick: () => void;
-  variant?: 'primary' | 'secondary';
+  variant?: "primary" | "secondary";
   disabled?: boolean;
 }
 
-export default function Button({ label, onClick, variant = 'primary', disabled = false }: ButtonProps) {
-  return <button onClick={onClick} disabled={disabled}>{label}</button>;
+export default function Button({ label, onClick, variant = "primary", disabled = false }: ButtonProps) {
+  return (
+    <button onClick={onClick} disabled={disabled}>
+      {label}
+    </button>
+  );
 }
 ```
 
 ### **3. Type API Responses**
+
 ❌ **Bad** (any):
+
 ```tsx
-const data: any = await fetch('/api/balance').then((r) => r.json());
+const data: any = await fetch("/api/balance").then((r) => r.json());
 ```
 
 ✅ **Good** (typed):
+
 ```tsx
 interface BalanceResponse {
   balance: number;
@@ -231,11 +255,13 @@ interface BalanceResponse {
   referral: number;
 }
 
-const data: BalanceResponse = await fetch('/api/balance').then((r) => r.json());
+const data: BalanceResponse = await fetch("/api/balance").then((r) => r.json());
 ```
 
 ### **4. Use `unknown` Instead of `any`**
+
 ❌ **Bad**:
+
 ```tsx
 catch (error: any) {
   console.error(error.message);
@@ -243,6 +269,7 @@ catch (error: any) {
 ```
 
 ✅ **Good**:
+
 ```tsx
 catch (error: unknown) {
   if (error instanceof Error) {
@@ -254,6 +281,7 @@ catch (error: unknown) {
 ```
 
 ### **5. Leverage Type Inference**
+
 ```tsx
 // Don't over-annotate when TypeScript can infer
 const [count, setCount] = useState(0); // TypeScript infers number
@@ -265,6 +293,7 @@ const [user, setUser] = useState<User | null>(null); // Explicit when needed
 ## 🪝 Hooks & State Management
 
 ### **1. Custom Hooks for Business Logic**
+
 Extract complex state logic into custom hooks:
 
 ```tsx
@@ -281,7 +310,7 @@ export function useBalance(userId: string) {
         const data = await response.json();
         setBalance(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : 'Unknown error');
+        setError(err instanceof Error ? err.message : "Unknown error");
       } finally {
         setLoading(false);
       }
@@ -291,8 +320,8 @@ export function useBalance(userId: string) {
 
     // Socket.IO realtime updates
     const socket = io(process.env.NEXT_PUBLIC_API_URL!);
-    socket.emit('join-room', `user-${userId}`);
-    socket.on('balance-updated', (updatedBalance) => {
+    socket.emit("join-room", `user-${userId}`);
+    socket.on("balance-updated", (updatedBalance) => {
       setBalance(updatedBalance);
     });
 
@@ -306,21 +335,22 @@ export function useBalance(userId: string) {
 ```
 
 ### **2. Context for Global State**
+
 Use Context sparingly (auth, theme, toasts only):
 
 ```tsx
 // src/components/ToastProvider.tsx
-import { createContext, useContext, useState, useCallback } from 'react';
+import { createContext, useContext, useState, useCallback } from "react";
 
 interface Toast {
   id: string;
   message: string;
-  type: 'info' | 'success' | 'error';
+  type: "info" | "success" | "error";
 }
 
 interface ToastContextType {
   toasts: Toast[];
-  addToast: (message: string, type: Toast['type']) => void;
+  addToast: (message: string, type: Toast["type"]) => void;
   removeToast: (id: string) => void;
 }
 
@@ -329,7 +359,7 @@ const ToastContext = createContext<ToastContextType | undefined>(undefined);
 export function ToastProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
-  const addToast = useCallback((message: string, type: Toast['type']) => {
+  const addToast = useCallback((message: string, type: Toast["type"]) => {
     const id = Math.random().toString(36).slice(2, 11);
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => removeToast(id), 3000);
@@ -339,26 +369,24 @@ export function ToastProvider({ children }: { children: React.ReactNode }) {
     setToasts((prev) => prev.filter((t) => t.id !== id));
   }, []);
 
-  return (
-    <ToastContext.Provider value={{ toasts, addToast, removeToast }}>
-      {children}
-    </ToastContext.Provider>
-  );
+  return <ToastContext.Provider value={{ toasts, addToast, removeToast }}>{children}</ToastContext.Provider>;
 }
 
 export function useToast() {
   const context = useContext(ToastContext);
-  if (!context) throw new Error('useToast must be used within ToastProvider');
+  if (!context) throw new Error("useToast must be used within ToastProvider");
   return context;
 }
 ```
 
 ### **3. Rules of Hooks**
-- ✅ Call hooks at the top level (not inside loops, conditions, or nested functions)
-- ✅ Only call hooks from React functions (components or custom hooks)
-- ✅ Prefix custom hooks with `use` (e.g., `useBalance`, `useAuth`)
+
+-   ✅ Call hooks at the top level (not inside loops, conditions, or nested functions)
+-   ✅ Only call hooks from React functions (components or custom hooks)
+-   ✅ Prefix custom hooks with `use` (e.g., `useBalance`, `useAuth`)
 
 ❌ **Bad**:
+
 ```tsx
 if (condition) {
   const [state, setState] = useState(0); // Conditional hook call
@@ -366,6 +394,7 @@ if (condition) {
 ```
 
 ✅ **Good**:
+
 ```tsx
 const [state, setState] = useState(0);
 if (condition) {
@@ -378,12 +407,13 @@ if (condition) {
 ## 🌐 Data Fetching
 
 ### **1. Client-Side Fetching (SPA-style)**
+
 Use custom hooks for client-side data:
 
 ```tsx
-'use client';
+"use client";
 
-import { useTransactions } from '@/hooks/useTransactions';
+import { useTransactions } from "@/hooks/useTransactions";
 
 export default function TransactionHistory() {
   const { transactions, loading, error } = useTransactions();
@@ -402,11 +432,12 @@ export default function TransactionHistory() {
 ```
 
 ### **2. Server Components (Next.js 14 App Router)**
+
 Fetch data directly in Server Components (no hooks needed):
 
 ```tsx
 // src/app/dashboard/page.tsx (Server Component)
-import { getUserBalance } from '@/lib/api';
+import { getUserBalance } from "@/lib/api";
 
 export default async function DashboardPage({ params }: { params: { userId: string } }) {
   const balance = await getUserBalance(params.userId);
@@ -420,21 +451,22 @@ export default async function DashboardPage({ params }: { params: { userId: stri
 ```
 
 ### **3. Realtime Updates (Socket.IO)**
+
 Integrate Socket.IO in hooks:
 
 ```tsx
 // src/hooks/useNotifications.ts
-import { useEffect, useState } from 'react';
-import { io } from 'socket.io-client';
+import { useEffect, useState } from "react";
+import { io } from "socket.io-client";
 
 export function useNotifications(userId: string) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
 
   useEffect(() => {
     const socket = io(process.env.NEXT_PUBLIC_API_URL!);
-    socket.emit('join-room', `user-${userId}`);
+    socket.emit("join-room", `user-${userId}`);
 
-    socket.on('notification', (notification) => {
+    socket.on("notification", (notification) => {
       setNotifications((prev) => [notification, ...prev]);
     });
 
@@ -448,17 +480,18 @@ export function useNotifications(userId: string) {
 ```
 
 ### **4. Error Handling**
+
 Always handle fetch errors gracefully:
 
 ```tsx
 try {
-  const response = await fetch('/api/data');
+  const response = await fetch("/api/data");
   if (!response.ok) throw new Error(`HTTP ${response.status}: ${response.statusText}`);
   const data = await response.json();
   return data;
 } catch (error) {
   if (error instanceof Error) {
-    console.error('Fetch error:', error.message);
+    console.error("Fetch error:", error.message);
     toast.error(`Failed to load data: ${error.message}`);
   }
   return null;
@@ -470,6 +503,7 @@ try {
 ## 🎨 Styling Conventions
 
 ### **1. Tailwind CSS (Primary)**
+
 Use Tailwind utility classes for most styling:
 
 ```tsx
@@ -480,6 +514,7 @@ Use Tailwind utility classes for most styling:
 ```
 
 ### **2. DaisyUI Components**
+
 Leverage DaisyUI for pre-styled components:
 
 ```tsx
@@ -493,6 +528,7 @@ Leverage DaisyUI for pre-styled components:
 ```
 
 ### **3. CSS Modules for Complex Styles**
+
 Use CSS Modules for component-specific styles:
 
 ```tsx
@@ -518,35 +554,31 @@ Use CSS Modules for component-specific styles:
 
 ```tsx
 // TrustScoreComponent.tsx
-import styles from './TrustScoreComponent.module.css';
+import styles from "./TrustScoreComponent.module.css";
 
 export default function TrustScore({ score }: { score: number }) {
   return (
     <div className={styles.container}>
-      <div className={styles.scoreCircle}>
-        {score}
-      </div>
+      <div className={styles.scoreCircle}>{score}</div>
     </div>
   );
 }
 ```
 
 ### **4. Responsive Design**
+
 Always use mobile-first Tailwind breakpoints:
 
 ```tsx
-<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-  {/* 1 column mobile, 2 columns tablet, 3 columns desktop */}
-</div>
+<div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">{/* 1 column mobile, 2 columns tablet, 3 columns desktop */}</div>
 ```
 
 ### **5. Dark Mode Support**
+
 Use Tailwind's `dark:` variant:
 
 ```tsx
-<div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
-  Content
-</div>
+<div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">Content</div>
 ```
 
 ---
@@ -554,12 +586,13 @@ Use Tailwind's `dark:` variant:
 ## ⚡ Performance Optimization
 
 ### **1. Code Splitting with `dynamic`**
+
 Lazy load heavy components:
 
 ```tsx
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 
-const AdvanciaAIWidget = dynamic(() => import('@/components/AdvanciaAIWidget'), {
+const AdvanciaAIWidget = dynamic(() => import("@/components/AdvanciaAIWidget"), {
   ssr: false, // Disable SSR for client-only components
   loading: () => <LoadingSpinner />,
 });
@@ -575,10 +608,11 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 ```
 
 ### **2. Memoization**
+
 Use `React.memo` for expensive re-renders:
 
 ```tsx
-import { memo } from 'react';
+import { memo } from "react";
 
 const TransactionRow = memo(({ transaction }: { transaction: Transaction }) => {
   return (
@@ -589,7 +623,7 @@ const TransactionRow = memo(({ transaction }: { transaction: Transaction }) => {
   );
 });
 
-TransactionRow.displayName = 'TransactionRow';
+TransactionRow.displayName = "TransactionRow";
 export default TransactionRow;
 ```
 
@@ -605,15 +639,16 @@ Use `useCallback` for stable function references:
 
 ```tsx
 const handleClick = useCallback(() => {
-  console.log('Clicked', itemId);
+  console.log("Clicked", itemId);
 }, [itemId]); // Only recreate if itemId changes
 ```
 
 ### **3. Image Optimization**
+
 Use Next.js `<Image>` component:
 
 ```tsx
-import Image from 'next/image';
+import Image from "next/image";
 
 <Image
   src="/logo.png"
@@ -621,19 +656,22 @@ import Image from 'next/image';
   width={200}
   height={50}
   priority // Preload above-the-fold images
-/>
+/>;
 ```
 
 ### **4. Avoid Unnecessary Re-renders**
+
 ❌ **Bad** (Object/array created on every render):
+
 ```tsx
-<Component data={{ key: 'value' }} /> // New object every render
+<Component data={{ key: "value" }} /> // New object every render
 ```
 
 ✅ **Good** (Stable reference):
+
 ```tsx
-const data = useMemo(() => ({ key: 'value' }), []);
-<Component data={data} />
+const data = useMemo(() => ({ key: "value" }), []);
+<Component data={data} />;
 ```
 
 ---
@@ -641,28 +679,29 @@ const data = useMemo(() => ({ key: 'value' }), []);
 ## 🧪 Testing Standards
 
 ### **1. React Testing Library (Preferred)**
+
 Test user behavior, not implementation details:
 
 ```tsx
 // src/components/__tests__/BalanceCard.test.tsx
-import { render, screen } from '@testing-library/react';
-import BalanceCard from '../BalanceCard';
+import { render, screen } from "@testing-library/react";
+import BalanceCard from "../BalanceCard";
 
-describe('BalanceCard', () => {
-  it('displays balance correctly', () => {
+describe("BalanceCard", () => {
+  it("displays balance correctly", () => {
     const balance = { total: 5250, balance_main: 4000, earnings: 1250, referral: 0 };
     render(<BalanceCard balance={balance} loading={false} error={null} />);
 
     expect(screen.getByText(/balance/i)).toBeInTheDocument();
-    expect(screen.getByText('$5250.00')).toBeInTheDocument();
+    expect(screen.getByText("$5250.00")).toBeInTheDocument();
   });
 
-  it('shows loading state', () => {
+  it("shows loading state", () => {
     render(<BalanceCard balance={null} loading={true} error={null} />);
-    expect(screen.getByRole('status')).toBeInTheDocument(); // Spinner
+    expect(screen.getByRole("status")).toBeInTheDocument(); // Spinner
   });
 
-  it('displays error message', () => {
+  it("displays error message", () => {
     render(<BalanceCard balance={null} loading={false} error="Network error" />);
     expect(screen.getByText(/network error/i)).toBeInTheDocument();
   });
@@ -670,24 +709,27 @@ describe('BalanceCard', () => {
 ```
 
 ### **2. Test Coverage Goals**
-- **Unit Tests**: 80%+ coverage for components and hooks
-- **Integration Tests**: Key user flows (login, purchase, withdrawal)
-- **E2E Tests**: Critical paths (Playwright)
+
+-   **Unit Tests**: 80%+ coverage for components and hooks
+-   **Integration Tests**: Key user flows (login, purchase, withdrawal)
+-   **E2E Tests**: Critical paths (Playwright)
 
 ### **3. Test File Naming**
-- Unit tests: `ComponentName.test.tsx` or `ComponentName.spec.tsx`
-- Place in `__tests__/` folder or colocate with component
+
+-   Unit tests: `ComponentName.test.tsx` or `ComponentName.spec.tsx`
+-   Place in `__tests__/` folder or colocate with component
 
 ---
 
 ## 🚨 Error Handling
 
 ### **1. Error Boundaries**
+
 Wrap app sections in error boundaries:
 
 ```tsx
 // src/components/ErrorBoundary.tsx
-import React, { Component, ReactNode } from 'react';
+import React, { Component, ReactNode } from "react";
 
 interface Props {
   children: ReactNode;
@@ -707,17 +749,19 @@ export default class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught:', error, errorInfo);
+    console.error("ErrorBoundary caught:", error, errorInfo);
     // Send to Sentry
   }
 
   render() {
     if (this.state.hasError) {
-      return this.props.fallback || (
-        <div className="error-boundary">
-          <h1>Something went wrong</h1>
-          <p>{this.state.error?.message}</p>
-        </div>
+      return (
+        this.props.fallback || (
+          <div className="error-boundary">
+            <h1>Something went wrong</h1>
+            <p>{this.state.error?.message}</p>
+          </div>
+        )
       );
     }
 
@@ -727,6 +771,7 @@ export default class ErrorBoundary extends Component<Props, State> {
 ```
 
 Usage:
+
 ```tsx
 <ErrorBoundary fallback={<ErrorFallback />}>
   <Dashboard />
@@ -734,16 +779,17 @@ Usage:
 ```
 
 ### **2. Toast Notifications**
+
 Use toast for user-facing errors:
 
 ```tsx
-import { toast } from 'react-toastify';
+import { toast } from "react-toastify";
 
 try {
   await purchaseToken(amount);
-  toast.success('Token purchased successfully!');
+  toast.success("Token purchased successfully!");
 } catch (error) {
-  toast.error('Purchase failed. Please try again.');
+  toast.error("Purchase failed. Please try again.");
   console.error(error);
 }
 ```
@@ -753,29 +799,35 @@ try {
 ## 🔒 Security Best Practices
 
 ### **1. Never Expose Secrets**
+
 ❌ **Bad**:
+
 ```tsx
-const apiKey = 'sk_live_abc123'; // Hardcoded secret
+const apiKey = "sk_live_abc123"; // Hardcoded secret
 ```
 
 ✅ **Good**:
+
 ```tsx
 const apiKey = process.env.NEXT_PUBLIC_STRIPE_KEY; // Environment variable
 ```
 
 ### **2. Sanitize User Inputs**
+
 Use libraries like `DOMPurify` for HTML:
 
 ```tsx
-import DOMPurify from 'isomorphic-dompurify';
+import DOMPurify from "isomorphic-dompurify";
 
 const cleanHTML = DOMPurify.sanitize(userInput);
 ```
 
 ### **3. Validate on Backend**
+
 Never trust client-side validation alone. Always validate on the backend.
 
 ### **4. Use HTTPS**
+
 Ensure all API calls use `https://` in production.
 
 ---
@@ -784,39 +836,39 @@ Ensure all API calls use `https://` in production.
 
 Before submitting a PR, verify:
 
-- [ ] TypeScript strict mode passes (`npm run type-check`)
-- [ ] ESLint passes (`npm run lint`)
-- [ ] All props are typed
-- [ ] Custom hooks are used for complex state
-- [ ] Components are small and focused (<200 lines)
-- [ ] Loading/error states handled
-- [ ] Tests written for new components (80%+ coverage)
-- [ ] No console.log statements (use `winston` logger or remove)
-- [ ] Tailwind classes used (avoid inline styles)
-- [ ] Images use `<Image>` component
-- [ ] Heavy components use `dynamic` import
-- [ ] Secrets not hardcoded
-- [ ] API errors handled gracefully
-- [ ] Responsive design tested (mobile, tablet, desktop)
+-   [ ] TypeScript strict mode passes (`npm run type-check`)
+-   [ ] ESLint passes (`npm run lint`)
+-   [ ] All props are typed
+-   [ ] Custom hooks are used for complex state
+-   [ ] Components are small and focused (<200 lines)
+-   [ ] Loading/error states handled
+-   [ ] Tests written for new components (80%+ coverage)
+-   [ ] No console.log statements (use `winston` logger or remove)
+-   [ ] Tailwind classes used (avoid inline styles)
+-   [ ] Images use `<Image>` component
+-   [ ] Heavy components use `dynamic` import
+-   [ ] Secrets not hardcoded
+-   [ ] API errors handled gracefully
+-   [ ] Responsive design tested (mobile, tablet, desktop)
 
 ---
 
 ## 📚 Additional Resources
 
-- **Next.js 14 Docs**: [nextjs.org/docs](https://nextjs.org/docs)
-- **React 18 Docs**: [react.dev](https://react.dev)
-- **TypeScript Handbook**: [typescriptlang.org/docs](https://www.typescriptlang.org/docs)
-- **Tailwind CSS**: [tailwindcss.com/docs](https://tailwindcss.com/docs)
-- **React Testing Library**: [testing-library.com/react](https://testing-library.com/react)
-- **Sentry (Error Tracking)**: [docs.sentry.io/platforms/javascript/guides/nextjs](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
+-   **Next.js 14 Docs**: [nextjs.org/docs](https://nextjs.org/docs)
+-   **React 18 Docs**: [react.dev](https://react.dev)
+-   **TypeScript Handbook**: [typescriptlang.org/docs](https://www.typescriptlang.org/docs)
+-   **Tailwind CSS**: [tailwindcss.com/docs](https://tailwindcss.com/docs)
+-   **React Testing Library**: [testing-library.com/react](https://testing-library.com/react)
+-   **Sentry (Error Tracking)**: [docs.sentry.io/platforms/javascript/guides/nextjs](https://docs.sentry.io/platforms/javascript/guides/nextjs/)
 
 ---
 
 ## 🔄 Maintenance
 
-- **Review quarterly** (update for new Next.js features)
-- **Revise after major refactors** (e.g., App Router migration)
-- **Discuss in team retrospectives** (collect feedback)
+-   **Review quarterly** (update for new Next.js features)
+-   **Revise after major refactors** (e.g., App Router migration)
+-   **Discuss in team retrospectives** (collect feedback)
 
 ---
 

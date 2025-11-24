@@ -25,29 +25,29 @@ ORDER BY tablename, indexname;
 
 ### users table
 
-- `users_email_idx` - For login queries
-- `users_role_idx` - For role-based queries
-- `users_active_idx` - For filtering active users
-- `users_emailVerified_idx` - For email verification checks
+-   `users_email_idx` - For login queries
+-   `users_role_idx` - For role-based queries
+-   `users_active_idx` - For filtering active users
+-   `users_emailVerified_idx` - For email verification checks
 
 ### transactions table
 
-- `transactions_userId_createdAt_idx` - For user transaction history (sorted by date)
-- `transactions_status_type_idx` - For dashboard analytics
+-   `transactions_userId_createdAt_idx` - For user transaction history (sorted by date)
+-   `transactions_status_type_idx` - For dashboard analytics
 
 ### crypto_withdrawals table
 
-- `crypto_withdrawals_userId_status_idx` - For user withdrawal dashboard
-- `crypto_withdrawals_status_requestedAt_idx` - For admin withdrawal queue
+-   `crypto_withdrawals_userId_status_idx` - For user withdrawal dashboard
+-   `crypto_withdrawals_status_requestedAt_idx` - For admin withdrawal queue
 
 ## Performance Impact
 
 These indexes will significantly improve:
 
-- User authentication queries (email lookup)
-- Transaction history pagination
-- Admin dashboard queries
-- Withdrawal request processing
+-   User authentication queries (email lookup)
+-   Transaction history pagination
+-   Admin dashboard queries
+-   Withdrawal request processing
 
 Estimated query performance improvement: **50-80% faster** on large datasets.
 

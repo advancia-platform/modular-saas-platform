@@ -1,54 +1,54 @@
-import validator from 'validator';
-import { winstonLogger as logger } from '../utils/winstonLogger';
+import validator from "validator";
+import { winstonLogger as logger } from "../utils/winstonLogger";
 
 /**
  * List of disposable/temporary email domains to block
  * Updated: November 2025
  */
 const DISPOSABLE_EMAIL_DOMAINS = [
-  '10minutemail.com',
-  'guerrillamail.com',
-  'mailinator.com',
-  'tempmail.com',
-  'throwaway.email',
-  'temp-mail.org',
-  'yopmail.com',
-  'fakeinbox.com',
-  'trashmail.com',
-  'maildrop.cc',
-  'getnada.com',
-  'sharklasers.com',
-  'guerrillamail.info',
-  'guerrillamail.net',
-  'guerrillamail.org',
-  'guerrillamail.biz',
-  'spam4.me',
-  'grr.la',
-  'guerrillamailblock.com',
-  'pokemail.net',
-  'spambox.us',
-  'emailondeck.com',
-  'discard.email',
-  'discardmail.com',
-  'burnermail.io',
-  'mintemail.com',
-  'mytemp.email',
-  'tempinbox.com',
-  'tmail.ws',
-  'mohmal.com',
-  'inbox.lv',
-  'mailnesia.com',
-  'mailforspam.com',
-  'anonymbox.com',
-  'throwawaymail.com',
-  'inboxbear.com',
-  'getairmail.com',
-  'fake-mail.com',
-  'fakemailgenerator.com',
-  'momentics.ru',
-  '0clickemail.com',
-  '0-mail.com',
-  '027168.com',
+  "10minutemail.com",
+  "guerrillamail.com",
+  "mailinator.com",
+  "tempmail.com",
+  "throwaway.email",
+  "temp-mail.org",
+  "yopmail.com",
+  "fakeinbox.com",
+  "trashmail.com",
+  "maildrop.cc",
+  "getnada.com",
+  "sharklasers.com",
+  "guerrillamail.info",
+  "guerrillamail.net",
+  "guerrillamail.org",
+  "guerrillamail.biz",
+  "spam4.me",
+  "grr.la",
+  "guerrillamailblock.com",
+  "pokemail.net",
+  "spambox.us",
+  "emailondeck.com",
+  "discard.email",
+  "discardmail.com",
+  "burnermail.io",
+  "mintemail.com",
+  "mytemp.email",
+  "tempinbox.com",
+  "tmail.ws",
+  "mohmal.com",
+  "inbox.lv",
+  "mailnesia.com",
+  "mailforspam.com",
+  "anonymbox.com",
+  "throwawaymail.com",
+  "inboxbear.com",
+  "getairmail.com",
+  "fake-mail.com",
+  "fakemailgenerator.com",
+  "momentics.ru",
+  "0clickemail.com",
+  "0-mail.com",
+  "027168.com",
 ];
 
 /**
@@ -73,7 +73,7 @@ export class EmailSecurityService {
    * Validate email address format
    */
   static isValidFormat(email: string): boolean {
-    if (!email || typeof email !== 'string') {
+    if (!email || typeof email !== "string") {
       return false;
     }
 
@@ -89,11 +89,11 @@ export class EmailSecurityService {
    * Check if email domain is disposable/temporary
    */
   static isDisposableEmail(email: string): boolean {
-    if (!email || typeof email !== 'string') {
+    if (!email || typeof email !== "string") {
       return false;
     }
 
-    const domain = email.split('@')[1]?.toLowerCase();
+    const domain = email.split("@")[1]?.toLowerCase();
     if (!domain) {
       return false;
     }
@@ -105,7 +105,7 @@ export class EmailSecurityService {
    * Check if email matches suspicious patterns
    */
   static isSuspiciousEmail(email: string): boolean {
-    if (!email || typeof email !== 'string') {
+    if (!email || typeof email !== "string") {
       return false;
     }
 
@@ -124,8 +124,8 @@ export class EmailSecurityService {
     if (!this.isValidFormat(email)) {
       return {
         valid: false,
-        error: 'Invalid email format',
-        reason: 'INVALID_FORMAT',
+        error: "Invalid email format",
+        reason: "INVALID_FORMAT",
       };
     }
 
@@ -134,8 +134,8 @@ export class EmailSecurityService {
       logger.warn(`Disposable email blocked: ${email}`);
       return {
         valid: false,
-        error: 'Please use a permanent email address',
-        reason: 'DISPOSABLE_EMAIL',
+        error: "Please use a permanent email address",
+        reason: "DISPOSABLE_EMAIL",
       };
     }
 
@@ -144,8 +144,8 @@ export class EmailSecurityService {
       logger.warn(`Suspicious email pattern detected: ${email}`);
       return {
         valid: false,
-        error: 'Invalid email address',
-        reason: 'SUSPICIOUS_PATTERN',
+        error: "Invalid email address",
+        reason: "SUSPICIOUS_PATTERN",
       };
     }
 
@@ -156,8 +156,8 @@ export class EmailSecurityService {
    * Sanitize email address (lowercase, trim)
    */
   static sanitize(email: string): string {
-    if (!email || typeof email !== 'string') {
-      return '';
+    if (!email || typeof email !== "string") {
+      return "";
     }
 
     return (
@@ -176,8 +176,8 @@ export class EmailSecurityService {
    * Sanitize HTML content in emails (prevent XSS)
    */
   static sanitizeHTML(html: string): string {
-    if (!html || typeof html !== 'string') {
-      return '';
+    if (!html || typeof html !== "string") {
+      return "";
     }
 
     // Remove potentially dangerous tags and attributes
@@ -186,29 +186,29 @@ export class EmailSecurityService {
     // Remove script tags
     sanitized = sanitized.replace(
       /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
-      '',
+      "",
     );
 
     // Remove event handlers (onclick, onerror, etc.)
-    sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, '');
-    sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, '');
+    sanitized = sanitized.replace(/\s*on\w+\s*=\s*["'][^"']*["']/gi, "");
+    sanitized = sanitized.replace(/\s*on\w+\s*=\s*[^\s>]*/gi, "");
 
     // Remove javascript: protocol
-    sanitized = sanitized.replace(/javascript:/gi, '');
+    sanitized = sanitized.replace(/javascript:/gi, "");
 
     // Remove data: protocol (can be used for XSS)
-    sanitized = sanitized.replace(/data:text\/html/gi, '');
+    sanitized = sanitized.replace(/data:text\/html/gi, "");
 
     // Remove iframe tags
     sanitized = sanitized.replace(
       /<iframe\b[^<]*(?:(?!<\/iframe>)<[^<]*)*<\/iframe>/gi,
-      '',
+      "",
     );
 
     // Remove embed and object tags
     sanitized = sanitized.replace(
       /<(embed|object)\b[^<]*(?:(?!<\/\1>)<[^<]*)*<\/\1>/gi,
-      '',
+      "",
     );
 
     return sanitized;
@@ -218,7 +218,7 @@ export class EmailSecurityService {
    * Extract email from various formats
    */
   static extractEmail(input: string): string | null {
-    if (!input || typeof input !== 'string') {
+    if (!input || typeof input !== "string") {
       return null;
     }
 
@@ -226,7 +226,7 @@ export class EmailSecurityService {
     const match = input.match(
       /<?([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)>?/,
     );
-    return match ? match[1] : null;
+    return match && typeof match[1] === "string" ? match[1] : null;
   }
 
   /**
@@ -249,7 +249,7 @@ export class EmailSecurityService {
         invalid.push(email);
         errors.push({
           email,
-          reason: validation.reason || 'UNKNOWN',
+          reason: validation.reason || "UNKNOWN",
         });
       }
     }
@@ -263,7 +263,7 @@ export class EmailSecurityService {
    */
   static async hasValidMXRecords(email: string): Promise<boolean> {
     try {
-      const domain = email.split('@')[1];
+      const domain = email.split("@")[1];
       if (!domain) {
         return false;
       }
@@ -271,18 +271,18 @@ export class EmailSecurityService {
       // In production, use dns.resolveMx to check MX records
       // For now, just check if it's a known domain
       const knownDomains = [
-        'gmail.com',
-        'yahoo.com',
-        'hotmail.com',
-        'outlook.com',
-        'icloud.com',
-        'protonmail.com',
-        'aol.com',
+        "gmail.com",
+        "yahoo.com",
+        "hotmail.com",
+        "outlook.com",
+        "icloud.com",
+        "protonmail.com",
+        "aol.com",
       ];
 
       return knownDomains.includes(domain.toLowerCase());
     } catch (error) {
-      logger.error('MX record check failed:', error);
+      logger.error("MX record check failed:", error);
       return false; // Assume invalid if check fails
     }
   }
@@ -315,10 +315,10 @@ export class EmailSecurityService {
     // Replace placeholders with sanitized values
     for (const [key, value] of Object.entries(data)) {
       const sanitizedValue =
-        typeof value === 'string' ? validator.escape(value) : String(value);
+        typeof value === "string" ? validator.escape(value) : String(value);
 
       html = html.replace(
-        new RegExp(`{{\\s*${key}\\s*}}`, 'g'),
+        new RegExp(`{{\\s*${key}\\s*}}`, "g"),
         sanitizedValue,
       );
     }
@@ -337,20 +337,20 @@ export class EmailSecurityService {
     let score = 0;
 
     const spamWords = [
-      'viagra',
-      'casino',
-      'lottery',
-      'winner',
-      'click here now',
-      'act now',
-      'limited time',
-      'free money',
-      'make money fast',
-      'work from home',
-      '100% free',
-      'dear friend',
-      'congratulations',
-      'you have been selected',
+      "viagra",
+      "casino",
+      "lottery",
+      "winner",
+      "click here now",
+      "act now",
+      "limited time",
+      "free money",
+      "make money fast",
+      "work from home",
+      "100% free",
+      "dear friend",
+      "congratulations",
+      "you have been selected",
     ];
 
     const contentLower = content.toLowerCase();
@@ -365,21 +365,21 @@ export class EmailSecurityService {
     // Check for excessive caps
     const capsRatio = (content.match(/[A-Z]/g) || []).length / content.length;
     if (capsRatio > 0.3) {
-      triggers.push('excessive_caps');
+      triggers.push("excessive_caps");
       score += 2;
     }
 
     // Check for excessive exclamation marks
     const exclamationCount = (content.match(/!/g) || []).length;
     if (exclamationCount > 5) {
-      triggers.push('excessive_exclamation');
+      triggers.push("excessive_exclamation");
       score += 1;
     }
 
     // Check for suspicious URLs
     const urlCount = (content.match(/https?:\/\//g) || []).length;
     if (urlCount > 10) {
-      triggers.push('excessive_urls');
+      triggers.push("excessive_urls");
       score += 2;
     }
 
@@ -390,7 +390,7 @@ export class EmailSecurityService {
 /**
  * Middleware function to validate email in request body
  */
-export function validateEmailMiddleware(fieldName: string = 'email') {
+export function validateEmailMiddleware(fieldName: string = "email") {
   return (req: any, res: any, next: any) => {
     const email = req.body[fieldName];
 

@@ -1,23 +1,24 @@
-import * as Sentry from '@sentry/node';
+import * as Sentry from "@sentry/node";
 import {
   consoleIntegration,
   httpIntegration,
   onUncaughtExceptionIntegration,
   onUnhandledRejectionIntegration,
-} from '@sentry/node';
+} from "@sentry/node";
+import { dataMasker } from "./dataMasker";
 // @ts-ignore - Optional profiling package
-import { nodeProfilingIntegration } from '@sentry/profiling-node';
+import { nodeProfilingIntegration } from "@sentry/profiling-node";
 
 // Initialize Sentry for error tracking and performance monitoring
 export function initSentry() {
   if (!process.env.SENTRY_DSN) {
-    console.log('Sentry DSN not configured, skipping Sentry initialization');
+    console.log("Sentry DSN not configured, skipping Sentry initialization");
     return;
   }
 
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
-    environment: process.env.NODE_ENV || 'development',
+    environment: process.env.NODE_ENV || "development",
     integrations: [
       // Add profiling integration for performance monitoring
       nodeProfilingIntegration(),
@@ -28,11 +29,11 @@ export function initSentry() {
       onUnhandledRejectionIntegration(),
     ],
     // Performance Monitoring
-    tracesSampleRate: process.env.NODE_ENV === 'production' ? 0.1 : 1.0, // 10% in production, 100% in development
+    tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0, // 10% in production, 100% in development
     profilesSampleRate: 1.0, // Profile 100% of transactions
 
     // Release tracking
-    release: process.env.npm_package_version || '1.0.0',
+    release: process.env.npm_package_version || "1.0.0",
 
     // Error filtering and data sanitization
     beforeSend(event, hint) {
@@ -43,30 +44,50 @@ export function initSentry() {
 
         // Remove authorization headers
         if (event.request.headers) {
-          delete event.request.headers['authorization'];
-          delete event.request.headers['Authorization'];
-          delete event.request.headers['cookie'];
-          delete event.request.headers['Cookie'];
+          delete event.request.headers["authorization"];
+          delete event.request.headers["Authorization"];
+          delete event.request.headers["cookie"];
+          delete event.request.headers["Cookie"];
         }
 
-        // Remove sensitive query params
-        if (event.request.query_string) {
-          event.request.query_string = event.request.query_string
-            .replace(/token=[^&]*/gi, 'token=[REDACTED]')
-            .replace(/api[_-]?key=[^&]*/gi, 'apiKey=[REDACTED]')
-            .replace(/password=[^&]*/gi, 'password=[REDACTED]');
+        // Remove sensitive query params (support string or key/value tuples)
+        const qs: any = (event.request as any).query_string;
+        if (typeof qs === "string") {
+          (event.request as any).query_string = qs
+            .replace(/token=[^&]*/gi, "token=[REDACTED]")
+            .replace(/api[_-]?key=[^&]*/gi, "apiKey=[REDACTED]")
+            .replace(/password=[^&]*/gi, "password=[REDACTED]");
+        } else if (Array.isArray(qs)) {
+          // Query params as [key, value][]
+          (event.request as any).query_string = qs.map(
+            ([k, v]: [string, any]) => {
+              const kl = (k || "").toLowerCase();
+              if (/(token|api[_-]?key|password)/i.test(kl))
+                return [k, "[REDACTED]"];
+              return [k, v];
+            },
+          );
+        } else if (qs && typeof qs === "object") {
+          // Query params as object
+          const redacted: Record<string, any> = {};
+          for (const [k, v] of Object.entries(qs)) {
+            if (/(token|api[_-]?key|password)/i.test(k))
+              redacted[k] = "[REDACTED]";
+            else redacted[k] = v;
+          }
+          (event.request as any).query_string = redacted;
         }
       }
 
       // Filter out sensitive data from extra context
       if (event.extra) {
         const sensitiveKeys = [
-          'password',
-          'token',
-          'apiKey',
-          'secret',
-          'privateKey',
-          'seedPhrase',
+          "password",
+          "token",
+          "apiKey",
+          "secret",
+          "privateKey",
+          "seedPhrase",
         ];
         Object.keys(event.extra).forEach((key) => {
           if (
@@ -74,7 +95,7 @@ export function initSentry() {
               key.toLowerCase().includes(sk.toLowerCase()),
             )
           ) {
-            event.extra![key] = '[REDACTED]';
+            event.extra![key] = "[REDACTED]";
           }
         });
       }
@@ -85,13 +106,13 @@ export function initSentry() {
         if (
           error &&
           error instanceof Error &&
-          typeof error.message === 'string'
+          typeof error.message === "string"
         ) {
           // Filter out network errors that are expected
           if (
-            error.message.includes('ECONNREFUSED') ||
-            error.message.includes('ENOTFOUND') ||
-            error.message.includes('timeout')
+            error.message.includes("ECONNREFUSED") ||
+            error.message.includes("ENOTFOUND") ||
+            error.message.includes("timeout")
           ) {
             return null;
           }
@@ -101,7 +122,7 @@ export function initSentry() {
     },
   });
 
-  console.log('✅ Sentry initialized for backend');
+  console.log("✅ Sentry initialized for backend");
 }
 
 // Helper function to capture custom errors
@@ -109,27 +130,27 @@ export function captureError(error: Error, context?: any) {
   if (process.env.SENTRY_DSN) {
     Sentry.captureException(error, {
       tags: {
-        component: 'backend',
+        component: "backend",
         ...context?.tags,
       },
       extra: context?.extra,
     });
   } else {
-    console.error('Error (Sentry disabled):', error);
+    console.error("Error (Sentry disabled):", error);
   }
 }
 
 // Helper function to capture messages
 export function captureMessage(
   message: string,
-  level: Sentry.SeverityLevel = 'info',
+  level: Sentry.SeverityLevel = "info",
   context?: any,
 ) {
   if (process.env.SENTRY_DSN) {
     Sentry.captureMessage(message, {
       level,
       tags: {
-        component: 'backend',
+        component: "backend",
         ...context?.tags,
       },
       extra: context?.extra,
@@ -152,7 +173,7 @@ export function setUserContext(user: {
       role: user.role,
     });
   } else {
-    console.log('Set user context (Sentry disabled):', user.id);
+    console.log("Set user context (Sentry disabled):", user.id);
   }
 }
 
@@ -165,9 +186,38 @@ export function addBreadcrumb(
   if (process.env.SENTRY_DSN) {
     Sentry.addBreadcrumb({
       message,
-      category: category || 'custom',
-      level: level || 'info',
+      category: category || "custom",
+      level: level || "info",
       timestamp: Date.now() / 1000,
     });
   }
+}
+
+// Redact sensitive fields for manual Sentry extras
+export function redactSensitiveData(
+  data: Record<string, unknown>,
+): Record<string, unknown> {
+  const clone: Record<string, unknown> = { ...data };
+  // Generic token-like keys
+  const sensitiveKeys = [
+    "token",
+    "authorization",
+    "auth",
+    "apiKey",
+    "secret",
+    "password",
+  ];
+  for (const key of Object.keys(clone)) {
+    const lower = key.toLowerCase();
+    if (sensitiveKeys.some((k) => lower.includes(k.toLowerCase()))) {
+      clone[key] = "[REDACTED]";
+    }
+  }
+
+  // Mask email-like fields
+  if (typeof clone.email === "string") {
+    clone.email = dataMasker.maskEmail(clone.email as string);
+  }
+
+  return clone;
 }

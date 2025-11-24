@@ -1,6 +1,7 @@
 import express, { NextFunction, Request, Response } from "express";
 // Intentionally defer auth middleware resolution to avoid undefined callback crashes
 import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 // Dynamic safe wrappers (handles early-load race conditions where auth exports may be undefined)
 const safeAuth = (req: any, res: Response, next: NextFunction) => {
@@ -102,7 +103,7 @@ router.get(
           take: _pageSize,
         }),
       ]);
-      res.json({ items, total, page: _page, pageSize: _pageSize });
+      res.json({ items: tickets, total, page: _page, pageSize: _pageSize });
     } catch (e) {
       console.error("Admin list tickets error", e);
       res.status(500).json({ error: "Failed to list tickets" });

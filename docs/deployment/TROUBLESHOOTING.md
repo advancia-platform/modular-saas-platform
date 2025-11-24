@@ -92,14 +92,15 @@ Get-Process -Id (Get-NetTCPConnection -LocalPort 4000).OwningProcess | Stop-Proc
    ```
 
 3. **Check Browser Console**
-   - Press `F12` → Console tab
-   - Look for red error messages
-   - Common errors:
-     - `Module not found`
-     - `Cannot find module`
-     - `Unexpected token`
+   -   Press `F12` → Console tab
+   -   Look for red error messages
+   -   Common errors:
+     -   `Module not found`
+     -   `Cannot find module`
+     -   `Unexpected token`
 
 4. **Verify Page Structure**
+
    ```typescript
    // frontend/src/app/page.tsx
    export default function Home() {
@@ -176,9 +177,9 @@ npm run dev
    ```
 
 3. **Check for Errors**
-   - Open browser console (F12)
-   - Look for red error messages
-   - Check terminal for compilation errors
+   -   Open browser console (F12)
+   -   Look for red error messages
+   -   Check terminal for compilation errors
 
 4. **Verify Component Usage**
 
@@ -211,10 +212,10 @@ export default function MyComponent() {
 
 **When to use `"use client"`**:
 
-- Components using React hooks (`useState`, `useEffect`, etc.)
-- Components with event handlers (`onClick`, `onChange`, etc.)
-- Components using browser APIs (`window`, `document`, etc.)
-- Third-party libraries that require client-side rendering
+-   Components using React hooks (`useState`, `useEffect`, etc.)
+-   Components with event handlers (`onClick`, `onChange`, etc.)
+-   Components using browser APIs (`window`, `document`, etc.)
+-   Third-party libraries that require client-side rendering
 
 ---
 
@@ -292,6 +293,7 @@ import { motion } from "framer-motion";
    ```
 
 4. **Verify Frontend API URL**
+
    ```typescript
    // Should match backend port
    const API_URL = "http://localhost:4000";
@@ -395,9 +397,9 @@ npm install --save-dev @types/node @types/react @types/react-dom
 
 **Fix 3**: Restart TypeScript server in VS Code
 
-- Press `Ctrl+Shift+P`
-- Type: `TypeScript: Restart TS Server`
-- Press Enter
+-   Press `Ctrl+Shift+P`
+-   Type: `TypeScript: Restart TS Server`
+-   Press Enter
 
 ---
 
@@ -520,14 +522,14 @@ Stop-Process -Id <PID> -Force
 
 ### 1. Check Browser Console
 
-- Press `F12` → Console tab
-- Look for errors (red text)
-- Check Network tab for failed requests
+-   Press `F12` → Console tab
+-   Look for errors (red text)
+-   Check Network tab for failed requests
 
 ### 2. Check Terminal Output
 
-- Frontend terminal: Compilation errors, warnings
-- Backend terminal: API errors, database issues
+-   Frontend terminal: Compilation errors, warnings
+-   Backend terminal: API errors, database issues
 
 ### 3. Use VS Code Debugger
 
@@ -560,12 +562,12 @@ useEffect(() => {
 
 ## 📚 Helpful Resources
 
-- [Next.js Documentation](https://nextjs.org/docs)
-- [React Documentation](https://react.dev)
-- [Tailwind CSS Docs](https://tailwindcss.com/docs)
-- [Framer Motion Docs](https://www.framer.com/motion/)
-- [Socket.IO Docs](https://socket.io/docs/)
-- [Prisma Docs](https://www.prisma.io/docs)
+-   [Next.js Documentation](https://nextjs.org/docs)
+-   [React Documentation](https://react.dev)
+-   [Tailwind CSS Docs](https://tailwindcss.com/docs)
+-   [Framer Motion Docs](https://www.framer.com/motion/)
+-   [Socket.IO Docs](https://socket.io/docs/)
+-   [Prisma Docs](https://www.prisma.io/docs)
 
 ---
 
@@ -586,9 +588,9 @@ useEffect(() => {
    ```
 
 2. **Check System Requirements**
-   - Node.js 18+ installed: `node --version`
-   - npm 9+ installed: `npm --version`
-   - Git installed: `git --version`
+   -   Node.js 18+ installed: `node --version`
+   -   npm 9+ installed: `npm --version`
+   -   Git installed: `git --version`
 
 3. **Restart Everything**
 
@@ -601,8 +603,8 @@ useEffect(() => {
    ```
 
 4. **Check File Permissions**
-   - Ensure you have write permissions in project directory
-   - Run terminal as administrator if needed
+   -   Ensure you have write permissions in project directory
+   -   Run terminal as administrator if needed
 
 ---
 
@@ -610,14 +612,14 @@ useEffect(() => {
 
 **🎯 Quick Fix Checklist**:
 
-- [ ] Backend running on port 4000?
-- [ ] Frontend running on port 3000?
-- [ ] Dependencies installed (`node_modules` exists)?
-- [ ] Browser console clear of errors?
-- [ ] Using `@/` import aliases?
-- [ ] `"use client"` added to interactive components?
-- [ ] Tailwind classes working?
-- [ ] Socket.IO connected?
+-   [ ] Backend running on port 4000?
+-   [ ] Frontend running on port 3000?
+-   [ ] Dependencies installed (`node_modules` exists)?
+-   [ ] Browser console clear of errors?
+-   [ ] Using `@/` import aliases?
+-   [ ] `"use client"` added to interactive components?
+-   [ ] Tailwind classes working?
+-   [ ] Socket.IO connected?
 
 ---
 

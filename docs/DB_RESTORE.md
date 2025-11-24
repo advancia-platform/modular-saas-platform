@@ -8,9 +8,9 @@ The `restore_db.sh` script allows you to restore a PostgreSQL database from a SQ
 
 ## Prerequisites
 
-- Docker and Docker Compose must be installed
-- Database container must be running (started with `docker compose up -d postgres`)
-- A valid SQL backup file
+-   Docker and Docker Compose must be installed
+-   Database container must be running (started with `docker compose up -d postgres`)
+-   A valid SQL backup file
 
 ## Usage
 
@@ -35,6 +35,7 @@ The `restore_db.sh` script allows you to restore a PostgreSQL database from a SQ
    ```
 
 3. **Using the npm script (if configured):**
+
    ```bash
    npm run db:restore backups/backup_20250119_120000.sql
    ```
@@ -48,17 +49,17 @@ The `restore_db.sh` script allows you to restore a PostgreSQL database from a SQ
 5. **Asks for confirmation:** Prompts before overwriting data (safety check)
 6. **Stops the app service:** If running, stops the application to prevent conflicts
 7. **Restores the database:**
-   - Drops the existing database
-   - Creates a fresh database
-   - Restores data from the backup file
+   -   Drops the existing database
+   -   Creates a fresh database
+   -   Restores data from the backup file
 8. **Optionally restarts the app:** Prompts to restart the application service
 
 ## Environment Variables
 
 The script uses the following environment variables (from `.env` file):
 
-- `POSTGRES_USER` (default: `postgres`)
-- `POSTGRES_DB` (default: `saasdb`)
+-   `POSTGRES_USER` (default: `postgres`)
+-   `POSTGRES_DB` (default: `saasdb`)
 
 ## Important Warnings
 
@@ -66,10 +67,10 @@ The script uses the following environment variables (from `.env` file):
 
 **This script will completely overwrite all data in the target database!**
 
-- All existing data will be permanently deleted
-- The operation cannot be undone
-- Always verify you're restoring the correct backup file
-- Consider creating a backup before restoring
+-   All existing data will be permanently deleted
+-   The operation cannot be undone
+-   Always verify you're restoring the correct backup file
+-   Consider creating a backup before restoring
 
 ### Safety Recommendations
 
@@ -87,14 +88,14 @@ The script uses the following environment variables (from `.env` file):
    ```
 
 3. **Test in development first:**
-   - Test restore operations in a development environment
-   - Verify data integrity after restoration
-   - Confirm application functionality
+   -   Test restore operations in a development environment
+   -   Verify data integrity after restoration
+   -   Confirm application functionality
 
 4. **Production restores:**
-   - Schedule during maintenance windows
-   - Notify users of potential downtime
-   - Have a rollback plan ready
+   -   Schedule during maintenance windows
+   -   Notify users of potential downtime
+   -   Have a rollback plan ready
 
 ## Troubleshooting
 
@@ -126,8 +127,8 @@ chmod +x scripts/restore_db.sh
 
 **Solution:**
 
-- Install Docker Compose: https://docs.docker.com/compose/install/
-- Or use `docker-compose` (v1) if already installed
+-   Install Docker Compose: <https://docs.docker.com/compose/install/>
+-   Or use `docker-compose` (v1) if already installed
 
 ### Backup File Not Found
 
@@ -135,8 +136,9 @@ chmod +x scripts/restore_db.sh
 
 **Solution:**
 
-- Check the file path is correct
-- Ensure the backup file exists:
+-   Check the file path is correct
+-   Ensure the backup file exists:
+
   ```bash
   ls -la backups/
   ```
@@ -158,6 +160,7 @@ If the restoration fails midway:
    ```
 
 3. **Manual restore (if needed):**
+
    ```bash
    docker compose exec postgres psql -U postgres -d saasdb -f /path/to/backup.sql
    ```
@@ -175,15 +178,15 @@ Before restoring, it's recommended to create a backup:
 
 ## Related Scripts
 
-- **backup_db.sh**: Create database backups
-- **deploy.sh**: Deploy application services
+-   **backup_db.sh**: Create database backups
+-   **deploy.sh**: Deploy application services
 
 ## Additional Notes
 
-- The script uses POSIX shell syntax for maximum compatibility
-- Handles both Docker Compose v1 (`docker-compose`) and v2 (`docker compose`)
-- Color-coded output for better readability
-- Interactive prompts prevent accidental data loss
+-   The script uses POSIX shell syntax for maximum compatibility
+-   Handles both Docker Compose v1 (`docker-compose`) and v2 (`docker compose`)
+-   Color-coded output for better readability
+-   Interactive prompts prevent accidental data loss
 
 ## Support
 

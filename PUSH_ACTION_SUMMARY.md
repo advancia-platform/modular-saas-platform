@@ -26,26 +26,26 @@
 
 **New Documentation** (10 files):
 
-- `RELEASE_CHECKLIST.md` ✅
-- `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` ✅
-- `GITHUB_SECRET_UNBLOCK_GUIDE.md` ✅
-- `SPRINT_BOARD.md` ✅
-- `EXECUTION_PLAN.md` ✅
-- `ROADMAP_CONSOLIDATED.md` ✅
-- `ROADMAP_QUICK_REF.md` ✅
-- `ROADMAP_README.md` ✅
-- `ROADMAP_INDEX.md` ✅
-- `ROADMAP_CONSOLIDATION_SUMMARY.md` ✅
-- `ISSUES_TEMPLATE.md` ✅
+-   `RELEASE_CHECKLIST.md` ✅
+-   `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` ✅
+-   `GITHUB_SECRET_UNBLOCK_GUIDE.md` ✅
+-   `SPRINT_BOARD.md` ✅
+-   `EXECUTION_PLAN.md` ✅
+-   `ROADMAP_CONSOLIDATED.md` ✅
+-   `ROADMAP_QUICK_REF.md` ✅
+-   `ROADMAP_README.md` ✅
+-   `ROADMAP_INDEX.md` ✅
+-   `ROADMAP_CONSOLIDATION_SUMMARY.md` ✅
+-   `ISSUES_TEMPLATE.md` ✅
 
 **Updated Files** (120+ files):
 
-- `.env.production.example` (root, backend, frontend) - R2 config added
-- `docker-compose.yml` - R2 secret injection
-- `.github/workflows/docker-build-push.yml` - CI/CD pipeline
-- `backend/ROADMAP.md` - Links to consolidated docs
-- 7 security docs - Secrets redacted
-- 100+ backend TypeScript files - Bug fixes
+-   `.env.production.example` (root, backend, frontend) - R2 config added
+-   `docker-compose.yml` - R2 secret injection
+-   `.github/workflows/docker-build-push.yml` - CI/CD pipeline
+-   `backend/ROADMAP.md` - Links to consolidated docs
+-   7 security docs - Secrets redacted
+-   100+ backend TypeScript files - Bug fixes
 
 ---
 
@@ -65,8 +65,8 @@ Open each URL in your browser and click the **"Allow secret"** button:
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh343m3zGig9pxSpeHuMCD9C
    ```
 
-   - Status: Revoked in GitHub settings
-   - Location: Old commits in `PRODUCTION_READINESS_REPORT.md`
+   -   Status: Revoked in GitHub settings
+   -   Location: Old commits in `PRODUCTION_READINESS_REPORT.md`
 
 2. **Stripe Test Key #1** (test mode, rotated):
 
@@ -74,8 +74,8 @@ Open each URL in your browser and click the **"Allow secret"** button:
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh0n48f6cW6vsUwb1KWbH74V
    ```
 
-   - Status: Rotated in Stripe dashboard
-   - Location: Old commits in multiple docs
+   -   Status: Rotated in Stripe dashboard
+   -   Location: Old commits in multiple docs
 
 3. **Stripe Test Key #2** (test mode, rotated):
 
@@ -83,8 +83,8 @@ Open each URL in your browser and click the **"Allow secret"** button:
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh4CIoDQRQ71ECBuZhVqxH7e
    ```
 
-   - Status: Rotated in Stripe dashboard
-   - Location: Old commits in `RENDER_ENV_UPDATE.md`, archives
+   -   Status: Rotated in Stripe dashboard
+   -   Location: Old commits in `RENDER_ENV_UPDATE.md`, archives
 
 4. **Slack Webhook URL** (test webhook, rotated):
 
@@ -92,16 +92,17 @@ Open each URL in your browser and click the **"Allow secret"** button:
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh2JoASEMPMi5X2PWWKgCmqH
    ```
 
-   - Status: Webhook regenerated
-   - Location: Old commits in `PROMETHEUS_SETUP_GUIDE.md`, `SLACK_WEBHOOK_SETUP.md`
+   -   Status: Webhook regenerated
+   -   Location: Old commits in `PROMETHEUS_SETUP_GUIDE.md`, `SLACK_WEBHOOK_SETUP.md`
 
 5. **Stripe API Key** (from old .env files, rotated):
+
    ```
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh6dX0l3ozKbcUHCr8rkKGpr
    ```
 
-   - Status: Rotated
-   - Location: Old commits in `.env.production.example` (before redaction)
+   -   Status: Rotated
+   -   Location: Old commits in `.env.production.example` (before redaction)
 
 **Time Required**: 2-3 minutes total
 
@@ -117,8 +118,8 @@ git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 
 **Flags Explained**:
 
-- `--no-verify`: Skips local Husky pre-push hook (type-check/lint)
-- Safe to use because: Documentation-only changes, TypeScript errors are in separate files
+-   `--no-verify`: Skips local Husky pre-push hook (type-check/lint)
+-   Safe to use because: Documentation-only changes, TypeScript errors are in separate files
 
 **Expected Output**:
 
@@ -136,9 +137,9 @@ To https://github.com/advancia-platform/modular-saas-platform.git
 
 **If Push Fails Again**:
 
-- Double-check all 5 URLs were visited and "Allow secret" clicked
-- Wait 1-2 minutes for GitHub's allowlist to propagate
-- Retry: `git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify`
+-   Double-check all 5 URLs were visited and "Allow secret" clicked
+-   Wait 1-2 minutes for GitHub's allowlist to propagate
+-   Retry: `git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify`
 
 ---
 
@@ -153,19 +154,19 @@ To https://github.com/advancia-platform/modular-saas-platform.git
    ```
 
 2. **Verify Commits Visible**:
-   - Click "Commits" tab
-   - Should see all 9 commits (6 new docs + 3 earlier)
-   - Latest commit: `308b2c87` - "Production release checklist"
+   -   Click "Commits" tab
+   -   Should see all 9 commits (6 new docs + 3 earlier)
+   -   Latest commit: `308b2c87` - "Production release checklist"
 
 3. **Check Files Updated**:
-   - Navigate to root directory
-   - Should see new files: `RELEASE_CHECKLIST.md`, `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`, etc.
-   - Click into any file to verify content uploaded correctly
+   -   Navigate to root directory
+   -   Should see new files: `RELEASE_CHECKLIST.md`, `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`, etc.
+   -   Click into any file to verify content uploaded correctly
 
 4. **GitHub Actions Status**:
-   - Navigate to: `Actions` tab
-   - Should see workflow "Backend Docker Build, Push & Deploy" triggered
-   - Status: 🟡 Running or ✅ Completed (may fail on type-check, expected)
+   -   Navigate to: `Actions` tab
+   -   Should see workflow "Backend Docker Build, Push & Deploy" triggered
+   -   Status: 🟡 Running or ✅ Completed (may fail on type-check, expected)
 
 ---
 
@@ -185,10 +186,10 @@ gh pr create --base staging --head chore/ci-auto-release-auto-label-decimal-fixe
 
 **PR Details**:
 
-- **Base branch**: `staging`
-- **Compare branch**: `chore/ci-auto-release-auto-label-decimal-fixes`
-- **Title**: `feat: Cloudflare R2 + Docker deployment + Roadmap system`
-- **Description**:
+-   **Base branch**: `staging`
+-   **Compare branch**: `chore/ci-auto-release-auto-label-decimal-fixes`
+-   **Title**: `feat: Cloudflare R2 + Docker deployment + Roadmap system`
+-   **Description**:
 
   ```markdown
   ## 🚀 Summary
@@ -236,17 +237,17 @@ gh pr create --base staging --head chore/ci-auto-release-auto-label-decimal-fixe
    ```
 
    Required secrets (25+):
-   - `CLOUDFLARE_ACCOUNT_ID`
-   - `CLOUDFLARE_R2_ACCESS_KEY_ID`
-   - `CLOUDFLARE_R2_SECRET_ACCESS_KEY`
-   - `CLOUDFLARE_R2_BUCKET`
-   - `CLOUDFLARE_R2_ENDPOINT`
-   - `DATABASE_URL`
-   - `JWT_SECRET`
-   - `SESSION_SECRET`
-   - `STRIPE_SECRET_KEY`
-   - `STRIPE_WEBHOOK_SECRET`
-   - ... (see `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` § Prerequisites)
+   -   `CLOUDFLARE_ACCOUNT_ID`
+   -   `CLOUDFLARE_R2_ACCESS_KEY_ID`
+   -   `CLOUDFLARE_R2_SECRET_ACCESS_KEY`
+   -   `CLOUDFLARE_R2_BUCKET`
+   -   `CLOUDFLARE_R2_ENDPOINT`
+   -   `DATABASE_URL`
+   -   `JWT_SECRET`
+   -   `SESSION_SECRET`
+   -   `STRIPE_SECRET_KEY`
+   -   `STRIPE_WEBHOOK_SECRET`
+   -   ... (see `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md` § Prerequisites)
 
 2. **Test Local Docker Deployment**:
 
@@ -259,16 +260,16 @@ gh pr create --base staging --head chore/ci-auto-release-auto-label-decimal-fixe
    ```
 
 3. **Review Roadmap with Team**:
-   - Share `ROADMAP_QUICK_REF.md` for daily reference
-   - Assign tasks from `EXECUTION_PLAN.md` (Week 1 Day 1-5)
-   - Create GitHub issues from `ISSUES_TEMPLATE.md` (11 templates)
+   -   Share `ROADMAP_QUICK_REF.md` for daily reference
+   -   Assign tasks from `EXECUTION_PLAN.md` (Week 1 Day 1-5)
+   -   Create GitHub issues from `ISSUES_TEMPLATE.md` (11 templates)
 
 ### This Week
 
 1. **Start Sprint Execution**:
-   - Follow `EXECUTION_PLAN.md` Day 1 tasks (TypeScript cleanup)
-   - Update `SPRINT_BOARD.md` daily (move tasks to In Progress → Review → Done)
-   - Target: TypeScript errors 47 → 0 by end of Day 2
+   -   Follow `EXECUTION_PLAN.md` Day 1 tasks (TypeScript cleanup)
+   -   Update `SPRINT_BOARD.md` daily (move tasks to In Progress → Review → Done)
+   -   Target: TypeScript errors 47 → 0 by end of Day 2
 
 2. **Staging Deployment**:
 
@@ -279,10 +280,11 @@ gh pr create --base staging --head chore/ci-auto-release-auto-label-decimal-fixe
    git push origin staging  # Triggers auto-deploy via GitHub Actions
    ```
 
-   - Monitor: `Actions` tab → "Backend Docker Build, Push & Deploy" → Staging job
-   - Verify: `curl https://staging.advancia.io/api/health`
+   -   Monitor: `Actions` tab → "Backend Docker Build, Push & Deploy" → Staging job
+   -   Verify: `curl https://staging.advancia.io/api/health`
 
 3. **Production Deployment** (after staging validation):
+
    ```bash
    # Merge staging → main (requires manual approval)
    git checkout main
@@ -290,8 +292,8 @@ gh pr create --base staging --head chore/ci-auto-release-auto-label-decimal-fixe
    # GitHub Actions deploys with blue-green strategy
    ```
 
-   - Monitor production health for 24 hours
-   - Follow `RELEASE_CHECKLIST.md` § Post-Deployment Validation
+   -   Monitor production health for 24 hours
+   -   Follow `RELEASE_CHECKLIST.md` § Post-Deployment Validation
 
 ---
 
@@ -327,19 +329,19 @@ git push --force origin chore/ci-auto-release-auto-label-decimal-fixes
 
 ### Push Success Indicators ✅
 
-- [ ] Push completes without GH013 error
-- [ ] Branch visible on GitHub web UI
-- [ ] All 9 commits present in commit history
-- [ ] New files visible: `RELEASE_CHECKLIST.md`, `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`, etc.
-- [ ] GitHub Actions workflow triggered (may fail on type-check, expected)
+-   [ ] Push completes without GH013 error
+-   [ ] Branch visible on GitHub web UI
+-   [ ] All 9 commits present in commit history
+-   [ ] New files visible: `RELEASE_CHECKLIST.md`, `CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md`, etc.
+-   [ ] GitHub Actions workflow triggered (may fail on type-check, expected)
 
 ### Post-Push Health ✅
 
-- [ ] PR created and reviewers assigned
-- [ ] GitHub Secrets configured (25+ variables)
-- [ ] Local Docker deployment working
-- [ ] Team notified of new roadmap system
-- [ ] Sprint execution started (EXECUTION_PLAN.md Day 1)
+-   [ ] PR created and reviewers assigned
+-   [ ] GitHub Secrets configured (25+ variables)
+-   [ ] Local Docker deployment working
+-   [ ] Team notified of new roadmap system
+-   [ ] Sprint execution started (EXECUTION_PLAN.md Day 1)
 
 ---
 
@@ -347,26 +349,26 @@ git push --force origin chore/ci-auto-release-auto-label-decimal-fixes
 
 ### "Push blocked by repository rule violations"
 
-- **Cause**: Not all 5 secrets whitelisted yet
-- **Fix**: Re-visit all 5 GitHub URLs, ensure "Allow secret" clicked for each
-- **Wait**: 1-2 minutes for allowlist to propagate, then retry push
+-   **Cause**: Not all 5 secrets whitelisted yet
+-   **Fix**: Re-visit all 5 GitHub URLs, ensure "Allow secret" clicked for each
+-   **Wait**: 1-2 minutes for allowlist to propagate, then retry push
 
 ### "Pre-push hook exited with code 2"
 
-- **Cause**: Husky pre-push hook running type-check (47 TypeScript errors)
-- **Fix**: Use `--no-verify` flag: `git push --no-verify`
-- **Safe because**: Documentation-only changes, TypeScript fixes in separate sprint
+-   **Cause**: Husky pre-push hook running type-check (47 TypeScript errors)
+-   **Fix**: Use `--no-verify` flag: `git push --no-verify`
+-   **Safe because**: Documentation-only changes, TypeScript fixes in separate sprint
 
 ### "Failed to push some refs"
 
-- **Cause**: Branch diverged or force-push needed
-- **Fix**: `git fetch origin && git rebase origin/main`, then `git push --force-with-lease`
+-   **Cause**: Branch diverged or force-push needed
+-   **Fix**: `git fetch origin && git rebase origin/main`, then `git push --force-with-lease`
 
 ### GitHub Actions failing
 
-- **Expected**: Type-check may fail (47 errors), part of Week 1 sprint to fix
-- **Monitor**: Check `Actions` tab for build logs
-- **Fix**: Follow `EXECUTION_PLAN.md` to resolve TypeScript errors
+-   **Expected**: Type-check may fail (47 errors), part of Week 1 sprint to fix
+-   **Monitor**: Check `Actions` tab for build logs
+-   **Fix**: Follow `EXECUTION_PLAN.md` to resolve TypeScript errors
 
 ---
 
@@ -386,9 +388,9 @@ git push --force origin chore/ci-auto-release-auto-label-decimal-fixes
 
 **Before Push**:
 
-- [ ] All 5 secret whitelist URLs visited
-- [ ] "Allow secret" clicked for each URL
-- [ ] Waited 1-2 minutes for allowlist to propagate
+-   [ ] All 5 secret whitelist URLs visited
+-   [ ] "Allow secret" clicked for each URL
+-   [ ] Waited 1-2 minutes for allowlist to propagate
 
 **Push Command**:
 
@@ -398,11 +400,11 @@ git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 
 **After Push**:
 
-- [ ] Branch visible on GitHub
-- [ ] PR created to `staging`
-- [ ] Reviewers assigned
-- [ ] GitHub Secrets configured
-- [ ] Team notified
+-   [ ] Branch visible on GitHub
+-   [ ] PR created to `staging`
+-   [ ] Reviewers assigned
+-   [ ] GitHub Secrets configured
+-   [ ] Team notified
 
 ---
 

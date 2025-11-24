@@ -1,33 +1,34 @@
-import { Router, Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-import { authenticateToken } from '../middleware/auth';
-import logger from '../logger';
+import { PrismaClient } from "@prisma/client";
+import { Request, Response, Router } from "express";
+import logger from "../logger";
+import { authenticateToken } from "../middleware/auth";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
 const prisma = new PrismaClient();
 
 // User tier levels with benefits
 const USER_TIERS = {
-  BRONZE: { minTokens: 0, multiplier: 1, benefits: ['Basic rewards'] },
+  BRONZE: { minTokens: 0, multiplier: 1, benefits: ["Basic rewards"] },
   SILVER: {
     minTokens: 1000,
     multiplier: 1.25,
-    benefits: ['Basic rewards', 'Priority support'],
+    benefits: ["Basic rewards", "Priority support"],
   },
   GOLD: {
     minTokens: 5000,
     multiplier: 1.5,
-    benefits: ['Basic rewards', 'Priority support', 'Exclusive offers'],
+    benefits: ["Basic rewards", "Priority support", "Exclusive offers"],
   },
   PLATINUM: {
     minTokens: 10000,
     multiplier: 2,
-    benefits: ['All benefits', 'VIP support', 'Premium features'],
+    benefits: ["All benefits", "VIP support", "Premium features"],
   },
   DIAMOND: {
     minTokens: 50000,
     multiplier: 3,
-    benefits: ['All benefits', 'Dedicated manager', 'Custom features'],
+    benefits: ["All benefits", "Dedicated manager", "Custom features"],
   },
 };
 
@@ -35,7 +36,7 @@ const USER_TIERS = {
  * GET /api/gamification/tier
  * Get current user tier
  */
-router.get('/tier', authenticateToken, async (req: Request, res: Response) => {
+router.get("/tier", authenticateToken, async (req: Request, res: Response) => {
   try {
     const userId = (req as any).user.id;
 
@@ -43,7 +44,7 @@ router.get('/tier', authenticateToken, async (req: Request, res: Response) => {
     const totalTokens =
       Number(wallet?.balance || 0) + Number(wallet?.lifetimeEarned || 0);
 
-    let currentTier = 'BRONZE';
+    let currentTier = "BRONZE";
     for (const [tier, requirements] of Object.entries(USER_TIERS).reverse()) {
       if (totalTokens >= requirements.minTokens) {
         currentTier = tier;
@@ -70,8 +71,8 @@ router.get('/tier', authenticateToken, async (req: Request, res: Response) => {
         : null,
     });
   } catch (error) {
-    logger.error('Get tier error:', error);
-    res.status(500).json({ error: 'Failed to get tier' });
+    logger.error("Get tier error:", error);
+    res.status(500).json({ error: "Failed to get tier" });
   }
 });
 
@@ -80,7 +81,7 @@ router.get('/tier', authenticateToken, async (req: Request, res: Response) => {
  * Get user achievements
  */
 router.get(
-  '/achievements',
+  "/achievements",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
@@ -89,51 +90,51 @@ router.get(
       // Define achievements
       const achievements = [
         {
-          id: 'first_login',
-          name: 'Welcome Aboard',
-          description: 'Complete your first login',
+          id: "first_login",
+          name: "Welcome Aboard",
+          description: "Complete your first login",
           reward: 100,
         },
         {
-          id: 'first_transaction',
-          name: 'First Steps',
-          description: 'Make your first transaction',
+          id: "first_transaction",
+          name: "First Steps",
+          description: "Make your first transaction",
           reward: 50,
         },
         {
-          id: 'transactions_10',
-          name: 'Active User',
-          description: 'Complete 10 transactions',
+          id: "transactions_10",
+          name: "Active User",
+          description: "Complete 10 transactions",
           reward: 200,
         },
         {
-          id: 'transactions_100',
-          name: 'Power User',
-          description: 'Complete 100 transactions',
+          id: "transactions_100",
+          name: "Power User",
+          description: "Complete 100 transactions",
           reward: 1000,
         },
         {
-          id: 'referral_1',
-          name: 'Influencer',
-          description: 'Refer 1 friend',
+          id: "referral_1",
+          name: "Influencer",
+          description: "Refer 1 friend",
           reward: 500,
         },
         {
-          id: 'referral_10',
-          name: 'Ambassador',
-          description: 'Refer 10 friends',
+          id: "referral_10",
+          name: "Ambassador",
+          description: "Refer 10 friends",
           reward: 5000,
         },
         {
-          id: 'streak_7',
-          name: 'Week Warrior',
-          description: 'Login 7 days in a row',
+          id: "streak_7",
+          name: "Week Warrior",
+          description: "Login 7 days in a row",
           reward: 300,
         },
         {
-          id: 'streak_30',
-          name: 'Month Master',
-          description: 'Login 30 days in a row',
+          id: "streak_30",
+          name: "Month Master",
+          description: "Login 30 days in a row",
           reward: 2000,
         },
       ];
@@ -142,7 +143,7 @@ router.get(
       const transactionCount = await prisma.transactions.count({
         where: { userId },
       });
-      const referralCount = await prisma.userTier.count({
+      const referralCount = await prisma.user_tiers.count({
         where: { referredBy: userId },
       });
 
@@ -150,16 +151,16 @@ router.get(
       const currentStreak = 5;
 
       const unlockedAchievements = achievements.filter((achievement) => {
-        if (achievement.id.startsWith('transactions_')) {
-          const required = parseInt(achievement.id.split('_')[1]);
+        if (achievement.id.startsWith("transactions_")) {
+          const required = parseInt(achievement.id.split("_")[1]);
           return transactionCount >= required;
         }
-        if (achievement.id.startsWith('referral_')) {
-          const required = parseInt(achievement.id.split('_')[1]);
+        if (achievement.id.startsWith("referral_")) {
+          const required = parseInt(achievement.id.split("_")[1]);
           return referralCount >= required;
         }
-        if (achievement.id.startsWith('streak_')) {
-          const required = parseInt(achievement.id.split('_')[1]);
+        if (achievement.id.startsWith("streak_")) {
+          const required = parseInt(achievement.id.split("_")[1]);
           return currentStreak >= required;
         }
         return true; // first_login, first_transaction
@@ -170,11 +171,11 @@ router.get(
         achievements: achievements.map((achievement) => ({
           ...achievement,
           unlocked: unlockedAchievements.some((a) => a.id === achievement.id),
-          progress: achievement.id.startsWith('transactions_')
+          progress: achievement.id.startsWith("transactions_")
             ? transactionCount
-            : achievement.id.startsWith('referral_')
+            : achievement.id.startsWith("referral_")
               ? referralCount
-              : achievement.id.startsWith('streak_')
+              : achievement.id.startsWith("streak_")
                 ? currentStreak
                 : 1,
         })),
@@ -185,8 +186,8 @@ router.get(
         ),
       });
     } catch (error) {
-      logger.error('Get achievements error:', error);
-      res.status(500).json({ error: 'Failed to get achievements' });
+      logger.error("Get achievements error:", error);
+      res.status(500).json({ error: "Failed to get achievements" });
     }
   },
 );
@@ -196,14 +197,14 @@ router.get(
  * Get token leaderboard
  */
 router.get(
-  '/leaderboard',
+  "/leaderboard",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
-      const { period = 'all' } = req.query; // all, month, week
+      const { period = "all" } = req.query; // all, month, week
 
       const wallets = await prisma.token_wallets.findMany({
-        orderBy: { lifetimeEarned: 'desc' },
+        orderBy: { lifetimeEarned: "desc" },
         take: 100,
       });
 
@@ -220,14 +221,14 @@ router.get(
             userId: wallet.userId,
             name: user?.firstName
               ? `${user.firstName} ${user.lastName}`
-              : user?.email || 'Unknown',
+              : user?.email || "Unknown",
             tokens: Number(wallet.lifetimeEarned),
             tier:
               Object.entries(USER_TIERS)
                 .reverse()
                 .find(
                   ([_, req]) => Number(wallet.lifetimeEarned) >= req.minTokens,
-                )?.[0] || 'BRONZE',
+                )?.[0] || "BRONZE",
           };
         }),
       );
@@ -238,8 +239,8 @@ router.get(
         period,
       });
     } catch (error) {
-      logger.error('Get leaderboard error:', error);
-      res.status(500).json({ error: 'Failed to get leaderboard' });
+      logger.error("Get leaderboard error:", error);
+      res.status(500).json({ error: "Failed to get leaderboard" });
     }
   },
 );
@@ -249,7 +250,7 @@ router.get(
  * Generate referral link
  */
 router.post(
-  '/referral',
+  "/referral",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
@@ -265,13 +266,13 @@ router.post(
         referralCode,
         referralLink,
         reward: 500, // Tokens earned per referral
-        referrals: await prisma.userTier.count({
+        referrals: await prisma.user_tiers.count({
           where: { referredBy: userId },
         }),
       });
     } catch (error) {
-      logger.error('Generate referral error:', error);
-      res.status(500).json({ error: 'Failed to generate referral' });
+      logger.error("Generate referral error:", error);
+      res.status(500).json({ error: "Failed to generate referral" });
     }
   },
 );
@@ -281,7 +282,7 @@ router.post(
  * Claim daily login bonus
  */
 router.post(
-  '/daily-bonus',
+  "/daily-bonus",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
@@ -294,13 +295,15 @@ router.post(
       // Get wallet first
       let wallet = await prisma.token_wallets.findUnique({ where: { userId } });
       if (!wallet) {
-        wallet = await prisma.token_wallets.create({ data: { userId } });
+        wallet = await prisma.token_wallets.create({
+          data: withDefaults({ userId }),
+        });
       }
 
-      const lastClaim = await prisma.tokenTransaction.findFirst({
+      const lastClaim = await prisma.token_transactions.findFirst({
         where: {
           walletId: wallet.id,
-          type: 'DAILY_BONUS',
+          type: "DAILY_BONUS",
           createdAt: { gte: today },
         },
       });
@@ -308,13 +311,13 @@ router.post(
       if (lastClaim) {
         return res
           .status(400)
-          .json({ error: 'Daily bonus already claimed today' });
+          .json({ error: "Daily bonus already claimed today" });
       }
 
       // Calculate bonus based on tier
       const totalTokens =
         Number(wallet.balance) + Number(wallet.lifetimeEarned);
-      let currentTier = 'BRONZE';
+      let currentTier = "BRONZE";
       for (const [tier, requirements] of Object.entries(USER_TIERS).reverse()) {
         if (totalTokens >= requirements.minTokens) {
           currentTier = tier;
@@ -328,7 +331,7 @@ router.post(
 
       // Award bonus
       await prisma.$transaction(async (tx) => {
-        await tx.tokenWallet.update({
+        await tx.token_wallets.update({
           where: { userId },
           data: {
             balance: { increment: bonus },
@@ -336,27 +339,27 @@ router.post(
           },
         });
 
-        await tx.tokenTransaction.create({
-          data: {
+        await tx.token_transactions.create({
+          data: withDefaults({
             walletId: wallet!.id,
             amount: bonus,
-            type: 'DAILY_BONUS',
-            status: 'completed',
+            type: "DAILY_BONUS",
+            status: "completed",
             description: `Daily login bonus (${currentTier} tier)`,
-          },
+          }),
         });
       });
 
       res.json({
         success: true,
-        message: 'Daily bonus claimed!',
+        message: "Daily bonus claimed!",
         bonus,
         tier: currentTier,
         nextClaimTime: new Date(today.getTime() + 24 * 60 * 60 * 1000),
       });
     } catch (error) {
-      logger.error('Daily bonus error:', error);
-      res.status(500).json({ error: 'Failed to claim daily bonus' });
+      logger.error("Daily bonus error:", error);
+      res.status(500).json({ error: "Failed to claim daily bonus" });
     }
   },
 );
@@ -366,7 +369,7 @@ router.post(
  * Get active challenges
  */
 router.get(
-  '/challenges',
+  "/challenges",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {
@@ -375,27 +378,27 @@ router.get(
       // Define challenges
       const challenges = [
         {
-          id: 'spend_100',
-          name: 'Big Spender',
-          description: 'Spend $100 this week',
+          id: "spend_100",
+          name: "Big Spender",
+          description: "Spend $100 this week",
           reward: 500,
           deadline: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           progress: 0,
           target: 100,
         },
         {
-          id: 'transactions_20',
-          name: 'Active Trader',
-          description: 'Make 20 transactions this month',
+          id: "transactions_20",
+          name: "Active Trader",
+          description: "Make 20 transactions this month",
           reward: 1000,
           deadline: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
           progress: 0,
           target: 20,
         },
         {
-          id: 'crypto_purchase',
-          name: 'Crypto Explorer',
-          description: 'Make your first crypto purchase',
+          id: "crypto_purchase",
+          name: "Crypto Explorer",
+          description: "Make your first crypto purchase",
           reward: 300,
           deadline: null,
           progress: 0,
@@ -411,7 +414,7 @@ router.get(
         where: {
           userId,
           createdAt: { gte: thisWeekStart },
-          type: 'payment',
+          type: "payment",
         },
         _sum: { amount: true },
       });
@@ -440,8 +443,8 @@ router.get(
         })),
       });
     } catch (error) {
-      logger.error('Get challenges error:', error);
-      res.status(500).json({ error: 'Failed to get challenges' });
+      logger.error("Get challenges error:", error);
+      res.status(500).json({ error: "Failed to get challenges" });
     }
   },
 );

@@ -336,26 +336,26 @@ print(f"Data Type Accuracy: {api_results['metrics']['data_types.data_type_accura
 
 ### Trust Score Calculation
 
-- ✅ **Pass**: 100% accuracy on all test cases
-- ⚠️ **Warning**: 95-99% accuracy (minor edge cases)
-- ❌ **Fail**: < 95% accuracy
+-   ✅ **Pass**: 100% accuracy on all test cases
+-   ⚠️ **Warning**: 95-99% accuracy (minor edge cases)
+-   ❌ **Fail**: < 95% accuracy
 
 ### Invitation Eligibility Logic
 
-- ✅ **Pass**: 100% correct eligibility determinations
-- ⚠️ **Warning**: 98-99% correct
-- ❌ **Fail**: < 98% correct
+-   ✅ **Pass**: 100% correct eligibility determinations
+-   ⚠️ **Warning**: 98-99% correct
+-   ❌ **Fail**: < 98% correct
 
 ### API Completeness
 
-- ✅ **Pass**: All expected fields present in 100% of responses
-- ⚠️ **Warning**: 95-99% fields present
-- ❌ **Fail**: < 95% fields present
+-   ✅ **Pass**: All expected fields present in 100% of responses
+-   ⚠️ **Warning**: 95-99% fields present
+-   ❌ **Fail**: < 95% fields present
 
 ### Data Type Accuracy
 
-- ✅ **Pass**: 100% correct data types
-- ❌ **Fail**: Any type errors
+-   ✅ **Pass**: 100% correct data types
+-   ❌ **Fail**: Any type errors
 
 ## Continuous Evaluation
 
@@ -458,6 +458,6 @@ def create_evaluation_dashboard(results_dir="evaluation/results"):
 
 ## References
 
-- [Azure AI Evaluation SDK](https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk)
-- [Custom Evaluators Guide](https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk#custom-evaluators)
-- [Evaluation Best Practices](https://learn.microsoft.com/azure/ai-studio/concepts/evaluation-approach-gen-ai)
+-   [Azure AI Evaluation SDK](https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk)
+-   [Custom Evaluators Guide](https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk#custom-evaluators)
+-   [Evaluation Best Practices](https://learn.microsoft.com/azure/ai-studio/concepts/evaluation-approach-gen-ai)

@@ -6,8 +6,8 @@ This guide explains how to enable the 19 currently skipped tests using the new t
 
 ## Skipped Tests Breakdown
 
-- **Payments API**: 17 tests (entire suite) - `tests/payments.test.ts`
-- **Notifications**: 2 tests - `tests/integration.test.ts` lines 546-585
+-   **Payments API**: 17 tests (entire suite) - `tests/payments.test.ts`
+-   **Notifications**: 2 tests - `tests/integration.test.ts` lines 546-585
 
 ---
 
@@ -17,8 +17,8 @@ This guide explains how to enable the 19 currently skipped tests using the new t
 
 File: `backend/tests/payments.test.ts`
 
-- Status: Entire suite marked with `describe.skip`
-- Reason: Tests for generic payment API that doesn't exist yet (current endpoints are Stripe-specific)
+-   Status: Entire suite marked with `describe.skip`
+-   Reason: Tests for generic payment API that doesn't exist yet (current endpoints are Stripe-specific)
 
 ### Implementation Options
 
@@ -26,8 +26,8 @@ File: `backend/tests/payments.test.ts`
 
 These tests expect generic `/api/payments` endpoints that are NOT implemented. The current system uses:
 
-- `/api/payments/checkout-session` (Stripe)
-- `/api/payments/webhook` (Stripe)
+-   `/api/payments/checkout-session` (Stripe)
+-   `/api/payments/webhook` (Stripe)
 
 **Action**: Leave as `describe.skip` until generic payment endpoints are created.
 
@@ -148,8 +148,8 @@ export const mockStripe = {
 
 File: `backend/tests/integration.test.ts` lines 546-585
 
-- Status: `describe.skip("Notifications", ...)`
-- Reason: Comment states "Notifications routes don't exist as standalone endpoints yet"
+-   Status: `describe.skip("Notifications", ...)`
+-   Reason: Comment states "Notifications routes don't exist as standalone endpoints yet"
 
 ### Investigation Required
 
@@ -175,7 +175,7 @@ app.use("/api/notifications", notificationsRouter);
 #### Step 2A: If Routes Exist - Enable Tests
 
 1. **Update test file** `backend/tests/integration.test.ts`:
-   - Change `describe.skip` to `describe` on line 546
+   -   Change `describe.skip` to `describe` on line 546
 
 2. **Add admin authentication** (notifications require admin):
 
@@ -361,36 +361,36 @@ Add to `backend/package.json`:
 
 After implementation:
 
-- [ ] Check notification routes exist: `grep -r "api/notifications" backend/src/`
-- [ ] Verify .env.test has all required variables
-- [ ] Test infrastructure files created:
-  - [ ] `backend/tests/setup/mocks.ts`
-  - [ ] `backend/tests/setup/testEnv.ts`
-  - [ ] `backend/tests/setup/adminSetup.ts`
-- [ ] Run tests: `cd backend && npm test`
-- [ ] Verify test counts:
-  - Before: 65 passed, 19 skipped
-  - After enabling notifications: 67 passed, 17 skipped
-  - After all implementations: 84 passed, 0 skipped
+-   [ ] Check notification routes exist: `grep -r "api/notifications" backend/src/`
+-   [ ] Verify .env.test has all required variables
+-   [ ] Test infrastructure files created:
+    -   [ ] `backend/tests/setup/mocks.ts`
+    -   [ ] `backend/tests/setup/testEnv.ts`
+    -   [ ] `backend/tests/setup/adminSetup.ts`
+-   [ ] Run tests: `cd backend && npm test`
+-   [ ] Verify test counts:
+    -   Before: 65 passed, 19 skipped
+    -   After enabling notifications: 67 passed, 17 skipped
+    -   After all implementations: 84 passed, 0 skipped
 
 ---
 
 ## Priority Recommendations
 
 1. **HIGH**: Enable Notifications tests (2 tests)
-   - Quick win
-   - Real endpoints likely exist
-   - Requires admin authentication setup
+   -   Quick win
+   -   Real endpoints likely exist
+   -   Requires admin authentication setup
 
 2. **MEDIUM**: Create Stripe payment tests (replace generic payments)
-   - Tests actual implemented functionality
-   - Requires Stripe mocking
-   - Better than testing non-existent API
+   -   Tests actual implemented functionality
+   -   Requires Stripe mocking
+   -   Better than testing non-existent API
 
 3. **LOW**: Implement generic payments API
-   - Large effort
-   - May not be needed if Stripe covers requirements
-   - Would enable original 17 payment tests
+   -   Large effort
+   -   May not be needed if Stripe covers requirements
+   -   Would enable original 17 payment tests
 
 ---
 
@@ -414,7 +414,7 @@ grep -r "/api/notifications" src/index.ts
 
 For questions or issues:
 
-- Check test output: `npm test -- --verbose`
-- Review mock implementations in `tests/setup/mocks.ts`
-- Verify environment config in `.env.test`
-- Check admin setup in `tests/setup/adminSetup.ts`
+-   Check test output: `npm test -- --verbose`
+-   Review mock implementations in `tests/setup/mocks.ts`
+-   Verify environment config in `.env.test`
+-   Check admin setup in `tests/setup/adminSetup.ts`

@@ -25,16 +25,16 @@ Production-ready code that's deployed to live users.
 
 ### Deployment
 
-- **Automatically deploys to:** Production backend (`BACKEND_URL_PROD`)
-- **Trigger:** Every push to `main`
-- **CI/CD:** GitHub Actions workflow builds and deploys to Vercel production
+-   **Automatically deploys to:** Production backend (`BACKEND_URL_PROD`)
+-   **Trigger:** Every push to `main`
+-   **CI/CD:** GitHub Actions workflow builds and deploys to Vercel production
 
 ### Rules
 
-- ✅ **Protected branch** (requires PR review + CI checks)
-- ❌ **No direct commits** — only merges from `staging`
-- ✅ **Automatic deployments** on merge
-- ✅ **All tests must pass** before merge
+-   ✅ **Protected branch** (requires PR review + CI checks)
+-   ❌ **No direct commits** — only merges from `staging`
+-   ✅ **Automatic deployments** on merge
+-   ✅ **All tests must pass** before merge
 
 ### Environment Variables
 
@@ -53,16 +53,16 @@ Integration testing, QA validation, and pre-release verification.
 
 ### Deployment
 
-- **Automatically deploys to:** Staging backend (`BACKEND_URL_STAGING`)
-- **Trigger:** Every push to `staging`
-- **CI/CD:** GitHub Actions workflow builds and deploys to Vercel preview
+-   **Automatically deploys to:** Staging backend (`BACKEND_URL_STAGING`)
+-   **Trigger:** Every push to `staging`
+-   **CI/CD:** GitHub Actions workflow builds and deploys to Vercel preview
 
 ### Rules
 
-- ✅ **Feature branches merge here first**
-- ✅ **QA team validates** before promoting to `main`
-- ✅ **Can be reset** if integration issues occur
-- ✅ **Tests run on every PR**
+-   ✅ **Feature branches merge here first**
+-   ✅ **QA team validates** before promoting to `main`
+-   ✅ **Can be reset** if integration issues occur
+-   ✅ **Tests run on every PR**
 
 ### Environment Variables
 
@@ -96,15 +96,15 @@ feature/admin-panel-filters
 
 ### Deployment
 
-- **Runs locally only:** Development backend (`BACKEND_URL_DEV`)
-- **No automatic deployment** until merged to `staging`
+-   **Runs locally only:** Development backend (`BACKEND_URL_DEV`)
+-   **No automatic deployment** until merged to `staging`
 
 ### Rules
 
-- ✅ **Branch off from `staging`**
-- ✅ **PR into `staging` when ready**
-- ✅ **Delete after merge**
-- ✅ **Keep branches focused** (one feature per branch)
+-   ✅ **Branch off from `staging`**
+-   ✅ **PR into `staging` when ready**
+-   ✅ **Delete after merge**
+-   ✅ **Keep branches focused** (one feature per branch)
 
 ### Environment Variables
 
@@ -158,9 +158,9 @@ Same as feature branches (local dev only).
 
 ### Rules
 
-- ✅ **Branch off from `staging`**
-- ✅ **PR into `staging`**
-- ✅ **Link to issue number** in PR description
+-   ✅ **Branch off from `staging`**
+-   ✅ **PR into `staging`**
+-   ✅ **Link to issue number** in PR description
 
 ---
 
@@ -180,15 +180,15 @@ hotfix/database-connection-leak
 
 ### Deployment
 
-- **Directly merged into `main`** after review
-- **Also merged into `staging`** to keep branches aligned
+-   **Directly merged into `main`** after review
+-   **Also merged into `staging`** to keep branches aligned
 
 ### Rules
 
-- ✅ **Branch off from `main`**
-- ✅ **PR into `main` (expedited review)**
-- ✅ **After merge, cherry-pick to `staging`**
-- ✅ **Tag with version number** (e.g., `v1.2.3`)
+-   ✅ **Branch off from `main`**
+-   ✅ **PR into `main` (expedited review)**
+-   ✅ **After merge, cherry-pick to `staging`**
+-   ✅ **Tag with version number** (e.g., `v1.2.3`)
 
 ### Hotfix Workflow
 
@@ -268,21 +268,21 @@ git push origin feature/dashboard-tasks
 
 ### `main` Branch
 
-- ✅ Require pull request reviews (2 approvals)
-- ✅ Require status checks to pass (CI/CD tests)
-- ✅ Require branches to be up to date
-- ✅ Restrict who can push (admins only)
-- ✅ Require signed commits
+-   ✅ Require pull request reviews (2 approvals)
+-   ✅ Require status checks to pass (CI/CD tests)
+-   ✅ Require branches to be up to date
+-   ✅ Restrict who can push (admins only)
+-   ✅ Require signed commits
 
 ### `staging` Branch
 
-- ✅ Require pull request reviews (1 approval)
-- ✅ Require status checks to pass
-- ✅ Allow force pushes (for resets if needed)
+-   ✅ Require pull request reviews (1 approval)
+-   ✅ Require status checks to pass
+-   ✅ Allow force pushes (for resets if needed)
 
 ### Feature/Bugfix Branches
 
-- No protection rules (developer freedom)
+-   No protection rules (developer freedom)
 
 ---
 
@@ -333,9 +333,9 @@ test: add unit tests for task API
 
 ## 🔗 Related Documentation
 
-- [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Full deployment instructions
-- [BRANCH_PROTECTION_GUIDE.md](./BRANCH_PROTECTION_GUIDE.md) - Setting up branch protection
-- [CI_CD_PIPELINE.md](./CI_CD_PIPELINE.md) - GitHub Actions workflows
+-   [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Full deployment instructions
+-   [BRANCH_PROTECTION_GUIDE.md](./BRANCH_PROTECTION_GUIDE.md) - Setting up branch protection
+-   [CI_CD_PIPELINE.md](./CI_CD_PIPELINE.md) - GitHub Actions workflows
 
 ---
 
@@ -343,18 +343,18 @@ test: add unit tests for task API
 
 ### "My feature isn't deploying"
 
-- Feature branches only run locally. Merge to `staging` to deploy.
+-   Feature branches only run locally. Merge to `staging` to deploy.
 
 ### "Staging and main are out of sync"
 
-- Always merge `staging` → `main`, never the reverse.
-- If you need a hotfix, merge `main` → `staging` after hotfix.
+-   Always merge `staging` → `main`, never the reverse.
+-   If you need a hotfix, merge `main` → `staging` after hotfix.
 
 ### "CI/CD failed on deployment"
 
-- Check GitHub Actions logs for build errors.
-- Verify all required secrets are set.
-- Ensure backend URLs are accessible.
+-   Check GitHub Actions logs for build errors.
+-   Verify all required secrets are set.
+-   Ensure backend URLs are accessible.
 
 ---
 

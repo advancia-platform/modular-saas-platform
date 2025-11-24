@@ -10,25 +10,25 @@
 
 ### Phase 1: Registration Approval System (30 minutes)
 
-- [ ] **Update** `backend/src/routes/auth.ts`
-  - Change registration to create user with `active: false`
-  - Add admin notification on new registration
-  - Return `status: "pending_approval"` in response
+-   [ ] **Update** `backend/src/routes/auth.ts`
+    -   Change registration to create user with `active: false`
+    -   Add admin notification on new registration
+    -   Return `status: "pending_approval"` in response
 
-- [ ] **Add to** `backend/src/routes/admin.ts`
-  - `POST /api/admin/users/approve-registration` - Approve/reject single user
-  - `GET /api/admin/users/pending-approvals` - List pending registrations
-  - `POST /api/admin/users/bulk-approve` - Approve/reject multiple users
+-   [ ] **Add to** `backend/src/routes/admin.ts`
+    -   `POST /api/admin/users/approve-registration` - Approve/reject single user
+    -   `GET /api/admin/users/pending-approvals` - List pending registrations
+    -   `POST /api/admin/users/bulk-approve` - Approve/reject multiple users
 
-- [ ] **Test** registration approval flow
-  - Register new user → Verify `active: false`
-  - Try accessing protected endpoint → Verify `403 "Account disabled"`
-  - Admin approves user → Verify `active: true`
-  - User accesses endpoint → Verify `200` success
+-   [ ] **Test** registration approval flow
+    -   Register new user → Verify `active: false`
+    -   Try accessing protected endpoint → Verify `403 "Account disabled"`
+    -   Admin approves user → Verify `active: true`
+    -   User accesses endpoint → Verify `200` success
 
 ### Phase 2: Protect Unprotected Routes (45 minutes)
 
-- [ ] **Routes to protect** with `authenticateToken` middleware:
+-   [ ] **Routes to protect** with `authenticateToken` middleware:
 
   ```
   ✓ POST /api/debit-card/:userId/adjust-balance
@@ -36,38 +36,38 @@
   ✓ Any other sensitive endpoints
   ```
 
-- [ ] **Verify protected routes**:
-  - Admin routes (`/api/admin/*`) → All protected ✓
-  - User routes → Protected ✓
-  - Public routes → Allowed (health, config, etc.) ✓
+-   [ ] **Verify protected routes**:
+    -   Admin routes (`/api/admin/*`) → All protected ✓
+    -   User routes → Protected ✓
+    -   Public routes → Allowed (health, config, etc.) ✓
 
-- [ ] **Test protection**:
-  - No token → `401 "Access token required"`
-  - Invalid token → `403 "Invalid or expired token"`
-  - Valid token → Access granted ✓
-  - Disabled account → `403 "Account disabled"`
+-   [ ] **Test protection**:
+    -   No token → `401 "Access token required"`
+    -   Invalid token → `403 "Invalid or expired token"`
+    -   Valid token → Access granted ✓
+    -   Disabled account → `403 "Account disabled"`
 
 ### Phase 3: Database Backup & Migration (15 minutes)
 
-- [ ] Backup current database
+-   [ ] Backup current database
 
   ```bash
   pg_dump $DATABASE_URL > backup-$(date +%Y%m%d).sql
   ```
 
-- [ ] **Option A**: Approve all existing users
+-   [ ] **Option A**: Approve all existing users
 
   ```sql
   UPDATE users SET active = true WHERE email IS NOT NULL;
   ```
 
-- [ ] **Option B**: Manual selective approval
-  - Review high-priority accounts
-  - Set `active = true` for specific users
+-   [ ] **Option B**: Manual selective approval
+    -   Review high-priority accounts
+    -   Set `active = true` for specific users
 
 ### Phase 4: Deployment & Testing (30 minutes)
 
-- [ ] Run tests:
+-   [ ] Run tests:
 
   ```bash
   cd backend && npm test
@@ -75,7 +75,7 @@
   npm run lint
   ```
 
-- [ ] Commit changes:
+-   [ ] Commit changes:
 
   ```bash
   git add -A
@@ -83,16 +83,16 @@
   git push origin main
   ```
 
-- [ ] Verify CI/CD workflow passes
-  - Should trigger GitHub Actions workflow
-  - All tests should pass
-  - Auto-deploy to Render if successful
+-   [ ] Verify CI/CD workflow passes
+    -   Should trigger GitHub Actions workflow
+    -   All tests should pass
+    -   Auto-deploy to Render if successful
 
-- [ ] Test in production:
-  - Register new test user
-  - Verify user is pending approval
-  - Admin approves user
-  - Verify user can now access
+-   [ ] Test in production:
+    -   Register new test user
+    -   Verify user is pending approval
+    -   Admin approves user
+    -   Verify user can now access
 
 ---
 
@@ -142,10 +142,10 @@
 
 ### Files Created (Reference)
 
-- `REGISTRATION_APPROVAL_IMPLEMENTATION.md` - Implementation guide
-- `AUTH_REGISTRATION_PATCH.ts` - Updated registration endpoint
-- `ADMIN_APPROVAL_ENDPOINTS.ts` - New admin endpoints
-- This file - Implementation plan
+-   `REGISTRATION_APPROVAL_IMPLEMENTATION.md` - Implementation guide
+-   `AUTH_REGISTRATION_PATCH.ts` - Updated registration endpoint
+-   `ADMIN_APPROVAL_ENDPOINTS.ts` - New admin endpoints
+-   This file - Implementation plan
 
 ---
 
@@ -253,9 +253,11 @@ Authorization: Bearer <USER_TOKEN>
 1. Deploy changes to staging
 2. Test with staging users
 3. Approve all existing users in production:
+
    ```sql
    UPDATE users SET active = true WHERE createdAt < NOW() - INTERVAL '1 day';
    ```
+
 4. Deploy to production
 5. Monitor for issues 24 hours
 6. New registrations now require approval
@@ -264,9 +266,11 @@ Authorization: Bearer <USER_TOKEN>
 
 1. Deploy to production
 2. Approve all inactive users:
+
    ```sql
    UPDATE users SET active = true;
    ```
+
 3. New registrations require approval immediately
 
 ---
@@ -275,17 +279,17 @@ Authorization: Bearer <USER_TOKEN>
 
 ### Metrics to track
 
-- `pending_approvals_count` - Number of pending registrations
-- `registration_requests_per_day` - New registrations
-- `approval_rate` - % of registrations approved vs rejected
-- `auth_failures` - Failed authentication attempts
+-   `pending_approvals_count` - Number of pending registrations
+-   `registration_requests_per_day` - New registrations
+-   `approval_rate` - % of registrations approved vs rejected
+-   `auth_failures` - Failed authentication attempts
 
 ### Admin notifications
 
-- New registration pending (immediate)
-- Bulk approval actions (logged)
-- Failed approvals (logged)
-- Suspicious registration patterns (future)
+-   New registration pending (immediate)
+-   Bulk approval actions (logged)
+-   Failed approvals (logged)
+-   Suspicious registration patterns (future)
 
 ---
 
@@ -334,35 +338,36 @@ UPDATE users SET active = true;
 
 **Issue**: "Account disabled" error for old users
 
-- **Solution**: Approve existing users or run:
+-   **Solution**: Approve existing users or run:
+
   ```sql
   UPDATE users SET active = true WHERE createdAt < NOW() - INTERVAL '1 day';
   ```
 
 **Issue**: Admins not receiving notifications
 
-- **Solution**: Check notification service configuration
-- Run: `POST /api/auth/test-email` to verify SMTP
+-   **Solution**: Check notification service configuration
+-   Run: `POST /api/auth/test-email` to verify SMTP
 
 **Issue**: Cannot approve registrations
 
-- **Solution**: Verify admin token and permissions
-- Check: `requireAdmin` middleware is applied
+-   **Solution**: Verify admin token and permissions
+-   Check: `requireAdmin` middleware is applied
 
 ---
 
 ## ✅ SUCCESS CRITERIA
 
-- ✅ New users created with `active: false`
-- ✅ Existing users maintain current state (or manually approved)
-- ✅ Admin can approve/reject registrations
-- ✅ Pending approvals listed in admin panel
-- ✅ Users get email notifications
-- ✅ Protected routes require valid token
-- ✅ Disabled accounts cannot access endpoints
-- ✅ CI/CD workflow passes
-- ✅ All tests pass
-- ✅ Production deployment successful
+-   ✅ New users created with `active: false`
+-   ✅ Existing users maintain current state (or manually approved)
+-   ✅ Admin can approve/reject registrations
+-   ✅ Pending approvals listed in admin panel
+-   ✅ Users get email notifications
+-   ✅ Protected routes require valid token
+-   ✅ Disabled accounts cannot access endpoints
+-   ✅ CI/CD workflow passes
+-   ✅ All tests pass
+-   ✅ Production deployment successful
 
 ---
 

@@ -154,11 +154,13 @@ NEXT_PUBLIC_RATING_COUNT=1234 // Only if accurate
 
 -   Handles: SIGTERM, SIGINT, uncaught exceptions
 -   Process:
+
   1. Stop accepting new connections
   2. Close HTTP server (30s timeout)
   3. Close database connections
   4. Close Redis connections
   5. Exit cleanly
+
 -   **Result**: No abrupt shutdowns, no data loss
 
 **Maintenance Mode Page** (`frontend/src/app/maintenance/page.tsx`)

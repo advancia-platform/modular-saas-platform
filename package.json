@@ -8,6 +8,7 @@
     "backend"
   ],
   "scripts": {
+    "check": "npm run -s type-check && npm run -s lint && npm test",
     "sass": "sass styles/main.scss public/css/main.css",
     "sass:watch": "sass --watch styles/main.scss:public/css/main.css",
     "sass:build": "sass styles/main.scss public/css/main.css --style compressed",

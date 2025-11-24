@@ -6,15 +6,15 @@ Complete guide for deploying Advancia Pay Ledger with Cloudflare R2 object stora
 
 ## 📋 Table of Contents
 
-- [Architecture Overview](#architecture-overview)
-- [Prerequisites](#prerequisites)
-- [Secrets Management](#secrets-management)
-- [Local Development](#local-development)
-- [Docker Build & Push](#docker-build--push)
-- [Production Deployment](#production-deployment)
-- [CI/CD Pipeline](#cicd-pipeline)
-- [Security Best Practices](#security-best-practices)
-- [Troubleshooting](#troubleshooting)
+-   [Architecture Overview](#architecture-overview)
+-   [Prerequisites](#prerequisites)
+-   [Secrets Management](#secrets-management)
+-   [Local Development](#local-development)
+-   [Docker Build & Push](#docker-build--push)
+-   [Production Deployment](#production-deployment)
+-   [CI/CD Pipeline](#cicd-pipeline)
+-   [Security Best Practices](#security-best-practices)
+-   [Troubleshooting](#troubleshooting)
 
 ---
 
@@ -42,12 +42,12 @@ Complete guide for deploying Advancia Pay Ledger with Cloudflare R2 object stora
 
 **Key Components:**
 
-- **Backend**: Node.js 20 + Express + TypeScript + Prisma
-- **Database**: PostgreSQL 16 (containerized or managed service)
-- **Cache**: Redis 7 (session storage, rate limiting)
-- **Storage**: Cloudflare R2 (S3-compatible object storage)
-- **Container Registry**: GitHub Container Registry (ghcr.io)
-- **Deployment**: Docker Compose + GitHub Actions SSH
+-   **Backend**: Node.js 20 + Express + TypeScript + Prisma
+-   **Database**: PostgreSQL 16 (containerized or managed service)
+-   **Cache**: Redis 7 (session storage, rate limiting)
+-   **Storage**: Cloudflare R2 (S3-compatible object storage)
+-   **Container Registry**: GitHub Container Registry (ghcr.io)
+-   **Deployment**: Docker Compose + GitHub Actions SSH
 
 ---
 
@@ -73,11 +73,12 @@ Complete guide for deploying Advancia Pay Ledger with Cloudflare R2 object stora
    ```
 
    You'll receive:
-   - **Access Key ID**: `<YOUR_R2_ACCESS_KEY_ID>`
-   - **Secret Access Key**: `<YOUR_R2_SECRET_ACCESS_KEY>`
-   - **Endpoint**: `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
+   -   **Access Key ID**: `<YOUR_R2_ACCESS_KEY_ID>`
+   -   **Secret Access Key**: `<YOUR_R2_SECRET_ACCESS_KEY>`
+   -   **Endpoint**: `https://<ACCOUNT_ID>.r2.cloudflarestorage.com`
 
 3. **Note Your Account ID:**
+
    ```bash
    # Found in Cloudflare Dashboard URL:
    # https://dash.cloudflare.com/<ACCOUNT_ID>/r2/overview
@@ -107,7 +108,7 @@ Add the following secrets to your GitHub repository:
 
 **Navigate to:** `Settings → Secrets and variables → Actions → New repository secret`
 
-#### Required Secrets:
+#### Required Secrets
 
 | Secret Name                       | Description                    | Example Value                                   |
 | --------------------------------- | ------------------------------ | ----------------------------------------------- |
@@ -225,12 +226,12 @@ docker-compose exec backend npx prisma studio
 
 ### 3. Development URLs
 
-- **Backend API**: http://localhost:4000/api
-- **Frontend**: http://localhost:3000
-- **PostgreSQL**: localhost:5433 (mapped from container 5432)
-- **Redis**: localhost:6379
-- **RabbitMQ Management**: http://localhost:15672 (user: `advancia`, pass: see docker-compose.yml)
-- **Prisma Studio**: http://localhost:5555
+-   **Backend API**: <http://localhost:4000/api>
+-   **Frontend**: <http://localhost:3000>
+-   **PostgreSQL**: localhost:5433 (mapped from container 5432)
+-   **Redis**: localhost:6379
+-   **RabbitMQ Management**: <http://localhost:15672> (user: `advancia`, pass: see docker-compose.yml)
+-   **Prisma Studio**: <http://localhost:5555>
 
 ---
 
@@ -258,8 +259,8 @@ docker push ghcr.io/advancia-platform/modular-saas-platform/backend:latest
 
 **Triggered on:**
 
-- Push to `main`, `staging`, or `chore/**` branches
-- Pull requests to `main` or `staging`
+-   Push to `main`, `staging`, or `chore/**` branches
+-   Pull requests to `main` or `staging`
 
 **Workflow file:** `.github/workflows/docker-build-push.yml`
 
@@ -300,7 +301,7 @@ git push origin staging
 # 6. Health check validation
 ```
 
-**Staging URL:** https://staging.advancia.io
+**Staging URL:** <https://staging.advancia.io>
 
 ### Production Deployment (Manual Approval)
 
@@ -318,7 +319,7 @@ git push origin main
 #    - If unhealthy: rollback to previous container
 ```
 
-**Production URL:** https://api.advancia.io
+**Production URL:** <https://api.advancia.io>
 
 ---
 
@@ -408,18 +409,18 @@ fi
 
 ✅ **DO:**
 
-- Store secrets in GitHub Actions → Secrets (encrypted at rest)
-- Inject secrets at deployment time (never bake into images)
-- Use scoped R2 API tokens (least privilege)
-- Rotate secrets quarterly
-- Use `.env.production.example` with placeholders for documentation
+-   Store secrets in GitHub Actions → Secrets (encrypted at rest)
+-   Inject secrets at deployment time (never bake into images)
+-   Use scoped R2 API tokens (least privilege)
+-   Rotate secrets quarterly
+-   Use `.env.production.example` with placeholders for documentation
 
 ❌ **DON'T:**
 
-- Commit `.env.production` to Git
-- Hardcode secrets in Dockerfile or docker-compose.yml
-- Use global Cloudflare API keys (use scoped R2 tokens)
-- Share secrets via Slack/email (use 1Password or similar)
+-   Commit `.env.production` to Git
+-   Hardcode secrets in Dockerfile or docker-compose.yml
+-   Use global Cloudflare API keys (use scoped R2 tokens)
+-   Share secrets via Slack/email (use 1Password or similar)
 
 ### 2. Docker Security
 
@@ -439,17 +440,17 @@ HEALTHCHECK --interval=30s CMD node -e "require('http').get('http://localhost:40
 
 ### 3. Network Security
 
-- Use private Docker networks (`networks: [app_net]`)
-- Expose only necessary ports (4000 for API, not PostgreSQL)
-- Use TLS/HTTPS in production (Cloudflare proxy or Let's Encrypt)
-- Firewall rules: Allow only GitHub Actions IPs for SSH (if possible)
+-   Use private Docker networks (`networks: [app_net]`)
+-   Expose only necessary ports (4000 for API, not PostgreSQL)
+-   Use TLS/HTTPS in production (Cloudflare proxy or Let's Encrypt)
+-   Firewall rules: Allow only GitHub Actions IPs for SSH (if possible)
 
 ### 4. Cloudflare R2 Security
 
-- **Bucket Policy**: Private by default (no public access)
-- **Access Control**: Use IAM-style policies (least privilege)
-- **Encryption**: Enable R2 encryption at rest (enabled by default)
-- **Audit Logs**: Enable Cloudflare Logpush for R2 access logs
+-   **Bucket Policy**: Private by default (no public access)
+-   **Access Control**: Use IAM-style policies (least privilege)
+-   **Encryption**: Enable R2 encryption at rest (enabled by default)
+-   **Audit Logs**: Enable Cloudflare Logpush for R2 access logs
 
 ---
 
@@ -468,17 +469,19 @@ remote: - Secret scanning found secrets in commits
 
 1. Secrets are whitelisted in `.github/secret-scanning.yml`
 2. Commit and push this file first:
+
    ```bash
    git add .github/secret-scanning.yml
    git commit -m "chore: add secret scanning allowlist for rotated keys"
    git push origin chore/ci-auto-release-auto-label-decimal-fixes
    ```
+
 3. Once merged, subsequent pushes will succeed
 
 **Alternative (if allowlist doesn't work):**
 
-- Visit GitHub-provided unblock URLs (shown in push error)
-- Click "Allow secret" for each rotated key
+-   Visit GitHub-provided unblock URLs (shown in push error)
+-   Click "Allow secret" for each rotated key
 
 ### Docker Build Fails with Prisma Error
 
@@ -507,9 +510,11 @@ Error: connect ETIMEDOUT <ACCOUNT_ID>.r2.cloudflarestorage.com:443
 **Solution:**
 
 1. Verify R2 endpoint format:
+
    ```bash
    CLOUDFLARE_R2_ENDPOINT=https://<ACCOUNT_ID>.r2.cloudflarestorage.com
    ```
+
 2. Check R2 API token permissions (must have Object Read & Write)
 3. Verify bucket name matches token scope
 
@@ -524,14 +529,19 @@ curl: (7) Failed to connect to localhost:4000: Connection refused
 **Solution:**
 
 1. Check backend logs:
+
    ```bash
    docker-compose logs backend
    ```
+
 2. Verify environment variables are set:
+
    ```bash
    docker-compose exec backend printenv | grep DATABASE_URL
    ```
+
 3. Check database connectivity:
+
    ```bash
    docker-compose exec backend npx prisma db push --skip-generate
    ```
@@ -540,10 +550,10 @@ curl: (7) Failed to connect to localhost:4000: Connection refused
 
 ## 📚 Additional Resources
 
-- **Cloudflare R2 Docs**: https://developers.cloudflare.com/r2/
-- **Docker Security Best Practices**: https://docs.docker.com/develop/security-best-practices/
-- **GitHub Actions Docs**: https://docs.github.com/en/actions
-- **Prisma Deployment Guide**: https://www.prisma.io/docs/guides/deployment
+-   **Cloudflare R2 Docs**: <https://developers.cloudflare.com/r2/>
+-   **Docker Security Best Practices**: <https://docs.docker.com/develop/security-best-practices/>
+-   **GitHub Actions Docs**: <https://docs.github.com/en/actions>
+-   **Prisma Deployment Guide**: <https://www.prisma.io/docs/guides/deployment>
 
 ---
 
@@ -603,8 +613,8 @@ client.send(new ListObjectsV2Command({ Bucket: process.env.CLOUDFLARE_R2_BUCKET 
 
 ✅ **Deployment checklist complete!** You now have:
 
-- Cloudflare R2 integrated for object storage
-- Docker multi-stage builds optimized for production
-- GitHub Actions CI/CD with blue-green deployment
-- Secret management via GitHub Secrets (never baked into images)
-- Automated staging deploys + manual production approvals
+-   Cloudflare R2 integrated for object storage
+-   Docker multi-stage builds optimized for production
+-   GitHub Actions CI/CD with blue-green deployment
+-   Secret management via GitHub Secrets (never baked into images)
+-   Automated staging deploys + manual production approvals

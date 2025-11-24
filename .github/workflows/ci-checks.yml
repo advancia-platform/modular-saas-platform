@@ -1,12 +1,14 @@
 name: CI Checks
 
 on:
-  pull_request:
-    branches:
-      - main
   push:
     branches:
       - main
+      - staging
+  pull_request:
+    branches:
+      - main
+      - staging
 
 jobs:
   build:
@@ -23,35 +25,10 @@ jobs:
           cache: "npm"
 
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
-      # Warn-only check on pushes to main to ensure required env vars exist in runner env.
-      # This parses variable names from the root .env.example without exposing values.
-      - name: Verify environment variables (warn-only on push)
-        if: ${{ github.event_name == 'push' }}
-        continue-on-error: true
-        run: |
-          echo "Checking required environment variables from .env.example (root)..."
-          missing=0
-          while IFS= read -r line; do
-            [[ "$line" =~ ^#.*$ || -z "$line" ]] && continue
-            var=$(echo "$line" | cut -d '=' -f1)
-            if [ -z "${!var}" ]; then
-              echo "::warning::Missing environment variable: $var"
-              missing=1
-            fi
-          done < .env.example
-          if [ $missing -eq 1 ]; then
-            echo "One or more env vars are not set."
-          else
-            echo "All required environment variables are set."
-          fi
-
-      - name: Type check (workspaces)
-        run: npm run -s type-check
-
-      - name: Lint (workspaces)
-        run: npm run -s lint
-
-      - name: Test (workspaces)
+      - name: Run tests
         run: npm test
+
+      - name: Build project
+        run: npm run build

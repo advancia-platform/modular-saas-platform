@@ -15,31 +15,31 @@ This release introduces the **Advancia Marketplace MVP**, enabling vendors to on
 
 ### 🏪 Marketplace UI
 
-- **Marketplace Route** → `/marketplace` with searchable listings and filters
-- **Product Discovery** → Browse vendors and their offerings with category filtering
-- **Listing Details** → Product descriptions, pricing, vendor ratings, and reviews
-- **Search & Sort** → Full-text search across listings and category-based sorting
+-   **Marketplace Route** → `/marketplace` with searchable listings and filters
+-   **Product Discovery** → Browse vendors and their offerings with category filtering
+-   **Listing Details** → Product descriptions, pricing, vendor ratings, and reviews
+-   **Search & Sort** → Full-text search across listings and category-based sorting
 
 ### 👨‍💼 Vendor Dashboard
 
-- **Vendor Onboarding** → Simple signup and verification process
-- **Listings Management** → Upload, edit, and manage product/integration listings
-- **Analytics Dashboard** → View sales, revenue, and customer metrics
-- **Payout Settings** → Configure bank account for Stripe Connect payouts
+-   **Vendor Onboarding** → Simple signup and verification process
+-   **Listings Management** → Upload, edit, and manage product/integration listings
+-   **Analytics Dashboard** → View sales, revenue, and customer metrics
+-   **Payout Settings** → Configure bank account for Stripe Connect payouts
 
 ### 🛍️ Checkout Flow
 
-- **Stripe Checkout Integration** → Secure, PCI-compliant payment processing
-- **Order Confirmation** → Real-time confirmation emails and in-app notifications
-- **Order History** → Customers can view all purchases and download invoices
-- **Vendor Notifications** → Sellers notified immediately of new orders
+-   **Stripe Checkout Integration** → Secure, PCI-compliant payment processing
+-   **Order Confirmation** → Real-time confirmation emails and in-app notifications
+-   **Order History** → Customers can view all purchases and download invoices
+-   **Vendor Notifications** → Sellers notified immediately of new orders
 
 ### 📬 Real-Time Notifications
 
-- **Purchase Alerts** → Instant notifications when orders are received (via Socket.IO)
-- **Email Confirmations** → Async email sent to both customer and vendor
-- **In-App Toast Messages** → Immediate feedback for user actions
-- **Notification Center** → Persistent history of all marketplace events
+-   **Purchase Alerts** → Instant notifications when orders are received (via Socket.IO)
+-   **Email Confirmations** → Async email sent to both customer and vendor
+-   **In-App Toast Messages** → Immediate feedback for user actions
+-   **Notification Center** → Persistent history of all marketplace events
 
 ---
 
@@ -47,21 +47,21 @@ This release introduces the **Advancia Marketplace MVP**, enabling vendors to on
 
 ### API Endpoints (New)
 
-- `GET /api/marketplace/listings` → Paginated listing search with filters
-- `GET /api/marketplace/listings/:id` → Listing details with vendor profile
-- `POST /api/marketplace/listings` → Create new listing (vendor-only)
-- `PATCH /api/marketplace/listings/:id` → Update listing (vendor-only)
-- `DELETE /api/marketplace/listings/:id` → Delete listing (vendor-only)
-- `POST /api/checkout` → Initiate Stripe Checkout session
-- `GET /api/orders` → Retrieve customer order history
-- `POST /api/vendors/register` → Vendor onboarding
+-   `GET /api/marketplace/listings` → Paginated listing search with filters
+-   `GET /api/marketplace/listings/:id` → Listing details with vendor profile
+-   `POST /api/marketplace/listings` → Create new listing (vendor-only)
+-   `PATCH /api/marketplace/listings/:id` → Update listing (vendor-only)
+-   `DELETE /api/marketplace/listings/:id` → Delete listing (vendor-only)
+-   `POST /api/checkout` → Initiate Stripe Checkout session
+-   `GET /api/orders` → Retrieve customer order history
+-   `POST /api/vendors/register` → Vendor onboarding
 
 ### Stripe Connect Integration
 
-- **Vendor Accounts** → Each vendor gets Stripe Connect account for payouts
-- **Platform Fees** → Configurable fee structure (e.g., 10% per transaction)
-- **Automated Payouts** → Weekly transfers to vendor bank accounts
-- **Transaction Tracking** → Full audit trail in both Stripe and Advancia DB
+-   **Vendor Accounts** → Each vendor gets Stripe Connect account for payouts
+-   **Platform Fees** → Configurable fee structure (e.g., 10% per transaction)
+-   **Automated Payouts** → Weekly transfers to vendor bank accounts
+-   **Transaction Tracking** → Full audit trail in both Stripe and Advancia DB
 
 ### Database Schema (New Tables)
 
@@ -102,9 +102,9 @@ model Vendor {
 
 ### GitHub Actions Updates
 
-- **Marketplace Tests** → New test suite for listing CRUD and checkout flow
-- **E2E Tests** → Playwright tests for vendor onboarding and purchase flow
-- **Performance Tests** → Load testing for marketplace search endpoint
+-   **Marketplace Tests** → New test suite for listing CRUD and checkout flow
+-   **E2E Tests** → Playwright tests for vendor onboarding and purchase flow
+-   **Performance Tests** → Load testing for marketplace search endpoint
 
 ---
 
@@ -112,28 +112,28 @@ model Vendor {
 
 ### New Guides
 
-- **MARKETPLACE_README.md** → Architecture, payment flow, vendor onboarding guide
-- **VENDOR_INTEGRATION_GUIDE.md** → Step-by-step for vendors to list products
-- **STRIPE_CONNECT_SETUP.md** → Configuring Stripe Connect for vendor payouts
-- **MARKETPLACE_API_REFERENCE.md** → Full API documentation with curl examples
+-   **MARKETPLACE_README.md** → Architecture, payment flow, vendor onboarding guide
+-   **VENDOR_INTEGRATION_GUIDE.md** → Step-by-step for vendors to list products
+-   **STRIPE_CONNECT_SETUP.md** → Configuring Stripe Connect for vendor payouts
+-   **MARKETPLACE_API_REFERENCE.md** → Full API documentation with curl examples
 
 ### Updated Guides
 
-- **REACT_BEST_PRACTICES.md** → Added marketplace component patterns
-- **SPRINT_BOARD.md** → Marketplace tasks marked complete
-- **ROADMAP_CONSOLIDATED.md** → Sprint 3 preview (seller profiles, reviews, analytics)
+-   **REACT_BEST_PRACTICES.md** → Added marketplace component patterns
+-   **SPRINT_BOARD.md** → Marketplace tasks marked complete
+-   **ROADMAP_CONSOLIDATED.md** → Sprint 3 preview (seller profiles, reviews, analytics)
 
 ---
 
 ## 🔒 Security
 
-- ✅ Stripe webhook signature verification (prevent unauthorized access)
-- ✅ Vendor role-based access control (only vendors can create listings)
-- ✅ Customer data encryption (PII handled securely)
-- ✅ SQL injection prevention (Prisma ORM)
-- ✅ XSS protection (React sanitization + DOMPurify)
-- ✅ CSRF tokens on all state-changing endpoints
-- ✅ Rate limiting on checkout endpoint (prevent payment spam)
+-   ✅ Stripe webhook signature verification (prevent unauthorized access)
+-   ✅ Vendor role-based access control (only vendors can create listings)
+-   ✅ Customer data encryption (PII handled securely)
+-   ✅ SQL injection prevention (Prisma ORM)
+-   ✅ XSS protection (React sanitization + DOMPurify)
+-   ✅ CSRF tokens on all state-changing endpoints
+-   ✅ Rate limiting on checkout endpoint (prevent payment spam)
 
 ---
 
@@ -141,19 +141,19 @@ model Vendor {
 
 ### Test Coverage
 
-- ✅ Unit tests: Listing CRUD, vendor authentication, payment logic
-- ✅ Integration tests: Full checkout flow, Stripe webhook handling
-- ✅ E2E tests: Vendor signup → listing creation → purchase flow
-- ✅ Performance tests: Marketplace search with 10k+ listings
+-   ✅ Unit tests: Listing CRUD, vendor authentication, payment logic
+-   ✅ Integration tests: Full checkout flow, Stripe webhook handling
+-   ✅ E2E tests: Vendor signup → listing creation → purchase flow
+-   ✅ Performance tests: Marketplace search with 10k+ listings
 
 ### Verified Scenarios
 
-- ✅ Vendor onboarding (email verification, Stripe Connect signup)
-- ✅ Listing creation and filtering (search, sort, pagination)
-- ✅ Test payment via Stripe (card decline, refund scenarios)
-- ✅ Order confirmation emails (sent to customer and vendor)
-- ✅ Real-time notifications (Socket.IO events broadcast)
-- ✅ Rollback scenario (if Stripe payment fails mid-checkout)
+-   ✅ Vendor onboarding (email verification, Stripe Connect signup)
+-   ✅ Listing creation and filtering (search, sort, pagination)
+-   ✅ Test payment via Stripe (card decline, refund scenarios)
+-   ✅ Order confirmation emails (sent to customer and vendor)
+-   ✅ Real-time notifications (Socket.IO events broadcast)
+-   ✅ Rollback scenario (if Stripe payment fails mid-checkout)
 
 ---
 
@@ -161,15 +161,15 @@ model Vendor {
 
 With v1.3.0, the platform evolves from **SaaS into a SaaS-enabled marketplace**, combining scalable software with ecosystem growth:
 
-- **For Customers**: Access third-party products/integrations directly in Advancia
-- **For Vendors**: Tap into Advancia's user base without maintaining separate infrastructure
-- **For Platform**: New revenue stream via transaction fees + ecosystem engagement
+-   **For Customers**: Access third-party products/integrations directly in Advancia
+-   **For Vendors**: Tap into Advancia's user base without maintaining separate infrastructure
+-   **For Platform**: New revenue stream via transaction fees + ecosystem engagement
 
 **Foundation set for**:
 
-- Sprint 3: Seller profiles, customer reviews, marketplace analytics
-- Sprint 4: Advanced filtering, recommendations engine, bulk exports
-- Sprint 5: Mobile app marketplace, vendor API access, multi-currency support
+-   Sprint 3: Seller profiles, customer reviews, marketplace analytics
+-   Sprint 4: Advanced filtering, recommendations engine, bulk exports
+-   Sprint 5: Mobile app marketplace, vendor API access, multi-currency support
 
 ---
 
@@ -220,18 +220,18 @@ curl -X GET http://localhost:4000/api/marketplace/listings
 
 ### From v1.2.0
 
-- ✅ Database migration runs automatically (no manual schema changes needed)
-- ✅ Existing users remain unaffected (marketplace is opt-in)
-- ✅ No downtime required (blue-green deployment)
-- ✅ Rollback available (if needed, revert to v1.2.0)
+-   ✅ Database migration runs automatically (no manual schema changes needed)
+-   ✅ Existing users remain unaffected (marketplace is opt-in)
+-   ✅ No downtime required (blue-green deployment)
+-   ✅ Rollback available (if needed, revert to v1.2.0)
 
 ---
 
 ## 📞 Support & Feedback
 
-- **Questions?** Check `MARKETPLACE_README.md` or `VENDOR_INTEGRATION_GUIDE.md`
-- **Report bugs**: [GitHub Issues](https://github.com/advancia-platform/modular-saas-platform/issues)
-- **Feature requests**: [GitHub Discussions](https://github.com/advancia-platform/modular-saas-platform/discussions)
+-   **Questions?** Check `MARKETPLACE_README.md` or `VENDOR_INTEGRATION_GUIDE.md`
+-   **Report bugs**: [GitHub Issues](https://github.com/advancia-platform/modular-saas-platform/issues)
+-   **Feature requests**: [GitHub Discussions](https://github.com/advancia-platform/modular-saas-platform/discussions)
 
 ---
 

@@ -2,9 +2,9 @@
 
 ## Current Render Service
 
-- **Service Name**: advancia-backend-upnrf
-- **Region**: Oregon (US West)
-- **URL**: <https://advancia-backend-upnrf.onrender.com>
+-   **Service Name**: advancia-backend-upnrf
+-   **Region**: Oregon (US West)
+-   **URL**: <https://advancia-backend-upnrf.onrender.com>
 
 ## Environment Variables to Update
 
@@ -91,11 +91,11 @@ HOST=0.0.0.0
    ```
 
 2. **Create API Key**
-   - Go to **API Keys** in Resend dashboard
-   - Click **Create API Key**
-   - Name: "Advancia Pay Production"
-   - Permissions: **Full Access** (or "Sending Access" minimum)
-   - Copy the key (starts with `re_`)
+   -   Go to **API Keys** in Resend dashboard
+   -   Click **Create API Key**
+   -   Name: "Advancia Pay Production"
+   -   Permissions: **Full Access** (or "Sending Access" minimum)
+   -   Copy the key (starts with `re_`)
 
 3. **Update in Render**
 
@@ -135,10 +135,10 @@ curl -X POST https://advancia-backend-upnrf.onrender.com/api/test/email/welcome 
 
 Your current CORS settings allow:
 
-- `https://modular-saas-platform-frontend-jej5uyfbg-advanciapayledger.vercel.app` (Vercel preview)
-- `https://admin.advanciapayledger.com` (Custom admin domain)
-- `https://www.advanciapayledger.com` (Custom main domain)
-- `http://localhost:3000` (Local development)
+-   `https://modular-saas-platform-frontend-jej5uyfbg-advanciapayledger.vercel.app` (Vercel preview)
+-   `https://admin.advanciapayledger.com` (Custom admin domain)
+-   `https://www.advanciapayledger.com` (Custom main domain)
+-   `http://localhost:3000` (Local development)
 
 **When you set up custom domains:**
 
@@ -148,19 +148,19 @@ Your current CORS settings allow:
 
 ### 🔒 Security Checklist
 
-- ✅ All secrets are secure (JWT, Stripe, VAPID)
-- ✅ SMTP credentials configured (Gmail backup)
-- ⚠️ **NEED**: Resend API key for primary email
-- ✅ Database connection secure (SSL enabled)
-- ✅ HTTPS enforced on Render
+-   ✅ All secrets are secure (JWT, Stripe, VAPID)
+-   ✅ SMTP credentials configured (Gmail backup)
+-   ⚠️ **NEED**: Resend API key for primary email
+-   ✅ Database connection secure (SSL enabled)
+-   ✅ HTTPS enforced on Render
 
 ### 📧 Email Setup Status
 
-- **Gmail SMTP**: ✅ Configured (backup for notifications)
-- **Resend API**: ⚠️ Needs API key
-- **Custom Domain Email**: ⏳ Pending (see EMAIL_SETUP_GUIDE.md)
-- **Email Templates**: ✅ 6 templates ready
-- **Test Endpoints**: ✅ 8 test routes available
+-   **Gmail SMTP**: ✅ Configured (backup for notifications)
+-   **Resend API**: ⚠️ Needs API key
+-   **Custom Domain Email**: ⏳ Pending (see EMAIL_SETUP_GUIDE.md)
+-   **Email Templates**: ✅ 6 templates ready
+-   **Test Endpoints**: ✅ 8 test routes available
 
 ### 🌐 Custom Domain Setup (Next Steps)
 
@@ -226,7 +226,7 @@ RESEND_API_KEY=re_... (your key from resend.com)
 
 ## Support Resources
 
-- **Render Docs**: <https://render.com/docs/environment-variables>
-- **Resend Docs**: <https://resend.com/docs/introduction>
-- **Email Setup**: See `EMAIL_SETUP_GUIDE.md` in repo
-- **Domain Setup**: See `RENDER_CUSTOM_DOMAIN_SETUP.md` in repo
+-   **Render Docs**: <https://render.com/docs/environment-variables>
+-   **Resend Docs**: <https://resend.com/docs/introduction>
+-   **Email Setup**: See `EMAIL_SETUP_GUIDE.md` in repo
+-   **Domain Setup**: See `RENDER_CUSTOM_DOMAIN_SETUP.md` in repo

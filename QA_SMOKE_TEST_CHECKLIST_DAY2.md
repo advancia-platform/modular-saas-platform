@@ -19,10 +19,10 @@
 
 **Verification**:
 
-- [x] Page loads without 5xx errors
-- [x] Console shows no critical errors
-- [x] Navigation links respond within 2 seconds
-- [x] CSS/styling renders correctly
+-   [x] Page loads without 5xx errors
+-   [x] Console shows no critical errors
+-   [x] Navigation links respond within 2 seconds
+-   [x] CSS/styling renders correctly
 
 **Pass/Fail**: **\_\_**
 
@@ -34,16 +34,16 @@
 
 1. Navigate to login page
 2. Enter test credentials (if email-based):
-   - Email: `test@advancia.io`
-   - Code: Use OTP from email or test account
+   -   Email: `test@advancia.io`
+   -   Code: Use OTP from email or test account
 3. Verify successful redirect to dashboard
 
 **Verification**:
 
-- [x] Login form submits without errors
-- [x] OTP/password validation works
-- [x] Redirect to dashboard succeeds
-- [x] Session cookie set (`Authorization` header present)
+-   [x] Login form submits without errors
+-   [x] OTP/password validation works
+-   [x] Redirect to dashboard succeeds
+-   [x] Session cookie set (`Authorization` header present)
 
 **Pass/Fail**: **\_\_**
 
@@ -55,17 +55,17 @@
 
 1. Navigate to signup page
 2. Fill in new test account:
-   - Email: `newtest-<timestamp>@advancia.io`
-   - Password: `TestPass123!` (if password signup enabled)
-   - Accept terms & conditions
+   -   Email: `newtest-<timestamp>@advancia.io`
+   -   Password: `TestPass123!` (if password signup enabled)
+   -   Accept terms & conditions
 3. Submit and verify confirmation email
 
 **Verification**:
 
-- [x] Form validates inputs correctly
-- [x] No SQL injection exploits work (e.g., entering `' OR '1'='1`)
-- [x] Confirmation email received within 2 minutes
-- [x] Clicking email link activates account
+-   [x] Form validates inputs correctly
+-   [x] No SQL injection exploits work (e.g., entering `' OR '1'='1`)
+-   [x] Confirmation email received within 2 minutes
+-   [x] Clicking email link activates account
 
 **Pass/Fail**: **\_\_**
 
@@ -77,18 +77,18 @@
 
 1. Log in as test user
 2. Click through core dashboard routes:
-   - `/dashboard` (home)
-   - `/dashboard/settings` (user settings)
-   - `/dashboard/profile` (profile page)
-   - `/marketplace` (if enabled)
+   -   `/dashboard` (home)
+   -   `/dashboard/settings` (user settings)
+   -   `/dashboard/profile` (profile page)
+   -   `/marketplace` (if enabled)
 3. Verify no layout breaks or missing components
 
 **Verification**:
 
-- [x] All routes load without errors
-- [x] Sidebar/navigation menu responsive
-- [x] No console errors on route changes
-- [x] Back button works correctly
+-   [x] All routes load without errors
+-   [x] Sidebar/navigation menu responsive
+-   [x] No console errors on route changes
+-   [x] Back button works correctly
 
 **Pass/Fail**: **\_\_**
 
@@ -100,21 +100,21 @@
 
 1. Navigate to `/marketplace`
 2. Verify listing cards display:
-   - Product image/placeholder
-   - Product title and description
-   - Price and vendor name
-   - "View Details" or "Checkout" button
+   -   Product image/placeholder
+   -   Product title and description
+   -   Price and vendor name
+   -   "View Details" or "Checkout" button
 3. Test search bar: type "test" and verify results filter
 4. Test category filter (if available)
 5. Verify pagination works (click through pages)
 
 **Verification**:
 
-- [x] Listing cards render without layout breaks
-- [x] Search returns results within 2 seconds
-- [x] Filters update listing display dynamically
-- [x] Pagination links work correctly
-- [x] No 5xx errors in network tab
+-   [x] Listing cards render without layout breaks
+-   [x] Search returns results within 2 seconds
+-   [x] Filters update listing display dynamically
+-   [x] Pagination links work correctly
+-   [x] No 5xx errors in network tab
 
 **Pass/Fail**: **\_\_**
 
@@ -127,18 +127,18 @@
 1. Select a listing and click "Checkout" (or "Buy Now")
 2. Verify Stripe Checkout page loads
 3. Enter test card: **4242 4242 4242 4242**
-   - Expiry: **12/25**
-   - CVC: **123**
-   - Zip: **12345**
+   -   Expiry: **12/25**
+   -   CVC: **123**
+   -   Zip: **12345**
 4. Complete purchase and verify confirmation page
 
 **Verification**:
 
-- [x] Stripe Checkout iframe loads
-- [x] Test card accepted (no decline)
-- [x] Confirmation page displays order details
-- [x] Order ID visible in UI
-- [x] No 5xx errors during payment
+-   [x] Stripe Checkout iframe loads
+-   [x] Test card accepted (no decline)
+-   [x] Confirmation page displays order details
+-   [x] Order ID visible in UI
+-   [x] No 5xx errors during payment
 
 **Pass/Fail**: **\_\_**
 
@@ -155,10 +155,10 @@
 
 **Verification**:
 
-- [x] Toast notification appears in < 3 seconds
-- [x] Notification content matches action (e.g., "Order confirmed")
-- [x] Clicking notification navigates to order details
-- [x] No console errors in either window
+-   [x] Toast notification appears in < 3 seconds
+-   [x] Notification content matches action (e.g., "Order confirmed")
+-   [x] Clicking notification navigates to order details
+-   [x] No console errors in either window
 
 **Pass/Fail**: **\_\_**
 
@@ -171,18 +171,18 @@
 1. Open Chrome DevTools (F12) → Device Toolbar
 2. Select **iPhone 12** or similar mobile device
 3. Navigate through key pages:
-   - Homepage
-   - Marketplace listing
-   - Checkout flow
+   -   Homepage
+   -   Marketplace listing
+   -   Checkout flow
 4. Verify no layout breaks or horizontal scrolling
 
 **Verification**:
 
-- [x] Navigation collapses to hamburger menu
-- [x] Text is readable (font size sufficient)
-- [x] Buttons are clickable (not too small)
-- [x] Forms stack vertically (not side-by-side)
-- [x] No horizontal scroll needed
+-   [x] Navigation collapses to hamburger menu
+-   [x] Text is readable (font size sufficient)
+-   [x] Buttons are clickable (not too small)
+-   [x] Forms stack vertically (not side-by-side)
+-   [x] No horizontal scroll needed
 
 **Pass/Fail**: **\_\_**
 
@@ -210,10 +210,10 @@ curl -X GET https://staging.advancia.io/api/health
 
 **Verification**:
 
-- [x] HTTP 200 response
-- [x] `"status": "ok"` (not "degraded" or "error")
-- [x] Version matches expected release
-- [x] Response time < 500ms
+-   [x] HTTP 200 response
+-   [x] `"status": "ok"` (not "degraded" or "error")
+-   [x] Version matches expected release
+-   [x] Response time < 500ms
 
 **Pass/Fail**: **\_\_**
 
@@ -234,10 +234,10 @@ curl -X POST https://staging.advancia.io/api/auth/login \
 
 **Verification**:
 
-- [x] Login endpoint returns 200 with JWT token
-- [x] Invalid credentials return 401 (not 5xx error)
-- [x] Token can be used for subsequent requests
-- [x] Token expiration works (if tested)
+-   [x] Login endpoint returns 200 with JWT token
+-   [x] Invalid credentials return 401 (not 5xx error)
+-   [x] Token can be used for subsequent requests
+-   [x] Token expiration works (if tested)
 
 **Pass/Fail**: **\_\_**
 
@@ -257,10 +257,10 @@ curl -X GET "https://staging.advancia.io/api/marketplace/listings?page=1&limit=2
 
 **Verification**:
 
-- [x] HTTP 200 response
-- [x] Returns valid JSON array
-- [x] Includes pagination info (page, limit, total)
-- [x] Response time < 2 seconds with 100+ listings
+-   [x] HTTP 200 response
+-   [x] Returns valid JSON array
+-   [x] Includes pagination info (page, limit, total)
+-   [x] Response time < 2 seconds with 100+ listings
 
 **Pass/Fail**: **\_\_**
 
@@ -282,10 +282,10 @@ psql $DATABASE_URL -c "SELECT COUNT(*) FROM \"User\";"
 
 **Verification**:
 
-- [x] SSH connection succeeds
-- [x] Database query completes within 2 seconds
-- [x] No connection timeouts or error messages
-- [x] Data consistency verified (e.g., user count reasonable)
+-   [x] SSH connection succeeds
+-   [x] Database query completes within 2 seconds
+-   [x] No connection timeouts or error messages
+-   [x] Data consistency verified (e.g., user count reasonable)
 
 **Pass/Fail**: **\_\_**
 
@@ -307,10 +307,10 @@ curl -X POST https://staging.advancia.io/api/test/stripe-webhook \
 
 **Verification**:
 
-- [x] Webhook endpoint responds without 5xx errors
-- [x] Webhook payload validation works
-- [x] Stripe test transaction recorded in logs
-- [x] No duplicate transaction processing
+-   [x] Webhook endpoint responds without 5xx errors
+-   [x] Webhook payload validation works
+-   [x] Stripe test transaction recorded in logs
+-   [x] No duplicate transaction processing
 
 **Pass/Fail**: **\_\_**
 
@@ -332,10 +332,10 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
 
 **Verification**:
 
-- [x] Socket connects without errors
-- [x] Connection ID assigned and visible
-- [x] Events received in real-time (< 1 second)
-- [x] No memory leaks (check DevTools memory usage)
+-   [x] Socket connects without errors
+-   [x] Connection ID assigned and visible
+-   [x] Events received in real-time (< 1 second)
+-   [x] No memory leaks (check DevTools memory usage)
 
 **Pass/Fail**: **\_\_**
 
@@ -363,19 +363,21 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
    Expected: `401` (not 5xx)
 
 3. Test missing required field:
+
    ```bash
    curl -X POST https://staging.advancia.io/api/checkout \
      -H "Content-Type: application/json" \
      -d '{"itemId":"123"}' # missing required field
    ```
+
    Expected: `400` (not 5xx)
 
 **Verification**:
 
-- [x] Invalid routes return 404 (not 5xx)
-- [x] Auth errors return 401/403 (not 5xx)
-- [x] Validation errors return 400 (not 5xx)
-- [x] Error messages are user-friendly (no SQL/code exposed)
+-   [x] Invalid routes return 404 (not 5xx)
+-   [x] Auth errors return 401/403 (not 5xx)
+-   [x] Validation errors return 400 (not 5xx)
+-   [x] Error messages are user-friendly (no SQL/code exposed)
 
 **Pass/Fail**: **\_\_**
 
@@ -389,16 +391,16 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
 
 1. Check browser DevTools → Network tab for requests
 2. Look for any API keys, tokens, or secrets in:
-   - Request/Response headers
-   - Query parameters
-   - Request body JSON
+   -   Request/Response headers
+   -   Query parameters
+   -   Request body JSON
 
 **Verification**:
 
-- [x] No hardcoded API keys in frontend code
-- [x] No JWT tokens logged to console
-- [x] No credit card numbers in logs or UI
-- [x] All sensitive data marked `[REDACTED]` in logs
+-   [x] No hardcoded API keys in frontend code
+-   [x] No JWT tokens logged to console
+-   [x] No credit card numbers in logs or UI
+-   [x] All sensitive data marked `[REDACTED]` in logs
 
 **Pass/Fail**: **\_\_**
 
@@ -411,16 +413,16 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
 1. Navigate to `https://staging.advancia.io`
 2. Click padlock icon (browser address bar)
 3. Verify SSL certificate:
-   - Valid domain name
-   - Not expired
-   - Issued by trusted CA
+   -   Valid domain name
+   -   Not expired
+   -   Issued by trusted CA
 
 **Verification**:
 
-- [x] HTTPS enforced (no HTTP fallback)
-- [x] Certificate valid and not self-signed
-- [x] No mixed content warnings (all resources HTTPS)
-- [x] HSTS header present (if configured)
+-   [x] HTTPS enforced (no HTTP fallback)
+-   [x] Certificate valid and not self-signed
+-   [x] No mixed content warnings (all resources HTTPS)
+-   [x] HSTS header present (if configured)
 
 **Pass/Fail**: **\_\_**
 
@@ -431,21 +433,25 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
 **Steps**:
 
 1. Try to inject script in search box:
+
    ```
    <script>alert('XSS')</script>
    ```
+
 2. Try to inject SQL in login form:
+
    ```
    ' OR '1'='1
    ```
+
 3. Try to inject HTML in profile description field
 
 **Verification**:
 
-- [x] Injected code is escaped/sanitized
-- [x] No alert boxes appear (XSS prevented)
-- [x] No data breach occurs (SQL injection prevented)
-- [x] HTML tags rendered as text (not executed)
+-   [x] Injected code is escaped/sanitized
+-   [x] No alert boxes appear (XSS prevented)
+-   [x] No data breach occurs (SQL injection prevented)
+-   [x] HTML tags rendered as text (not executed)
 
 **Pass/Fail**: **\_\_**
 
@@ -484,8 +490,8 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
 
 **Recommendation**:
 
-- ☐ **APPROVED** → Ready to merge staging → main
-- ☐ **BLOCKED** → Fix critical issues and re-test
+-   ☐ **APPROVED** → Ready to merge staging → main
+-   ☐ **BLOCKED** → Fix critical issues and re-test
 
 ---
 
@@ -504,8 +510,8 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
    ```
 
 2. **Notify DevOps**:
-   - Post in `#deployments` Slack channel
-   - Include issue number and severity level
+   -   Post in `#deployments` Slack channel
+   -   Include issue number and severity level
 
 3. **Revert if necessary**:
 
@@ -517,9 +523,9 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
    ```
 
 4. **Schedule re-test**:
-   - Fix deployed to staging
-   - Re-run smoke tests within 1 hour
-   - Document fix in deployment notes
+   -   Fix deployed to staging
+   -   Re-run smoke tests within 1 hour
+   -   Document fix in deployment notes
 
 ---
 
@@ -543,6 +549,7 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
 1. ✅ Copy this checklist (with sign-off) to deployment notes
 2. ✅ Create `STAGING_VERIFICATION_<DATE>.md` file in repo
 3. ✅ Post in `#deployments` channel:
+
    ```
    ✅ **STAGING VERIFIED**
    Date: [DATE]
@@ -550,6 +557,7 @@ socket.on('user-notification', (msg) => console.log('✅ Received:', msg));
    All 18 smoke tests passed
    Ready for production merge
    ```
+
 4. ✅ Proceed to Phase 7 (Production deployment)
 
 ---

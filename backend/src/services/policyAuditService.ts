@@ -138,13 +138,6 @@ export async function getPolicyAuditHistory(
       where: { policyId },
       orderBy: { timestamp: "desc" },
       take: limit,
-      include: {
-        policy: {
-          select: {
-            routeGroup: true,
-          },
-        },
-      },
     });
 
     return logs;
@@ -162,13 +155,6 @@ export async function getAllAuditLogs(limit: number = 500) {
     const logs = await prisma.policy_audit_logs.findMany({
       orderBy: { timestamp: "desc" },
       take: limit,
-      include: {
-        policy: {
-          select: {
-            routeGroup: true,
-          },
-        },
-      },
     });
 
     return logs;
@@ -187,13 +173,6 @@ export async function getUserAuditLogs(userId: string, limit: number = 100) {
       where: { changedBy: userId },
       orderBy: { timestamp: "desc" },
       take: limit,
-      include: {
-        policy: {
-          select: {
-            routeGroup: true,
-          },
-        },
-      },
     });
 
     return logs;

@@ -14,9 +14,9 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `prompt`: description of desired image
-- `progression_text`: short creative message (6–8 words, ends with ellipses)
-- `transparent_background`: `true` or `false`
+-   `prompt`: description of desired image
+-   `progression_text`: short creative message (6–8 words, ends with ellipses)
+-   `transparent_background`: `true` or `false`
 
 ---
 
@@ -28,8 +28,8 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `query`: concise search string
-- `answers`: optional (null if not needed)
+-   `query`: concise search string
+-   `answers`: optional (null if not needed)
 
 ---
 
@@ -39,11 +39,11 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `stockExchangePrefix`: optional market code
-- `tickerSymbol`: asset symbol
-- `intent`: stock, crypto, currencyExchange, index, ETF, fund
-- `fromCurrency` / `toCurrency`: for conversions
-- `currencyExchangeAmount`: numeric amount
+-   `stockExchangePrefix`: optional market code
+-   `tickerSymbol`: asset symbol
+-   `intent`: stock, crypto, currencyExchange, index, ETF, fund
+-   `fromCurrency` / `toCurrency`: for conversions
+-   `currencyExchangeAmount`: numeric amount
 
 ---
 
@@ -53,9 +53,9 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `fact`: information to remember
-- `category`: optional category (e.g., PreferredName)
-- `category_value`: optional value
+-   `fact`: information to remember
+-   `category`: optional category (e.g., PreferredName)
+-   `category_value`: optional value
 
 ---
 
@@ -67,12 +67,12 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `query`: keywords
-- `artifacts`: type of item
-- `target_services`: specific service (optional)
-- `start_at` / `end_at`: time bounds
-- `new`: true/false for unseen data
-- `label`: folder/label filter
+-   `query`: keywords
+-   `artifacts`: type of item
+-   `target_services`: specific service (optional)
+-   `start_at` / `end_at`: time bounds
+-   `new`: true/false for unseen data
+-   `label`: folder/label filter
 
 ---
 
@@ -82,9 +82,9 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `prompt`: full description of task + data
-- `title`: concise summary (≤15 words)
-- `is_document_creation_request`: true/false
+-   `prompt`: full description of task + data
+-   `title`: concise summary (≤15 words)
+-   `is_document_creation_request`: true/false
 
 ---
 
@@ -94,7 +94,7 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `url`: target webpage
+-   `url`: target webpage
 
 ---
 
@@ -122,8 +122,8 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `query`: search string
-- `page`: results page (default 0)
+-   `query`: search string
+-   `page`: results page (default 0)
 
 ---
 
@@ -133,8 +133,8 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `query`: location search string
-- `is_near_me`: true/false
+-   `query`: location search string
+-   `is_near_me`: true/false
 
 ---
 
@@ -144,8 +144,8 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `query`: product search string
-- `category`, `city`, `country`: optional filters
+-   `query`: product search string
+-   `category`, `city`, `country`: optional filters
 
 ---
 
@@ -155,8 +155,8 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `query`: search string
-- `page`: results page (default 0)
+-   `query`: search string
+-   `page`: results page (default 0)
 
 ---
 
@@ -166,7 +166,7 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 **Parameters:**
 
-- `tool_uses`: array of `{ recipient_name, parameters }`
+-   `tool_uses`: array of `{ recipient_name, parameters }`
 
 ---
 
@@ -174,64 +174,64 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 ### General
 
-- Keep queries **concise and specific** — avoid filler words.
-- Always prefer **parallel tool calls** when multiple tools can run independently.
-- Use environment variables (`.env.local`, `.env.staging`, `.env.production`) to separate dev/staging/prod contexts.
+-   Keep queries **concise and specific** — avoid filler words.
+-   Always prefer **parallel tool calls** when multiple tools can run independently.
+-   Use environment variables (`.env.local`, `.env.staging`, `.env.production`) to separate dev/staging/prod contexts.
 
 ---
 
 ### 🔍 Web & Data Tools
 
-- **Always use `search_web`** for factual queries, even if the info seems "common knowledge."
-- Combine `search_web` + `search_images` or `search_videos` when visuals or clips enhance the answer.
-- Use `search_finance` only for supported intents (stocks, crypto, currency exchange, indices, ETFs, funds).
+-   **Always use `search_web`** for factual queries, even if the info seems "common knowledge."
+-   Combine `search_web` + `search_images` or `search_videos` when visuals or clips enhance the answer.
+-   Use `search_finance` only for supported intents (stocks, crypto, currency exchange, indices, ETFs, funds).
 
 ---
 
 ### 🎨 Image Tools
 
-- Use `graphic_art` only for **safe, clear image generation/editing**.
-- Never attempt to generate restricted content (political figures, trademarked characters, unsafe scenarios).
-- Confirm an image is actually uploaded before editing.
+-   Use `graphic_art` only for **safe, clear image generation/editing**.
+-   Never attempt to generate restricted content (political figures, trademarked characters, unsafe scenarios).
+-   Confirm an image is actually uploaded before editing.
 
 ---
 
 ### 📂 Personal Data
 
-- Use `search_personal_data` only for supported artifacts (documents, events, contacts, emails, web pages).
-- Never attempt to summarize or analyze retrieved content — only list metadata.
-- Respect service boundaries (OneDrive, Gmail, Outlook, etc.).
+-   Use `search_personal_data` only for supported artifacts (documents, events, contacts, emails, web pages).
+-   Never attempt to summarize or analyze retrieved content — only list metadata.
+-   Respect service boundaries (OneDrive, Gmail, Outlook, etc.).
 
 ---
 
 ### 📊 Visualization
 
-- Use `execute_code_orchestration` only for **data visualization** (charts, plots).
-- Ensure the prompt is **self‑contained** with all required data.
-- Ask for missing data before attempting visualization.
+-   Use `execute_code_orchestration` only for **data visualization** (charts, plots).
+-   Ensure the prompt is **self‑contained** with all required data.
+-   Ask for missing data before attempting visualization.
 
 ---
 
 ### 🃏 Study Tools
 
-- Default to 15 flashcards (`generate_flashcard`) and 5 quiz questions (`generate_quiz`).
-- Respect maximum limits (30 flashcards, 15 quiz questions).
-- Ensure quizzes are multiple‑choice with one correct answer.
+-   Default to 15 flashcards (`generate_flashcard`) and 5 quiz questions (`generate_quiz`).
+-   Respect maximum limits (30 flashcards, 15 quiz questions).
+-   Ensure quizzes are multiple‑choice with one correct answer.
 
 ---
 
 ### ⚡ Parallel Execution
 
-- Use `multi_tool_use.parallel` when multiple tools can run at the same time.
-- Keep parameters valid and minimal — no extra words or punctuation.
+-   Use `multi_tool_use.parallel` when multiple tools can run at the same time.
+-   Keep parameters valid and minimal — no extra words or punctuation.
 
 ---
 
 ### 🛠️ Workflow Hygiene
 
-- Clear caches (`.next/`) if builds fail unexpectedly.
-- Run `npm run lint` and `npx tsc --noEmit` to catch errors early.
-- Keep `tailwind.config.js` and `next.config.js` aligned with project structure.
+-   Clear caches (`.next/`) if builds fail unexpectedly.
+-   Run `npm run lint` and `npx tsc --noEmit` to catch errors early.
+-   Keep `tailwind.config.js` and `next.config.js` aligned with project structure.
 
 ---
 
@@ -432,9 +432,9 @@ This document explains the available tools, their purpose, and usage patterns. U
 
 ## 🔗 Related Documentation
 
-- [CI/CD Setup Summary](./CI_CD_SETUP_SUMMARY.md) - Deployment pipeline guide
-- [Branching Strategy](./BRANCHING_STRATEGY.md) - Git workflow conventions
-- [API Reference](./API_REFERENCE.md) - Backend API documentation
+-   [CI/CD Setup Summary](./CI_CD_SETUP_SUMMARY.md) - Deployment pipeline guide
+-   [Branching Strategy](./BRANCHING_STRATEGY.md) - Git workflow conventions
+-   [API Reference](./API_REFERENCE.md) - Backend API documentation
 
 ---
 

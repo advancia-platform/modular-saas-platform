@@ -57,6 +57,7 @@
     -   Diverse use cases: Trading, business, investing
 
 -   **FAQ Section** (11 Questions)
+
   1. **30-Day Money-Back Guarantee** ✅
      -   Full refund within 30 days
      -   No questions asked policy

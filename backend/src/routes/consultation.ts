@@ -246,14 +246,14 @@ router.post("/message", authenticateToken, async (req, res) => {
       return res.status(403).json({ error: "Access denied" });
     }
 
-    const message = await prisma.consultationMessage.create({
-      data: {
+    const message = await prisma.consultation_messages.create({
+      data: withDefaults({
         consultationId: data.consultationId,
         senderType: userId ? "patient" : "doctor",
         senderId: userId || doctorId!,
         content: data.content,
         attachmentUrl: data.attachmentUrl || null,
-      },
+      }),
     });
 
     return res.status(201).json({

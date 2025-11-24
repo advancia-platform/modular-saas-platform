@@ -7,14 +7,14 @@ You now have **6 Jest debug configurations** and **2 VS Code extensions** instal
 ## 📦 Installed Extensions
 
 1. **Jest** (`orta.vscode-jest`) - Already installed
-   - Automatic test discovery and running
-   - Shows test results inline in editor
-   - Green/red indicators next to tests
+   -   Automatic test discovery and running
+   -   Shows test results inline in editor
+   -   Green/red indicators next to tests
 
 2. **Jest Runner** (`firsttris.vscode-jest-runner`) - Just installed
-   - Right-click context menu: "Run Jest" or "Debug Jest"
-   - Individual test debugging from editor
-   - No need to use debug panel for quick test runs
+   -   Right-click context menu: "Run Jest" or "Debug Jest"
+   -   Individual test debugging from editor
+   -   No need to use debug panel for quick test runs
 
 ## 🐛 Debug Configurations Available
 
@@ -24,41 +24,41 @@ Press **F5** or **Ctrl+Shift+D** to open the Debug panel, then select:
 
 ### 1. 🧪 Jest: Debug All Tests
 
-- **Use when**: Running entire test suite
-- **Command**: `npm test -- --runInBand --no-cache`
-- **Serial execution**: Prevents database conflicts
-- **Best for**: Comprehensive testing
+-   **Use when**: Running entire test suite
+-   **Command**: `npm test -- --runInBand --no-cache`
+-   **Serial execution**: Prevents database conflicts
+-   **Best for**: Comprehensive testing
 
 ### 2. 🔍 Jest: Debug Current File
 
-- **Use when**: Debugging the currently open test file
-- **Auto-targets**: `${fileBasename}` (e.g., `auth.test.ts`)
-- **Best for**: Focused file debugging
-- **Tip**: Open a test file, press F5, select this config
+-   **Use when**: Debugging the currently open test file
+-   **Auto-targets**: `${fileBasename}` (e.g., `auth.test.ts`)
+-   **Best for**: Focused file debugging
+-   **Tip**: Open a test file, press F5, select this config
 
 ### 3. 🎯 Jest: Debug Integration Tests
 
-- **Use when**: Specifically debugging `integration.test.ts`
-- **Verbose mode**: Shows detailed output
-- **Best for**: API endpoint testing
+-   **Use when**: Specifically debugging `integration.test.ts`
+-   **Verbose mode**: Shows detailed output
+-   **Best for**: API endpoint testing
 
 ### 4. ✅ Jest: Debug Auth Tests
 
-- **Use when**: Specifically debugging `auth.test.ts`
-- **Best for**: Authentication flow debugging
+-   **Use when**: Specifically debugging `auth.test.ts`
+-   **Best for**: Authentication flow debugging
 
 ### 5. 🧬 Jest: Debug with Coverage
 
-- **Use when**: Need to see code coverage metrics
-- **Generates**: Coverage reports in `coverage/` directory
-- **Best for**: Identifying untested code
+-   **Use when**: Need to see code coverage metrics
+-   **Generates**: Coverage reports in `coverage/` directory
+-   **Best for**: Identifying untested code
 
 ### 6. ⚡ Jest: Debug Single Test
 
-- **Use when**: Debugging one specific test by name
-- **Interactive**: Prompts for file name and test pattern
-- **Example pattern**: `"should register a new user"`
-- **Best for**: Laser-focused debugging
+-   **Use when**: Debugging one specific test by name
+-   **Interactive**: Prompts for file name and test pattern
+-   **Example pattern**: `"should register a new user"`
+-   **Best for**: Laser-focused debugging
 
 ## 🚀 How to Debug Tests
 
@@ -266,21 +266,21 @@ const users = res.body.items || res.body;
 
 ### 1. Start Small
 
-- Debug one test at a time
-- Use "Debug Single Test" for focused debugging
-- Right-click specific `it()` block with Jest Runner
+-   Debug one test at a time
+-   Use "Debug Single Test" for focused debugging
+-   Right-click specific `it()` block with Jest Runner
 
 ### 2. Use Comprehensive Logging
 
-- Tests already have debug logging on failures
-- Check console output first before debugging
-- Look for "❌ Test failed:" messages
+-   Tests already have debug logging on failures
+-   Check console output first before debugging
+-   Look for "❌ Test failed:" messages
 
 ### 3. Verify Database State
 
-- Use Debug Console to query Prisma
-- Check user approval status, roles, etc.
-- Verify relationships (UserProfile, TokenWallet)
+-   Use Debug Console to query Prisma
+-   Check user approval status, roles, etc.
+-   Verify relationships (UserProfile, TokenWallet)
 
 ### 4. Check Environment
 
@@ -293,9 +293,9 @@ process.env.JWT_SECRET; // Should exist
 
 ### 5. Serial Execution Always
 
-- All configs use `--runInBand`
-- Prevents database conflicts
-- Essential for integration tests
+-   All configs use `--runInBand`
+-   Prevents database conflicts
+-   Essential for integration tests
 
 ## 🔧 Troubleshooting
 
@@ -355,8 +355,8 @@ npx jest --clearCache
    ```
 
 2. **Set Breakpoints** in failing tests:
-   - `integration.test.ts` line where test fails
-   - Inspect `res.status` and `res.body`
+   -   `integration.test.ts` line where test fails
+   -   Inspect `res.status` and `res.body`
 
 3. **Use Debug Console** to query database state
 
@@ -366,11 +366,11 @@ npx jest --clearCache
 
 ## 📚 Additional Resources
 
-- [Jest Debugging Docs](https://jestjs.io/docs/troubleshooting)
-- [VS Code Debugging](https://code.visualstudio.com/docs/editor/debugging)
-- [Node.js Debugging Guide](https://nodejs.org/en/docs/guides/debugging-getting-started/)
-- Backend README: `backend/README.md`
-- Copilot Instructions: `.github/copilot-instructions.md`
+-   [Jest Debugging Docs](https://jestjs.io/docs/troubleshooting)
+-   [VS Code Debugging](https://code.visualstudio.com/docs/editor/debugging)
+-   [Node.js Debugging Guide](https://nodejs.org/en/docs/guides/debugging-getting-started/)
+-   Backend README: `backend/README.md`
+-   Copilot Instructions: `.github/copilot-instructions.md`
 
 ---
 

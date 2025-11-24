@@ -120,7 +120,7 @@ git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 
 **Expected Output**:
 
-```
+```text
 Enumerating objects: 12, done.
 Counting objects: 100% (12/12), done.
 Delta compression using up to 8 threads
@@ -163,7 +163,7 @@ gh pr create \
 
 **Expected Output**:
 
-```
+```text
 Creating pull request for chore/ci-auto-release-auto-label-decimal-fixes into staging in advancia-platform/modular-saas-platform
 
 ✓ Created pull request #123 (main -> staging)
@@ -199,7 +199,7 @@ gh pr view -R advancia-platform/modular-saas-platform
 
 ### Step 1: Navigate to Secrets Settings
 
-```
+```text
 GitHub Repo → Settings → Secrets and variables → Actions
 ```
 
@@ -209,7 +209,7 @@ For each category below, add secrets to GitHub:
 
 #### **Cloudflare R2** (3 secrets)
 
-```
+```text
 CLOUDFLARE_ACCOUNT_ID = <your-cloudflare-account-id>
 CLOUDFLARE_R2_ACCESS_KEY_ID = <r2-access-key-id>
 CLOUDFLARE_R2_SECRET_ACCESS_KEY = <r2-secret-access-key>
@@ -217,35 +217,35 @@ CLOUDFLARE_R2_SECRET_ACCESS_KEY = <r2-secret-access-key>
 
 #### **Database** (2 secrets)
 
-```
+```text
 DATABASE_URL = postgresql://user:password@host:5432/advancia_prod
 DATABASE_BACKUP_PATH = s3://cloudflare-backups/db-backups/
 ```
 
 #### **Authentication** (2 secrets)
 
-```
+```text
 JWT_SECRET = <generated-via-openssl-rand-base64-32>
 SESSION_SECRET = <generated-via-openssl-rand-base64-32>
 ```
 
 #### **Stripe** (2 secrets)
 
-```
+```text
 STRIPE_SECRET_KEY = sk_live_... (or sk_test_...)
 STRIPE_WEBHOOK_SECRET = whsec_...
 ```
 
 #### **Cryptomus** (2 secrets)
 
-```
+```text
 CRYPTOMUS_API_KEY = <cryptomus-api-key>
 CRYPTOMUS_MERCHANT_ID = <cryptomus-merchant-id>
 ```
 
 #### **Email Services** (3 secrets)
 
-```
+```text
 EMAIL_USER = your-email@gmail.com
 EMAIL_PASSWORD = <16-char-gmail-app-password>
 RESEND_API_KEY = re_...
@@ -253,7 +253,7 @@ RESEND_API_KEY = re_...
 
 #### **Monitoring** (3 secrets)
 
-```
+```text
 SENTRY_DSN = https://key@sentry.io/project-id
 SLACK_WEBHOOK_URL = https://hooks.slack.com/services/...
 MONITORING_ALERT_EMAIL = ops@advancia.io
@@ -261,7 +261,7 @@ MONITORING_ALERT_EMAIL = ops@advancia.io
 
 #### **SSH Deployment** (3 secrets)
 
-```
+```text
 STAGING_HOST = staging.advancia.io
 STAGING_USER = deploy
 STAGING_SSH_KEY = -----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRIVATE KEY-----
@@ -269,14 +269,14 @@ STAGING_SSH_KEY = -----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRI
 
 #### **Webhooks** (2 secrets)
 
-```
+```text
 SLACK_WEBHOOK_DEPLOY = https://hooks.slack.com/services/...
 DISCORD_WEBHOOK_ALERTS = https://discord.com/api/webhooks/...
 ```
 
 ### Step 3: Verify Secrets Added
 
-```
+```text
 GitHub Repo → Settings → Secrets and variables → Actions
 ```
 
@@ -293,7 +293,7 @@ Should show all secrets listed with masked values (✓ indicators)
 
 ### Step 1: Review & Approve PR
 
-**Option A: GitHub CLI**
+#### Approve Using CLI
 
 ```bash
 # Review PR
@@ -303,7 +303,7 @@ gh pr view -R advancia-platform/modular-saas-platform <PR-NUMBER>
 gh pr review -R advancia-platform/modular-saas-platform <PR-NUMBER> --approve
 ```
 
-**Option B: GitHub Web UI**
+#### Approve Using Web UI
 
 1. Go to PR: `https://github.com/advancia-platform/modular-saas-platform/pull/<PR-NUMBER>`
 2. Review commits and changes
@@ -311,7 +311,7 @@ gh pr review -R advancia-platform/modular-saas-platform <PR-NUMBER> --approve
 
 ### Step 2: Merge PR to Staging
 
-**Option A: GitHub CLI**
+#### Merge Using CLI
 
 ```bash
 # Merge PR (squash or merge commit)
@@ -321,7 +321,7 @@ gh pr merge -R advancia-platform/modular-saas-platform <PR-NUMBER> \
   --delete-branch
 ```
 
-**Option B: GitHub Web UI**
+#### Merge Using Web UI
 
 1. Click **Merge pull request**
 2. Select merge type (recommended: **Create a merge commit** for traceability)
@@ -332,7 +332,7 @@ gh pr merge -R advancia-platform/modular-saas-platform <PR-NUMBER> \
 
 **Navigate to**:
 
-```
+```text
 https://github.com/advancia-platform/modular-saas-platform/actions
 ```
 
@@ -446,7 +446,7 @@ socket.on('user-notification', (msg) => console.log('✓ Received:', msg));
 
 ### Test 7: Sentry Error Monitoring
 
-```
+```text
 https://sentry.io/organizations/advancia/issues/
 ```
 
@@ -529,7 +529,7 @@ git push origin main
 
 **Expected Output**:
 
-```
+```text
 Updating 633f3d53..8e3cd9d5
 Fast-forward (summary of changes)
 
@@ -549,7 +549,7 @@ git push origin v1.2.0
 
 **Expected Output**:
 
-```
+```text
 Enumerating objects: 1, done.
 Counting objects: 100% (1/1), done.
 Writing objects: 100% (1/1), 828 bytes | 828.00 B/s, done.

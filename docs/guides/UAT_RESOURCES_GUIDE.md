@@ -11,38 +11,38 @@
 ### Main Testing Documents
 
 1. **UAT_TEST_PLAN.md** - Complete testing plan with all test cases
-   - Scope & objectives
-   - 4 new API endpoints
-   - 3 frontend components
-   - Real-time features
-   - End-to-end flows
+   -   Scope & objectives
+   -   4 new API endpoints
+   -   3 frontend components
+   -   Real-time features
+   -   End-to-end flows
 
 2. **UAT_EXECUTION_GUIDE.md** - Step-by-step testing procedures
-   - Quick start (5 min health check)
-   - Day 1-5 test schedules
-   - Failure procedures
-   - Go-live checklist
-   - Rollback procedures
+   -   Quick start (5 min health check)
+   -   Day 1-5 test schedules
+   -   Failure procedures
+   -   Go-live checklist
+   -   Rollback procedures
 
 3. **FRONTEND_COMPONENT_UAT_CHECKLIST.md** - Detailed frontend test checklist
-   - TokenWallet component tests
-   - RewardsDashboard component tests
-   - MedBeds component tests
-   - Real-time functionality tests
-   - Cross-browser testing
-   - Accessibility testing
+   -   TokenWallet component tests
+   -   RewardsDashboard component tests
+   -   MedBeds component tests
+   -   Real-time functionality tests
+   -   Cross-browser testing
+   -   Accessibility testing
 
 4. **Advancia_PAY_UAT_API_Tests.postman_collection.json** - Postman API test collection
-   - Ready-to-import collection
-   - All 4 new endpoints
-   - Positive & negative test cases
-   - Authentication setup
+   -   Ready-to-import collection
+   -   All 4 new endpoints
+   -   Positive & negative test cases
+   -   Authentication setup
 
 5. **backend/tests/uat-api-tests.ts** - Automated API tests (Jest)
-   - 50+ test cases
-   - Full coverage of new endpoints
-   - Performance assertions
-   - Integration tests
+   -   50+ test cases
+   -   Full coverage of new endpoints
+   -   Performance assertions
+   -   Integration tests
 
 ---
 
@@ -50,14 +50,14 @@
 
 ### Production Endpoints
 
-**Frontend**: https://advancia.pay  
-**API Base**: https://api.advancia.pay (or Render domain)  
+**Frontend**: <https://advancia.pay>  
+**API Base**: <https://api.advancia.pay> (or Render domain)  
 **WebSocket**: wss://api.advancia.pay/socket.io
 
 ### Local Development (if testing locally)
 
-**Frontend**: http://localhost:3000  
-**API Base**: http://localhost:4000  
+**Frontend**: <http://localhost:3000>  
+**API Base**: <http://localhost:4000>  
 **WebSocket**: ws://localhost:4000/socket.io
 
 ---
@@ -67,24 +67,24 @@
 ### Creating Test Accounts
 
 1. **Admin Account** (for full access):
-   - Email: `admin@advancia.pay`
-   - Password: [Provided separately]
-   - Role: Super Admin
+   -   Email: `admin@advancia.pay`
+   -   Password: [Provided separately]
+   -   Role: Super Admin
 
 2. **Test User 1** (standard user):
-   - Email: `user1@advancia.pay`
-   - Password: [Provided separately]
-   - Tokens: 1000 (for testing)
+   -   Email: `user1@advancia.pay`
+   -   Password: [Provided separately]
+   -   Tokens: 1000 (for testing)
 
 3. **Test User 2** (standard user):
-   - Email: `user2@advancia.pay`
-   - Password: [Provided separately]
-   - Tokens: 500 (for testing)
+   -   Email: `user2@advancia.pay`
+   -   Password: [Provided separately]
+   -   Tokens: 500 (for testing)
 
 4. **High Balance User** (for stress testing):
-   - Email: `whale@advancia.pay`
-   - Password: [Provided separately]
-   - Tokens: 10000 (for performance testing)
+   -   Email: `whale@advancia.pay`
+   -   Password: [Provided separately]
+   -   Tokens: 10000 (for performance testing)
 
 ### Creating Custom Test Accounts
 
@@ -118,14 +118,14 @@ curl -X POST https://api.advancia.pay/api/auth/register \
 ### Required Tools
 
 1. **Postman** (API Testing)
-   - Download: https://www.postman.com/downloads/
-   - Import collection: `Advancia_PAY_UAT_API_Tests.postman_collection.json`
-   - Set up variables for your environment
+   -   Download: <https://www.postman.com/downloads/>
+   -   Import collection: `Advancia_PAY_UAT_API_Tests.postman_collection.json`
+   -   Set up variables for your environment
 
 2. **Browser Developer Tools** (Already available)
-   - Chrome DevTools: F12 or Ctrl+Shift+I
-   - Firefox Developer: F12
-   - Safari Web Inspector: Cmd+Option+I
+   -   Chrome DevTools: F12 or Ctrl+Shift+I
+   -   Firefox Developer: F12
+   -   Safari Web Inspector: Cmd+Option+I
 
 3. **curl** (Command-line API testing)
 
@@ -145,9 +145,9 @@ curl -X POST https://api.advancia.pay/api/auth/register \
 
 ### Optional Tools
 
-- **k6** (Load testing) - https://k6.io/
-- **Apache JMeter** (Performance testing) - https://jmeter.apache.org/
-- **Charles Proxy** (Network debugging) - https://www.charlesproxy.com/
+-   **k6** (Load testing) - <https://k6.io/>
+-   **Apache JMeter** (Performance testing) - <https://jmeter.apache.org/>
+-   **Charles Proxy** (Network debugging) - <https://www.charlesproxy.com/>
 
 ---
 
@@ -229,15 +229,15 @@ invalid-address
 
 **Normal Amounts**:
 
-- Withdraw: 100 tokens, 50 tokens, 25 tokens
-- Cashout: 50 tokens ($5), 25 tokens ($2.50), 10 tokens ($1)
+-   Withdraw: 100 tokens, 50 tokens, 25 tokens
+-   Cashout: 50 tokens ($5), 25 tokens ($2.50), 10 tokens ($1)
 
 **Edge Cases**:
 
-- Zero: 0 tokens (should fail)
-- Negative: -50 tokens (should fail)
-- Large: 10000 tokens (performance test)
-- Fractional: 0.5 tokens (if supported)
+-   Zero: 0 tokens (should fail)
+-   Negative: -50 tokens (should fail)
+-   Large: 10000 tokens (performance test)
+-   Fractional: 0.5 tokens (if supported)
 
 ### Sample Responses
 
@@ -433,27 +433,27 @@ fetch(...).then(r => console.log('Response:', r))
 
 **API Failures**:
 
-- Contact: Engineering Lead / Backend Developer
-- Escalation: DevOps
-- Time: Immediate if critical
+-   Contact: Engineering Lead / Backend Developer
+-   Escalation: DevOps
+-   Time: Immediate if critical
 
 **Frontend Failures**:
 
-- Contact: Frontend Lead / UI Developer
-- Escalation: Engineering Lead
-- Time: Same day
+-   Contact: Frontend Lead / UI Developer
+-   Escalation: Engineering Lead
+-   Time: Same day
 
 **Real-Time Failures**:
 
-- Contact: Backend Lead / DevOps
-- Escalation: CTO
-- Time: Immediate if impacting core feature
+-   Contact: Backend Lead / DevOps
+-   Escalation: CTO
+-   Time: Immediate if impacting core feature
 
 **Performance Issues**:
 
-- Contact: DevOps / Database Admin
-- Escalation: CTO
-- Time: Within 1 hour
+-   Contact: DevOps / Database Admin
+-   Escalation: CTO
+-   Time: Within 1 hour
 
 ### Emergency Contact
 
@@ -467,16 +467,16 @@ fetch(...).then(r => console.log('Response:', r))
 
 Before starting UAT:
 
-- [ ] All documents downloaded and reviewed
-- [ ] Postman collection imported
-- [ ] Test accounts created
-- [ ] Network/VPN configured (if needed)
-- [ ] Browser console understanding confirmed
-- [ ] API tools available (curl, Postman)
-- [ ] Backup of production data taken
-- [ ] Stakeholders notified
-- [ ] Support team briefed
-- [ ] Rollback procedure documented
+-   [ ] All documents downloaded and reviewed
+-   [ ] Postman collection imported
+-   [ ] Test accounts created
+-   [ ] Network/VPN configured (if needed)
+-   [ ] Browser console understanding confirmed
+-   [ ] API tools available (curl, Postman)
+-   [ ] Backup of production data taken
+-   [ ] Stakeholders notified
+-   [ ] Support team briefed
+-   [ ] Rollback procedure documented
 
 ---
 
@@ -513,29 +513,29 @@ Attendees: [Names]
 ### For QA Testers
 
 1. **Understanding API Requests**
-   - What is REST API?
-   - HTTP methods: GET, POST, PUT, DELETE
-   - Request headers and body
-   - Response codes and format
+   -   What is REST API?
+   -   HTTP methods: GET, POST, PUT, DELETE
+   -   Request headers and body
+   -   Response codes and format
 
 2. **Using Postman**
-   - Variables and environment setup
-   - Writing pre-request scripts
-   - Testing response data
-   - Batch running requests
+   -   Variables and environment setup
+   -   Writing pre-request scripts
+   -   Testing response data
+   -   Batch running requests
 
 3. **Browser Developer Tools**
-   - Network tab: monitor API calls
-   - Console tab: see errors
-   - WebSocket tab: monitor real-time
-   - Performance tab: measure load times
+   -   Network tab: monitor API calls
+   -   Console tab: see errors
+   -   WebSocket tab: monitor real-time
+   -   Performance tab: measure load times
 
 4. **Reporting Issues**
-   - Clear description
-   - Steps to reproduce
-   - Expected vs actual result
-   - Screenshots/video
-   - Error messages from console
+   -   Clear description
+   -   Steps to reproduce
+   -   Expected vs actual result
+   -   Screenshots/video
+   -   Error messages from console
 
 ---
 
@@ -543,24 +543,24 @@ Attendees: [Names]
 
 ### Documentation
 
-- **Backend API Docs**: `backend/README.md`
-- **Frontend Docs**: `frontend/README.md`
-- **Database Schema**: `backend/prisma/schema.prisma`
-- **Deployment Guide**: Render dashboard
+-   **Backend API Docs**: `backend/README.md`
+-   **Frontend Docs**: `frontend/README.md`
+-   **Database Schema**: `backend/prisma/schema.prisma`
+-   **Deployment Guide**: Render dashboard
 
 ### Code References
 
-- **New Endpoints**: `backend/src/routes/tokens.ts`, `backend/src/routes/rewards.ts`
-- **Frontend Components**: `frontend/src/app/tokens/wallet.tsx`, `frontend/src/app/rewards/dashboard.tsx`
-- **Socket.IO Setup**: `backend/src/index.ts` (search for "Socket.IO")
-- **Database Queries**: `backend/src/services/`
+-   **New Endpoints**: `backend/src/routes/tokens.ts`, `backend/src/routes/rewards.ts`
+-   **Frontend Components**: `frontend/src/app/tokens/wallet.tsx`, `frontend/src/app/rewards/dashboard.tsx`
+-   **Socket.IO Setup**: `backend/src/index.ts` (search for "Socket.IO")
+-   **Database Queries**: `backend/src/services/`
 
 ### External Resources
 
-- **Postman Docs**: https://learning.postman.com/
-- **REST API Guide**: https://restfulapi.net/
-- **Socket.IO Docs**: https://socket.io/docs/
-- **Jest Testing**: https://jestjs.io/docs/getting-started
+-   **Postman Docs**: <https://learning.postman.com/>
+-   **REST API Guide**: <https://restfulapi.net/>
+-   **Socket.IO Docs**: <https://socket.io/docs/>
+-   **Jest Testing**: <https://jestjs.io/docs/getting-started>
 
 ---
 
@@ -568,21 +568,21 @@ Attendees: [Names]
 
 ### Minimum Requirements
 
-- ✅ 100% of API test cases pass
-- ✅ 100% of frontend components render correctly
-- ✅ 0 critical bugs in production
-- ✅ Performance meets SLAs
-- ✅ Real-time updates working
-- ✅ RPA automation verified
-- ✅ Product Owner sign-off obtained
+-   ✅ 100% of API test cases pass
+-   ✅ 100% of frontend components render correctly
+-   ✅ 0 critical bugs in production
+-   ✅ Performance meets SLAs
+-   ✅ Real-time updates working
+-   ✅ RPA automation verified
+-   ✅ Product Owner sign-off obtained
 
 ### Nice to Have
 
-- ✅ Cross-browser compatibility verified
-- ✅ Mobile responsiveness tested
-- ✅ Load testing completed
-- ✅ Security testing passed
-- ✅ Accessibility standards met
+-   ✅ Cross-browser compatibility verified
+-   ✅ Mobile responsiveness tested
+-   ✅ Load testing completed
+-   ✅ Security testing passed
+-   ✅ Accessibility standards met
 
 ---
 

@@ -2,13 +2,13 @@
 
 ## Files Created
 
-- ✅ `tests/setup/mocks.ts` - Mock objects for Cryptomus, Email, Blockchain
-- ✅ `tests/setup/testEnv.ts` - Environment helpers
-- ✅ `tests/setup/adminSetup.ts` - User management & auth
-- ✅ `.env.test` - Test environment config
-- ✅ `TEST_IMPLEMENTATION_GUIDE.md` - Detailed guide
-- ✅ `TEST_INFRASTRUCTURE_COMPLETE.md` - Full summary
-- ✅ `scripts/enable-notification-tests.ts` - Automation
+-   ✅ `tests/setup/mocks.ts` - Mock objects for Cryptomus, Email, Blockchain
+-   ✅ `tests/setup/testEnv.ts` - Environment helpers
+-   ✅ `tests/setup/adminSetup.ts` - User management & auth
+-   ✅ `.env.test` - Test environment config
+-   ✅ `TEST_IMPLEMENTATION_GUIDE.md` - Detailed guide
+-   ✅ `TEST_INFRASTRUCTURE_COMPLETE.md` - Full summary
+-   ✅ `scripts/enable-notification-tests.ts` - Automation
 
 ## Current Status
 
@@ -115,8 +115,8 @@ beforeAll(() => {
 
 ## Documentation
 
-- `TEST_INFRASTRUCTURE_COMPLETE.md` - Full summary & examples
-- `TEST_IMPLEMENTATION_GUIDE.md` - Detailed enablement guide
+-   `TEST_INFRASTRUCTURE_COMPLETE.md` - Full summary & examples
+-   `TEST_IMPLEMENTATION_GUIDE.md` - Detailed enablement guide
 
 ## Next Steps
 

@@ -50,18 +50,18 @@ git log --oneline -10
 
 **Assign Reviewers**:
 
-- @devops-lead
-- @frontend-lead
-- @product-owner
+-   @devops-lead
+-   @frontend-lead
+-   @product-owner
 
 **Labels**: `enhancement`, `infrastructure`, `documentation`, `sprint-1`
 
 **Checklist**:
 
-- [x] Secrets whitelisted
-- [x] Documentation complete
-- [ ] GitHub Actions secrets configured
-- [ ] Staging deployment verified
+-   [x] Secrets whitelisted
+-   [x] Documentation complete
+-   [ ] GitHub Actions secrets configured
+-   [ ] Staging deployment verified
 
 ---
 
@@ -156,13 +156,13 @@ PROD_SSH_KEY=<private-key-base64>
 
 **Monitor Deployment**:
 
-- Navigate to: **Actions → Backend Docker Build, Push & Deploy**
-- Watch logs for:
-  - Docker build success
-  - Push to ghcr.io
-  - SSH connection to staging server
-  - Container restart
-  - Health check pass
+-   Navigate to: **Actions → Backend Docker Build, Push & Deploy**
+-   Watch logs for:
+    -   Docker build success
+    -   Push to ghcr.io
+    -   SSH connection to staging server
+    -   Container restart
+    -   Health check pass
 
 **Verify Staging Health**:
 
@@ -201,9 +201,9 @@ docker-compose logs backend --tail 100 --follow
 
 **Performance Baseline**:
 
-- API response times: <200ms
-- Database query times: <50ms
-- Error rate: <0.1%
+-   API response times: <200ms
+-   Database query times: <50ms
+-   Error rate: <0.1%
 
 ---
 
@@ -213,13 +213,13 @@ docker-compose logs backend --tail 100 --follow
 
 **Complete RELEASE_CHECKLIST.md** (50+ items):
 
-- [x] All secrets configured
-- [x] Staging deployment verified
-- [x] Health checks passing
-- [x] No critical errors in Sentry
-- [x] Team notified via Slack
-- [ ] Production database backup created
-- [ ] Rollback plan documented
+-   [x] All secrets configured
+-   [x] Staging deployment verified
+-   [x] Health checks passing
+-   [x] No critical errors in Sentry
+-   [x] Team notified via Slack
+-   [ ] Production database backup created
+-   [ ] Rollback plan documented
 
 **Merge Staging → Main**:
 
@@ -232,9 +232,10 @@ git push origin main
 
 **GitHub Actions Production Deployment**:
 
-- Workflow requires **manual approval** (GitHub UI)
-- Click **"Approve and Deploy"** button
-- Monitor blue-green deployment:
+-   Workflow requires **manual approval** (GitHub UI)
+-   Click **"Approve and Deploy"** button
+-   Monitor blue-green deployment:
+
   1. New container starts (`backend-green`)
   2. Health check passes
   3. Nginx switches traffic to green
@@ -255,10 +256,10 @@ curl https://advancia.io
 
 **Monitor for 1 Hour**:
 
-- Sentry dashboard: No new errors
-- Slack notifications: Deployment success
-- Server logs: No crashes
-- User reports: No complaints
+-   Sentry dashboard: No new errors
+-   Slack notifications: Deployment success
+-   Server logs: No crashes
+-   User reports: No complaints
 
 ---
 
@@ -296,23 +297,23 @@ git push origin v1.2.0
 
 **Checklist**:
 
-- [x] Secrets whitelisted (5 GitHub URLs)
-- [x] 10 commits pushed to branch
-- [x] PR created and merged to staging
-- [x] GitHub Actions secrets configured (25+ variables)
-- [x] Staging deployment verified and tested
-- [x] Production deployment verified and tested
-- [x] Release tagged `v1.2.0` and published
-- [x] Team notified via Slack
-- [x] Documentation updated
+-   [x] Secrets whitelisted (5 GitHub URLs)
+-   [x] 10 commits pushed to branch
+-   [x] PR created and merged to staging
+-   [x] GitHub Actions secrets configured (25+ variables)
+-   [x] Staging deployment verified and tested
+-   [x] Production deployment verified and tested
+-   [x] Release tagged `v1.2.0` and published
+-   [x] Team notified via Slack
+-   [x] Documentation updated
 
 **Success Metrics**:
 
-- ✅ Uptime: 99.9%+ (no downtime during deployment)
-- ✅ Error rate: <0.1% (Sentry dashboard)
-- ✅ Response time: <200ms (API endpoints)
-- ✅ Build time: <10 minutes (GitHub Actions)
-- ✅ Deployment time: <5 minutes (Docker container restart)
+-   ✅ Uptime: 99.9%+ (no downtime during deployment)
+-   ✅ Error rate: <0.1% (Sentry dashboard)
+-   ✅ Response time: <200ms (API endpoints)
+-   ✅ Build time: <10 minutes (GitHub Actions)
+-   ✅ Deployment time: <5 minutes (Docker container restart)
 
 ---
 
@@ -342,14 +343,14 @@ git push origin v1.2.0
    ```
 
 3. **Notify Team**:
-   - Post in Slack #deployments channel
-   - Create incident in Sentry
-   - Update status page
+   -   Post in Slack #deployments channel
+   -   Create incident in Sentry
+   -   Update status page
 
 4. **Investigate**:
-   - Check container logs: `docker-compose logs backend --tail 200`
-   - Review Sentry errors
-   - Analyze GitHub Actions logs
+   -   Check container logs: `docker-compose logs backend --tail 200`
+   -   Review Sentry errors
+   -   Analyze GitHub Actions logs
 
 ---
 
@@ -357,21 +358,21 @@ git push origin v1.2.0
 
 **Monitoring**:
 
-- [x] Hour 1: Active monitoring (Sentry, logs, metrics)
-- [ ] Hour 2-4: Check error rates every hour
-- [ ] Hour 4-24: Monitor Slack alerts
+-   [x] Hour 1: Active monitoring (Sentry, logs, metrics)
+-   [ ] Hour 2-4: Check error rates every hour
+-   [ ] Hour 4-24: Monitor Slack alerts
 
 **Documentation**:
 
-- [ ] Update deployment log with actual times
-- [ ] Document any issues encountered
-- [ ] Update runbooks if new patterns discovered
+-   [ ] Update deployment log with actual times
+-   [ ] Document any issues encountered
+-   [ ] Update runbooks if new patterns discovered
 
 **Team Communication**:
 
-- [ ] Send deployment summary to team Slack
-- [ ] Schedule retro for Sprint 1 (Day 5)
-- [ ] Update sprint board with completed items
+-   [ ] Send deployment summary to team Slack
+-   [ ] Schedule retro for Sprint 1 (Day 5)
+-   [ ] Update sprint board with completed items
 
 ---
 
@@ -379,17 +380,17 @@ git push origin v1.2.0
 
 **Week 1 Tasks** (from SPRINT_BOARD.md):
 
-- **Day 2**: TypeScript cleanup (47 errors → 30 errors)
-- **Day 3**: Zod validation + Sentry redaction
-- **Day 4**: History guards + unit tests
-- **Day 5**: CI/CD finalization + sprint retro
+-   **Day 2**: TypeScript cleanup (47 errors → 30 errors)
+-   **Day 3**: Zod validation + Sentry redaction
+-   **Day 4**: History guards + unit tests
+-   **Day 5**: CI/CD finalization + sprint retro
 
 **Reference Documents**:
 
-- `EXECUTION_PLAN.md`: Day-by-day breakdown
-- `SPRINT_BOARD.md`: Kanban board with 22 tasks
-- `REACT_BEST_PRACTICES.md`: Frontend coding standards
-- `ROADMAP_CONSOLIDATED.md`: 6-month strategic vision
+-   `EXECUTION_PLAN.md`: Day-by-day breakdown
+-   `SPRINT_BOARD.md`: Kanban board with 22 tasks
+-   `REACT_BEST_PRACTICES.md`: Frontend coding standards
+-   `ROADMAP_CONSOLIDATED.md`: 6-month strategic vision
 
 ---
 

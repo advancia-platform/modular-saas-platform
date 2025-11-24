@@ -181,25 +181,25 @@
     `
 
 -   [ ] Configure production-us-east  
-       - [ ] Add required reviewers:  
+    -   [ ] Add required reviewers:  
        Reviewer 1: ********\_******** (Functional Lead)  
        Reviewer 2: ********\_******** (SRE/DevOps)  
-       - [ ] Set deployment branches: main, release/\*  
-       - [ ] Save protection rules
+    -   [ ] Set deployment branches: main, release/\*  
+    -   [ ] Save protection rules
 
 -   [ ] Configure production-eu-west  
-       - [ ] Add required reviewers:  
+    -   [ ] Add required reviewers:  
        Reviewer 1: ********\_******** (Functional Lead)  
        Reviewer 2: ********\_******** (SRE/DevOps)  
-       - [ ] Set deployment branches: main, release/\*  
-       - [ ] Save protection rules
+    -   [ ] Set deployment branches: main, release/\*  
+    -   [ ] Save protection rules
 
 -   [ ] Configure production-apac-se  
-       - [ ] Add required reviewers:  
+    -   [ ] Add required reviewers:  
        Reviewer 1: ********\_******** (Functional Lead)  
        Reviewer 2: ********\_******** (SRE/DevOps)  
-       - [ ] Set deployment branches: main, release/\*  
-       - [ ] Save protection rules
+    -   [ ] Set deployment branches: main, release/\*  
+    -   [ ] Save protection rules
 
 ---
 
@@ -294,10 +294,10 @@
        Post to #deployments: "Starting production deployment v\_\_\_"
 
 -   [ ] Grafana dashboards open  
-       - [ ] Global overview  
-       - [ ] US East regional  
-       - [ ] EU West regional  
-       - [ ] APAC Southeast regional
+    -   [ ] Global overview  
+    -   [ ] US East regional  
+    -   [ ] EU West regional  
+    -   [ ] APAC Southeast regional
 
 -   [ ] Runbooks accessible  
        Open: DEPLOYMENT_DEBUGGING_GUIDE.md
@@ -312,16 +312,16 @@
       -f delay_between_regions=90
     ``
       **Expected Timeline:**
-      - 14:00 - US East deployment starts (45 min)
-      - 14:45 - US East validation complete
-      - 14:45 - Observation period (90 min)
-      - 16:15 - EU West deployment starts (45 min)
-      - 17:00 - EU West validation complete
-      - 17:00 - Observation period (90 min)
-      - 18:30 - APAC deployment starts (45 min)
-      - 19:15 - APAC validation complete
-      - 19:15 - Final global validation (30 min)
-      - 19:45 - Deployment complete ✅
+    -   14:00 - US East deployment starts (45 min)
+    -   14:45 - US East validation complete
+    -   14:45 - Observation period (90 min)
+    -   16:15 - EU West deployment starts (45 min)
+    -   17:00 - EU West validation complete
+    -   17:00 - Observation period (90 min)
+    -   18:30 - APAC deployment starts (45 min)
+    -   19:15 - APAC validation complete
+    -   19:15 - Final global validation (30 min)
+    -   19:45 - Deployment complete ✅
 
 ### Monitoring (Active throughout)
 

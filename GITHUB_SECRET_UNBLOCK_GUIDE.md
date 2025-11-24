@@ -37,6 +37,7 @@ Visit each URL and click **"Allow secret"** button:
    ```
 
 5. **Stripe API Key** (from old .env files, rotated):
+
    ```
    https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/unblock-secret/35uGh6dX0l3ozKbcUHCr8rkKGpr
    ```
@@ -62,9 +63,9 @@ git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 
 ### Current State of Files
 
-- ✅ **Current files**: All secrets redacted (commit 62a8bafc)
-- ✅ **Templates**: `.env.production.example` uses safe placeholders only
-- ❌ **Git history**: Old commits (3103ea38, ca43b7d3, etc.) contain real secrets
+-   ✅ **Current files**: All secrets redacted (commit 62a8bafc)
+-   ✅ **Templates**: `.env.production.example` uses safe placeholders only
+-   ❌ **Git history**: Old commits (3103ea38, ca43b7d3, etc.) contain real secrets
 
 ---
 
@@ -100,20 +101,20 @@ git push --force
 
 After successful push:
 
-- [ ] Verify GitHub Actions workflow runs successfully
-- [ ] Check Docker image builds and pushes to ghcr.io
-- [ ] Test deployment to staging environment
-- [ ] Configure GitHub Secrets for R2 credentials (see CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md)
-- [ ] Schedule BFG history cleanup (optional, removes secrets permanently)
+-   [ ] Verify GitHub Actions workflow runs successfully
+-   [ ] Check Docker image builds and pushes to ghcr.io
+-   [ ] Test deployment to staging environment
+-   [ ] Configure GitHub Secrets for R2 credentials (see CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md)
+-   [ ] Schedule BFG history cleanup (optional, removes secrets permanently)
 
 ---
 
 ## 🔗 Quick Links
 
-- **GitHub Secret Scanning Docs**: https://docs.github.com/en/code-security/secret-scanning/working-with-secret-scanning-and-push-protection
-- **Deployment Guide**: [CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md](./CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md)
-- **Security Audit**: [SECURITY_AUDIT_2025-11-17.md](./SECURITY_AUDIT_2025-11-17.md)
-- **BFG Repo Cleaner**: https://rtyley.github.io/bfg-repo-cleaner/
+-   **GitHub Secret Scanning Docs**: <https://docs.github.com/en/code-security/secret-scanning/working-with-secret-scanning-and-push-protection>
+-   **Deployment Guide**: [CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md](./CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md)
+-   **Security Audit**: [SECURITY_AUDIT_2025-11-17.md](./SECURITY_AUDIT_2025-11-17.md)
+-   **BFG Repo Cleaner**: <https://rtyley.github.io/bfg-repo-cleaner/>
 
 ---
 

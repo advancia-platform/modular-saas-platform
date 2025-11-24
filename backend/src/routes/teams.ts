@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import { z } from "zod";
 import logger from "../logger";
 import { authenticateToken } from "../middleware/auth";
-import { validateInput } from "../middleware/security";
+import { validateSchema } from "../middleware/validateSchema";
 import prisma from "../prismaClient";
 import { serializeDecimalFields } from "../utils/decimal";
 
@@ -192,7 +192,7 @@ router.get(
 router.post(
   "/",
   authenticateToken as any,
-  validateInput(createTeamSchema),
+  validateSchema(createTeamSchema),
   async (req: any, res: Response) => {
     try {
       const { name, description } = req.body;
@@ -274,7 +274,7 @@ router.post(
 router.put(
   "/:teamId",
   authenticateToken as any,
-  validateInput(updateTeamSchema),
+  validateSchema(updateTeamSchema),
   async (req: any, res: Response) => {
     try {
       const { teamId } = req.params;
@@ -371,7 +371,7 @@ router.put(
 router.post(
   "/:teamId/members",
   authenticateToken as any,
-  validateInput(addMemberSchema),
+  validateSchema(addMemberSchema),
   async (req: any, res: Response) => {
     try {
       const { teamId } = req.params;
@@ -490,7 +490,7 @@ router.post(
 router.put(
   "/:teamId/members/:memberId",
   authenticateToken as any,
-  validateInput(updateMemberRoleSchema),
+  validateSchema(updateMemberRoleSchema),
   async (req: any, res: Response) => {
     try {
       const { teamId, memberId } = req.params;

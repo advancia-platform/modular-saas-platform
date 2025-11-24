@@ -2,11 +2,11 @@
 
 ## ✅ Prerequisites Checklist
 
-- [x] Backend running at http://localhost:4000
-- [x] Frontend running at http://127.0.0.1:3000
-- [x] Backend tests passing (13/13)
-- [x] Prisma Client generated
-- [ ] Database accessible (Render remote DB or local Postgres)
+-   [x] Backend running at <http://localhost:4000>
+-   [x] Frontend running at <http://127.0.0.1:3000>
+-   [x] Backend tests passing (13/13)
+-   [x] Prisma Client generated
+-   [ ] Database accessible (Render remote DB or local Postgres)
 
 ---
 
@@ -14,7 +14,7 @@
 
 ### Step 1: Doctor Registration (5 minutes)
 
-**URL**: http://127.0.0.1:3000/register/doctor
+**URL**: <http://127.0.0.1:3000/register/doctor>
 
 **Action**: Fill out the registration form
 
@@ -32,9 +32,9 @@ Invite Code: ADVANCIA2025MEDBED
 
 **Expected Result**:
 
-- ✅ Success message: "Doctor registered successfully. Awaiting admin verification."
-- ✅ Doctor status: `PENDING`
-- ✅ JWT token returned (saved to localStorage)
+-   ✅ Success message: "Doctor registered successfully. Awaiting admin verification."
+-   ✅ Doctor status: `PENDING`
+-   ✅ JWT token returned (saved to localStorage)
 
 **Verification**:
 
@@ -45,15 +45,15 @@ Invite Code: ADVANCIA2025MEDBED
 
 **Troubleshooting**:
 
-- ❌ "Invalid invite code" → Check `backend/.env` has `DOCTOR_INVITE_CODE=ADVANCIA2025MEDBED`
-- ❌ "Email already exists" → Use a different email
-- ❌ Network error → Verify backend is running on port 4000
+-   ❌ "Invalid invite code" → Check `backend/.env` has `DOCTOR_INVITE_CODE=ADVANCIA2025MEDBED`
+-   ❌ "Email already exists" → Use a different email
+-   ❌ Network error → Verify backend is running on port 4000
 
 ---
 
 ### Step 2: Admin Verification (3 minutes)
 
-**URL**: http://127.0.0.1:3000/admin/dashboard
+**URL**: <http://127.0.0.1:3000/admin/dashboard>
 
 **Prerequisites**:
 Ensure `frontend/.env.local` contains:
@@ -73,9 +73,9 @@ NEXT_PUBLIC_ADMIN_KEY=supersecureadminkey123
 
 **Expected Result**:
 
-- ✅ Success alert: "Doctor verified successfully!"
-- ✅ Doctor status changes to `VERIFIED` (green badge)
-- ✅ Table refreshes automatically
+-   ✅ Success alert: "Doctor verified successfully!"
+-   ✅ Doctor status changes to `VERIFIED` (green badge)
+-   ✅ Table refreshes automatically
 
 **Verification**:
 
@@ -86,9 +86,9 @@ NEXT_PUBLIC_ADMIN_KEY=supersecureadminkey123
 
 **Troubleshooting**:
 
-- ❌ "Admin key required" → Check `NEXT_PUBLIC_ADMIN_KEY` in frontend env
-- ❌ 403 error → Admin key doesn't match `backend/.env` `ADMIN_KEY`
-- ❌ Doctor not appearing → Check backend logs for registration success
+-   ❌ "Admin key required" → Check `NEXT_PUBLIC_ADMIN_KEY` in frontend env
+-   ❌ 403 error → Admin key doesn't match `backend/.env` `ADMIN_KEY`
+-   ❌ Doctor not appearing → Check backend logs for registration success
 
 ---
 
@@ -142,8 +142,8 @@ curl -X POST http://localhost:4000/api/auth/login-doctor \
 
 **Save These**:
 
-- ✅ `@doctorToken` = response.token
-- ✅ `@doctorId` = response.doctor.id
+-   ✅ `@doctorToken` = response.token
+-   ✅ `@doctorId` = response.doctor.id
 
 ---
 
@@ -189,8 +189,8 @@ x-api-key: dev-api-key-123
 
 **Save These**:
 
-- ✅ `@patientToken` = response.token
-- ✅ `@patientId` = response.user.id
+-   ✅ `@patientToken` = response.token
+-   ✅ `@patientId` = response.user.id
 
 ---
 
@@ -229,18 +229,19 @@ Content-Type: application/json
 
 **Save This**:
 
-- ✅ `@consultationId` = response.consultation.id
+-   ✅ `@consultationId` = response.consultation.id
 
 ---
 
 ### Step 6: View Consultation Details (Frontend) (2 minutes)
 
-**URL**: http://127.0.0.1:3000/consultation/{consultationId}
+**URL**: <http://127.0.0.1:3000/consultation/{consultationId}>
 
 **Prerequisites**:
 
-- Patient must have JWT token in `localStorage` (key: `token`)
-- Or manually set it in browser console:
+-   Patient must have JWT token in `localStorage` (key: `token`)
+-   Or manually set it in browser console:
+
   ```javascript
   localStorage.setItem("token", "your-patient-token-here");
   location.reload();
@@ -248,13 +249,13 @@ Content-Type: application/json
 
 **Expected Display**:
 
-- ✅ Patient info: John Doe, patient@example.com
-- ✅ Doctor info: Dr. Sarah Johnson, General Medicine
-- ✅ Status badge: `SCHEDULED` (yellow)
-- ✅ Symptoms: "I have been experiencing severe headaches..."
-- ✅ Diagnosis: (empty for now)
-- ✅ "Start Video Call" button visible
-- ✅ Chat section with empty message list
+-   ✅ Patient info: John Doe, <patient@example.com>
+-   ✅ Doctor info: Dr. Sarah Johnson, General Medicine
+-   ✅ Status badge: `SCHEDULED` (yellow)
+-   ✅ Symptoms: "I have been experiencing severe headaches..."
+-   ✅ Diagnosis: (empty for now)
+-   ✅ "Start Video Call" button visible
+-   ✅ Chat section with empty message list
 
 ---
 
@@ -284,10 +285,10 @@ Content-Type: application/json
 
 **Refresh Page**:
 
-- ✅ Patient message on right (green)
-- ✅ Doctor message on left (blue)
-- ✅ Both messages show timestamp
-- ✅ Sender type labels visible
+-   ✅ Patient message on right (green)
+-   ✅ Doctor message on left (blue)
+-   ✅ Both messages show timestamp
+-   ✅ Sender type labels visible
 
 ---
 
@@ -300,11 +301,11 @@ Content-Type: application/json
 
 **Expected Result**:
 
-- ✅ Video iframe appears with Jitsi Meet interface
-- ✅ Room name: `advancia-consultation-{consultationId}`
-- ✅ Jitsi domain: `meet.jit.si` (or your custom domain)
-- ✅ Browser prompts for camera/microphone permissions
-- ✅ Video feed starts after allowing permissions
+-   ✅ Video iframe appears with Jitsi Meet interface
+-   ✅ Room name: `advancia-consultation-{consultationId}`
+-   ✅ Jitsi domain: `meet.jit.si` (or your custom domain)
+-   ✅ Browser prompts for camera/microphone permissions
+-   ✅ Video feed starts after allowing permissions
 
 **Test Both Roles**:
 
@@ -314,10 +315,10 @@ Content-Type: application/json
 
 **Troubleshooting**:
 
-- ❌ Iframe not loading → Check browser console for errors
-- ❌ "Permission denied" → Allow camera/mic in browser settings
-- ❌ Video not showing → Check `JITSI_DOMAIN` env var in backend
-- ❌ Room mismatch → Verify both users have same consultationId
+-   ❌ Iframe not loading → Check browser console for errors
+-   ❌ "Permission denied" → Allow camera/mic in browser settings
+-   ❌ Video not showing → Check `JITSI_DOMAIN` env var in backend
+-   ❌ Room mismatch → Verify both users have same consultationId
 
 ---
 
@@ -350,9 +351,9 @@ Content-Type: application/json
 
 **Verify in Frontend**:
 
-- Refresh consultation page
-- ✅ Diagnosis section now displays the text
-- ✅ Diagnosis is visible to both patient and doctor
+-   Refresh consultation page
+-   ✅ Diagnosis section now displays the text
+-   ✅ Diagnosis is visible to both patient and doctor
 
 ---
 
@@ -373,9 +374,9 @@ Content-Type: application/json
 
 **Verify in Frontend**:
 
-- Refresh consultation page
-- ✅ Status badge changes to `COMPLETED` (green)
-- ✅ Consultation marked as finished
+-   Refresh consultation page
+-   ✅ Status badge changes to `COMPLETED` (green)
+-   ✅ Consultation marked as finished
 
 ---
 
@@ -411,8 +412,8 @@ Content-Type: application/json
 
 **Solution**:
 
-- Your backend is currently pointed to Render's remote DB
-- If unreachable, switch to local:
+-   Your backend is currently pointed to Render's remote DB
+-   If unreachable, switch to local:
 
   ```bash
   # backend/.env
@@ -455,8 +456,9 @@ ADMIN_KEY=supersecureadminkey123
 
 **Solution**:
 
-- Frontend uses `localStorage.getItem('token')`
-- After login, manually set if needed:
+-   Frontend uses `localStorage.getItem('token')`
+-   After login, manually set if needed:
+
   ```javascript
   localStorage.setItem("token", "your-token-here");
   ```
@@ -520,55 +522,55 @@ echo "🎉 All tests passed!"
 
 Print this checklist and mark items as you test:
 
-- [ ] Doctor can register with correct invite code
-- [ ] Doctor registration fails with wrong invite code
-- [ ] Doctor appears in admin dashboard with PENDING status
-- [ ] Admin can verify doctor (status → VERIFIED)
-- [ ] Admin can suspend doctor (status → SUSPENDED)
-- [ ] Verified doctor can login successfully
-- [ ] Suspended doctor can login but cannot access consultations
-- [ ] Patient can create consultation with doctorId
-- [ ] Consultation appears in both patient and doctor lists
-- [ ] Patient can view consultation details
-- [ ] Doctor can view consultation details
-- [ ] Patient can send messages
-- [ ] Doctor can send messages
-- [ ] Messages appear in correct order with timestamps
-- [ ] "Start Video Call" button generates Jitsi URL
-- [ ] Both users can join the same Jitsi room
-- [ ] Video and audio work in Jitsi
-- [ ] Doctor can update diagnosis
-- [ ] Diagnosis appears on consultation page
-- [ ] Doctor can update consultation status
-- [ ] Status badge updates correctly in UI
-- [ ] Doctor can complete consultation (status → COMPLETED)
+-   [ ] Doctor can register with correct invite code
+-   [ ] Doctor registration fails with wrong invite code
+-   [ ] Doctor appears in admin dashboard with PENDING status
+-   [ ] Admin can verify doctor (status → VERIFIED)
+-   [ ] Admin can suspend doctor (status → SUSPENDED)
+-   [ ] Verified doctor can login successfully
+-   [ ] Suspended doctor can login but cannot access consultations
+-   [ ] Patient can create consultation with doctorId
+-   [ ] Consultation appears in both patient and doctor lists
+-   [ ] Patient can view consultation details
+-   [ ] Doctor can view consultation details
+-   [ ] Patient can send messages
+-   [ ] Doctor can send messages
+-   [ ] Messages appear in correct order with timestamps
+-   [ ] "Start Video Call" button generates Jitsi URL
+-   [ ] Both users can join the same Jitsi room
+-   [ ] Video and audio work in Jitsi
+-   [ ] Doctor can update diagnosis
+-   [ ] Diagnosis appears on consultation page
+-   [ ] Doctor can update consultation status
+-   [ ] Status badge updates correctly in UI
+-   [ ] Doctor can complete consultation (status → COMPLETED)
 
 ---
 
 ## 🚀 Next Steps After Testing
 
 1. **Add Real-Time Updates**
-   - Wire Socket.IO for live chat
-   - Add typing indicators
-   - Show online/offline status
+   -   Wire Socket.IO for live chat
+   -   Add typing indicators
+   -   Show online/offline status
 
 2. **Enhance UX**
-   - Add loading spinners
-   - Improve error messages
-   - Add toast notifications
+   -   Add loading spinners
+   -   Improve error messages
+   -   Add toast notifications
 
 3. **Add Features**
-   - File uploads (medical records)
-   - Prescription writing
-   - Appointment scheduling
-   - Payment integration
+   -   File uploads (medical records)
+   -   Prescription writing
+   -   Appointment scheduling
+   -   Payment integration
 
 4. **Production Prep**
-   - Switch to production database
-   - Update invite codes
-   - Configure custom Jitsi domain
-   - Set up monitoring
-   - Add rate limiting per doctor
+   -   Switch to production database
+   -   Update invite codes
+   -   Configure custom Jitsi domain
+   -   Set up monitoring
+   -   Add rate limiting per doctor
 
 ---
 
@@ -576,11 +578,11 @@ Print this checklist and mark items as you test:
 
 **Current State**: ✅ **Fully Functional**
 
-- Backend: Running on port 4000
-- Frontend: Running on port 3000
-- Tests: 13/13 passing
-- Database: Remote (Render) or local (Postgres)
-- Documentation: Complete
+-   Backend: Running on port 4000
+-   Frontend: Running on port 3000
+-   Tests: 13/13 passing
+-   Database: Remote (Render) or local (Postgres)
+-   Documentation: Complete
 
 **Ready for**: End-to-end testing and deployment!
 
@@ -588,7 +590,7 @@ Print this checklist and mark items as you test:
 
 **Need Help?**
 
-- Check `DOCTOR_CONSULTATION_SYSTEM_COMPLETE.md` for implementation details
-- Check `DOCTOR_SYSTEM_QUICK_START.md` for user workflows
-- Check `DOCTOR_SYSTEM_ARCHITECTURE.md` for technical diagrams
-- Use `api-tests/doctor-consultation.http` for API testing
+-   Check `DOCTOR_CONSULTATION_SYSTEM_COMPLETE.md` for implementation details
+-   Check `DOCTOR_SYSTEM_QUICK_START.md` for user workflows
+-   Check `DOCTOR_SYSTEM_ARCHITECTURE.md` for technical diagrams
+-   Use `api-tests/doctor-consultation.http` for API testing
