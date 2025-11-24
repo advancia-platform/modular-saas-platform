@@ -83,7 +83,150 @@
 
 ## 📋 Backlog
 
-### High Priority
+### 🔥 Sprint 1 Priority (Current Sprint)
+
+#### 🔎 Frontend Review Track
+
+- [ ] **Audit React/Next.js Components** `frontend` `review` `architecture`
+  - Audit existing components for reusability and consistency
+  - Identify large components that need splitting (TransactionTable, CryptoAdminPanel)
+  - Review TypeScript prop typing coverage
+  - **Owner:** _Frontend Lead_
+  - **Estimate:** 1 day
+
+- [ ] **Standardize Routing Strategy** `frontend` `next.js` `routing`
+  - Document App Router vs Pages Router usage
+  - Plan migration of TrustScore demo from Pages Router
+  - Update routing conventions in REACT_BEST_PRACTICES.md
+  - **Owner:** _Frontend Lead_
+  - **Estimate:** 0.5 day
+
+- [ ] **State Management Audit** `frontend` `state` `context`
+  - Evaluate Context API usage (ToastProvider, AuthProvider, SilentModeProvider)
+  - Identify Socket.IO cleanup issues (potential memory leaks)
+  - Document state management patterns
+  - **Owner:** _Frontend Dev_
+  - **Estimate:** 0.5 day
+
+- [ ] **Performance Optimization Audit** `frontend` `performance` `optimization`
+  - Add React.memo to heavy components
+  - Implement useMemo/useCallback for expensive operations
+  - Audit bundle size and code splitting opportunities
+  - Test image optimization with Next.js <Image>
+  - **Owner:** _Frontend Dev_
+  - **Estimate:** 1 day
+
+#### 📚 Documentation Track
+
+- [x] **Create REACT_BEST_PRACTICES.md** `docs` `frontend` `standards`
+  - Component structure (functional, hooks-based) ✅
+  - TypeScript usage (props/interfaces) ✅
+  - Styling conventions (Tailwind, DaisyUI, CSS Modules) ✅
+  - Testing (React Testing Library + Jest) ✅
+  - **Owner:** _DevOps Team_
+  - **Completed:** Nov 24, 2025
+
+- [ ] **Update Sprint Documentation** `docs` `sprint` `roadmap`
+  - Update ROADMAP_README.md with Sprint 1 goals
+  - Add Sprint 1 Backlog to SPRINT_BOARD.md
+  - Link REACT_BEST_PRACTICES.md from frontend README
+  - **Owner:** _Scrum Master_
+  - **Estimate:** 0.25 day
+
+#### 🧩 React Patterns Track
+
+- [ ] **Standardize Hooks Usage** `frontend` `hooks` `patterns`
+  - Define standard patterns for useState, useEffect, useReducer
+  - Document custom hooks (useBalance, useNotifications, useTransactions)
+  - Add hooks linting rules to ESLint config
+  - **Owner:** _Frontend Lead_
+  - **Estimate:** 0.5 day
+
+- [ ] **Component Hierarchy Guidelines** `frontend` `architecture` `patterns`
+  - Document smart vs dumb component patterns
+  - Define atomic design principles for UI components
+  - Create component template in REACT_BEST_PRACTICES.md
+  - **Owner:** _Frontend Lead_
+  - **Estimate:** 0.5 day
+
+- [ ] **TypeScript Integration Enhancement** `frontend` `typescript` `strict`
+  - Enforce strict typing for all component props
+  - Add API response type definitions
+  - Replace remaining `any` with `unknown`
+  - **Owner:** _Frontend Dev_
+  - **Estimate:** 1 day
+
+- [ ] **Data Fetching Strategy** `frontend` `data` `server-components`
+  - Document Server Components vs client-side hooks pattern
+  - Standardize Socket.IO usage for realtime updates
+  - Add React Query or SWR for client-side caching (optional)
+  - **Owner:** _Frontend Dev_
+  - **Estimate:** 1 day
+
+- [ ] **Implement Global Error Boundary** `frontend` `error-handling` `resilience`
+  - Add ErrorBoundary to root layout
+  - Create fallback UI components
+  - Integrate with Sentry error tracking
+  - **Owner:** _Frontend Dev_
+  - **Estimate:** 0.5 day
+
+#### 🚀 Deployment Workflow Track
+
+- [ ] **Whitelist GitHub Secrets** `security` `deployment` `blocker` ⚠️
+  - Visit 5 GitHub secret-scanning alert URLs
+  - Click "Allow secret" for each (GitHub PAT, 2x Stripe test keys, Slack webhook, Stripe API key)
+  - Wait 1-2 minutes for propagation
+  - **Owner:** _DevOps Lead_ (USER ACTION REQUIRED)
+  - **Estimate:** 5 minutes
+  - **Blocker:** Prevents push to remote
+
+- [ ] **Push Commits to Remote** `git` `deployment` `ci-cd`
+  - Execute: `git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify`
+  - Verify 9 commits pushed successfully
+  - **Owner:** _DevOps Lead_
+  - **Estimate:** 5 minutes
+  - **Depends on:** Whitelist GitHub Secrets
+
+- [ ] **Open Pull Request to Staging** `git` `pr` `staging`
+  - Create PR: branch → staging
+  - Use PR template from RELEASE_CHECKLIST.md
+  - Add reviewers (code owners, DevOps lead, Product Owner)
+  - Link issues and sprint board
+  - **Owner:** _DevOps Lead_
+  - **Estimate:** 15 minutes
+  - **Depends on:** Push commits to remote
+
+- [ ] **Configure GitHub Actions Secrets** `ci-cd` `secrets` `github-actions`
+  - Add 25+ secrets: Cloudflare R2, DATABASE_URL, JWT secrets, Stripe, monitoring
+  - Verify staging and production SSH keys
+  - Test secret injection in workflow dry-run
+  - **Owner:** _DevOps Lead_
+  - **Estimate:** 30 minutes
+  - **Reference:** CLOUDFLARE_R2_DOCKER_DEPLOYMENT.md § Prerequisites
+
+- [ ] **Verify Staging Deployment** `ci-cd` `staging` `testing`
+  - Merge PR to staging (triggers auto-deploy)
+  - Monitor GitHub Actions workflow
+  - Test health endpoint: `curl https://staging.advancia.io/api/health`
+  - Verify Cloudflare R2 integration
+  - **Owner:** _DevOps Lead_
+  - **Estimate:** 1 hour
+  - **Depends on:** Configure GitHub Actions Secrets
+
+- [ ] **Merge to Main (Production)** `deployment` `production` `release`
+  - Complete RELEASE_CHECKLIST.md (50+ items)
+  - Merge staging → main (manual approval required)
+  - Monitor blue-green deployment
+  - Tag release: `git tag -a v1.2.0 -m "Release v1.2.0"`
+  - **Owner:** _DevOps Lead + Product Owner_
+  - **Estimate:** 2 hours (+ 24h monitoring)
+  - **Depends on:** Verify staging deployment
+
+---
+
+### 🔧 Backend Sprint 1 Items (Original)
+
+#### High Priority
 
 - [ ] **TypeScript Cleanup** `typescript` `cleanup` `backend`
   - Fix remaining 47 compile errors
@@ -112,7 +255,7 @@
   - **Owner:** _unassigned_
   - **Estimate:** 0.5 day
 
-### Medium Priority
+#### Medium Priority
 
 - [ ] **Unit Test Expansion** `testing` `coverage` `backend`
   - Edge cases for tasks/teams/payments
