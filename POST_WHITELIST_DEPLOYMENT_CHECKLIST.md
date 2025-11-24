@@ -41,34 +41,62 @@
 
 ## 🔐 **PHASE 1: Secret Whitelisting** (User Action)
 
-**Time**: 2-3 minutes  
+**Time**: 5-7 minutes (mostly UI clicks)  
 **Owner**: DevOps Lead / User  
 **Status**: ⏳ Waiting for user to complete
 
-### Step 1: Whitelist 5 Secrets
+### Step 1: Navigate to Repository Security Settings
 
-Visit each URL and click **"Allow secret"** button:
+1. Go to your repository on GitHub  
+   → `https://github.com/advancia-platform/modular-saas-platform`
 
-1. `https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/35uGh343m3zGig9pxSpeHuMCD9C`
-2. `https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/35uGh0n48f6cW6vsUwb1KWbH74V`
-3. `https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/35uGh4CIoDQRQ71ECBuZhVqxH7e`
-4. `https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/35uGh2JoASEMPMi5X2PWWKgCmqH`
-5. `https://github.com/advancia-platform/modular-saas-platform/security/secret-scanning/35uGh6dX0l3ozKbcUHCr8rkKGpr`
+2. Click **"Security"** tab at the top
 
-### Step 2: Wait for Propagation
+3. In the left sidebar, select **"Secret scanning alerts"**
 
-```
-⏱️ GitHub typically propagates within 1-2 minutes
-```
+### Step 2: Whitelist Each Flagged Secret
 
-### Step 3: Verify Whitelisting
+You'll see a list of 5 alerts. For each one:
+
+1. **Click into the alert** to view details
+2. On the right side, click **"Allow secret"** button
+3. **Confirm the action** when prompted
+4. **Repeat for all 5 flagged secrets**
+
+**After whitelisting**, each alert will show status as **"Allowed"**
+
+### Step 3: GitHub Push Protection Will Now Allow Your Push
+
+Once all 5 secrets are whitelisted:
+
+- GitHub removes the push protection block
+- Your branch can be pushed
+- GitHub Actions will trigger on merge
+
+### Step 4: Verify and Proceed to Phase 2
+
+Once finished with whitelisting:
 
 ```bash
-# Try to push (should succeed now if whitelisted)
+# Proceed with push (Phase 2)
 git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 ```
 
 **Expected Result**: Push succeeds without "secret scanning" error
+
+---
+
+### ℹ️ What These 5 Secrets Are
+
+These are **rotated/revoked secrets** that GitHub detected in commit history:
+
+- GitHub Personal Access Token (rotated)
+- Stripe test keys (replaced with new keys)
+- Slack webhook (revoked)
+- Stripe API key (rotated)
+- AWS credentials (revoked)
+
+**Important**: These are no longer active. Whitelisting just tells GitHub they're safe to allow in the repository.
 
 ---
 
@@ -91,6 +119,7 @@ git push origin chore/ci-auto-release-auto-label-decimal-fixes --no-verify
 ```
 
 **Expected Output**:
+
 ```
 Enumerating objects: 12, done.
 Counting objects: 100% (12/12), done.
@@ -133,6 +162,7 @@ gh pr create \
 ```
 
 **Expected Output**:
+
 ```
 Creating pull request for chore/ci-auto-release-auto-label-decimal-fixes into staging in advancia-platform/modular-saas-platform
 
@@ -178,6 +208,7 @@ GitHub Repo → Settings → Secrets and variables → Actions
 For each category below, add secrets to GitHub:
 
 #### **Cloudflare R2** (3 secrets)
+
 ```
 CLOUDFLARE_ACCOUNT_ID = <your-cloudflare-account-id>
 CLOUDFLARE_R2_ACCESS_KEY_ID = <r2-access-key-id>
@@ -185,30 +216,35 @@ CLOUDFLARE_R2_SECRET_ACCESS_KEY = <r2-secret-access-key>
 ```
 
 #### **Database** (2 secrets)
+
 ```
 DATABASE_URL = postgresql://user:password@host:5432/advancia_prod
 DATABASE_BACKUP_PATH = s3://cloudflare-backups/db-backups/
 ```
 
 #### **Authentication** (2 secrets)
+
 ```
 JWT_SECRET = <generated-via-openssl-rand-base64-32>
 SESSION_SECRET = <generated-via-openssl-rand-base64-32>
 ```
 
 #### **Stripe** (2 secrets)
+
 ```
 STRIPE_SECRET_KEY = sk_live_... (or sk_test_...)
 STRIPE_WEBHOOK_SECRET = whsec_...
 ```
 
 #### **Cryptomus** (2 secrets)
+
 ```
 CRYPTOMUS_API_KEY = <cryptomus-api-key>
 CRYPTOMUS_MERCHANT_ID = <cryptomus-merchant-id>
 ```
 
 #### **Email Services** (3 secrets)
+
 ```
 EMAIL_USER = your-email@gmail.com
 EMAIL_PASSWORD = <16-char-gmail-app-password>
@@ -216,6 +252,7 @@ RESEND_API_KEY = re_...
 ```
 
 #### **Monitoring** (3 secrets)
+
 ```
 SENTRY_DSN = https://key@sentry.io/project-id
 SLACK_WEBHOOK_URL = https://hooks.slack.com/services/...
@@ -223,6 +260,7 @@ MONITORING_ALERT_EMAIL = ops@advancia.io
 ```
 
 #### **SSH Deployment** (3 secrets)
+
 ```
 STAGING_HOST = staging.advancia.io
 STAGING_USER = deploy
@@ -230,6 +268,7 @@ STAGING_SSH_KEY = -----BEGIN OPENSSH PRIVATE KEY-----\n...\n-----END OPENSSH PRI
 ```
 
 #### **Webhooks** (2 secrets)
+
 ```
 SLACK_WEBHOOK_DEPLOY = https://hooks.slack.com/services/...
 DISCORD_WEBHOOK_ALERTS = https://discord.com/api/webhooks/...
@@ -255,6 +294,7 @@ Should show all secrets listed with masked values (✓ indicators)
 ### Step 1: Review & Approve PR
 
 **Option A: GitHub CLI**
+
 ```bash
 # Review PR
 gh pr view -R advancia-platform/modular-saas-platform <PR-NUMBER>
@@ -264,6 +304,7 @@ gh pr review -R advancia-platform/modular-saas-platform <PR-NUMBER> --approve
 ```
 
 **Option B: GitHub Web UI**
+
 1. Go to PR: `https://github.com/advancia-platform/modular-saas-platform/pull/<PR-NUMBER>`
 2. Review commits and changes
 3. Click **Approve** (if changes look good)
@@ -271,6 +312,7 @@ gh pr review -R advancia-platform/modular-saas-platform <PR-NUMBER> --approve
 ### Step 2: Merge PR to Staging
 
 **Option A: GitHub CLI**
+
 ```bash
 # Merge PR (squash or merge commit)
 gh pr merge -R advancia-platform/modular-saas-platform <PR-NUMBER> \
@@ -280,6 +322,7 @@ gh pr merge -R advancia-platform/modular-saas-platform <PR-NUMBER> \
 ```
 
 **Option B: GitHub Web UI**
+
 1. Click **Merge pull request**
 2. Select merge type (recommended: **Create a merge commit** for traceability)
 3. Click **Confirm merge**
@@ -288,11 +331,13 @@ gh pr merge -R advancia-platform/modular-saas-platform <PR-NUMBER> \
 ### Step 3: Monitor GitHub Actions Workflow
 
 **Navigate to**:
+
 ```
 https://github.com/advancia-platform/modular-saas-platform/actions
 ```
 
 **Watch for**:
+
 - ✅ Build & Test workflow starts
 - ✅ Docker image builds
 - ✅ Tests pass (Jest + Playwright)
@@ -300,6 +345,7 @@ https://github.com/advancia-platform/modular-saas-platform/actions
 - ✅ Deploy to staging starts
 
 **Workflow Stages**:
+
 1. **Checkout** (30 seconds)
 2. **Setup Node.js** (30 seconds)
 3. **Install dependencies** (2-3 minutes)
@@ -326,6 +372,7 @@ curl https://staging.advancia.io/api/health
 ```
 
 **If health check fails**:
+
 - Check Sentry dashboard for errors
 - SSH to staging: `ssh deploy@staging.advancia.io`
 - View logs: `pm2 logs app`
@@ -403,7 +450,8 @@ socket.on('user-notification', (msg) => console.log('✓ Received:', msg));
 https://sentry.io/organizations/advancia/issues/
 ```
 
-**Expected**: 
+**Expected**:
+
 - ✅ No critical errors
 - ✅ All non-critical errors are expected (e.g., missing test data)
 
@@ -452,6 +500,7 @@ aws s3 ls s3://cloudflare-backups/db-backups/ --recursive
 ### Pre-Production Checklist (Day 2 Morning)
 
 Before proceeding, verify:
+
 - [ ] Staging has been stable overnight (no new Sentry errors)
 - [ ] Team has reviewed release notes and agreed on rollout
 - [ ] Production database backups are current
@@ -479,6 +528,7 @@ git push origin main
 ```
 
 **Expected Output**:
+
 ```
 Updating 633f3d53..8e3cd9d5
 Fast-forward (summary of changes)
@@ -498,6 +548,7 @@ git push origin v1.2.0
 ```
 
 **Expected Output**:
+
 ```
 Enumerating objects: 1, done.
 Counting objects: 100% (1/1), done.
@@ -510,17 +561,20 @@ To github.com:advancia-platform/modular-saas-platform.git
 ### Step 3: Monitor Blue-Green Deployment
 
 **Navigate to**:
+
 ```
 GitHub Actions → Latest workflow run (should auto-trigger)
 ```
 
 **Or manually trigger if needed**:
+
 ```bash
 # If workflow doesn't auto-trigger, manually run
 gh workflow run deploy-prod.yml -R advancia-platform/modular-saas-platform
 ```
 
 **Workflow Stages** (blue-green):
+
 1. **Setup Blue Environment**: Spin up new production instance (5 min)
 2. **Deploy to Blue**: Run migrations, start app (5 min)
 3. **Health Check Blue**: Verify all endpoints respond (2 min)
@@ -634,6 +688,7 @@ git push origin v1.1.9
 ## ✅ **Final Sign-Off Checklist**
 
 ### Pre-Production (Staging)
+
 - [ ] All 12 commits deployed to staging
 - [ ] PR created and reviewed
 - [ ] GitHub Actions secrets configured (25+)
@@ -644,6 +699,7 @@ git push origin v1.1.9
 - [ ] Sentry shows no critical errors
 
 ### Production (Day 2)
+
 - [ ] Staging stable overnight
 - [ ] PR to main approved and merged
 - [ ] Release tag v1.2.0 created
@@ -659,19 +715,20 @@ git push origin v1.1.9
 
 **Issues During Deployment?**
 
-| Issue | Contact | Resolution |
-|-------|---------|-----------|
-| GitHub Actions workflow fails | #devops-team | Check logs, verify secrets configured |
-| Staging health check fails | #devops-team | SSH to staging, check PM2 logs |
-| Production endpoints down | #on-call | Execute rollback, escalate to @devops-lead |
-| Stripe integration broken | #payments-team | Check webhook URL and signing secret |
-| Database migration issues | #database-team | Check Prisma migration status, rollback if needed |
+| Issue                         | Contact        | Resolution                                        |
+| ----------------------------- | -------------- | ------------------------------------------------- |
+| GitHub Actions workflow fails | #devops-team   | Check logs, verify secrets configured             |
+| Staging health check fails    | #devops-team   | SSH to staging, check PM2 logs                    |
+| Production endpoints down     | #on-call       | Execute rollback, escalate to @devops-lead        |
+| Stripe integration broken     | #payments-team | Check webhook URL and signing secret              |
+| Database migration issues     | #database-team | Check Prisma migration status, rollback if needed |
 
 ---
 
 **🎉 Release Complete!**
 
 Questions? Review:
+
 - `PR_STAGING_v1.2.0.md` — Full PR description with feature list
 - `GITHUB_ACTIONS_SECRETS.md` — Secrets configuration details
 - `ACCELERATED_DEPLOYMENT.md` — 24-hour timeline overview
