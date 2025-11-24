@@ -29,11 +29,11 @@ PORT=4000
 FRONTEND_URL=http://157.245.8.131:3000
 ALLOWED_ORIGINS=http://157.245.8.131:3000,http://157.245.8.131
 DATABASE_URL=postgresql://your_user:your_password@localhost:5432/advancia_prod
-JWT_SECRET=YOUR_JWT_SECRET_HERE
+JWT_SECRET=<REPLACE_WITH_YOUR_JWT_SECRET>
 JWT_EXPIRATION=7d
-SESSION_SECRET=YOUR_SESSION_SECRET_HERE
-STRIPE_SECRET_KEY=sk_test_YOUR_STRIPE_TEST_KEY_HERE
-STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE
+SESSION_SECRET=<REPLACE_WITH_YOUR_SESSION_SECRET>
+STRIPE_SECRET_KEY=<REPLACE_WITH_YOUR_STRIPE_SECRET_KEY>
+STRIPE_PUBLISHABLE_KEY=<REPLACE_WITH_YOUR_STRIPE_PUBLISHABLE_KEY>
 REDIS_URL=redis://localhost:6379
 EOF
 ```
@@ -47,7 +47,7 @@ Copy and paste this ENTIRE block:
 ```bash
 cat > /var/www/advancia/frontend/.env.production << 'EOF'
 NEXT_PUBLIC_API_URL=http://157.245.8.131:4000
-NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=pk_test_YOUR_STRIPE_PUBLISHABLE_KEY_HERE
+NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=<REPLACE_WITH_YOUR_STRIPE_PUBLISHABLE_KEY>
 EOF
 ```
 
@@ -89,9 +89,9 @@ pm2 status
 
 Look for:
 
--   Both processes showing "online"
--   Restart count should stop increasing
--   Memory usage should be stable (not 0)
+- Both processes showing "online"
+- Restart count should stop increasing
+- Memory usage should be stable (not 0)
 
 ### Step 8: Test Endpoints
 
@@ -194,21 +194,21 @@ pm2 restart all
 
 After running all steps above, verify:
 
--   [ ] `.env.production` files exist and have content
--   [ ] PostgreSQL is running (`systemctl status postgresql`)
--   [ ] Database `advancia_prod` exists
--   [ ] PM2 shows both processes as "online"
--   [ ] Restart count stops increasing after 30 seconds
--   [ ] `curl http://localhost:4000/health` returns JSON
--   [ ] `curl http://localhost:3000` returns HTTP 200
--   [ ] No errors in `pm2 logs --lines 20`
+- [ ] `.env.production` files exist and have content
+- [ ] PostgreSQL is running (`systemctl status postgresql`)
+- [ ] Database `advancia_prod` exists
+- [ ] PM2 shows both processes as "online"
+- [ ] Restart count stops increasing after 30 seconds
+- [ ] `curl http://localhost:4000/health` returns JSON
+- [ ] `curl http://localhost:3000` returns HTTP 200
+- [ ] No errors in `pm2 logs --lines 20`
 
 ## Final Test
 
 If all checks pass, test from your browser:
 
--   Backend: <http://157.245.8.131:4000/health>
--   Frontend: <http://157.245.8.131:3000>
+- Backend: <http://157.245.8.131:4000/health>
+- Frontend: <http://157.245.8.131:3000>
 
 ## Save PM2 Configuration
 

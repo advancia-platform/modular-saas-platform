@@ -6,9 +6,9 @@ Complete guide for setting up Slack webhooks to receive automated alerts from Ad
 
 ## 📋 Prerequisites
 
--   **Slack Workspace** with admin access
--   **Target Channel** created (e.g., `#ops-alerts`, `#status`, `#monitoring`)
--   **5 minutes** to complete setup
+- **Slack Workspace** with admin access
+- **Target Channel** created (e.g., `#ops-alerts`, `#status`, `#monitoring`)
+- **5 minutes** to complete setup
 
 ---
 
@@ -20,8 +20,8 @@ Complete guide for setting up Slack webhooks to receive automated alerts from Ad
 2. Click **Create New App**
 3. Choose **From Scratch**
 4. Configure:
-   -   **App Name:** `Advancia Alerts` (or your preferred name)
-   -   **Workspace:** Select your workspace from dropdown
+   - **App Name:** `Advancia Alerts` (or your preferred name)
+   - **Workspace:** Select your workspace from dropdown
 5. Click **Create App**
 
 ![Create Slack App](https://a.slack-edge.com/80588/img/api/articles/app_creation_modal.png)
@@ -41,8 +41,8 @@ Complete guide for setting up Slack webhooks to receive automated alerts from Ad
 ### Step 3: Choose a Channel
 
 1. Select the Slack channel where alerts should appear:
-   -   **Recommended:** `#ops-alerts` or `#monitoring`
-   -   **Alternative:** `#general` (for testing only)
+   - **Recommended:** `#ops-alerts` or `#monitoring`
+   - **Alternative:** `#general` (for testing only)
 2. Click **Allow** to authorize the app
 
 **Pro Tip:** Create a dedicated channel for alerts to avoid noise in general channels.
@@ -54,7 +54,7 @@ Complete guide for setting up Slack webhooks to receive automated alerts from Ad
 1. Slack will generate a **Webhook URL** that looks like:
 
    ```
-   https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+   https://hooks.slack.com/services/YOUR/WORKSPACE/TOKEN
    ```
 
 2. Copy this URL (click the **Copy** button)
@@ -63,7 +63,7 @@ Complete guide for setting up Slack webhooks to receive automated alerts from Ad
 
    ```env
    # ─── Slack Webhook (Alerting) ─────────────────
-   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WORKSPACE/TOKEN
    ```
 
 **⚠️ Security Note:** Keep this URL secret! Anyone with this URL can post to your channel.
@@ -353,17 +353,17 @@ const webhookUrl = "https://hooks.slack.com/services/...";
 
 ### 3. Rotate Webhooks Periodically
 
--   Every 6 months, regenerate the webhook URL
--   Update `.env` file with new URL
--   Test before deploying
+- Every 6 months, regenerate the webhook URL
+- Update `.env` file with new URL
+- Test before deploying
 
 ### 4. Limit Webhook Scope
 
--   Create separate webhooks for different alert types
--   Use different channels for different severities:
-    -   `#critical-alerts` → outages, downtime
-    -   `#warnings` → high errors, restarts
-    -   `#monitoring` → routine status updates
+- Create separate webhooks for different alert types
+- Use different channels for different severities:
+  - `#critical-alerts` → outages, downtime
+  - `#warnings` → high errors, restarts
+  - `#monitoring` → routine status updates
 
 ---
 
@@ -371,27 +371,27 @@ const webhookUrl = "https://hooks.slack.com/services/...";
 
 ### Initial Setup
 
--   [ ] Webhook URL generated
--   [ ] Added to `.env` file
--   [ ] Test message sent via curl/PowerShell
--   [ ] Message appears in Slack channel
--   [ ] Webhook URL kept secure (not in Git)
+- [ ] Webhook URL generated
+- [ ] Added to `.env` file
+- [ ] Test message sent via curl/PowerShell
+- [ ] Message appears in Slack channel
+- [ ] Webhook URL kept secure (not in Git)
 
 ### Integration Testing
 
--   [ ] `status-generator.mjs` can access webhook URL
--   [ ] Alert triggers when threshold breached
--   [ ] Alert message is formatted correctly
--   [ ] Alert appears in correct Slack channel
--   [ ] No duplicate alerts (cooldown working)
+- [ ] `status-generator.mjs` can access webhook URL
+- [ ] Alert triggers when threshold breached
+- [ ] Alert message is formatted correctly
+- [ ] Alert appears in correct Slack channel
+- [ ] No duplicate alerts (cooldown working)
 
 ### Production Validation
 
--   [ ] Alerts sent within 5 minutes of issue
--   [ ] Ops team receives notifications
--   [ ] Alert state persisted in `alert-state.json`
--   [ ] Cooldown prevents alert spam (1 hour)
--   [ ] Multiple alert types working (uptime, errors, restarts, incidents)
+- [ ] Alerts sent within 5 minutes of issue
+- [ ] Ops team receives notifications
+- [ ] Alert state persisted in `alert-state.json`
+- [ ] Cooldown prevents alert spam (1 hour)
+- [ ] Multiple alert types working (uptime, errors, restarts, incidents)
 
 ---
 
@@ -609,17 +609,17 @@ View full report: https://status.advanciapayledger.com`;
 
 ### 1. Alert Fatigue Prevention
 
--   ✅ Use 1-hour cooldown between duplicate alerts
--   ✅ Aggregate low-priority alerts into summaries
--   ✅ Only alert on actionable issues
--   ❌ Don't alert on every minor event
+- ✅ Use 1-hour cooldown between duplicate alerts
+- ✅ Aggregate low-priority alerts into summaries
+- ✅ Only alert on actionable issues
+- ❌ Don't alert on every minor event
 
 ### 2. Clear Action Items
 
--   ✅ Include specific commands to run
--   ✅ Link to relevant dashboards/logs
--   ✅ Provide context (thresholds, baselines)
--   ❌ Don't send vague "something's wrong" alerts
+- ✅ Include specific commands to run
+- ✅ Link to relevant dashboards/logs
+- ✅ Provide context (thresholds, baselines)
+- ❌ Don't send vague "something's wrong" alerts
 
 ### 3. Channel Organization
 
@@ -647,25 +647,25 @@ SLACK_WEBHOOK_URL=https://hooks.slack.com/services/.../prod-alerts
 
 After completing this setup:
 
--   ✅ **Ops team** receives real-time alerts in Slack
--   ✅ **Proactive monitoring** catches issues before users notice
--   ✅ **Clear action items** enable fast response
--   ✅ **Public status page** maintains transparency
--   ✅ **Private alerts** keep internal issues internal
+- ✅ **Ops team** receives real-time alerts in Slack
+- ✅ **Proactive monitoring** catches issues before users notice
+- ✅ **Clear action items** enable fast response
+- ✅ **Public status page** maintains transparency
+- ✅ **Private alerts** keep internal issues internal
 
 Your monitoring system now has **dual channels**:
 
--   **Public:** Status page for users/investors
--   **Private:** Slack alerts for ops team
+- **Public:** Status page for users/investors
+- **Private:** Slack alerts for ops team
 
 ---
 
 ## 📚 Additional Resources
 
--   **Slack API Docs:** <https://api.slack.com/messaging/webhooks>
--   **Block Kit Builder:** <https://app.slack.com/block-kit-builder> (design rich messages)
--   **Incoming Webhooks Guide:** <https://api.slack.com/messaging/webhooks>
--   **Rate Limits:** <https://api.slack.com/docs/rate-limits>
+- **Slack API Docs:** <https://api.slack.com/messaging/webhooks>
+- **Block Kit Builder:** <https://app.slack.com/block-kit-builder> (design rich messages)
+- **Incoming Webhooks Guide:** <https://api.slack.com/messaging/webhooks>
+- **Rate Limits:** <https://api.slack.com/docs/rate-limits>
 
 ---
 

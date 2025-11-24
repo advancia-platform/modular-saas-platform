@@ -21,11 +21,11 @@ Complete guide to setting up Prometheus, Alertmanager, and exporters for the Adv
 
 **What you get:**
 
--   ✅ Prometheus scraping metrics from PM2, Node Exporter, and Status JSON
--   ✅ Alertmanager routing alerts to Slack + Email
--   ✅ 20+ pre-configured alerting rules (uptime, restarts, CPU, memory, disk, response times)
--   ✅ Grafana dashboard integration (10 panels)
--   ✅ Complete monitoring coverage of application and system health
+- ✅ Prometheus scraping metrics from PM2, Node Exporter, and Status JSON
+- ✅ Alertmanager routing alerts to Slack + Email
+- ✅ 20+ pre-configured alerting rules (uptime, restarts, CPU, memory, disk, response times)
+- ✅ Grafana dashboard integration (10 panels)
+- ✅ Complete monitoring coverage of application and system health
 
 **Architecture:**
 
@@ -52,17 +52,17 @@ Complete guide to setting up Prometheus, Alertmanager, and exporters for the Adv
 
 **System Requirements:**
 
--   Ubuntu 20.04+ or similar Linux distribution
--   2GB+ RAM (4GB recommended)
--   10GB+ disk space
--   Sudo privileges
+- Ubuntu 20.04+ or similar Linux distribution
+- 2GB+ RAM (4GB recommended)
+- 10GB+ disk space
+- Sudo privileges
 
 **Already Running:**
 
--   PM2 with backend processes (advancia-backend, backend-watchdog, status-updater)
--   Backend API on port 4000
--   Frontend on port 3000
--   Nginx configured
+- PM2 with backend processes (advancia-backend, backend-watchdog, status-updater)
+- Backend API on port 4000
+- Frontend on port 3000
+- Nginx configured
 
 ---
 
@@ -159,9 +159,9 @@ sudo chown prometheus:prometheus /etc/prometheus/*
 
 **Edit `/etc/prometheus/prometheus.yml`** if needed:
 
--   Update scrape intervals
--   Adjust target ports
--   Add custom labels
+- Update scrape intervals
+- Adjust target ports
+- Add custom labels
 
 ### Step 2: Configure Alertmanager
 
@@ -180,9 +180,9 @@ sudo nano /etc/alertmanager/alertmanager.yml
 
 Replace:
 
--   `YOUR_APP_PASSWORD` → Your Gmail App Password (from [GMAIL_EMAIL_ALERTS_SETUP.md](GMAIL_EMAIL_ALERTS_SETUP.md))
--   `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX` → Your Slack Webhook URL (from [SLACK_WEBHOOK_SETUP.md](SLACK_WEBHOOK_SETUP.md))
--   `ops@advanciapayledger.com` → Your actual ops team email
+- `YOUR_APP_PASSWORD` → Your Gmail App Password (from [GMAIL_EMAIL_ALERTS_SETUP.md](GMAIL_EMAIL_ALERTS_SETUP.md))
+- `https://hooks.slack.com/services/YOUR/WORKSPACE/TOKEN` → Your Slack Webhook URL (from [SLACK_WEBHOOK_SETUP.md](SLACK_WEBHOOK_SETUP.md))
+- `ops@advanciapayledger.com` → Your actual ops team email
 
 ### Step 3: Create Systemd Services
 
@@ -411,9 +411,9 @@ pm2 start advancia-backend
 3. Click **Add data source**
 4. Select **Prometheus**
 5. Configure:
-   -   **Name:** Prometheus
-   -   **URL:** <http://localhost:9090>
-   -   **Access:** Server (default)
+   - **Name:** Prometheus
+   - **URL:** <http://localhost:9090>
+   - **Access:** Server (default)
 6. Click **Save & Test**
 
 ### Import Dashboard
@@ -426,16 +426,16 @@ pm2 start advancia-backend
 
 **Expected Result:** 10-panel dashboard with:
 
--   System Uptime Gauge
--   Recent Incidents Table
--   Alert Summary Stats
--   PM2 Process Uptime (line chart)
--   PM2 Process Restarts (bar chart)
--   System CPU Usage
--   System Memory Usage
--   Disk Usage
--   API Response Times (p50/p95/p99)
--   Component Health
+- System Uptime Gauge
+- Recent Incidents Table
+- Alert Summary Stats
+- PM2 Process Uptime (line chart)
+- PM2 Process Restarts (bar chart)
+- System CPU Usage
+- System Memory Usage
+- Disk Usage
+- API Response Times (p50/p95/p99)
+- Component Health
 
 ---
 
@@ -602,57 +602,57 @@ scp /opt/prometheus-backup-*.tar.gz user@backup-server:/backups/
 
 **After setup, you should have:**
 
--   ✅ Prometheus scraping 4 targets (node, pm2, status, prometheus)
--   ✅ 19 alert rules loaded and evaluating
--   ✅ Alertmanager routing to Slack + Email
--   ✅ Grafana dashboard showing 10 panels with live data
--   ✅ Systemd services enabled and running
--   ✅ Test alerts successfully delivered to Slack/Email
+- ✅ Prometheus scraping 4 targets (node, pm2, status, prometheus)
+- ✅ 19 alert rules loaded and evaluating
+- ✅ Alertmanager routing to Slack + Email
+- ✅ Grafana dashboard showing 10 panels with live data
+- ✅ Systemd services enabled and running
+- ✅ Test alerts successfully delivered to Slack/Email
 
 **Expected Performance:**
 
--   Prometheus memory: 100-500MB
--   Node Exporter memory: 10-20MB
--   Alertmanager memory: 20-50MB
--   Total CPU: <5% under normal load
+- Prometheus memory: 100-500MB
+- Node Exporter memory: 10-20MB
+- Alertmanager memory: 20-50MB
+- Total CPU: <5% under normal load
 
 ---
 
 ## 🎯 Next Steps
 
 1. **Customize Alert Thresholds**
-   -   Edit `/etc/prometheus/alerts.yml`
-   -   Adjust based on your baseline metrics
-   -   Reload: `curl -X POST http://localhost:9090/-/reload`
+   - Edit `/etc/prometheus/alerts.yml`
+   - Adjust based on your baseline metrics
+   - Reload: `curl -X POST http://localhost:9090/-/reload`
 
 2. **Add Custom Metrics**
-   -   Instrument your Express app with `prom-client`
-   -   Export custom business metrics
-   -   Add to Grafana dashboard
+   - Instrument your Express app with `prom-client`
+   - Export custom business metrics
+   - Add to Grafana dashboard
 
 3. **Setup Alert Escalation**
-   -   Configure PagerDuty integration
-   -   Add on-call rotation
-   -   Create runbooks for common alerts
+   - Configure PagerDuty integration
+   - Add on-call rotation
+   - Create runbooks for common alerts
 
 4. **Enable Remote Storage (Optional)**
-   -   Setup Thanos for long-term storage
-   -   Configure remote write to managed Prometheus
+   - Setup Thanos for long-term storage
+   - Configure remote write to managed Prometheus
 
 5. **Advanced Monitoring**
-   -   Add distributed tracing (Jaeger/Tempo)
-   -   Setup log aggregation (Loki)
-   -   Create SLO/SLI dashboards
+   - Add distributed tracing (Jaeger/Tempo)
+   - Setup log aggregation (Loki)
+   - Create SLO/SLI dashboards
 
 ---
 
 ## 📚 Related Documentation
 
--   [COMPLETE_ALERTING_OPERATIONS_GUIDE.md](COMPLETE_ALERTING_OPERATIONS_GUIDE.md) - Master operations manual
--   [STATUS_PAGE_DEPLOYMENT_GUIDE.md](STATUS_PAGE_DEPLOYMENT_GUIDE.md) - Status page setup
--   [SLACK_WEBHOOK_SETUP.md](SLACK_WEBHOOK_SETUP.md) - Slack integration
--   [GMAIL_EMAIL_ALERTS_SETUP.md](GMAIL_EMAIL_ALERTS_SETUP.md) - Email alerts setup
--   [DEPLOYMENT_PIPELINE_DIAGRAM.md](DEPLOYMENT_PIPELINE_DIAGRAM.md) - Architecture overview
+- [COMPLETE_ALERTING_OPERATIONS_GUIDE.md](COMPLETE_ALERTING_OPERATIONS_GUIDE.md) - Master operations manual
+- [STATUS_PAGE_DEPLOYMENT_GUIDE.md](STATUS_PAGE_DEPLOYMENT_GUIDE.md) - Status page setup
+- [SLACK_WEBHOOK_SETUP.md](SLACK_WEBHOOK_SETUP.md) - Slack integration
+- [GMAIL_EMAIL_ALERTS_SETUP.md](GMAIL_EMAIL_ALERTS_SETUP.md) - Email alerts setup
+- [DEPLOYMENT_PIPELINE_DIAGRAM.md](DEPLOYMENT_PIPELINE_DIAGRAM.md) - Architecture overview
 
 ---
 
@@ -660,16 +660,16 @@ scp /opt/prometheus-backup-*.tar.gz user@backup-server:/backups/
 
 **Issues?**
 
--   Check [Troubleshooting](#troubleshooting) section
--   Review Prometheus logs: `sudo journalctl -u prometheus -f`
--   Verify configuration: `promtool check config /etc/prometheus/prometheus.yml`
--   Test metrics endpoints: `curl http://localhost:9090/metrics`
+- Check [Troubleshooting](#troubleshooting) section
+- Review Prometheus logs: `sudo journalctl -u prometheus -f`
+- Verify configuration: `promtool check config /etc/prometheus/prometheus.yml`
+- Test metrics endpoints: `curl http://localhost:9090/metrics`
 
 **Need Help?**
 
--   Prometheus Documentation: <https://prometheus.io/docs/>
--   Alertmanager Guide: <https://prometheus.io/docs/alerting/latest/alertmanager/>
--   Community Slack: <https://prometheus.io/community/>
+- Prometheus Documentation: <https://prometheus.io/docs/>
+- Alertmanager Guide: <https://prometheus.io/docs/alerting/latest/alertmanager/>
+- Community Slack: <https://prometheus.io/community/>
 
 ---
 
