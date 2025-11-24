@@ -64,17 +64,14 @@ backend/logs/status-cron.log
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Environment Variables & Secrets
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+# Ignore all environment files
 .env
-.env.local
-.env.*.local
-.env.development
-.env.development.local
-.env.test
-.env.test.local
-.env.production
-.env.production.local
-.env.backup
-.env.*.backup
+.env.*
+# BUT allow .example templates (safe to commit)
+!.env.example
+!.env*.example
+!.env.*.example
+# Specific additional patterns
 encrypted_secrets_*.env
 backend/.env
 backend/.env.enc.json
