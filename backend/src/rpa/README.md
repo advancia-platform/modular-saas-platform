@@ -10,75 +10,75 @@ The **RPA (Robotic Process Automation) Module** is a comprehensive automation sy
 
 ### 1. **Transaction Processing Automation** ✅
 
-- **Purpose**: Automatically validate and process pending transactions
-- **Features**:
-  - Fraud detection with confidence scoring
-  - Duplicate transaction detection
-  - Balance validation
-  - Daily limit enforcement
-  - Multi-pattern fraud detection
-- **Schedule**: Every 5 minutes (configurable)
-- **Endpoint**: `POST /api/rpa/transaction/process`
+-   **Purpose**: Automatically validate and process pending transactions
+-   **Features**:
+    -   Fraud detection with confidence scoring
+    -   Duplicate transaction detection
+    -   Balance validation
+    -   Daily limit enforcement
+    -   Multi-pattern fraud detection
+-   **Schedule**: Every 5 minutes (configurable)
+-   **Endpoint**: `POST /api/rpa/transaction/process`
 
 ### 2. **KYC/Identity Verification** ✅
 
-- **Purpose**: Automate document verification using OCR
-- **Features**:
-  - Passport, driver's license, and national ID support
-  - OCR text extraction
-  - Field validation (name, date of birth, ID number)
-  - Expiration date checking
-  - Automatic user approval at 95% confidence
-- **Schedule**: Every 10 minutes (configurable)
-- **Endpoint**: `POST /api/rpa/kyc/verify`
+-   **Purpose**: Automate document verification using OCR
+-   **Features**:
+    -   Passport, driver's license, and national ID support
+    -   OCR text extraction
+    -   Field validation (name, date of birth, ID number)
+    -   Expiration date checking
+    -   Automatic user approval at 95% confidence
+-   **Schedule**: Every 10 minutes (configurable)
+-   **Endpoint**: `POST /api/rpa/kyc/verify`
 
 ### 3. **Report Generation** ✅
 
-- **Purpose**: Automatically generate and email financial reports
-- **Features**:
-  - Daily balance reports
-  - Crypto orders reports
-  - Admin action reports
-  - HTML formatted emails
-  - PDF attachment support
-- **Schedule**: Daily at 8:00 AM (configurable)
-- **Endpoint**: `POST /api/rpa/report/generate`
+-   **Purpose**: Automatically generate and email financial reports
+-   **Features**:
+    -   Daily balance reports
+    -   Crypto orders reports
+    -   Admin action reports
+    -   HTML formatted emails
+    -   PDF attachment support
+-   **Schedule**: Daily at 8:00 AM (configurable)
+-   **Endpoint**: `POST /api/rpa/report/generate`
 
 ### 4. **Email/SMS Notifications** ✅
 
-- **Purpose**: Automated notification delivery with rate limiting
-- **Features**:
-  - Email via Nodemailer (Gmail/SMTP)
-  - SMS via Twilio
-  - Template-based messaging
-  - Priority queue system
-  - Rate limiting (10/min email, 5/min SMS)
-  - Batch processing
-- **Schedule**: Continuous queue processing
-- **Endpoint**: `POST /api/rpa/notification/send`
+-   **Purpose**: Automated notification delivery with rate limiting
+-   **Features**:
+    -   Email via Nodemailer (Gmail/SMTP)
+    -   SMS via Twilio
+    -   Template-based messaging
+    -   Priority queue system
+    -   Rate limiting (10/min email, 5/min SMS)
+    -   Batch processing
+-   **Schedule**: Continuous queue processing
+-   **Endpoint**: `POST /api/rpa/notification/send`
 
 ### 5. **Data Backup & Sync** ✅
 
-- **Purpose**: Automated database backups with cloud sync
-- **Features**:
-  - PostgreSQL pg_dump integration
-  - Table-specific JSON exports
-  - AWS S3 cloud sync support
-  - Retention policy (30 days)
-  - Automatic cleanup
-- **Schedule**: Daily at 2:00 AM (configurable)
-- **Endpoints**:
-  - `POST /api/rpa/backup/create`
-  - `POST /api/rpa/backup/export`
+-   **Purpose**: Automated database backups with cloud sync
+-   **Features**:
+    -   PostgreSQL pg_dump integration
+    -   Table-specific JSON exports
+    -   AWS S3 cloud sync support
+    -   Retention policy (30 days)
+    -   Automatic cleanup
+-   **Schedule**: Daily at 2:00 AM (configurable)
+-   **Endpoints**:
+    -   `POST /api/rpa/backup/create`
+    -   `POST /api/rpa/backup/export`
 
 ### 6. **User Support Automation** ⏳
 
-- **Status**: Pending implementation
-- **Planned Features**:
-  - AI-powered chatbot
-  - FAQ automation
-  - Ticket routing
-  - Response templates
+-   **Status**: Pending implementation
+-   **Planned Features**:
+    -   AI-powered chatbot
+    -   FAQ automation
+    -   Ticket routing
+    -   Response templates
 
 ---
 
@@ -102,21 +102,21 @@ backend/src/rpa/
 ### Key Components
 
 1. **Scheduler (scheduler.ts)**
-   - Uses `node-cron` for task scheduling
-   - Manages all RPA tasks
-   - Health monitoring
-   - Start/stop controls
+   -   Uses `node-cron` for task scheduling
+   -   Manages all RPA tasks
+   -   Health monitoring
+   -   Start/stop controls
 
 2. **Configuration (config.ts)**
-   - Environment-based settings
-   - Feature toggles
-   - Schedule intervals
-   - API keys & credentials
+   -   Environment-based settings
+   -   Feature toggles
+   -   Schedule intervals
+   -   API keys & credentials
 
 3. **Routes (routes.ts)**
-   - RESTful API for manual triggers
-   - Health checks
-   - Status monitoring
+   -   RESTful API for manual triggers
+   -   Health checks
+   -   Status monitoring
 
 ---
 
@@ -185,10 +185,10 @@ npm install
 
 Required packages:
 
-- `node-cron` - Task scheduling
-- `@types/node-cron` - TypeScript definitions
-- `nodemailer` - Email sending
-- `twilio` - SMS sending
+-   `node-cron` - Task scheduling
+-   `@types/node-cron` - TypeScript definitions
+-   `nodemailer` - Email sending
+-   `twilio` - SMS sending
 
 ### 3. Start the RPA System
 
@@ -332,7 +332,7 @@ Manually trigger a specific task.
 
 **Parameters:**
 
-- `taskName` - One of: `transactionProcessing`, `kycVerification`, `reportGeneration`, `notificationQueue`, `dataBackup`
+-   `taskName` - One of: `transactionProcessing`, `kycVerification`, `reportGeneration`, `notificationQueue`, `dataBackup`
 
 **Response:**
 
@@ -514,11 +514,11 @@ Content-Type: application/json
 
 **Examples:**
 
-- `*/5 * * * *` - Every 5 minutes
-- `0 8 * * *` - Daily at 8:00 AM
-- `0 2 * * *` - Daily at 2:00 AM
-- `0 */6 * * *` - Every 6 hours
-- `0 0 * * 0` - Weekly on Sunday at midnight
+-   `*/5 * * * *` - Every 5 minutes
+-   `0 8 * * *` - Daily at 8:00 AM
+-   `0 2 * * *` - Daily at 2:00 AM
+-   `0 */6 * * *` - Every 6 hours
+-   `0 0 * * 0` - Weekly on Sunday at midnight
 
 ---
 
@@ -613,18 +613,18 @@ All RPA actions are logged to the `audit_logs` table:
 
 ### Expected Load
 
-- **Transaction Processing**: ~100 transactions per batch (every 5 min)
-- **KYC Verification**: ~50 documents per batch (every 10 min)
-- **Notifications**: ~600 emails/hour, ~300 SMS/hour
-- **Reports**: 3-5 reports/day
-- **Backups**: 1 full backup/day
+-   **Transaction Processing**: ~100 transactions per batch (every 5 min)
+-   **KYC Verification**: ~50 documents per batch (every 10 min)
+-   **Notifications**: ~600 emails/hour, ~300 SMS/hour
+-   **Reports**: 3-5 reports/day
+-   **Backups**: 1 full backup/day
 
 ### Resource Usage
 
-- **CPU**: Low (mostly I/O-bound)
-- **Memory**: ~50-100 MB per module
-- **Disk**: Depends on backup size
-- **Network**: Depends on API calls (Twilio, S3, etc.)
+-   **CPU**: Low (mostly I/O-bound)
+-   **Memory**: ~50-100 MB per module
+-   **Disk**: Depends on backup size
+-   **Network**: Depends on API calls (Twilio, S3, etc.)
 
 ---
 
@@ -641,20 +641,20 @@ All RPA actions are logged to the `audit_logs` table:
 
 ### Roadmap
 
-- Machine learning fraud detection
-- Real-time anomaly detection
-- Multi-language support for chatbot
-- Advanced reporting with dashboards
-- Blockchain integration for audit trail
+-   Machine learning fraud detection
+-   Real-time anomaly detection
+-   Multi-language support for chatbot
+-   Advanced reporting with dashboards
+-   Blockchain integration for audit trail
 
 ---
 
 ## 📚 Related Documentation
 
-- [Backend README](../README.md)
-- [Prisma Schema](../prisma/schema.prisma)
-- [API Routes](./routes.ts)
-- [Configuration](./config.ts)
+-   [Backend README](../README.md)
+-   [Prisma Schema](../prisma/schema.prisma)
+-   [API Routes](./routes.ts)
+-   [Configuration](./config.ts)
 
 ---
 
@@ -675,10 +675,10 @@ When adding new RPA modules:
 
 For issues or questions about the RPA module:
 
-- Check logs in console
-- Review `/api/rpa/health` endpoint
-- Consult this documentation
-- Contact the development team
+-   Check logs in console
+-   Review `/api/rpa/health` endpoint
+-   Consult this documentation
+-   Contact the development team
 
 ---
 

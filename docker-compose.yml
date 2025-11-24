@@ -16,7 +16,7 @@ services:
     networks:
       - app_net
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d advancia"]
+      test: [ "CMD-SHELL", "pg_isready -U postgres -d advancia" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -33,7 +33,7 @@ services:
     networks:
       - app_net
     healthcheck:
-      test: ["CMD", "redis-cli", "--raw", "incr", "ping"]
+      test: [ "CMD", "redis-cli", "--raw", "incr", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -54,7 +54,7 @@ services:
     networks:
       - app_net
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "ping" ]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -65,18 +65,32 @@ services:
       context: ./backend
       dockerfile: Dockerfile
     container_name: advancia_backend
+    env_file:
+      - .env.production # Load secrets from file (for production)
     environment:
       - DATABASE_URL=postgresql://postgres:postgres@db:5432/advancia?schema=public
       - REDIS_URL=redis://:redis_dev_password@redis:6379
       - RABBITMQ_URL=amqp://advancia:rabbitmq_pass_change_in_prod@rabbitmq:5672
-      - NODE_ENV=development
+      - NODE_ENV=${NODE_ENV:-development}
       - PORT=4000
-      - JWT_SECRET=dev_jwt_secret_key_change_in_production
-      - JWT_REFRESH_SECRET=dev_jwt_refresh_secret_change_in_production
-      - SESSION_SECRET=dev_session_secret_change_in_production
-      - FRONTEND_URL=http://localhost:3000
-      - ALLOWED_ORIGINS=http://localhost:3000,http://localhost:4000
+      - JWT_SECRET=${JWT_SECRET:-dev_jwt_secret_key_change_in_production}
+      - JWT_REFRESH_SECRET=${JWT_REFRESH_SECRET:-dev_jwt_refresh_secret_change_in_production}
+      - SESSION_SECRET=${SESSION_SECRET:-dev_session_secret_change_in_production}
+      - FRONTEND_URL=${FRONTEND_URL:-http://localhost:3000}
+      - ALLOWED_ORIGINS=${ALLOWED_ORIGINS:-http://localhost:3000,http://localhost:4000}
       - PROXY_ENABLED=false
+      # Cloudflare R2 credentials (injected from .env.production or CI/CD)
+      - CLOUDFLARE_ACCOUNT_ID=${CLOUDFLARE_ACCOUNT_ID}
+      - CLOUDFLARE_R2_ACCESS_KEY_ID=${CLOUDFLARE_R2_ACCESS_KEY_ID}
+      - CLOUDFLARE_R2_SECRET_ACCESS_KEY=${CLOUDFLARE_R2_SECRET_ACCESS_KEY}
+      - CLOUDFLARE_R2_BUCKET=${CLOUDFLARE_R2_BUCKET}
+      - CLOUDFLARE_R2_ENDPOINT=${CLOUDFLARE_R2_ENDPOINT}
+      # Stripe (from env file)
+      - STRIPE_SECRET_KEY=${STRIPE_SECRET_KEY}
+      - STRIPE_WEBHOOK_SECRET=${STRIPE_WEBHOOK_SECRET}
+      # Monitoring
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SLACK_WEBHOOK_URL=${SLACK_WEBHOOK_URL}
     depends_on:
       db:
         condition: service_healthy
@@ -94,7 +108,7 @@ services:
     networks:
       - app_net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:4000/api/health"]
+      test: [ "CMD", "curl", "-f", "http://localhost:4000/api/health" ]
       interval: 30s
       timeout: 5s
       retries: 3
@@ -127,7 +141,7 @@ services:
     networks:
       - app_net
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      test: [ "CMD", "curl", "-f", "http://localhost:3000" ]
       interval: 30s
       timeout: 5s
       retries: 3

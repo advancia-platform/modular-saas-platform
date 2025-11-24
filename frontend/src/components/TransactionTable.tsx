@@ -155,7 +155,7 @@ export default function TransactionTable({
 
   const updateSortField = (index: number, updates: Partial<SortField>) => {
     const newFields = [...preferences.sortFields];
-    newFields[index] = { ...newFields[index], ...updates };
+    newFields[index] = { ...newFields[index], ...updates } as SortField;
     updatePreferences({ sortFields: newFields });
   };
 

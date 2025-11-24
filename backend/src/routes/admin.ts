@@ -6,6 +6,7 @@ import {
   requireAdmin,
 } from "../middleware/auth";
 import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 // Guard admin logging middleware to avoid crashes if import resolves undefined
 const safeLogAdmin: any =
@@ -455,8 +456,10 @@ router.get(
       // Aggregate by day
       const dailyCounts: Record<string, number> = {};
       users.forEach((user) => {
-        const day = user.createdAt.toISOString().split("T")[0];
-        dailyCounts[day] = (dailyCounts[day] || 0) + 1;
+        const day = user.createdAt?.toISOString().split("T")[0];
+        if (day) {
+          dailyCounts[day] = (dailyCounts[day] || 0) + 1;
+        }
       });
 
       const data = Object.entries(dailyCounts).map(([date, count]) => ({
@@ -493,8 +496,10 @@ router.get(
       // Aggregate by day
       const dailyVolume: Record<string, number> = {};
       transactions.forEach((tx) => {
-        const day = tx.createdAt.toISOString().split("T")[0];
-        dailyVolume[day] = (dailyVolume[day] || 0) + Number(tx.amount || 0);
+        const day = tx.createdAt?.toISOString().split("T")[0];
+        if (day) {
+          dailyVolume[day] = (dailyVolume[day] || 0) + Number(tx.amount || 0);
+        }
       });
 
       const data = Object.entries(dailyVolume).map(([date, volume]) => ({

@@ -17,9 +17,9 @@ pip install -r requirements.txt
 
 Test data files are already created in `evaluation/data/`:
 
-- ✅ `trust_score_tests.jsonl` - 10 trust score calculation tests
-- ✅ `invitation_tests.jsonl` - 10 invitation eligibility tests
-- ✅ `api_tests.jsonl` - 5 API response quality tests
+-   ✅ `trust_score_tests.jsonl` - 10 trust score calculation tests
+-   ✅ `invitation_tests.jsonl` - 10 invitation eligibility tests
+-   ✅ `api_tests.jsonl` - 5 API response quality tests
 
 ### 3. Run Evaluation
 
@@ -74,10 +74,10 @@ OVERALL STATUS: PASS
 
 All results are saved to `evaluation/results/`:
 
-- `trust_score_results.json` - Detailed trust score evaluation
-- `invitation_results.json` - Detailed invitation logic evaluation
-- `api_results.json` - Detailed API quality evaluation
-- `summary.json` - Overall summary report
+-   `trust_score_results.json` - Detailed trust score evaluation
+-   `invitation_results.json` - Detailed invitation logic evaluation
+-   `api_results.json` - Detailed API quality evaluation
+-   `summary.json` - Overall summary report
 
 ## Understanding Results
 
@@ -85,9 +85,9 @@ All results are saved to `evaluation/results/`:
 
 **Metrics:**
 
-- `trust_score_accuracy`: Percentage of correct calculations (target: 100%)
-- `score_difference`: Average difference from expected
-- `within_tolerance`: Percentage within ±2 points
+-   `trust_score_accuracy`: Percentage of correct calculations (target: 100%)
+-   `score_difference`: Average difference from expected
+-   `within_tolerance`: Percentage within ±2 points
 
 **Pass Criteria:** ≥95% accuracy
 
@@ -95,8 +95,8 @@ All results are saved to `evaluation/results/`:
 
 **Metrics:**
 
-- `invitation_logic_correct`: Percentage of correct eligibility decisions (target: 100%)
-- Individual check results for each criterion
+-   `invitation_logic_correct`: Percentage of correct eligibility decisions (target: 100%)
+-   Individual check results for each criterion
 
 **Pass Criteria:** ≥98% accuracy
 
@@ -104,15 +104,15 @@ All results are saved to `evaluation/results/`:
 
 **Metrics:**
 
-- `api_completeness`: Percentage of expected fields present (target: 100%)
-- `data_type_accuracy`: Percentage of correct data types (target: 100%)
-- `response_time_score`: Percentage meeting latency target (target: ≥80%)
+-   `api_completeness`: Percentage of expected fields present (target: 100%)
+-   `data_type_accuracy`: Percentage of correct data types (target: 100%)
+-   `response_time_score`: Percentage meeting latency target (target: ≥80%)
 
 **Pass Criteria:**
 
-- Completeness ≥95%
-- Type accuracy = 100%
-- Response time ≥80%
+-   Completeness ≥95%
+-   Type accuracy = 100%
+-   Response time ≥80%
 
 ## Custom Evaluators
 
@@ -260,16 +260,16 @@ python run_evaluation.py
 
 ## Documentation
 
-- **Full Framework Guide**: `EVALUATION_FRAMEWORK.md`
-- **Custom Evaluators**: `evaluators.py`
-- **Main Script**: `run_evaluation.py`
+-   **Full Framework Guide**: `EVALUATION_FRAMEWORK.md`
+-   **Custom Evaluators**: `evaluators.py`
+-   **Main Script**: `run_evaluation.py`
 
 ## Support
 
 For questions or issues with the evaluation framework:
 
 1. Check `EVALUATION_FRAMEWORK.md` for detailed documentation
-2. Review Azure AI Evaluation SDK docs: https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk
+2. Review Azure AI Evaluation SDK docs: <https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk>
 3. Inspect evaluation results in `evaluation/results/`
 
 ---

@@ -4,10 +4,10 @@ This repository includes a full dev container setup to give you a consistent, fa
 
 ## Why use it?
 
-- Reproducible Node/Prisma/Postgres/Redis toolchain
-- Auto-forwarded ports (3000 frontend, 4000 backend, 5432 Postgres, 6379 Redis)
-- Preinstalled extensions (ESLint, Prettier, Jest, Tailwind, Docker, Copilot, etc.)
-- Automated setup via `.devcontainer/setup.sh` (installs deps, runs prisma generate/migrate, builds apps)
+-   Reproducible Node/Prisma/Postgres/Redis toolchain
+-   Auto-forwarded ports (3000 frontend, 4000 backend, 5432 Postgres, 6379 Redis)
+-   Preinstalled extensions (ESLint, Prettier, Jest, Tailwind, Docker, Copilot, etc.)
+-   Automated setup via `.devcontainer/setup.sh` (installs deps, runs prisma generate/migrate, builds apps)
 
 ## Quick start: VS Code Dev Containers (local)
 
@@ -15,19 +15,19 @@ This repository includes a full dev container setup to give you a consistent, fa
 2. When prompted, click "Reopen in Container" (or Command Palette → Dev Containers: Reopen in Container).
 3. Wait for setup to finish (first boot installs dependencies and tools).
 4. Start the dev servers:
-   - VS Code Task: "🚀 Start Development Servers" (recommended), or
-   - Open terminals in the container and run:
-     - Backend: `npm run dev` in `backend/`
-     - Frontend: `npm run dev` in `frontend/`
+   -   VS Code Task: "🚀 Start Development Servers" (recommended), or
+   -   Open terminals in the container and run:
+     -   Backend: `npm run dev` in `backend/`
+     -   Frontend: `npm run dev` in `frontend/`
 5. Visit:
-   - Frontend: http://localhost:3000
-   - Backend health: http://localhost:4000/api/health
+   -   Frontend: <http://localhost:3000>
+   -   Backend health: <http://localhost:4000/api/health>
 
 Notes
 
-- The container uses Postgres and Redis services declared in `.devcontainer/docker-compose.yml`.
-- Environment defaults are set in `.devcontainer/devcontainer.json` (DATABASE_URL, REDIS_URL, etc.).
-- `setup.sh` also installs Playwright browsers for E2E tests.
+-   The container uses Postgres and Redis services declared in `.devcontainer/docker-compose.yml`.
+-   Environment defaults are set in `.devcontainer/devcontainer.json` (DATABASE_URL, REDIS_URL, etc.).
+-   `setup.sh` also installs Playwright browsers for E2E tests.
 
 ## Quick start: GitHub Codespaces (cloud)
 
@@ -38,23 +38,23 @@ Notes
 
 ## Launch Pad tasks (inside container or Codespaces)
 
-- 🚀 Start Development Servers: boots backend and frontend
-- 🔍 Type Check & Lint: validates both apps
-- 🧪 Run Tests: backend Jest + frontend Playwright
-- 🗄️ Database Tools: opens Prisma Studio
+-   🚀 Start Development Servers: boots backend and frontend
+-   🔍 Type Check & Lint: validates both apps
+-   🧪 Run Tests: backend Jest + frontend Playwright
+-   🗄️ Database Tools: opens Prisma Studio
 
 Run via VS Code: Terminal → Run Task…
 
 ## GitLens usage
 
-- Core GitLens features (blame, hovers, history, diffs) work without sign-in.
-- Sign in only if you need GitLens+ features (Cloud Workspaces, Cloud Patches, premium views).
+-   Core GitLens features (blame, hovers, history, diffs) work without sign-in.
+-   Sign in only if you need GitLens+ features (Cloud Workspaces, Cloud Patches, premium views).
 
 ## Troubleshooting
 
-- Prisma generate downloads blocked: Containers/Codespaces typically avoid this by using Linux base images and unrestricted network paths. If generate still fails, retry inside the container: `cd backend && npx prisma generate`.
-- Port collisions: Stop local services using 3000/4000 or change port mappings in `.devcontainer/docker-compose.yml`.
-- First-boot builds fail: Re-run tasks after setup completes; check `/workspaces/modular-saas-platform/.devcontainer/setup.sh` logs in the terminal.
+-   Prisma generate downloads blocked: Containers/Codespaces typically avoid this by using Linux base images and unrestricted network paths. If generate still fails, retry inside the container: `cd backend && npx prisma generate`.
+-   Port collisions: Stop local services using 3000/4000 or change port mappings in `.devcontainer/docker-compose.yml`.
+-   First-boot builds fail: Re-run tasks after setup completes; check `/workspaces/modular-saas-platform/.devcontainer/setup.sh` logs in the terminal.
 
 ---
 

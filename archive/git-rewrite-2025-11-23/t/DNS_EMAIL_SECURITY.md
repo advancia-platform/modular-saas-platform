@@ -310,6 +310,7 @@ curl -X POST https://advancia-backend-upnrf.onrender.com/api/test/email/welcome 
 #### Email Authentication Test
 
 -   **Mail Tester**: <https://www.mail-tester.com>
+
   1. Send test email to the address shown
   2. Get a score /10 (aim for 10/10)
 

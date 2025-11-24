@@ -8,23 +8,23 @@ Comprehensive testing for the custodial wallet system.
 
 Unit tests for individual wallet service functions:
 
-- Address format validation (BTC, ETH, USDT)
-- Encryption/decryption logic
-- User index derivation
-- BIP44 path validation
-- Master seed validation
-- Rotation logic
+-   Address format validation (BTC, ETH, USDT)
+-   Encryption/decryption logic
+-   User index derivation
+-   BIP44 path validation
+-   Master seed validation
+-   Rotation logic
 
 ### `wallet-integration.test.js`
 
 End-to-end integration tests:
 
-- User registration with auto-wallet initialization
-- Wallet retrieval and validation
-- Address uniqueness across users
-- Wallet rotation functionality
-- Rotation history tracking
-- Security and authorization
+-   User registration with auto-wallet initialization
+-   Wallet retrieval and validation
+-   Address uniqueness across users
+-   Wallet rotation functionality
+-   Rotation history tracking
+-   Security and authorization
 
 ### `test-wallet.js`
 
@@ -67,29 +67,29 @@ pnpm test:watch
 
 ### ✅ Functional Tests
 
-- [x] User registration creates 3 wallets
-- [x] BTC, ETH, USDT addresses generated
-- [x] Address format validation
-- [x] Unique addresses per user
-- [x] Wallet rotation changes address
-- [x] Balance preservation during rotation
-- [x] Rotation history tracking
+-   [x] User registration creates 3 wallets
+-   [x] BTC, ETH, USDT addresses generated
+-   [x] Address format validation
+-   [x] Unique addresses per user
+-   [x] Wallet rotation changes address
+-   [x] Balance preservation during rotation
+-   [x] Rotation history tracking
 
 ### ✅ Security Tests
 
-- [x] Unauthorized access blocked
-- [x] Invalid tokens rejected
-- [x] Rotation requires reason
-- [x] Invalid currency rejected
-- [x] Encryption/decryption working
-- [x] Wrong key rejected
+-   [x] Unauthorized access blocked
+-   [x] Invalid tokens rejected
+-   [x] Rotation requires reason
+-   [x] Invalid currency rejected
+-   [x] Encryption/decryption working
+-   [x] Wrong key rejected
 
 ### ✅ Data Integrity Tests
 
-- [x] Deterministic address generation
-- [x] Same userId = same index
-- [x] Creation timestamps present
-- [x] Wallet IDs valid
+-   [x] Deterministic address generation
+-   [x] Same userId = same index
+-   [x] Creation timestamps present
+-   [x] Wallet IDs valid
 
 ## Expected Results
 
@@ -136,8 +136,8 @@ All tests should pass with:
 1. Docker Desktop running (Postgres database)
 2. Backend server running on port 4000
 3. Environment variables configured:
-   - `WALLET_MASTER_SEED`
-   - `WALLET_ENCRYPTION_KEY`
+   -   `WALLET_MASTER_SEED`
+   -   `WALLET_ENCRYPTION_KEY`
 
 ### Production Testing
 
@@ -150,18 +150,18 @@ pnpm test:integration
 
 ### Tests Fail with Connection Error
 
-- Ensure backend server is running: `pnpm run dev`
-- Check Docker container: `docker ps | grep advancia-postgres`
+-   Ensure backend server is running: `pnpm run dev`
+-   Check Docker container: `docker ps | grep advancia-postgres`
 
 ### Invalid Address Format
 
-- Verify master seed is configured
-- Check encryption key is valid base64
+-   Verify master seed is configured
+-   Check encryption key is valid base64
 
 ### Unauthorized Errors
 
-- Clear test database between runs
-- Verify JWT_SECRET is set
+-   Clear test database between runs
+-   Verify JWT_SECRET is set
 
 ## CI/CD Integration
 
@@ -176,6 +176,6 @@ Add to `.github/workflows/ci.yml`:
 
 ## Coverage Goals
 
-- **Unit Tests**: 100% of utility functions
-- **Integration Tests**: 90%+ of API endpoints
-- **Security Tests**: 100% of auth/validation paths
+-   **Unit Tests**: 100% of utility functions
+-   **Integration Tests**: 90%+ of API endpoints
+-   **Security Tests**: 100% of auth/validation paths

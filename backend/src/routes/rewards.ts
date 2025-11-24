@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { Router } from "express";
 import { authenticateToken } from "../middleware/auth";
 import prisma from "../prismaClient";
@@ -20,7 +20,10 @@ router.get("/:userId", authenticateToken as any, async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    const total = rewards.reduce((sum, r) => sum.add(r.amount), new Decimal(0));
+    const total = rewards.reduce(
+      (sum, r) => sum.add(r.amount),
+      new Prisma.Decimal(0),
+    );
 
     res.json({
       rewards: rewards.map((r) => ({
@@ -72,7 +75,7 @@ router.post("/claim/:rewardId", authenticateToken as any, async (req, res) => {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      const claimedReward = await tx.reward.update({
+      const claimedReward = await tx.rewards.update({
         where: { id: rewardId },
         data: {
           status: "claimed",
@@ -80,18 +83,18 @@ router.post("/claim/:rewardId", authenticateToken as any, async (req, res) => {
         },
       });
 
-      let wallet = await tx.tokenWallet.findUnique({
+      let wallet = await tx.token_wallets.findUnique({
         where: { userId },
       });
 
       if (!wallet) {
-        wallet = await tx.tokenWallet.create({
-          data: { userId },
+        wallet = await tx.token_wallets.create({
+          data: withDefaults({ userId }),
         });
       }
 
       // Update token wallet
-      await tx.tokenWallet.update({
+      await tx.token_wallets.update({
         where: { id: wallet.id },
         data: {
           balance: { increment: reward.amount },
@@ -108,8 +111,8 @@ router.post("/claim/:rewardId", authenticateToken as any, async (req, res) => {
         },
       });
 
-      await tx.tokenTransaction.create({
-        data: {
+      await tx.token_transactions.create({
+        data: withDefaults({
           walletId: wallet.id,
           amount: reward.amount,
           type: "earn",
@@ -120,7 +123,7 @@ router.post("/claim/:rewardId", authenticateToken as any, async (req, res) => {
             rewardType: reward.type,
             claimedAt: new Date().toISOString(),
           }),
-        },
+        }),
       });
 
       return claimedReward;
@@ -203,7 +206,7 @@ router.post("/tier/points", authenticateToken as any, async (req, res) => {
 
     if (!tier) {
       tier = await prisma.user_tiers.create({
-        data: { userId, points: 0 },
+        data: withDefaults({ userId, points: 0 }),
       });
     }
 
@@ -227,7 +230,7 @@ router.post("/tier/points", authenticateToken as any, async (req, res) => {
     });
 
     if (tierChanged) {
-      const bonusAmount = new Decimal(
+      const bonusAmount = new Prisma.Decimal(
         newTier === "diamond"
           ? 1000
           : newTier === "platinum"
@@ -284,7 +287,10 @@ router.get("/pending/:userId", authenticateToken as any, async (req, res) => {
       orderBy: { createdAt: "desc" },
     });
 
-    const total = rewards.reduce((sum, r) => sum.add(r.amount), new Decimal(0));
+    const total = rewards.reduce(
+      (sum, r) => sum.add(r.amount),
+      new Prisma.Decimal(0),
+    );
 
     res.json({
       rewards: rewards.map((r) => ({

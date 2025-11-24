@@ -2,17 +2,29 @@
 
 Real-time transaction processing backend with WebSocket support and Prisma ORM.
 
+## 📍 Roadmap Overview
+
+The strategic roadmap (short-term, mid-term, long-term) is maintained in [`ROADMAP.md`](./ROADMAP.md). A GitHub Project board (recommended name: "Backend Roadmap") should mirror those phases for execution tracking.
+
+Quick phase summary:
+
+-   **Short‑Term:** TypeScript cleanup, Zod validation rollout, history guards, Sentry redaction, unit test expansion.
+-   **Mid‑Term:** Standardized API responses, feature flags, CI/CD security + coverage, Docker deployment templates, monetization layer.
+-   **Long‑Term:** GraphQL optional layer, external integrations, audit/compliance enhancements, scalability improvements, community extensions.
+
+Contributors: align issues with roadmap labels (`roadmap`, `short-term`, `mid-term`, `long-term`). See board for live status; update `ROADMAP.md` during quarterly reviews.
+
 ## ✅ Setup Status
 
-- ✅ Express.js server configured
-- ✅ Socket.IO for real-time updates
-- ✅ TypeScript compilation working
-- ✅ Prisma schema created
-- ✅ Prisma client generated
-- ✅ Winston logger configured
-- ✅ Email templates with XSS protection
-- ✅ Debug configurations for VS Code
-- ⏸️ Database migration pending (see [PRISMA_SETUP.md](./PRISMA_SETUP.md))
+-   ✅ Express.js server configured
+-   ✅ Socket.IO for real-time updates
+-   ✅ TypeScript compilation working
+-   ✅ Prisma schema created
+-   ✅ Prisma client generated
+-   ✅ Winston logger configured
+-   ✅ Email templates with XSS protection
+-   ✅ Debug configurations for VS Code
+-   ⏸️ Database migration pending (see [PRISMA_SETUP.md](./PRISMA_SETUP.md))
 
 ## 🚀 Running the Application
 
@@ -56,21 +68,21 @@ PM2 ensures your application stays running, auto-restarts on crashes, and surviv
 
 PM2 automatically rotates logs to prevent disk space issues. Log rotation is configured directly in `ecosystem.config.js`:
 
-- **Max size**: 10MB per log file
-- **Retention**: Keep 7 rotated log files
-- **Compression**: Gzipped old logs
-- **Rotation**: Daily at midnight
-- **Date format**: `YYYY-MM-DD_HH-mm-ss`
+-   **Max size**: 10MB per log file
+-   **Retention**: Keep 7 rotated log files
+-   **Compression**: Gzipped old logs
+-   **Rotation**: Daily at midnight
+-   **Date format**: `YYYY-MM-DD_HH-mm-ss`
 
 Logs are stored in `backend/logs/`:
 
-- `out.log` - Standard output
-- `err.log` - Error output
-- `combined.log` - All logs combined
+-   `out.log` - Standard output
+-   `err.log` - Error output
+-   `combined.log` - All logs combined
 
 Rotated files will appear as:
 
-```
+```text
 out-2025-11-14_00-00-00.log.gz
 err-2025-11-14_00-00-00.log.gz
 combined-2025-11-14_00-00-00.log.gz
@@ -80,20 +92,20 @@ combined-2025-11-14_00-00-00.log.gz
 
 ### Health & Status
 
-- `GET /api/health` - Health check endpoint
+-   `GET /api/health` - Health check endpoint
 
 ### Authentication (Stubs - Ready for Implementation)
 
-- `POST /api/auth/login` - User login (TODO: implement real logic)
-- `POST /api/auth/register` - User registration (TODO: implement real logic)
-- `POST /api/auth/logout` - User logout (TODO: implement real logic)
+-   `POST /api/auth/login` - User login (TODO: implement real logic)
+-   `POST /api/auth/register` - User registration (TODO: implement real logic)
+-   `POST /api/auth/logout` - User logout (TODO: implement real logic)
 
 ### Email Templates Available
 
-- Welcome email (`emailTemplates.welcome`)
-- Password reset (`emailTemplates.passwordReset`)
-- Email verification (`emailTemplates.emailVerification`)
-- Transaction alerts (`emailTemplates.transactionAlert`)
+-   Welcome email (`emailTemplates.welcome`)
+-   Password reset (`emailTemplates.passwordReset`)
+-   Email verification (`emailTemplates.emailVerification`)
+-   Transaction alerts (`emailTemplates.transactionAlert`)
 
 **See `src/routes/` for implementation stubs and `src/utils/emailTemplates.ts` for email templates.**
 
@@ -124,7 +136,7 @@ docker run --name advancia-postgres `
 npx prisma migrate dev --name init
 ```
 
-**Alternative: SQLite (Quick Development)**
+#### Alternative: SQLite (Quick Development)
 
 ```powershell
 # Edit prisma/schema.prisma - change provider to "sqlite"
@@ -324,7 +336,7 @@ Currently stores payload in application logs (plug in secure storage later).
 
 ### Client → Server
 
-**Join User Room**
+#### Join User Room
 
 ```javascript
 socket.emit("join-room", userId);
@@ -332,7 +344,7 @@ socket.emit("join-room", userId);
 
 ### Server → Client
 
-**New Transaction**
+#### New Transaction
 
 ```javascript
 socket.on("transaction-created", (transaction) => {
@@ -340,7 +352,7 @@ socket.on("transaction-created", (transaction) => {
 });
 ```
 
-**Global Transaction Broadcast**
+#### Global Transaction Broadcast
 
 ```javascript
 socket.on("global-transaction", (transaction) => {
@@ -354,29 +366,29 @@ The backend uses Prisma ORM with the following models:
 
 ### User
 
-- Authentication and profile management
-- Relations to transactions and debit cards
+-   Authentication and profile management
+-   Relations to transactions and debit cards
 
 ### Transaction
 
-- Financial transaction records
-- Decimal precision for amounts
-- Status tracking (pending, completed, failed)
+-   Financial transaction records
+-   Decimal precision for amounts
+-   Status tracking (pending, completed, failed)
 
 ### DebitCard
 
-- Virtual/physical card management
-- Balance and daily limit tracking
+-   Virtual/physical card management
+-   Balance and daily limit tracking
 
 ### Session
 
-- User session management
-- Token-based authentication
+-   User session management
+-   Token-based authentication
 
 ### AuditLog
 
-- Compliance and activity tracking
-- JSON storage for flexible logging
+-   Compliance and activity tracking
+-   JSON storage for flexible logging
 
 See `prisma/schema.prisma` for full schema definition.
 
@@ -397,6 +409,66 @@ npm start
 ```
 
 Runs compiled JavaScript from `dist/`.
+
+## 🤝 Contributing
+
+We welcome contributions! To keep the project consistent and maintainable, please follow these guidelines.
+
+### 1. Development Standards
+
+-   Use TypeScript for all new code.
+-   Validate request payloads with Zod. Prefer the `validateSchema` middleware for Express or use `validateInput<T>(schema, input)` for typed parsing.
+-   Define and return typed Response DTOs (see `src/types/responses.ts`).
+-   Before committing, run:
+
+```powershell
+npm run check
+```
+
+This runs type-checks, lint, and tests.
+
+### 2. Commit Messages
+
+Follow Conventional Commits:
+
+```text
+<type>(scope): short description
+```
+
+Examples:
+
+-   `feat(tasks): add bulk assignment endpoint`
+-   `fix(teams): correct member validation`
+-   `docs(readme): update contributing section`
+
+Types: `feat`, `fix`, `docs`, `chore`, `test`, `refactor`.
+
+### 3. Pull Requests
+
+-   Branch from `main` → `feature/<name>` or `fix/<name>`.
+-   Ensure CI passes (`npm run check` + tests).
+-   Add/update Zod schemas and types for new payloads.
+-   Label PRs (e.g., `type: feature`, `type: bug`, `type: docs`) for changelog automation.
+-   Include a clear description and testing steps.
+
+### 4. Code Review
+
+-   Expect feedback on type safety, validation, and security.
+-   Keep PRs small and focused.
+-   Document breaking changes in the PR description.
+
+### 5. Releases
+
+-   Merges to `main` trigger changelog, semantic version bump, and Docker image build (`latest` + version tag).
+
+### ✅ Quick Checklist for Contributors
+
+-   [ ] Secrets redacted (use env vars)
+-   [ ] DTOs + schemas updated
+-   [ ] Response types defined
+-   [ ] `npm run check` passes locally
+-   [ ] Commit message follows convention
+-   [ ] PR labeled correctly
 
 ### Prisma Commands
 
@@ -487,25 +559,25 @@ npm run test:verbose
 
 The test suite includes comprehensive infrastructure for robust testing:
 
-- **Mock Objects**: `tests/setup/mocks.ts`
-  - Cryptomus API mocking for crypto payment tests
-  - Email service mocking for notification tests
-  - Blockchain network mocking for transaction tests
-- **Admin Utilities**: `tests/setup/adminSetup.ts`
-  - Admin user creation and cleanup
-  - JWT token generation for authenticated tests
-  - Test data fixtures and helpers
-- **Environment Helpers**: `tests/setup/testEnv.ts`
-  - Environment variable loading and validation
-  - CI/CD detection
-  - Service availability checks
+-   **Mock Objects**: `tests/setup/mocks.ts`
+    -   Cryptomus API mocking for crypto payment tests
+    -   Email service mocking for notification tests
+    -   Blockchain network mocking for transaction tests
+-   **Admin Utilities**: `tests/setup/adminSetup.ts`
+    -   Admin user creation and cleanup
+    -   JWT token generation for authenticated tests
+    -   Test data fixtures and helpers
+-   **Environment Helpers**: `tests/setup/testEnv.ts`
+    -   Environment variable loading and validation
+    -   CI/CD detection
+    -   Service availability checks
 
 ### Test Configuration
 
-- **Environment**: Uses `.env.test` with mock-friendly defaults
-- **Database**: Separate test database (`advancia_payledger_test`)
-- **Execution**: Serial execution to avoid race conditions
-- **Cleanup**: Automatic database cleanup before/after tests
+-   **Environment**: Uses `.env.test` with mock-friendly defaults
+-   **Database**: Separate test database (`advancia_payledger_test`)
+-   **Execution**: Serial execution to avoid race conditions
+-   **Cleanup**: Automatic database cleanup before/after tests
 
 ### Writing Tests
 
@@ -537,9 +609,9 @@ describe("Your Feature", () => {
 
 **For detailed test documentation**, see:
 
-- `TEST_IMPLEMENTATION_GUIDE.md` - Comprehensive implementation guide
-- `QUICK_TEST_REFERENCE.md` - Quick reference card
-- `tests/README.md` - Test suite documentation
+-   `TEST_IMPLEMENTATION_GUIDE.md` - Comprehensive implementation guide
+-   `QUICK_TEST_REFERENCE.md` - Quick reference card
+-   `tests/README.md` - Test suite documentation
 
 ### Manual API Testing
 
@@ -567,10 +639,10 @@ Error: P1000: Authentication failed
 
 **Solution:**
 
-- Verify PostgreSQL is running: `Get-Service postgresql*`
-- Check DATABASE_URL in `.env`
-- For Docker: `docker ps` to verify container is running
-- See [PRISMA_SETUP.md](./PRISMA_SETUP.md) for setup help
+-   Verify PostgreSQL is running: `Get-Service postgresql*`
+-   Check DATABASE_URL in `.env`
+-   For Docker: `docker ps` to verify container is running
+-   See [PRISMA_SETUP.md](./PRISMA_SETUP.md) for setup help
 
 ### Port Already in Use
 
@@ -602,12 +674,12 @@ npx prisma generate
 
 ## Tech Stack
 
-- **Runtime**: Node.js 18+
-- **Framework**: Express.js 4.21
-- **Language**: TypeScript 5.9
-- **Database ORM**: Prisma 5.22
-- **WebSocket**: Socket.IO 4.8
-- **Database**: PostgreSQL 14+ (or SQLite for dev)
+-   **Runtime**: Node.js 18+
+-   **Framework**: Express.js 4.21
+-   **Language**: TypeScript 5.9
+-   **Database ORM**: Prisma 5.22
+-   **WebSocket**: Socket.IO 4.8
+-   **Database**: PostgreSQL 14+ (or SQLite for dev)
 
 ## API Documentation
 
@@ -629,7 +701,7 @@ MIT
 
 For issues and questions:
 
-- Check [PRISMA_SETUP.md](./PRISMA_SETUP.md) for database setup
-- Review API endpoints documentation above
-- Check environment variables are correct
-- Verify all dependencies installed: `npm install`
+-   Check [PRISMA_SETUP.md](./PRISMA_SETUP.md) for database setup
+-   Review API endpoints documentation above
+-   Check environment variables are correct
+-   Verify all dependencies installed: `npm install`

@@ -57,7 +57,7 @@ router.post(
       });
 
       // Create user profile
-      await prisma.userProfile.create({
+      await prisma.user_profiles.create({
         data: {
           id: `profile-${user.id}`, // Use prefixed ID to avoid conflicts
           userId: user.id,
@@ -81,8 +81,8 @@ router.post(
       }
 
       // Create admin notification
-      await prisma.adminNotification.create({
-        data: {
+      await prisma.admin_notifications.create({
+        data: withDefaults({
           type: "NEW_USER",
           title: "🎉 New User Registration",
           message: `${
@@ -91,7 +91,7 @@ router.post(
           userId: user.id,
           metadata: { email, firstName, lastName, username },
           actionUrl: `/admin/users/${user.id}`,
-        },
+        }),
       });
 
       // Notify admins via push notifications

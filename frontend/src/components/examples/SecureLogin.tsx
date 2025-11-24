@@ -10,10 +10,10 @@
 
 'use client';
 
-import { useState } from 'react';
 import { useAuth, useSafeInput } from '@/hooks/useSecurity';
 import { InputSecurity } from '@/lib/security';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export default function SecureLogin() {
   const router = useRouter();
@@ -174,5 +174,5 @@ function getCsrfToken(): string {
 
   // Method 2: From cookie
   const match = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
-  return match ? decodeURIComponent(match[1]) : '';
+  return match && match[1] ? decodeURIComponent(match[1]) : '';
 }

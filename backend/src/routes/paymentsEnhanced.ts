@@ -1,11 +1,12 @@
-import { PrismaClient } from '@prisma/client';
-import { Request, Response, Router } from 'express';
-import Stripe from 'stripe';
-import { config } from '../jobs/config';
-import logger from '../logger';
-import { authenticateToken, requireAdmin } from '../middleware/auth';
-import { rateLimit } from '../middleware/security';
-import { validateSchema } from '../middleware/validateSchema';
+import { PrismaClient } from "@prisma/client";
+import { Request, Response, Router } from "express";
+import Stripe from "stripe";
+import { config } from "../jobs/config";
+import logger from "../logger";
+import { authenticateToken, requireAdmin } from "../middleware/auth";
+import { rateLimit } from "../middleware/security";
+import { validateSchema } from "../middleware/validateSchema";
+import { withDefaults } from "../utils/prismaHelpers";
 import {
   AdminRefundSchema,
   PaymentChargeSavedSchema,
@@ -13,15 +14,13 @@ import {
   PaymentSaveMethodSchema,
   SubscriptionCancelSchema,
   SubscriptionCreateSchema,
-} from '../validation/schemas';
+} from "../validation/schemas";
 
 const router = Router();
 const prisma = new PrismaClient();
 
 const stripeClient = config.stripeSecretKey
-  ? new Stripe(config.stripeSecretKey, {
-      apiVersion: '2023-10-16',
-    })
+  ? new Stripe(config.stripeSecretKey)
   : null;
 
 /**
@@ -29,14 +28,14 @@ const stripeClient = config.stripeSecretKey
  * Save a payment method to customer for future use
  */
 router.post(
-  '/save-method',
+  "/save-method",
   authenticateToken,
   validateSchema(PaymentSaveMethodSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     }
 
@@ -49,7 +48,7 @@ router.post(
       if (!user) {
         return res
           .status(404)
-          .json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+          .json({ error: "User not found", code: "USER_NOT_FOUND" });
       }
 
       let customerId = user.stripeCustomerId;
@@ -78,7 +77,7 @@ router.post(
       // Set as default if it's the first one
       const existingMethods = await stripeClient.paymentMethods.list({
         customer: customerId,
-        type: 'card',
+        type: "card",
       });
 
       if (existingMethods.data.length === 1) {
@@ -89,13 +88,13 @@ router.post(
 
       res.json({
         success: true,
-        message: 'Payment method saved successfully',
+        message: "Payment method saved successfully",
         paymentMethodId,
-        code: 'PAYMENT_METHOD_SAVED',
+        code: "PAYMENT_METHOD_SAVED",
       });
     } catch (error) {
-      logger.error('Save payment method error:', error);
-      res.status(500).json({ error: 'Failed to save payment method' });
+      logger.error("Save payment method error:", error);
+      res.status(500).json({ error: "Failed to save payment method" });
     }
   },
 );
@@ -105,13 +104,13 @@ router.post(
  * List saved payment methods
  */
 router.get(
-  '/methods',
+  "/methods",
   authenticateToken,
   async (req: Request, res: Response) => {
     if (!stripeClient) {
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     }
 
@@ -127,13 +126,13 @@ router.get(
         return res.json({
           success: true,
           methods: [],
-          code: 'PAYMENT_METHODS_LIST',
+          code: "PAYMENT_METHODS_LIST",
         });
       }
 
       const paymentMethods = await stripeClient.paymentMethods.list({
         customer: user.stripeCustomerId,
-        type: 'card',
+        type: "card",
       });
 
       const methods = paymentMethods.data.map((pm) => ({
@@ -145,10 +144,10 @@ router.get(
         isDefault: pm.id === user.stripeCustomerId, // Would need customer data to check
       }));
 
-      res.json({ success: true, methods, code: 'PAYMENT_METHODS_LIST' });
+      res.json({ success: true, methods, code: "PAYMENT_METHODS_LIST" });
     } catch (error) {
-      logger.error('List payment methods error:', error);
-      res.status(500).json({ error: 'Failed to list payment methods' });
+      logger.error("List payment methods error:", error);
+      res.status(500).json({ error: "Failed to list payment methods" });
     }
   },
 );
@@ -158,19 +157,22 @@ router.get(
  * Remove a saved payment method
  */
 router.delete(
-  '/methods/:id',
+  "/methods/:id",
   authenticateToken,
   async (req: Request, res: Response) => {
     if (!stripeClient) {
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     }
 
     try {
       const userId = (req as any).user.id;
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: "Missing payment method id" });
+      }
 
       const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -179,8 +181,8 @@ router.delete(
 
       if (!user?.stripeCustomerId) {
         return res.status(404).json({
-          error: 'No saved payment methods',
-          code: 'NO_PAYMENT_METHODS',
+          error: "No saved payment methods",
+          code: "NO_PAYMENT_METHODS",
         });
       }
 
@@ -189,19 +191,19 @@ router.delete(
       if (paymentMethod.customer !== user.stripeCustomerId) {
         return res
           .status(403)
-          .json({ error: 'Unauthorized', code: 'UNAUTHORIZED_PAYMENT_METHOD' });
+          .json({ error: "Unauthorized", code: "UNAUTHORIZED_PAYMENT_METHOD" });
       }
 
       await stripeClient.paymentMethods.detach(id);
 
       res.json({
         success: true,
-        message: 'Payment method removed',
-        code: 'PAYMENT_METHOD_REMOVED',
+        message: "Payment method removed",
+        code: "PAYMENT_METHOD_REMOVED",
       });
     } catch (error) {
-      logger.error('Delete payment method error:', error);
-      res.status(500).json({ error: 'Failed to delete payment method' });
+      logger.error("Delete payment method error:", error);
+      res.status(500).json({ error: "Failed to delete payment method" });
     }
   },
 );
@@ -211,14 +213,14 @@ router.delete(
  * Create a recurring payment subscription
  */
 router.post(
-  '/subscription/create',
+  "/subscription/create",
   authenticateToken,
   validateSchema(SubscriptionCreateSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     }
 
@@ -229,7 +231,7 @@ router.post(
         paymentMethodId,
         planName,
         amount,
-        interval = 'month',
+        interval = "month",
       } = req.body as any;
 
       // Get or create customer
@@ -237,7 +239,7 @@ router.post(
       if (!user) {
         return res
           .status(404)
-          .json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+          .json({ error: "User not found", code: "USER_NOT_FOUND" });
       }
 
       let customerId = user.stripeCustomerId;
@@ -273,13 +275,13 @@ router.post(
       if (!priceId) {
         // Create a new price for this subscription
         const product = await stripeClient.products.create({
-          name: planName || 'Subscription Plan',
+          name: planName || "Subscription Plan",
           metadata: { userId },
         });
 
         const price = await stripeClient.prices.create({
           product: product.id,
-          currency: 'usd',
+          currency: "usd",
           recurring: { interval: interval as any },
           unit_amount: Math.round(amount * 100),
         });
@@ -291,21 +293,21 @@ router.post(
       const subscription = await stripeClient.subscriptions.create({
         customer: customerId,
         items: [{ price: finalPriceId }],
-        metadata: { userId, planName: planName || 'Custom Plan' },
+        metadata: { userId, planName: planName || "Custom Plan" },
       });
 
       res.json({
         success: true,
         subscriptionId: subscription.id,
         status: subscription.status,
-        currentPeriodEnd: subscription.current_period_end,
+        currentPeriodEnd: (subscription as any).current_period_end,
         amount,
         interval,
-        code: 'SUBSCRIPTION_CREATED',
+        code: "SUBSCRIPTION_CREATED",
       });
     } catch (error) {
-      logger.error('Create subscription error:', error);
-      res.status(500).json({ error: 'Failed to create subscription' });
+      logger.error("Create subscription error:", error);
+      res.status(500).json({ error: "Failed to create subscription" });
     }
   },
 );
@@ -315,13 +317,13 @@ router.post(
  * List user's active subscriptions
  */
 router.get(
-  '/subscriptions',
+  "/subscriptions",
   authenticateToken,
   async (req: Request, res: Response) => {
     if (!stripeClient) {
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     }
 
@@ -337,24 +339,24 @@ router.get(
         return res.json({
           success: true,
           subscriptions: [],
-          code: 'SUBSCRIPTIONS_LIST',
+          code: "SUBSCRIPTIONS_LIST",
         });
       }
 
       const subscriptions = await stripeClient.subscriptions.list({
         customer: user.stripeCustomerId,
-        status: 'all',
+        status: "all",
       });
 
       const formatted = subscriptions.data.map((sub) => ({
         id: sub.id,
         status: sub.status,
-        planName: sub.metadata?.planName || 'Subscription',
+        planName: sub.metadata?.planName || "Subscription",
         amount: sub.items.data[0]?.price.unit_amount
           ? sub.items.data[0].price.unit_amount / 100
           : 0,
         interval: sub.items.data[0]?.price.recurring?.interval,
-        currentPeriodEnd: sub.current_period_end,
+        currentPeriodEnd: (sub as any).current_period_end,
         cancelAtPeriodEnd: sub.cancel_at_period_end,
         created: sub.created,
       }));
@@ -362,11 +364,11 @@ router.get(
       res.json({
         success: true,
         subscriptions: formatted,
-        code: 'SUBSCRIPTIONS_LIST',
+        code: "SUBSCRIPTIONS_LIST",
       });
     } catch (error) {
-      logger.error('List subscriptions error:', error);
-      res.status(500).json({ error: 'Failed to list subscriptions' });
+      logger.error("List subscriptions error:", error);
+      res.status(500).json({ error: "Failed to list subscriptions" });
     }
   },
 );
@@ -376,20 +378,23 @@ router.get(
  * Cancel a subscription
  */
 router.post(
-  '/subscription/:id/cancel',
+  "/subscription/:id/cancel",
   authenticateToken,
   validateSchema(SubscriptionCancelSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     }
 
     try {
       const userId = (req as any).user.id;
       const { id } = req.params;
+      if (!id) {
+        return res.status(400).json({ error: "Missing subscription id" });
+      }
       const { immediately = false } = req.body as any;
 
       // Verify subscription belongs to user
@@ -405,7 +410,7 @@ router.post(
       ) {
         return res
           .status(403)
-          .json({ error: 'Unauthorized', code: 'UNAUTHORIZED_SUBSCRIPTION' });
+          .json({ error: "Unauthorized", code: "UNAUTHORIZED_SUBSCRIPTION" });
       }
 
       if (immediately) {
@@ -419,15 +424,15 @@ router.post(
       res.json({
         success: true,
         message: immediately
-          ? 'Subscription canceled immediately'
-          : 'Subscription will cancel at period end',
+          ? "Subscription canceled immediately"
+          : "Subscription will cancel at period end",
         code: immediately
-          ? 'SUBSCRIPTION_CANCELED_IMMEDIATE'
-          : 'SUBSCRIPTION_CANCEL_SCHEDULED',
+          ? "SUBSCRIPTION_CANCELED_IMMEDIATE"
+          : "SUBSCRIPTION_CANCEL_SCHEDULED",
       });
     } catch (error) {
-      logger.error('Cancel subscription error:', error);
-      res.status(500).json({ error: 'Failed to cancel subscription' });
+      logger.error("Cancel subscription error:", error);
+      res.status(500).json({ error: "Failed to cancel subscription" });
     }
   },
 );
@@ -437,15 +442,15 @@ router.post(
  * Charge a saved payment method
  */
 router.post(
-  '/charge-saved-method',
+  "/charge-saved-method",
   rateLimit({ windowMs: 5 * 60_000, maxRequests: 10 }),
   authenticateToken,
   validateSchema(PaymentChargeSavedSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     }
 
@@ -461,18 +466,18 @@ router.post(
       if (!user?.stripeCustomerId) {
         return res
           .status(404)
-          .json({ error: 'No customer record', code: 'CUSTOMER_NOT_FOUND' });
+          .json({ error: "No customer record", code: "CUSTOMER_NOT_FOUND" });
       }
 
       // Create payment intent
       const paymentIntent = await stripeClient.paymentIntents.create({
         amount: Math.round(amount * 100),
-        currency: 'usd',
+        currency: "usd",
         customer: user.stripeCustomerId,
         payment_method: paymentMethodId,
         off_session: true,
         confirm: true,
-        description: description || 'Payment',
+        description: description || "Payment",
         metadata: { userId },
       });
 
@@ -481,20 +486,20 @@ router.post(
         paymentIntentId: paymentIntent.id,
         status: paymentIntent.status,
         amount,
-        code: 'PAYMENT_INTENT_OFF_SESSION_SUCCESS',
+        code: "PAYMENT_INTENT_OFF_SESSION_SUCCESS",
       });
     } catch (error: any) {
-      logger.error('Charge saved method error:', error);
+      logger.error("Charge saved method error:", error);
 
-      if (error.type === 'StripeCardError') {
+      if (error.type === "StripeCardError") {
         return res
           .status(400)
-          .json({ error: error.message, code: 'CARD_ERROR' });
+          .json({ error: error.message, code: "CARD_ERROR" });
       }
 
       res
         .status(500)
-        .json({ error: 'Payment failed', code: 'OFF_SESSION_PAYMENT_FAILED' });
+        .json({ error: "Payment failed", code: "OFF_SESSION_PAYMENT_FAILED" });
     }
   },
 );
@@ -508,18 +513,18 @@ export default router;
  * Body: { amount: number, currency?: string, description?: string, metadata?: Record<string,string> }
  */
 router.post(
-  '/create-intent',
+  "/create-intent",
   rateLimit({ windowMs: 5 * 60_000, maxRequests: 15 }),
   authenticateToken,
   validateSchema(PaymentCreateIntentSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
-      return res.status(503).json({ error: 'Stripe not configured' });
+      return res.status(503).json({ error: "Stripe not configured" });
     }
 
     try {
       const userId = (req as any).user.id;
-      let { amount, currency = 'usd', description, metadata } = req.body as any;
+      let { amount, currency = "usd", description, metadata } = req.body as any;
 
       amount = Number(amount);
       currency = String(currency).toLowerCase();
@@ -529,7 +534,7 @@ router.post(
       if (!user) {
         return res
           .status(404)
-          .json({ error: 'User not found', code: 'USER_NOT_FOUND' });
+          .json({ error: "User not found", code: "USER_NOT_FOUND" });
       }
 
       let customerId = user.stripeCustomerId;
@@ -557,11 +562,11 @@ router.post(
           userId,
           amount,
           currency: currency.toUpperCase(),
-          provider: 'stripe',
-          status: 'pending',
+          provider: "stripe",
+          status: "pending",
           createdAt: { gte: new Date(Date.now() - duplicateWindowMs) },
         },
-        orderBy: { createdAt: 'desc' },
+        orderBy: { createdAt: "desc" },
       });
 
       if (existing) {
@@ -577,12 +582,12 @@ router.post(
             amount: existing.amount,
             currency: existing.currency,
             transactionId: existing.id,
-            code: 'PAYMENT_INTENT_REUSED',
+            code: "PAYMENT_INTENT_REUSED",
             duplicateWindowMs,
           });
         } catch (e) {
           logger.warn(
-            'Failed to retrieve existing PaymentIntent, creating new',
+            "Failed to retrieve existing PaymentIntent, creating new",
             e,
           );
         }
@@ -599,7 +604,7 @@ router.post(
           currency,
           customer: customerId,
           automatic_payment_methods: { enabled: true },
-          description: description || 'Payment',
+          description: description || "Payment",
           metadata: { userId, ...(metadata || {}) },
         },
         { idempotencyKey },
@@ -607,17 +612,17 @@ router.post(
 
       // Record internal transaction with status pending until confirmation webhook updates it
       const transaction = await prisma.transactions.create({
-        data: {
+        data: withDefaults({
           userId,
           amount,
-          type: 'payment_intent',
-          description: description || 'Stripe PaymentIntent',
-          category: 'card',
-          status: 'pending',
+          type: "payment_intent",
+          description: description || "Stripe PaymentIntent",
+          category: "card",
+          status: "pending",
           currency: currency.toUpperCase(),
           orderId: paymentIntent.id,
-          provider: 'stripe',
-        },
+          provider: "stripe",
+        }),
       });
 
       res.json({
@@ -629,10 +634,10 @@ router.post(
         transactionId: transaction.id,
       });
     } catch (error) {
-      logger.error('Create PaymentIntent error:', error);
+      logger.error("Create PaymentIntent error:", error);
       res.status(500).json({
-        error: 'Failed to create payment intent',
-        code: 'PAYMENT_INTENT_CREATE_FAILED',
+        error: "Failed to create payment intent",
+        code: "PAYMENT_INTENT_CREATE_FAILED",
       });
     }
   },
@@ -644,35 +649,35 @@ router.post(
  * Body: { paymentIntentId: string, amount?: number }
  */
 router.post(
-  '/admin/refund',
+  "/admin/refund",
   authenticateToken,
   requireAdmin,
   validateSchema(AdminRefundSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient)
       return res.status(503).json({
-        error: 'Stripe not configured',
-        code: 'STRIPE_NOT_CONFIGURED',
+        error: "Stripe not configured",
+        code: "STRIPE_NOT_CONFIGURED",
       });
     const { paymentIntentId, amount } = req.body as any;
     try {
       const pi = await stripeClient.paymentIntents.retrieve(paymentIntentId, {
-        expand: ['charges'],
+        expand: ["charges"],
       });
       const charges = pi.latest_charge
         ? [pi.latest_charge]
         : (pi as any).charges?.data || [];
       if (!charges.length)
         return res.status(404).json({
-          error: 'No charge found for intent',
-          code: 'CHARGE_NOT_FOUND',
+          error: "No charge found for intent",
+          code: "CHARGE_NOT_FOUND",
         });
       const chargeId =
-        typeof charges[0] === 'string' ? charges[0] : charges[0].id;
+        typeof charges[0] === "string" ? charges[0] : charges[0].id;
       const refund = await stripeClient.refunds.create({
         charge: chargeId,
         amount: amount && amount > 0 ? Math.round(amount * 100) : undefined,
-        metadata: { userId: (pi.metadata as any)?.userId || 'unknown' },
+        metadata: { userId: (pi.metadata as any)?.userId || "unknown" },
       });
 
       const userId = (pi.metadata as any)?.userId;
@@ -684,22 +689,22 @@ router.post(
             where: { id: userId },
             data: { usdBalance: { decrement: refundAmount } },
           });
-          await tx.transaction.create({
-            data: {
+          await tx.transactions.create({
+            data: withDefaults({
               userId,
-              type: 'debit',
+              type: "debit",
               amount: refundAmount,
               description: `Refund - PaymentIntent ${paymentIntentId}`,
-              status: 'completed',
-              currency: (pi.currency || 'usd').toUpperCase(),
-              provider: 'stripe',
-            },
+              status: "completed",
+              currency: (pi.currency || "usd").toUpperCase(),
+              provider: "stripe",
+            }),
           });
-          await tx.auditLog.create({
-            data: {
+          await tx.audit_logs.create({
+            data: withDefaults({
               userId,
-              action: 'refund',
-              resourceType: 'payment_intent',
+              action: "refund",
+              resourceType: "payment_intent",
               resourceId: paymentIntentId,
               metadata: {
                 refundAmount,
@@ -709,16 +714,16 @@ router.post(
                 paymentIntentId,
                 partial: Boolean(amount && amount > 0),
               },
-            },
+            }),
           });
         });
       }
-      res.json({ success: true, refund, code: 'REFUND_SUCCESS' });
+      res.json({ success: true, refund, code: "REFUND_SUCCESS" });
     } catch (error) {
-      logger.error('Admin refund error', error);
+      logger.error("Admin refund error", error);
       res
         .status(500)
-        .json({ error: 'Failed to process refund', code: 'REFUND_FAILED' });
+        .json({ error: "Failed to process refund", code: "REFUND_FAILED" });
     }
   },
 );

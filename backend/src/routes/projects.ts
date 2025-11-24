@@ -2,7 +2,7 @@ import express, { Response } from "express";
 import { z } from "zod";
 import logger from "../logger";
 import { authenticateToken } from "../middleware/auth";
-import { validateInput } from "../middleware/security";
+import { validateSchema } from "../middleware/validateSchema";
 import prisma from "../prismaClient";
 import { serializeDecimalFields } from "../utils/decimal";
 
@@ -234,6 +234,11 @@ router.get(
         },
       });
 
+      if (!projectDetails) {
+        return res
+          .status(404)
+          .json({ success: false, error: "Project not found" });
+      }
       const serializedProject = serializeDecimalFields(projectDetails);
 
       return res.json({
@@ -254,7 +259,7 @@ router.get(
 router.post(
   "/",
   authenticateToken as any,
-  validateInput(createProjectSchema),
+  validateSchema(createProjectSchema),
   async (req: any, res: Response) => {
     try {
       const { name, description, teamId, startDate, endDate, settings } =
@@ -354,7 +359,7 @@ router.post(
 router.put(
   "/:projectId",
   authenticateToken as any,
-  validateInput(updateProjectSchema),
+  validateSchema(updateProjectSchema),
   async (req: any, res: Response) => {
     try {
       const { projectId } = req.params;

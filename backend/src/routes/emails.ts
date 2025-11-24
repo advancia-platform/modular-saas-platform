@@ -1,75 +1,76 @@
-import { Request, Response, Router } from 'express';
-import { PrismaClient } from '@prisma/client';
-import emailService from '../services/emailService';
+import { PrismaClient } from "@prisma/client";
+import { Request, Response, Router } from "express";
+import emailService from "../services/emailService";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
 const prisma = new PrismaClient();
 
 // POST /api/emails/send - Send transactional email
-router.post('/send', async (req: Request, res: Response) => {
+router.post("/send", async (req: Request, res: Response) => {
   try {
     const { to, subject, template, data, userId } = req.body;
 
     if (!to || !subject || !template) {
-      return res.status(400).json({ error: 'Missing required fields' });
+      return res.status(400).json({ error: "Missing required fields" });
     }
 
     let result;
 
     // Send based on template type
     switch (template) {
-      case 'welcome':
+      case "welcome":
         result = await emailService.sendWelcomeEmail(to, data.username);
         break;
-      case 'transaction':
+      case "transaction":
         result = await emailService.sendTransactionConfirmation(to, data);
         break;
-      case 'invoice':
+      case "invoice":
         result = await emailService.sendInvoiceEmail(to, data, data.pdfUrl);
         break;
-      case 'reward':
+      case "reward":
         result = await emailService.sendRewardClaimedEmail(to, data);
         break;
-      case 'tier-upgrade':
+      case "tier-upgrade":
         result = await emailService.sendTierUpgradeEmail(to, data);
         break;
-      case 'password-reset':
+      case "password-reset":
         result = await emailService.sendPasswordResetEmail(to, data.resetToken);
         break;
       default:
-        return res.status(400).json({ error: 'Invalid template type' });
+        return res.status(400).json({ error: "Invalid template type" });
     }
 
     // Log email
     await prisma.email_logs.create({
-      data: {
+      data: withDefaults({
         userId,
         to,
         subject,
         template,
-        status: result.success ? 'sent' : 'failed',
+        status: result.success ? "sent" : "failed",
         providerId: result.id,
         error: result.error,
         sentAt: result.success ? new Date() : null,
         metadata: data,
-      },
+      }),
     });
 
     res.json({
       success: result.success,
       message: result.success
-        ? 'Email sent successfully'
-        : 'Email failed to send',
+        ? "Email sent successfully"
+        : "Email failed to send",
       error: result.error,
     });
   } catch (error) {
-    console.error('Error sending email:', error);
-    res.status(500).json({ error: 'Failed to send email' });
+    console.error("Error sending email:", error);
+    res.status(500).json({ error: "Failed to send email" });
   }
 });
 
 // GET /api/emails/logs/:userId - Get user email history
-router.get('/logs/:userId', async (req: Request, res: Response) => {
+router.get("/logs/:userId", async (req: Request, res: Response) => {
   try {
     const { userId } = req.params;
     const { limit = 50, offset = 0, template, status } = req.query;
@@ -81,7 +82,7 @@ router.get('/logs/:userId', async (req: Request, res: Response) => {
     const logs = await prisma.email_logs.findMany({
       where,
       orderBy: {
-        createdAt: 'desc',
+        createdAt: "desc",
       },
       take: Number(limit),
       skip: Number(offset),
@@ -96,24 +97,24 @@ router.get('/logs/:userId', async (req: Request, res: Response) => {
       offset: Number(offset),
     });
   } catch (error) {
-    console.error('Error fetching email logs:', error);
-    res.status(500).json({ error: 'Failed to fetch email logs' });
+    console.error("Error fetching email logs:", error);
+    res.status(500).json({ error: "Failed to fetch email logs" });
   }
 });
 
 // GET /api/emails/stats - Get email statistics (admin)
-router.get('/stats', async (req: Request, res: Response) => {
+router.get("/stats", async (req: Request, res: Response) => {
   try {
     const totalEmails = await prisma.email_logs.count();
     const sentEmails = await prisma.email_logs.count({
-      where: { status: 'sent' },
+      where: { status: "sent" },
     });
     const failedEmails = await prisma.email_logs.count({
-      where: { status: 'failed' },
+      where: { status: "failed" },
     });
 
     const emailsByTemplate = await prisma.email_logs.groupBy({
-      by: ['template'],
+      by: ["template"],
       _count: true,
     });
 
@@ -126,8 +127,8 @@ router.get('/stats', async (req: Request, res: Response) => {
       byTemplate: emailsByTemplate,
     });
   } catch (error) {
-    console.error('Error fetching email stats:', error);
-    res.status(500).json({ error: 'Failed to fetch email statistics' });
+    console.error("Error fetching email stats:", error);
+    res.status(500).json({ error: "Failed to fetch email statistics" });
   }
 });
 

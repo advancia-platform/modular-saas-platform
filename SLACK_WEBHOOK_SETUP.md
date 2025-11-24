@@ -54,7 +54,7 @@ Complete guide for setting up Slack webhooks to receive automated alerts from Ad
 1. Slack will generate a **Webhook URL** that looks like:
 
    ```
-   https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+   https://hooks.slack.com/services/YOUR/WORKSPACE/TOKEN
    ```
 
 2. Copy this URL (click the **Copy** button)
@@ -63,7 +63,7 @@ Complete guide for setting up Slack webhooks to receive automated alerts from Ad
 
    ```env
    # ─── Slack Webhook (Alerting) ─────────────────
-   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX
+   SLACK_WEBHOOK_URL=https://hooks.slack.com/services/YOUR/WORKSPACE/TOKEN
    ```
 
 **⚠️ Security Note:** Keep this URL secret! Anyone with this URL can post to your channel.

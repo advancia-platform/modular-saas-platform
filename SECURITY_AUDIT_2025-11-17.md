@@ -18,8 +18,8 @@
 
 **Exposed Key:**
 
--   `sk_test_51SCXq1CnLcSzsQoTXqbzLwgmT6Mbb8Fj2ZEngSnjmwnm2P0iZGZKq2oYHWHwKAgAGRLs3qm0FUacfQ06oL6jvZYf00j1763pTI`
--   `pk_test_51SCXq1CnLcSzsQoTOLHBWMBDs2B1So1zAVwGZUmkvUAviP2CwNr3OrxU5Ws6bmygNOhe06PSxsDGGPUEU1XWaAy100vt5KK4we`
+-   `<REDACTED_STRIPE_SECRET_KEY>`
+-   `<REDACTED_STRIPE_PUBLISHABLE_KEY>`
 
 **Remediation:**
 
@@ -46,7 +46,7 @@
 
 **Exposed Token:**
 
--   `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`
+-   `<REDACTED_GITHUB_PAT>`
 
 **Remediation:**
 
@@ -169,7 +169,7 @@ These are acceptable because:
 
 2. **Revoke GitHub PAT**
    -   Go to: <https://github.com/settings/tokens>
-   -   Find token: `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`
+   -   Find token: `<REDACTED_GITHUB_PAT>`
    -   Click "Delete" or "Revoke"
 
 3. **Rotate Stripe Keys**

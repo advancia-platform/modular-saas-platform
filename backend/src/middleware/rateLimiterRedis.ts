@@ -9,14 +9,14 @@
  * - Gracefully degrades if Redis is unavailable
  */
 
-import { NextFunction, Response } from 'express';
-import { Redis } from 'ioredis';
-import { shouldAlert } from '../config/alertPolicy';
-import { sendAlert } from '../services/alertServiceMinimal';
-import { captureError } from '../utils/sentry';
+import { NextFunction, Response } from "express";
+import { Redis } from "ioredis";
+import { shouldAlert } from "../config/alertPolicy";
+import { sendAlert } from "../services/alertServiceMinimal";
+import { captureError } from "../utils/sentry";
 
 // Initialize Redis client
-const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
+const redis = new Redis(process.env.REDIS_URL || "redis://localhost:6379", {
   retryStrategy: (times) => {
     // Exponential backoff: reconnect after delay
     const delay = Math.min(times * 50, 2000);
@@ -26,18 +26,18 @@ const redis = new Redis(process.env.REDIS_URL || 'redis://localhost:6379', {
   enableOfflineQueue: false, // Don't queue commands if Redis is down
 });
 
-redis.on('error', (err) => {
-  console.error('Redis connection error:', err.message);
-  if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+redis.on("error", (err) => {
+  console.error("Redis connection error:", err.message);
+  if (process.env.NODE_ENV === "production" && process.env.SENTRY_DSN) {
     captureError(err, {
-      tags: { component: 'rate-limiter', error_type: 'redis_connection' },
+      tags: { component: "rate-limiter", error_type: "redis_connection" },
       extra: { message: err.message },
     });
   }
 });
 
-redis.on('connect', () => {
-  console.log('✓ Redis connected for rate limiting');
+redis.on("connect", () => {
+  console.log("✓ Redis connected for rate limiting");
 });
 
 /**
@@ -61,30 +61,31 @@ function getIdentifier(req: any): string {
   }
 
   // Fallback to IP address
-  const forwardedFor = req.headers['x-forwarded-for'] as string;
-  if (forwardedFor) {
-    return `ip:${forwardedFor.split(',')[0].trim()}`;
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string" && forwardedFor) {
+    const firstIp = forwardedFor.split(",")[0];
+    return `ip:${firstIp?.trim() || "unknown"}`;
   }
 
-  const realIp = req.headers['x-real-ip'] as string;
+  const realIp = req.headers["x-real-ip"] as string;
   if (realIp) {
     return `ip:${realIp}`;
   }
 
-  return `ip:${req.ip || req.socket.remoteAddress || 'unknown'}`;
+  return `ip:${req.ip || req.socket.remoteAddress || "unknown"}`;
 }
 
 /**
  * Get route group from request path
  */
 function getRouteGroup(path: string): string {
-  if (path.startsWith('/api/admin')) return 'admin';
-  if (path.startsWith('/api/payments')) return 'payments';
-  if (path.startsWith('/api/crypto')) return 'crypto';
-  if (path.startsWith('/api/transactions')) return 'transactions';
-  if (path.startsWith('/api/auth')) return 'auth';
-  if (path.startsWith('/api/users')) return 'users';
-  return 'other';
+  if (path.startsWith("/api/admin")) return "admin";
+  if (path.startsWith("/api/payments")) return "payments";
+  if (path.startsWith("/api/crypto")) return "crypto";
+  if (path.startsWith("/api/transactions")) return "transactions";
+  if (path.startsWith("/api/auth")) return "auth";
+  if (path.startsWith("/api/users")) return "users";
+  return "other";
 }
 
 /**
@@ -97,8 +98,8 @@ export function rateLimiter(options: RateLimiterOptions) {
   const {
     windowMs = 60000, // Default: 1 minute
     max = 5, // Default: 5 requests
-    group = 'general',
-    message = 'Too many requests, please try again later.',
+    group = "general",
+    message = "Too many requests, please try again later.",
     skipSuccessfulRequests = false,
   } = options;
 
@@ -134,9 +135,9 @@ export function rateLimiter(options: RateLimiterOptions) {
           path: req.originalUrl,
           method: req.method,
           timestamp: Date.now(),
-          userAgent: req.get('user-agent'),
+          userAgent: req.get("user-agent"),
         }).catch((err) => {
-          console.error('Failed to send alert:', err);
+          console.error("Failed to send alert:", err);
         });
       }
 
@@ -163,13 +164,13 @@ export function rateLimiter(options: RateLimiterOptions) {
         await redis.expire(`global_trends:${group}`, 86400); // 24 hour retention
 
         // Log to Sentry
-        if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
-          captureError(new Error('Rate limit exceeded'), {
-            level: 'warning',
+        if (process.env.NODE_ENV === "production" && process.env.SENTRY_DSN) {
+          captureError(new Error("Rate limit exceeded"), {
+            level: "warning",
             tags: {
-              type: 'security',
-              event: 'rate_limit_exceeded',
-              severity: 'medium',
+              type: "security",
+              event: "rate_limit_exceeded",
+              severity: "medium",
               routeGroup,
               limitGroup: group,
             },
@@ -202,11 +203,11 @@ export function rateLimiter(options: RateLimiterOptions) {
       }
 
       // Track successful request count
-      res.on('finish', () => {
+      res.on("finish", () => {
         if (skipSuccessfulRequests && res.statusCode < 400) {
           // Decrement counter if request was successful
           redis.decr(key).catch((err) => {
-            console.error('Failed to decrement rate limit counter:', err);
+            console.error("Failed to decrement rate limit counter:", err);
           });
         }
       });
@@ -214,13 +215,13 @@ export function rateLimiter(options: RateLimiterOptions) {
       next();
     } catch (err) {
       // Redis failure - fail open (allow request but log error)
-      console.error('Rate limiter error:', err);
+      console.error("Rate limiter error:", err);
 
-      if (process.env.NODE_ENV === 'production' && process.env.SENTRY_DSN) {
+      if (process.env.NODE_ENV === "production" && process.env.SENTRY_DSN) {
         captureError(err as Error, {
           tags: {
-            component: 'rate-limiter',
-            error_type: 'middleware_failure',
+            component: "rate-limiter",
+            error_type: "middleware_failure",
             routeGroup: getRouteGroup(req.originalUrl),
           },
           extra: {
@@ -245,7 +246,7 @@ export function rateLimiter(options: RateLimiterOptions) {
  * @returns Array of offenders with counts
  */
 export async function getRateLimitStats(
-  group: string = 'admin',
+  group: string = "admin",
   limit: number = 10,
 ) {
   try {
@@ -254,22 +255,24 @@ export async function getRateLimitStats(
       `offenders:${group}`,
       0,
       limit - 1,
-      'WITHSCORES',
+      "WITHSCORES",
     );
 
     // Format into [{ identifier, count }]
     const formatted: Array<{
       identifier: string;
       count: number;
-      type: 'user' | 'ip';
+      type: "user" | "ip";
     }> = [];
     for (let i = 0; i < offenders.length; i += 2) {
       const identifier = offenders[i];
-      const count = parseInt(offenders[i + 1], 10);
-      const type = identifier.startsWith('user:') ? 'user' : 'ip';
+      const countStr = offenders[i + 1];
+      if (!identifier || !countStr) continue;
+      const count = parseInt(countStr, 10);
+      const type = identifier.startsWith("user:") ? "user" : "ip";
 
       formatted.push({
-        identifier: identifier.replace(/^(user:|ip:)/, ''), // Remove prefix for display
+        identifier: identifier.replace(/^(user:|ip:)/, ""), // Remove prefix for display
         count,
         type,
       });
@@ -277,7 +280,7 @@ export async function getRateLimitStats(
 
     return formatted;
   } catch (err) {
-    console.error('Failed to fetch rate limit stats:', err);
+    console.error("Failed to fetch rate limit stats:", err);
     throw err;
   }
 }
@@ -288,13 +291,13 @@ export async function getRateLimitStats(
 export async function getAllRateLimitGroups() {
   try {
     const groups = [
-      'admin',
-      'auth',
-      'payments',
-      'crypto',
-      'transactions',
-      'users',
-      'general',
+      "admin",
+      "auth",
+      "payments",
+      "crypto",
+      "transactions",
+      "users",
+      "general",
     ];
     const groupStats = await Promise.all(
       groups.map(async (group) => {
@@ -305,7 +308,7 @@ export async function getAllRateLimitGroups() {
 
     return groupStats.filter((stat) => stat.offenderCount > 0);
   } catch (err) {
-    console.error('Failed to fetch rate limit groups:', err);
+    console.error("Failed to fetch rate limit groups:", err);
     throw err;
   }
 }
@@ -318,9 +321,9 @@ export async function clearRateLimit(group: string, identifier: string) {
     const key = `rate:${group}:${identifier}`;
     await redis.del(key);
     await redis.zrem(`offenders:${group}`, identifier);
-    return { success: true, message: 'Rate limit cleared' };
+    return { success: true, message: "Rate limit cleared" };
   } catch (err) {
-    console.error('Failed to clear rate limit:', err);
+    console.error("Failed to clear rate limit:", err);
     throw err;
   }
 }
@@ -362,7 +365,7 @@ export async function getOffenderTrends(
 
     return formatted;
   } catch (err) {
-    console.error('Failed to fetch offender trends:', err);
+    console.error("Failed to fetch offender trends:", err);
     throw err;
   }
 }
@@ -397,7 +400,7 @@ export async function getGlobalTrends(group: string, minutesBack: number = 60) {
 
     return formatted;
   } catch (err) {
-    console.error('Failed to fetch global trends:', err);
+    console.error("Failed to fetch global trends:", err);
     throw err;
   }
 }
@@ -410,7 +413,7 @@ let ioInstance: any = null;
 
 export function setRateLimiterSocketIO(io: any) {
   ioInstance = io;
-  console.log('✓ Rate limiter WebSocket broadcasting enabled');
+  console.log("✓ Rate limiter WebSocket broadcasting enabled");
 }
 
 /**
@@ -423,7 +426,7 @@ export function broadcastRateEvent(
   exceeded: boolean = false,
 ) {
   if (ioInstance) {
-    ioInstance.emit('rateEvent', {
+    ioInstance.emit("rateEvent", {
       group,
       identifier,
       count,
@@ -441,24 +444,24 @@ export function broadcastRateEvent(
 export const strictRateLimiter = rateLimiter({
   windowMs: 15 * 60 * 1000,
   max: 5,
-  group: 'auth-strict',
-  message: 'Too many login attempts, please try again in 15 minutes.',
+  group: "auth-strict",
+  message: "Too many login attempts, please try again in 15 minutes.",
 });
 
 // Admin rate limiter for admin endpoints (20 requests per minute)
 export const adminRateLimiter = rateLimiter({
   windowMs: 60 * 1000,
   max: 20,
-  group: 'admin',
-  message: 'Too many admin requests, please slow down.',
+  group: "admin",
+  message: "Too many admin requests, please slow down.",
 });
 
 // API rate limiter for general API endpoints (100 requests per minute)
 export const apiRateLimiter = rateLimiter({
   windowMs: 60 * 1000,
   max: 100,
-  group: 'api',
-  message: 'API rate limit exceeded, please try again later.',
+  group: "api",
+  message: "API rate limit exceeded, please try again later.",
 });
 
 // Export Redis client for testing/monitoring

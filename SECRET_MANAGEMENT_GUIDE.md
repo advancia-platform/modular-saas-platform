@@ -6,7 +6,7 @@
 
 ```bash
 # DON'T commit real secrets
-STRIPE_SECRET_KEY=sk_test_51SCXq1CnLcSzsQoTXqbzLwgmT6Mbb8Fj2ZEngSnjmwnm2P0iZGZKq2oYHWHwKAgAGRLs3qm0FUacfQ06oL6jvZYf00j1763pTI
+STRIPE_SECRET_KEY=sk_test_EXAMPLE_DO_NOT_USE_REAL_KEYS_HERE
 
 # DON'T hardcode passwords
 DATABASE_URL=postgresql://admin:MyP@ssw0rd123@localhost:5432/db

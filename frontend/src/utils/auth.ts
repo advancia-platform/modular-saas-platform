@@ -38,7 +38,9 @@ export async function checkAdminAuth(router: { push: (path: string) => void }): 
     return false;
   }
   try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
+    const parts = token.split('.');
+    if (parts.length < 2 || !parts[1]) return false;
+    const payload = JSON.parse(atob(parts[1]));
     if (payload.role !== 'admin') {
       router.push('/dashboard');
       return false;

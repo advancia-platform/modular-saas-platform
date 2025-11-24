@@ -2,6 +2,7 @@ import { PrismaClient } from "@prisma/client";
 import { Request, Response, Router } from "express";
 import logger from "../logger";
 import { authenticateToken } from "../middleware/auth";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
 const prisma = new PrismaClient();
@@ -37,7 +38,7 @@ router.post(
       // Start transaction
       await prisma.$transaction(async (tx) => {
         // Deduct from token wallet
-        await tx.tokenWallet.update({
+        await tx.token_wallets.update({
           where: { userId },
           data: { balance: { decrement: amount } },
         });
@@ -49,14 +50,14 @@ router.post(
         });
 
         // Create token transaction
-        await tx.tokenTransaction.create({
-          data: {
+        await tx.token_transactions.create({
+          data: withDefaults({
             walletId: wallet.id,
             amount: -amount,
             type: "WITHDRAWAL",
             status: "completed",
             description: `Withdrew ${amount} tokens to USD ($${usdAmount.toFixed(2)})`,
-          },
+          }),
         });
       });
 
@@ -125,39 +126,39 @@ router.post(
       // Transfer
       await prisma.$transaction(async (tx) => {
         // Deduct from sender
-        await tx.tokenWallet.update({
+        await tx.token_wallets.update({
           where: { userId },
           data: { balance: { decrement: amount } },
         });
 
         // Add to recipient
-        await tx.tokenWallet.update({
+        await tx.token_wallets.update({
           where: { userId: recipient.id },
           data: { balance: { increment: amount } },
         });
 
         // Create sender transaction
-        await tx.tokenTransaction.create({
-          data: {
+        await tx.token_transactions.create({
+          data: withDefaults({
             walletId: senderWallet.id,
             amount: -amount,
             type: "TRANSFER_OUT",
             status: "completed",
             description: message || `Transferred to ${recipient.email}`,
             toAddress: recipient.email,
-          },
+          }),
         });
 
         // Create recipient transaction
-        await tx.tokenTransaction.create({
-          data: {
+        await tx.token_transactions.create({
+          data: withDefaults({
             walletId: recipientWallet!.id,
             amount,
             type: "TRANSFER_IN",
             status: "completed",
             description: message || "Received from sender",
             fromAddress: (req as any).user.email,
-          },
+          }),
         });
       });
 
@@ -212,7 +213,7 @@ router.post("/buy", authenticateToken, async (req: Request, res: Response) => {
       });
 
       // Add tokens
-      await tx.tokenWallet.update({
+      await tx.token_wallets.update({
         where: { userId },
         data: {
           balance: { increment: tokenAmount },
@@ -221,15 +222,15 @@ router.post("/buy", authenticateToken, async (req: Request, res: Response) => {
       });
 
       // Create transaction
-      await tx.tokenTransaction.create({
-        data: {
+      await tx.token_transactions.create({
+        data: withDefaults({
           walletId: wallet!.id,
           amount: tokenAmount,
           type: "PURCHASE",
           status: "completed",
           description: `Purchased ${tokenAmount} tokens with $${usdAmount}`,
           metadata: JSON.stringify({ exchangeRate, usdAmount }),
-        },
+        }),
       });
     });
 
@@ -276,7 +277,7 @@ router.post(
 
       // Lock tokens
       await prisma.$transaction(async (tx) => {
-        await tx.tokenWallet.update({
+        await tx.token_wallets.update({
           where: { userId },
           data: {
             balance: { decrement: amount },
@@ -284,8 +285,8 @@ router.post(
           },
         });
 
-        await tx.tokenTransaction.create({
-          data: {
+        await tx.token_transactions.create({
+          data: withDefaults({
             walletId: wallet.id,
             amount: -amount,
             type: "STAKE",
@@ -297,7 +298,7 @@ router.post(
               unstakeDate,
               stakingRate: annualRate,
             }),
-          },
+          }),
         });
       });
 
@@ -340,15 +341,19 @@ router.get("/chart", authenticateToken, async (req: Request, res: Response) => {
       };
     });
 
+    const n = history.length;
+    const lastPrice = n ? history[n - 1]?.price || 0 : 0;
+    const prevPrice = n > 1 ? history[n - 2]?.price || lastPrice : lastPrice;
+    const change24h =
+      n > 1 && prevPrice !== 0
+        ? ((lastPrice - prevPrice) / prevPrice) * 100
+        : 0;
+
     res.json({
       success: true,
       history,
-      currentPrice: history[history.length - 1].price,
-      change24h:
-        ((history[history.length - 1].price -
-          history[history.length - 2].price) /
-          history[history.length - 2].price) *
-        100,
+      currentPrice: lastPrice,
+      change24h,
     });
   } catch (error) {
     logger.error("Token chart error:", error);

@@ -4,24 +4,24 @@ Modern fintech dashboard built with Next.js 14, TypeScript, Tailwind CSS, and Fr
 
 ## 🎨 Features
 
-- **💼 Dashboard Overview**
-  - Animated summary cards (Credits, Debits, Net Balance, Bonus)
-  - Click-to-expand balance breakdown modal
-  - Real-time transaction updates via Socket.IO
-  - Sound and haptic feedback on interactions
+-   **💼 Dashboard Overview**
+    -   Animated summary cards (Credits, Debits, Net Balance, Bonus)
+    -   Click-to-expand balance breakdown modal
+    -   Real-time transaction updates via Socket.IO
+    -   Sound and haptic feedback on interactions
 
-- **📊 Components**
-  - Summary Cards with animated counters
-  - Balance Dropdown with detailed breakdown
-  - Transaction List with filters (All, Credits, Debits, Bonus)
-  - Bonus & Earnings Card with tooltip
-  - Responsive design for mobile and desktop
+-   **📊 Components**
+    -   Summary Cards with animated counters
+    -   Balance Dropdown with detailed breakdown
+    -   Transaction List with filters (All, Credits, Debits, Bonus)
+    -   Bonus & Earnings Card with tooltip
+    -   Responsive design for mobile and desktop
 
-- **🎭 Animations**
-  - Framer Motion for smooth transitions
-  - Glow effects on hover
-  - Pulsing indicators for new transactions
-  - Counter animations for values
+-   **🎭 Animations**
+    -   Framer Motion for smooth transitions
+    -   Glow effects on hover
+    -   Pulsing indicators for new transactions
+    -   Counter animations for values
 
 ## 🚀 Quick Start
 
@@ -86,18 +86,18 @@ frontend/
 
 ### Colors
 
-- **Primary Blue**: #1890ff (buttons, links, accents)
-- **Teal**: #13c2c2 (secondary actions, gradients)
-- **Green**: Success states, credit transactions
-- **Red**: Error states, debit transactions
-- **Amber**: Bonus/earnings indicators
+-   **Primary Blue**: #1890ff (buttons, links, accents)
+-   **Teal**: #13c2c2 (secondary actions, gradients)
+-   **Green**: Success states, credit transactions
+-   **Red**: Error states, debit transactions
+-   **Amber**: Bonus/earnings indicators
 
 ### Animations
 
-- `pulse-glow`: Pulsing glow effect for new transactions
-- `slide-in`: Smooth slide-in for modals
-- `fade-in`: Fade-in for content
-- `counter-up`: Animated number counting
+-   `pulse-glow`: Pulsing glow effect for new transactions
+-   `slide-in`: Smooth slide-in for modals
+-   `fade-in`: Fade-in for content
+-   `counter-up`: Animated number counting
 
 ## 🔌 API Integration
 
@@ -105,14 +105,14 @@ The dashboard connects to the backend API at `http://localhost:4000`:
 
 ### Endpoints Used
 
-- `GET /api/transactions/balance/:userId` - User balance
-- `GET /api/transactions/recent/:userId` - Recent transactions
+-   `GET /api/transactions/balance/:userId` - User balance
+-   `GET /api/transactions/recent/:userId` - Recent transactions
 
 ### Socket.IO Events
 
-- `join-room` - Join user-specific room
-- `transaction-created` - New transaction notification
-- `global-transaction` - Global transaction broadcast
+-   `join-room` - Join user-specific room
+-   `transaction-created` - New transaction notification
+-   `global-transaction` - Global transaction broadcast
 
 ## 🎯 Components
 
@@ -128,14 +128,14 @@ Displays a metric with an animated counter.
 
 **Props**:
 
-- `title: string` - Card title
-- `value: number` - Numeric value to display
-- `icon: ReactNode` - Icon component
-- `iconBg: string` - Icon background gradient
-- `gradient: string` - Card background gradient
-- `delay?: number` - Animation delay
-- `clickable?: boolean` - Enable click interaction
-- `badge?: ReactNode` - Optional badge element
+-   `title: string` - Card title
+-   `value: number` - Numeric value to display
+-   `icon: ReactNode` - Icon component
+-   `iconBg: string` - Icon background gradient
+-   `gradient: string` - Card background gradient
+-   `delay?: number` - Animation delay
+-   `clickable?: boolean` - Enable click interaction
+-   `badge?: ReactNode` - Optional badge element
 
 ### BonusCard
 
@@ -143,9 +143,9 @@ Shows bonus earnings with tooltip on hover.
 
 **Props**:
 
-- `earnings: number` - Bonus amount
-- `percentage: number` - Bonus percentage
-- `delay?: number` - Animation delay
+-   `earnings: number` - Bonus amount
+-   `percentage: number` - Bonus percentage
+-   `delay?: number` - Animation delay
 
 ### BalanceDropdown
 
@@ -153,8 +153,8 @@ Modal showing balance breakdown (Main, Earnings, Referrals).
 
 **Props**:
 
-- `balance: Balance` - Balance object
-- `onClose: () => void` - Close handler
+-   `balance: Balance` - Balance object
+-   `onClose: () => void` - Close handler
 
 ### TransactionList
 
@@ -162,8 +162,8 @@ Displays recent transactions with filter options.
 
 **Props**:
 
-- `transactions: Transaction[]` - Array of transactions
-- `loading: boolean` - Loading state
+-   `transactions: Transaction[]` - Array of transactions
+-   `loading: boolean` - Loading state
 
 ## 🪝 Custom Hooks
 
@@ -207,16 +207,16 @@ animation: {
 
 ## 📱 Responsive Design
 
-- Mobile: Single column layout
-- Tablet: 2-column grid
-- Desktop: 4-column grid for summary cards
+-   Mobile: Single column layout
+-   Tablet: 2-column grid
+-   Desktop: 4-column grid for summary cards
 
 Breakpoints:
 
-- `sm`: 640px
-- `md`: 768px
-- `lg`: 1024px
-- `xl`: 1280px
+-   `sm`: 640px
+-   `md`: 768px
+-   `lg`: 1024px
+-   `xl`: 1280px
 
 ## 🔧 Configuration
 
@@ -276,25 +276,25 @@ Summary cards feature smooth number transitions from 0 to target value.
 
 Click "Net Balance" card to open detailed breakdown modal showing:
 
-- Main Account balance
-- Earnings (bonus)
-- Rewards / Adjustments
-- Total Available
+-   Main Account balance
+-   Earnings (bonus)
+-   Rewards / Adjustments
+-   Total Available
 
 ### Real-time Updates
 
 Socket.IO integration provides instant updates when:
 
-- New transactions are created
-- Balance changes
-- Global transaction broadcasts
+-   New transactions are created
+-   Balance changes
+-   Global transaction broadcasts
 
 ### Sound Feedback
 
-- **Click**: Short beep on interactions
-- **Success**: Two-tone chime for successful actions
-- **Error**: Low tone for errors
-- **Haptic**: Vibration on supported devices
+-   **Click**: Short beep on interactions
+-   **Success**: Two-tone chime for successful actions
+-   **Error**: Low tone for errors
+-   **Haptic**: Vibration on supported devices
 
 ## 🐛 Troubleshooting
 
@@ -332,43 +332,43 @@ npx tsc --noEmit
 
 **Core**:
 
-- `next` ^14.2.0
-- `react` ^18.3.0
-- `typescript` ^5.9.0
+-   `next` ^14.2.0
+-   `react` ^18.3.0
+-   `typescript` ^5.9.0
 
 **UI**:
 
-- `framer-motion` ^11.3.0
-- `lucide-react` ^0.400.0
-- `tailwindcss` ^3.4.4
+-   `framer-motion` ^11.3.0
+-   `lucide-react` ^0.400.0
+-   `tailwindcss` ^3.4.4
 
 **API**:
 
-- `socket.io-client` ^4.8.1
-- `axios` ^1.7.2
+-   `socket.io-client` ^4.8.1
+-   `axios` ^1.7.2
 
 **Auth & Crypto**:
 
-- `next-auth` ^4.24.7
-- `ethers` ^6.13.0
-- `@stripe/stripe-js` ^4.0.0
+-   `next-auth` ^4.24.7
+-   `ethers` ^6.13.0
+-   `@stripe/stripe-js` ^4.0.0
 
 **Utils**:
 
-- `clsx` ^2.1.1
-- `date-fns` ^3.6.0
-- `qrcode.react` ^3.1.0
-- `react-hot-toast` ^2.4.1
-- `recharts` ^2.12.0
+-   `clsx` ^2.1.1
+-   `date-fns` ^3.6.0
+-   `qrcode.react` ^3.1.0
+-   `react-hot-toast` ^2.4.1
+-   `recharts` ^2.12.0
 
 ## 🎯 Next Steps
 
-- [ ] Add user authentication
-- [ ] Implement transaction creation form
-- [ ] Add date range filters
-- [ ] Export transactions to CSV
-- [ ] Dark mode support
-- [ ] PWA configuration
+-   [ ] Add user authentication
+-   [ ] Implement transaction creation form
+-   [ ] Add date range filters
+-   [ ] Export transactions to CSV
+-   [ ] Dark mode support
+-   [ ] PWA configuration
 
 ## 📄 License
 

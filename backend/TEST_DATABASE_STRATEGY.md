@@ -18,17 +18,17 @@ postgresql://db_adva_user:***@dpg-d3tqp46uk2gs73dcu2dg-a.oregon-postgres.render.
 
 **Strategy**: Mock-based testing
 
-- All Prisma operations are mocked
-- No real database required
-- Fast execution (~3-5 seconds)
-- Safe to run anywhere
-- Zero risk to production data
+-   All Prisma operations are mocked
+-   No real database required
+-   Fast execution (~3-5 seconds)
+-   Safe to run anywhere
+-   Zero risk to production data
 
 **Files**:
 
-- `tests/auth.test.ts` - Authentication tests with Prisma mocks
-- `tests/health.test.ts` - Health endpoint tests
-- `tests/smoke.test.ts` - Environment sanity checks
+-   `tests/auth.test.ts` - Authentication tests with Prisma mocks
+-   `tests/health.test.ts` - Health endpoint tests
+-   `tests/smoke.test.ts` - Environment sanity checks
 
 ### Integration Tests (Optional)
 
@@ -36,9 +36,9 @@ postgresql://db_adva_user:***@dpg-d3tqp46uk2gs73dcu2dg-a.oregon-postgres.render.
 
 **Strategy**: Real database testing
 
-- Requires separate PostgreSQL database
-- Tests actual database operations
-- Currently skipped to protect production
+-   Requires separate PostgreSQL database
+-   Tests actual database operations
+-   Currently skipped to protect production
 
 ## Recommended Setup for Integration Tests
 
@@ -77,9 +77,9 @@ If you want to enable integration tests, you have two options:
 ### Option 2: Separate Render Database (Recommended for CI/CD)
 
 1. **Create NEW database on Render** (separate from production)
-   - Name it `advancia-test` or similar
-   - Choose same region as production
-   - Use free tier or lowest paid tier
+   -   Name it `advancia-test` or similar
+   -   Choose same region as production
+   -   Use free tier or lowest paid tier
 
 2. **Get connection string** from Render dashboard
 
@@ -149,13 +149,13 @@ Status:      ✅ Production Ready
 
 ### Passing Tests (15/15)
 
-- ✅ Auth registration (8 tests)
-- ✅ Health checks (2 tests)
-- ✅ Smoke tests (5 tests)
+-   ✅ Auth registration (8 tests)
+-   ✅ Health checks (2 tests)
+-   ✅ Smoke tests (5 tests)
 
 ### Skipped Tests (21)
 
-- ⏭️ Integration tests (require test DB setup)
+-   ⏭️ Integration tests (require test DB setup)
 
 ## Recommendations
 
@@ -180,38 +180,38 @@ Status:      ✅ Production Ready
 
 🔒 **Never commit passwords to git**
 
-- Use `.env` file (already in `.gitignore`)
-- Use environment variables in CI/CD
-- Rotate passwords regularly
+-   Use `.env` file (already in `.gitignore`)
+-   Use environment variables in CI/CD
+-   Rotate passwords regularly
 
 🔒 **Separate production and test databases**
 
-- Different hostnames
-- Different credentials
-- Different data
+-   Different hostnames
+-   Different credentials
+-   Different data
 
 🔒 **Test database cleanup**
 
-- Global setup deletes all test data before tests
-- Global teardown deletes all test data after tests
-- No production data ever touches test DB
+-   Global setup deletes all test data before tests
+-   Global teardown deletes all test data after tests
+-   No production data ever touches test DB
 
 ## Questions?
 
-- **Q: Can I run tests without a database?**
-  - ✅ Yes! Current unit tests use mocks (15/15 passing)
+-   **Q: Can I run tests without a database?**
+    -   ✅ Yes! Current unit tests use mocks (15/15 passing)
 
-- **Q: Do I need Render for testing?**
-  - ❌ No! Local PostgreSQL works great for development
+-   **Q: Do I need Render for testing?**
+    -   ❌ No! Local PostgreSQL works great for development
 
-- **Q: Will tests delete my production data?**
-  - ❌ No! Tests use `TEST_DATABASE_URL`, never production
+-   **Q: Will tests delete my production data?**
+    -   ❌ No! Tests use `TEST_DATABASE_URL`, never production
 
-- **Q: How do I enable integration tests?**
-  - See "Option 1" or "Option 2" above
+-   **Q: How do I enable integration tests?**
+    -   See "Option 1" or "Option 2" above
 
-- **Q: Are the current tests sufficient?**
-  - ✅ Yes! 100% of unit tests passing, covering all critical paths
+-   **Q: Are the current tests sufficient?**
+    -   ✅ Yes! 100% of unit tests passing, covering all critical paths
 
 ---
 

@@ -1,22 +1,4 @@
-wget <https://repo1.maven.org/maven2/com/madgag/bfg/1.14.0/bfg-1.14.0.jar> -O bfg.jar
-@"
-sk_test_51SCXq1CnLcSzsQoT
-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
-ibcl imeo vkmh okpr
-"@ | Out-File passwords.txt
-java -jar bfg.jar --replace-text passwords.txt
-git reflog expire --expire=now --all
-git gc --prune=now --aggressive
-git push --force --allwget <https://repo1.maven.org/maven2/com/madgag/bfg/1.14.0/bfg-1.14.0.jar> -O bfg.jar
-@"
-sk_test_51SCXq1CnLcSzsQoT
-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
-ibcl imeo vkmh okpr
-"@ | Out-File passwords.txt
-java -jar bfg.jar --replace-text passwords.txt
-git reflog expire --expire=now --all
-git gc --prune=now --aggressive
-git push --force --all# 🚀 Production Readiness Assessment Report
+# 🚀 Production Readiness Assessment Report
 
 **Project:** Advancia Pay Ledger - Modular SaaS Platform  
 **Assessment Date:** November 17, 2025  
@@ -153,9 +135,9 @@ NEXT_PUBLIC_GA_TRACKING_ID=YOUR_GA_ID_HERE  ❌
 
 **Exposed Credentials in Git History:**
 
--   OLD Stripe secret key: `sk_test_51SCXq1CnLcSzsQoTXqbzLwgmT6Mbb8Fj2ZEngSnjmwnm2P0iZGZKq2oYHWHwKAgAGRLs3qm0FUacfQ06oL6jvZYf00j1763pTI`
--   OLD GitHub PAT: `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`
--   OLD Gmail App Password: `ibcl imeo vkmh okpr`
+-   OLD Stripe secret key: `<REDACTED_STRIPE_TEST_KEY>`
+-   OLD GitHub PAT: `<REDACTED_GITHUB_TOKEN>`
+-   OLD Gmail App Password: `<REDACTED_EMAIL_PASSWORD>`
 -   OLD Cryptomus keys (multiple)
 -   JWT secrets, session secrets, database passwords
 
@@ -169,9 +151,9 @@ NEXT_PUBLIC_GA_TRACKING_ID=YOUR_GA_ID_HERE  ❌
 
    # Create passwords file
    @"
-   sk_test_51SCXq1CnLcSzsQoT
-   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
-   ibcl imeo vkmh okpr
+   <REDACTED_STRIPE_KEY>
+   <REDACTED_GITHUB_TOKEN>
+   <REDACTED_EMAIL_PASSWORD>
    "@ | Out-File passwords.txt
 
    # Clean history

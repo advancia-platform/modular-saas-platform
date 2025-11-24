@@ -14,10 +14,10 @@ API_KEY=dev-api-key-123-change-in-production
 
 **Gmail App Password:**
 
-- Required if 2FA is enabled (recommended)
-- Create at: https://myaccount.google.com/apppasswords
-- Select "Mail" and "Other (Custom name)"
-- Copy the 16-character password
+-   Required if 2FA is enabled (recommended)
+-   Create at: <https://myaccount.google.com/apppasswords>
+-   Select "Mail" and "Other (Custom name)"
+-   Copy the 16-character password
 
 ---
 
@@ -149,22 +149,22 @@ Expected response:
 
 ### "Invalid login" or EAUTH error
 
-- Verify EMAIL_USER is your Gmail address
-- Verify EMAIL_PASSWORD is an App Password (not your regular password)
-- Create App Password: https://myaccount.google.com/apppasswords
-- Restart backend server after changing .env
+-   Verify EMAIL_USER is your Gmail address
+-   Verify EMAIL_PASSWORD is an App Password (not your regular password)
+-   Create App Password: <https://myaccount.google.com/apppasswords>
+-   Restart backend server after changing .env
 
 ### Emails land in spam
 
-- Add SPF record: `v=spf1 include:_spf.mx.cloudflare.net include:_spf.google.com ~all`
-- Add DMARC record: `v=DMARC1; p=none; rua=mailto:dmarc@yourdomain.tld`
-- See `FREE_CUSTOM_EMAIL_SETUP.md` for full DNS setup
+-   Add SPF record: `v=spf1 include:_spf.mx.cloudflare.net include:_spf.google.com ~all`
+-   Add DMARC record: `v=DMARC1; p=none; rua=mailto:dmarc@yourdomain.tld`
+-   See `FREE_CUSTOM_EMAIL_SETUP.md` for full DNS setup
 
 ### "via gmail.com" appears in email
 
-- This is normal when using Gmail SMTP with a custom domain
-- Gmail personal accounts cannot DKIM-sign for your domain
-- For perfect DKIM/DMARC alignment, use Zoho Mail Free for outbound
+-   This is normal when using Gmail SMTP with a custom domain
+-   Gmail personal accounts cannot DKIM-sign for your domain
+-   For perfect DKIM/DMARC alignment, use Zoho Mail Free for outbound
 
 ### Port 4000 already in use
 
@@ -200,10 +200,10 @@ npm run dev
 
 | Env Variable   | Example                | Purpose                |
 | -------------- | ---------------------- | ---------------------- |
-| EMAIL_USER     | your-gmail@gmail.com   | Gmail SMTP auth        |
+| EMAIL_USER     | <your-gmail@gmail.com>   | Gmail SMTP auth        |
 | EMAIL_PASSWORD | abcd efgh ijkl mnop    | Gmail App Password     |
-| EMAIL_FROM     | noreply@yourdomain.tld | Visible "From" address |
-| EMAIL_REPLY_TO | support@yourdomain.tld | Where replies go       |
+| EMAIL_FROM     | <noreply@yourdomain.tld> | Visible "From" address |
+| EMAIL_REPLY_TO | <support@yourdomain.tld> | Where replies go       |
 
 ---
 

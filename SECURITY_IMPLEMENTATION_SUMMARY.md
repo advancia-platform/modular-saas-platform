@@ -36,6 +36,7 @@ A comprehensive security testing framework for professional security engineers s
 
 -   **Lines**: 400+
 -   **Test Categories**:
+
   1. Authentication & Authorization (10 tests)
   2. SQL/NoSQL Injection (5 payloads)
   3. Cross-Site Scripting (5 payloads)
@@ -45,6 +46,7 @@ A comprehensive security testing framework for professional security engineers s
   7. JWT Token Security (4 invalid tokens)
   8. API Enumeration (6 tests)
   9. Business Logic (2 tests)
+
 -   **Duration**: 10-15 minutes
 -   **Output**: Pass/Fail summary with detailed results
 
@@ -52,6 +54,7 @@ A comprehensive security testing framework for professional security engineers s
 
 -   **Lines**: 500+
 -   **Test Categories**:
+
   1. Prompt Injection (6 techniques)
   2. Jailbreak Attempts (5 methods: DAN, Developer Mode, etc.)
   3. Data Leakage (5 tests)
@@ -59,6 +62,7 @@ A comprehensive security testing framework for professional security engineers s
   5. Adversarial Inputs (5 obfuscation techniques)
   6. Business Logic Bypass (4 tests)
   7. Social Engineering (4 scenarios)
+
 -   **Duration**: 15-20 minutes
 -   **Output**: JSON report with detailed test results
 
@@ -89,6 +93,7 @@ A comprehensive security testing framework for professional security engineers s
 
 -   **Lines**: 500+
 -   **Sections**:
+
   1. Quick Start (5 minutes)
   2. API Security Testing (15 minutes)
   3. AI/ML Red Teaming (20 minutes)

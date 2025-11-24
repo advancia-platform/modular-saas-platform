@@ -8,21 +8,21 @@
 
 1. Navigate to: **`http://localhost:3000/register/doctor`**
 2. Fill in the registration form:
-   - First Name
-   - Last Name
-   - Email
-   - Specialization (e.g., "Cardiology", "General Medicine")
-   - License Number
-   - Password
-   - **Invite Code**: `ADVANCIA2025MEDBED` (from `.env`)
+   -   First Name
+   -   Last Name
+   -   Email
+   -   Specialization (e.g., "Cardiology", "General Medicine")
+   -   License Number
+   -   Password
+   -   **Invite Code**: `ADVANCIA2025MEDBED` (from `.env`)
 3. Click "Register"
 4. You'll receive a success message
 5. Your account is now created with `PENDING` status
 
 #### Step 2: Wait for Verification
 
-- An admin must verify your account before you can access consultations
-- Check back later or contact an admin
+-   An admin must verify your account before you can access consultations
+-   Check back later or contact an admin
 
 #### Step 3: Login
 
@@ -43,11 +43,11 @@
 
 #### Step 4: Access Consultations
 
-- View assigned consultations: **GET `/api/consultation`**
-- Access consultation details: **GET `/api/consultation/:id`**
-- Send messages: **POST `/api/consultation/message`**
-- Update diagnosis: **PATCH `/api/consultation/:id`**
-- Start video call: **GET `/api/consultation/video/:id`**
+-   View assigned consultations: **GET `/api/consultation`**
+-   Access consultation details: **GET `/api/consultation/:id`**
+-   Send messages: **POST `/api/consultation/message`**
+-   Update diagnosis: **PATCH `/api/consultation/:id`**
+-   Start video call: **GET `/api/consultation/video/:id`**
 
 ---
 
@@ -62,10 +62,10 @@
 
 Click filter buttons:
 
-- **ALL**: Show all doctors
-- **PENDING**: Show only pending doctors (awaiting verification)
-- **VERIFIED**: Show only verified doctors
-- **SUSPENDED**: Show suspended doctors
+-   **ALL**: Show all doctors
+-   **PENDING**: Show only pending doctors (awaiting verification)
+-   **VERIFIED**: Show only verified doctors
+-   **SUSPENDED**: Show suspended doctors
 
 #### Step 3: Verify Doctors
 
@@ -112,8 +112,8 @@ Content-Type: application/json
 3. Type messages in the chat box
 4. Click "Send" to send messages
 5. Messages appear color-coded:
-   - **Blue**: Doctor messages
-   - **Green**: Your messages
+   -   **Blue**: Doctor messages
+   -   **Green**: Your messages
 
 #### Step 4: Start Video Call
 
@@ -284,37 +284,37 @@ Content-Type: application/json
 
 ### 1. Doctor Registration (`/register/doctor`)
 
-- Clean form with validation
-- Invite code field
-- Success/error messages
-- Redirects to login on success
+-   Clean form with validation
+-   Invite code field
+-   Success/error messages
+-   Redirects to login on success
 
 ### 2. Admin Dashboard (`/admin/dashboard`)
 
-- Doctor table with all details
-- Status filter buttons
-- Action buttons (Verify, Suspend)
-- Real-time updates
-- Protected by admin key
+-   Doctor table with all details
+-   Status filter buttons
+-   Action buttons (Verify, Suspend)
+-   Real-time updates
+-   Protected by admin key
 
 ### 3. Consultation Page (`/consultation/[id]`)
 
-- **Header Section**:
-  - Patient and doctor information
-  - Status badge
-  - Symptoms and diagnosis display
-  - "Start Video Call" button
-- **Video Section**:
-  - Embedded Jitsi Meet iframe
-  - Full-screen capable
-  - Camera/mic permissions
-  - Toggle show/hide
-- **Chat Section**:
-  - Message history
-  - Color-coded by sender
-  - Timestamp display
-  - Message input form
-  - Auto-scroll to latest
+-   **Header Section**:
+    -   Patient and doctor information
+    -   Status badge
+    -   Symptoms and diagnosis display
+    -   "Start Video Call" button
+-   **Video Section**:
+    -   Embedded Jitsi Meet iframe
+    -   Full-screen capable
+    -   Camera/mic permissions
+    -   Toggle show/hide
+-   **Chat Section**:
+    -   Message history
+    -   Color-coded by sender
+    -   Timestamp display
+    -   Message input form
+    -   Auto-scroll to latest
 
 ---
 
@@ -351,9 +351,9 @@ Content-Type: application/json
 
 **Solution**:
 
-- Check browser permissions for camera/microphone
-- Ensure `JITSI_DOMAIN` is set correctly
-- Try with `meet.jit.si` first
+-   Check browser permissions for camera/microphone
+-   Ensure `JITSI_DOMAIN` is set correctly
+-   Try with `meet.jit.si` first
 
 ### Issue: Doctor can't access consultations
 
@@ -376,15 +376,15 @@ Content-Type: application/json
 
 ### Production Checklist
 
-- [ ] Change default admin key
-- [ ] Change doctor invite code
-- [ ] Set up production database
-- [ ] Configure HTTPS
-- [ ] Add rate limiting
-- [ ] Set up monitoring (Sentry, etc.)
-- [ ] Configure email service
-- [ ] Add backup system
-- [ ] Set up CI/CD pipeline
+-   [ ] Change default admin key
+-   [ ] Change doctor invite code
+-   [ ] Set up production database
+-   [ ] Configure HTTPS
+-   [ ] Add rate limiting
+-   [ ] Set up monitoring (Sentry, etc.)
+-   [ ] Configure email service
+-   [ ] Add backup system
+-   [ ] Set up CI/CD pipeline
 
 ---
 

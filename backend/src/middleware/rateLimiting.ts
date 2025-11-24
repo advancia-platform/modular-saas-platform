@@ -14,9 +14,9 @@
  * - Sliding Window: Precise rate control for sensitive operations
  */
 
-import { PrismaClient } from '@prisma/client';
-import { NextFunction, Request, Response } from 'express';
-import logger from '../logger';
+import { PrismaClient } from "@prisma/client";
+import { NextFunction, Request, Response } from "express";
+import logger from "../logger";
 
 const prisma = new PrismaClient();
 
@@ -155,9 +155,9 @@ export class TokenBucketRateLimiter {
 
   constructor(config: TokenBucketConfig, store?: RateLimitStore) {
     this.config = {
-      message: 'Too many requests, please slow down',
+      message: "Too many requests, please slow down",
       statusCode: 429,
-      keyGenerator: (req) => req.ip || 'unknown',
+      keyGenerator: (req) => req.ip || "unknown",
       ...config,
     };
     this.store = store || new MemoryStore();
@@ -204,21 +204,21 @@ export class TokenBucketRateLimiter {
           await this.store.set(key, data);
 
           // Add rate limit headers
-          res.setHeader('X-RateLimit-Limit', this.config.bucketSize);
-          res.setHeader('X-RateLimit-Remaining', Math.floor(data.tokens));
-          res.setHeader('X-RateLimit-Reset', data.resetTime);
+          res.setHeader("X-RateLimit-Limit", this.config.bucketSize);
+          res.setHeader("X-RateLimit-Remaining", Math.floor(data.tokens));
+          res.setHeader("X-RateLimit-Reset", data.resetTime);
 
           return next();
         } else {
           // No tokens available
           const retryAfter = Math.ceil(1 / this.config.refillRate);
 
-          res.setHeader('X-RateLimit-Limit', this.config.bucketSize);
-          res.setHeader('X-RateLimit-Remaining', 0);
-          res.setHeader('X-RateLimit-Reset', data.resetTime);
-          res.setHeader('Retry-After', retryAfter);
+          res.setHeader("X-RateLimit-Limit", this.config.bucketSize);
+          res.setHeader("X-RateLimit-Remaining", 0);
+          res.setHeader("X-RateLimit-Reset", data.resetTime);
+          res.setHeader("Retry-After", retryAfter);
 
-          logger.warn('Rate limit exceeded (Token Bucket)', {
+          logger.warn("Rate limit exceeded (Token Bucket)", {
             key,
             ip: req.ip,
             path: req.path,
@@ -230,14 +230,14 @@ export class TokenBucketRateLimiter {
           }
 
           return res.status(this.config.statusCode!).json({
-            error: 'Rate limit exceeded',
+            error: "Rate limit exceeded",
             message: this.config.message,
             retryAfter,
-            type: 'token_bucket',
+            type: "token_bucket",
           });
         }
       } catch (error) {
-        logger.error('Token bucket rate limiter error', error);
+        logger.error("Token bucket rate limiter error", error);
         // Fail open - allow request on error
         return next();
       }
@@ -272,9 +272,9 @@ export class LeakyBucketRateLimiter {
 
   constructor(config: LeakyBucketConfig, store?: RateLimitStore) {
     this.config = {
-      message: 'Request queue full, please try again later',
+      message: "Request queue full, please try again later",
       statusCode: 429,
-      keyGenerator: (req) => req.ip || 'unknown',
+      keyGenerator: (req) => req.ip || "unknown",
       ...config,
     };
     this.store = store || new MemoryStore();
@@ -321,21 +321,21 @@ export class LeakyBucketRateLimiter {
 
           const remaining = this.config.bucketSize - data.queue.length;
 
-          res.setHeader('X-RateLimit-Limit', this.config.bucketSize);
-          res.setHeader('X-RateLimit-Remaining', remaining);
-          res.setHeader('X-RateLimit-Reset', data.resetTime);
+          res.setHeader("X-RateLimit-Limit", this.config.bucketSize);
+          res.setHeader("X-RateLimit-Remaining", remaining);
+          res.setHeader("X-RateLimit-Reset", data.resetTime);
 
           return next();
         } else {
           // Bucket full
           const retryAfter = Math.ceil(leakInterval / 1000);
 
-          res.setHeader('X-RateLimit-Limit', this.config.bucketSize);
-          res.setHeader('X-RateLimit-Remaining', 0);
-          res.setHeader('X-RateLimit-Reset', data.resetTime);
-          res.setHeader('Retry-After', retryAfter);
+          res.setHeader("X-RateLimit-Limit", this.config.bucketSize);
+          res.setHeader("X-RateLimit-Remaining", 0);
+          res.setHeader("X-RateLimit-Reset", data.resetTime);
+          res.setHeader("Retry-After", retryAfter);
 
-          logger.warn('Rate limit exceeded (Leaky Bucket)', {
+          logger.warn("Rate limit exceeded (Leaky Bucket)", {
             key,
             ip: req.ip,
             path: req.path,
@@ -347,15 +347,15 @@ export class LeakyBucketRateLimiter {
           }
 
           return res.status(this.config.statusCode!).json({
-            error: 'Rate limit exceeded',
+            error: "Rate limit exceeded",
             message: this.config.message,
             retryAfter,
-            type: 'leaky_bucket',
+            type: "leaky_bucket",
             queueFull: true,
           });
         }
       } catch (error) {
-        logger.error('Leaky bucket rate limiter error', error);
+        logger.error("Leaky bucket rate limiter error", error);
         return next();
       }
     };
@@ -390,9 +390,9 @@ export class FixedWindowRateLimiter {
 
   constructor(config: RateLimitConfig, store?: RateLimitStore) {
     this.config = {
-      message: 'Too many requests',
+      message: "Too many requests",
       statusCode: 429,
-      keyGenerator: (req) => req.ip || 'unknown',
+      keyGenerator: (req) => req.ip || "unknown",
       ...config,
     };
     this.store = store || new MemoryStore();
@@ -426,21 +426,21 @@ export class FixedWindowRateLimiter {
           const remaining = this.config.max - data.count;
           const resetInSeconds = Math.ceil((data.resetTime - now) / 1000);
 
-          res.setHeader('X-RateLimit-Limit', this.config.max);
-          res.setHeader('X-RateLimit-Remaining', remaining);
-          res.setHeader('X-RateLimit-Reset', Math.floor(data.resetTime / 1000));
+          res.setHeader("X-RateLimit-Limit", this.config.max);
+          res.setHeader("X-RateLimit-Remaining", remaining);
+          res.setHeader("X-RateLimit-Reset", Math.floor(data.resetTime / 1000));
 
           return next();
         } else {
           // Limit exceeded
           const resetInSeconds = Math.ceil((data.resetTime - now) / 1000);
 
-          res.setHeader('X-RateLimit-Limit', this.config.max);
-          res.setHeader('X-RateLimit-Remaining', 0);
-          res.setHeader('X-RateLimit-Reset', Math.floor(data.resetTime / 1000));
-          res.setHeader('Retry-After', resetInSeconds);
+          res.setHeader("X-RateLimit-Limit", this.config.max);
+          res.setHeader("X-RateLimit-Remaining", 0);
+          res.setHeader("X-RateLimit-Reset", Math.floor(data.resetTime / 1000));
+          res.setHeader("Retry-After", resetInSeconds);
 
-          logger.warn('Rate limit exceeded (Fixed Window)', {
+          logger.warn("Rate limit exceeded (Fixed Window)", {
             key,
             ip: req.ip,
             path: req.path,
@@ -452,14 +452,14 @@ export class FixedWindowRateLimiter {
           }
 
           return res.status(this.config.statusCode!).json({
-            error: 'Rate limit exceeded',
+            error: "Rate limit exceeded",
             message: this.config.message,
             retryAfter: resetInSeconds,
-            type: 'fixed_window',
+            type: "fixed_window",
           });
         }
       } catch (error) {
-        logger.error('Fixed window rate limiter error', error);
+        logger.error("Fixed window rate limiter error", error);
         return next();
       }
     };
@@ -493,9 +493,9 @@ export class SlidingWindowLogRateLimiter {
 
   constructor(config: RateLimitConfig, store?: RateLimitStore) {
     this.config = {
-      message: 'Rate limit exceeded',
+      message: "Rate limit exceeded",
       statusCode: 429,
-      keyGenerator: (req) => req.ip || 'unknown',
+      keyGenerator: (req) => req.ip || "unknown",
       ...config,
     };
     this.store = store || new MemoryStore();
@@ -538,23 +538,23 @@ export class SlidingWindowLogRateLimiter {
           const oldestRequest = data.requests[0] || now;
           const resetTime = oldestRequest + this.config.windowMs;
 
-          res.setHeader('X-RateLimit-Limit', this.config.max);
-          res.setHeader('X-RateLimit-Remaining', remaining);
-          res.setHeader('X-RateLimit-Reset', Math.floor(resetTime / 1000));
+          res.setHeader("X-RateLimit-Limit", this.config.max);
+          res.setHeader("X-RateLimit-Remaining", remaining);
+          res.setHeader("X-RateLimit-Reset", Math.floor(resetTime / 1000));
 
           return next();
         } else {
           // Limit exceeded
-          const oldestRequest = data.requests[0];
+          const oldestRequest = data.requests[0] || now;
           const resetTime = oldestRequest + this.config.windowMs;
           const retryAfter = Math.ceil((resetTime - now) / 1000);
 
-          res.setHeader('X-RateLimit-Limit', this.config.max);
-          res.setHeader('X-RateLimit-Remaining', 0);
-          res.setHeader('X-RateLimit-Reset', Math.floor(resetTime / 1000));
-          res.setHeader('Retry-After', retryAfter);
+          res.setHeader("X-RateLimit-Limit", this.config.max);
+          res.setHeader("X-RateLimit-Remaining", 0);
+          res.setHeader("X-RateLimit-Reset", Math.floor(resetTime / 1000));
+          res.setHeader("Retry-After", retryAfter);
 
-          logger.warn('Rate limit exceeded (Sliding Window Log)', {
+          logger.warn("Rate limit exceeded (Sliding Window Log)", {
             key,
             ip: req.ip,
             path: req.path,
@@ -566,14 +566,14 @@ export class SlidingWindowLogRateLimiter {
           }
 
           return res.status(this.config.statusCode!).json({
-            error: 'Rate limit exceeded',
+            error: "Rate limit exceeded",
             message: this.config.message,
             retryAfter,
-            type: 'sliding_window_log',
+            type: "sliding_window_log",
           });
         }
       } catch (error) {
-        logger.error('Sliding window log rate limiter error', error);
+        logger.error("Sliding window log rate limiter error", error);
         return next();
       }
     };
@@ -602,9 +602,9 @@ export class AdaptiveRateLimiter {
 
   constructor(config: RateLimitConfig, store?: RateLimitStore) {
     this.baseConfig = {
-      message: 'Rate limit exceeded',
+      message: "Rate limit exceeded",
       statusCode: 429,
-      keyGenerator: (req) => req.ip || 'unknown',
+      keyGenerator: (req) => req.ip || "unknown",
       ...config,
     };
     this.store = store || new MemoryStore();
@@ -617,9 +617,9 @@ export class AdaptiveRateLimiter {
     const userKey = this.baseConfig.keyGenerator!(req);
     const reputation = await this.getUserReputation(userKey);
 
-    if (reputation === 'trusted') {
+    if (reputation === "trusted") {
       limit *= 2; // Double limit for trusted users
-    } else if (reputation === 'suspicious') {
+    } else if (reputation === "suspicious") {
       limit = Math.floor(limit * 0.5); // Half limit for suspicious
     }
 
@@ -639,18 +639,18 @@ export class AdaptiveRateLimiter {
 
   async getUserReputation(
     key: string,
-  ): Promise<'trusted' | 'normal' | 'suspicious'> {
+  ): Promise<"trusted" | "normal" | "suspicious"> {
     // Check error rate, failed attempts, etc.
     const errorKey = `ratelimit:errors:${key}`;
     const errorData = await this.store.get(errorKey);
 
-    if (!errorData) return 'normal';
+    if (!errorData) return "normal";
 
     const errorRate = errorData.count / (errorData.count + 100);
 
-    if (errorRate > 0.5) return 'suspicious';
-    if (errorRate < 0.1) return 'trusted';
-    return 'normal';
+    if (errorRate > 0.5) return "suspicious";
+    if (errorRate < 0.1) return "trusted";
+    return "normal";
   }
 
   async getSystemLoad(): Promise<number> {
@@ -683,19 +683,19 @@ export class AdaptiveRateLimiter {
           data.count += 1;
           await this.store.set(key, data);
 
-          res.setHeader('X-RateLimit-Limit', adaptiveLimit);
-          res.setHeader('X-RateLimit-Remaining', adaptiveLimit - data.count);
-          res.setHeader('X-RateLimit-Reset', Math.floor(data.resetTime / 1000));
+          res.setHeader("X-RateLimit-Limit", adaptiveLimit);
+          res.setHeader("X-RateLimit-Remaining", adaptiveLimit - data.count);
+          res.setHeader("X-RateLimit-Reset", Math.floor(data.resetTime / 1000));
 
           return next();
         } else {
           const retryAfter = Math.ceil((data.resetTime - now) / 1000);
 
-          res.setHeader('X-RateLimit-Limit', adaptiveLimit);
-          res.setHeader('X-RateLimit-Remaining', 0);
-          res.setHeader('Retry-After', retryAfter);
+          res.setHeader("X-RateLimit-Limit", adaptiveLimit);
+          res.setHeader("X-RateLimit-Remaining", 0);
+          res.setHeader("Retry-After", retryAfter);
 
-          logger.warn('Adaptive rate limit exceeded', {
+          logger.warn("Adaptive rate limit exceeded", {
             key,
             ip: req.ip,
             path: req.path,
@@ -703,15 +703,15 @@ export class AdaptiveRateLimiter {
           });
 
           return res.status(this.baseConfig.statusCode!).json({
-            error: 'Rate limit exceeded',
+            error: "Rate limit exceeded",
             message: this.baseConfig.message,
             retryAfter,
-            type: 'adaptive',
+            type: "adaptive",
             limit: adaptiveLimit,
           });
         }
       } catch (error) {
-        logger.error('Adaptive rate limiter error', error);
+        logger.error("Adaptive rate limiter error", error);
         return next();
       }
     };
@@ -722,11 +722,10 @@ export class AdaptiveRateLimiter {
 // EXPORTS
 // ============================================================================
 
-export {
+export { MemoryStore, RedisStore };
+export type {
   LeakyBucketConfig,
-  MemoryStore,
   RateLimitConfig,
   RateLimitStore,
-  RedisStore,
   TokenBucketConfig,
 };

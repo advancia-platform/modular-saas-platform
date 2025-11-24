@@ -1,4 +1,4 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import { Router } from "express";
 import { Server as SocketServer } from "socket.io";
 import { authenticateToken } from "../middleware/auth";
@@ -56,13 +56,13 @@ router.get("/history/:userId", safeAuth as any, async (req, res) => {
     }
 
     const [transactions, total] = await Promise.all([
-      prisma.tokenTransaction.findMany({
+      prisma.token_transactions.findMany({
         where: { walletId: wallet.id },
         orderBy: { createdAt: "desc" },
         take: limit,
         skip: offset,
       }),
-      prisma.tokenTransaction.count({
+      prisma.token_transactions.count({
         where: { walletId: wallet.id },
       }),
     ]);
@@ -87,20 +87,20 @@ router.post("/transfer", safeAuth as any, async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const transferAmount = new Decimal(amount);
+    const transferAmount = new Prisma.Decimal(amount);
 
     if (transferAmount.lte(0)) {
       return res.status(400).json({ error: "Amount must be positive" });
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      let fromWallet = await tx.tokenWallet.findUnique({
+      let fromWallet = await tx.token_wallets.findUnique({
         where: { userId: fromUserId },
       });
 
       if (!fromWallet) {
-        fromWallet = await tx.tokenWallet.create({
-          data: { userId: fromUserId },
+        fromWallet = await tx.token_wallets.create({
+          data: withDefaults({ userId: fromUserId }),
         });
       }
 
@@ -108,22 +108,22 @@ router.post("/transfer", safeAuth as any, async (req, res) => {
         throw new Error("Insufficient balance");
       }
 
-      let toWallet = await tx.tokenWallet.findUnique({
+      let toWallet = await tx.token_wallets.findUnique({
         where: { userId: toUserId },
       });
 
       if (!toWallet) {
-        toWallet = await tx.tokenWallet.create({
-          data: { userId: toUserId },
+        toWallet = await tx.token_wallets.create({
+          data: withDefaults({ userId: toUserId }),
         });
       }
 
-      await tx.tokenWallet.update({
+      await tx.token_wallets.update({
         where: { id: fromWallet.id },
         data: { balance: { decrement: transferAmount } },
       });
 
-      await tx.tokenWallet.update({
+      await tx.token_wallets.update({
         where: { id: toWallet.id },
         data: {
           balance: { increment: transferAmount },
@@ -131,8 +131,8 @@ router.post("/transfer", safeAuth as any, async (req, res) => {
         },
       });
 
-      const fromTx = await tx.tokenTransaction.create({
-        data: {
+      const fromTx = await tx.token_transactions.create({
+        data: withDefaults({
           walletId: fromWallet.id,
           amount: transferAmount.neg(),
           type: "transfer",
@@ -143,11 +143,11 @@ router.post("/transfer", safeAuth as any, async (req, res) => {
             toUserId,
             timestamp: new Date().toISOString(),
           }),
-        },
+        }),
       });
 
-      const toTx = await tx.tokenTransaction.create({
-        data: {
+      const toTx = await tx.token_transactions.create({
+        data: withDefaults({
           walletId: toWallet.id,
           amount: transferAmount,
           type: "transfer",
@@ -158,7 +158,7 @@ router.post("/transfer", safeAuth as any, async (req, res) => {
             fromUserId,
             timestamp: new Date().toISOString(),
           }),
-        },
+        }),
       });
 
       return { fromTx, toTx, fromWallet, toWallet };
@@ -203,7 +203,7 @@ router.post("/withdraw", safeAuth as any, async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const withdrawAmount = new Decimal(amount);
+    const withdrawAmount = new Prisma.Decimal(amount);
 
     if (withdrawAmount.lte(0)) {
       return res.status(400).json({ error: "Amount must be positive" });
@@ -215,7 +215,7 @@ router.post("/withdraw", safeAuth as any, async (req, res) => {
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      let wallet = await tx.tokenWallet.findUnique({
+      let wallet = await tx.token_wallets.findUnique({
         where: { userId },
       });
 
@@ -228,14 +228,14 @@ router.post("/withdraw", safeAuth as any, async (req, res) => {
       }
 
       // Deduct from wallet
-      await tx.tokenWallet.update({
+      await tx.token_wallets.update({
         where: { id: wallet.id },
         data: { balance: { decrement: withdrawAmount } },
       });
 
       // Record transaction
-      const transaction = await tx.tokenTransaction.create({
-        data: {
+      const transaction = await tx.token_transactions.create({
+        data: withDefaults({
           walletId: wallet.id,
           amount: withdrawAmount.neg(),
           type: "withdraw",
@@ -246,7 +246,7 @@ router.post("/withdraw", safeAuth as any, async (req, res) => {
             toAddress,
             withdrawnAt: new Date().toISOString(),
           }),
-        },
+        }),
       });
 
       return transaction;
@@ -287,15 +287,15 @@ router.post("/cashout", safeAuth as any, async (req, res) => {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
-    const cashoutAmount = new Decimal(amount);
-    const conversionRate = new Decimal("0.10"); // 1 token = $0.10 USD
+    const cashoutAmount = new Prisma.Decimal(amount);
+    const conversionRate = new Prisma.Decimal("0.10"); // 1 token = $0.10 USD
 
     if (cashoutAmount.lte(0)) {
       return res.status(400).json({ error: "Amount must be positive" });
     }
 
     const result = await prisma.$transaction(async (tx) => {
-      let wallet = await tx.tokenWallet.findUnique({
+      let wallet = await tx.token_wallets.findUnique({
         where: { userId },
       });
 
@@ -310,14 +310,14 @@ router.post("/cashout", safeAuth as any, async (req, res) => {
       const usdValue = cashoutAmount.mul(conversionRate);
 
       // Deduct tokens
-      await tx.tokenWallet.update({
+      await tx.token_wallets.update({
         where: { id: wallet.id },
         data: { balance: { decrement: cashoutAmount } },
       });
 
       // Record cashout transaction
-      const transaction = await tx.tokenTransaction.create({
-        data: {
+      const transaction = await tx.token_transactions.create({
+        data: withDefaults({
           walletId: wallet.id,
           amount: cashoutAmount.neg(),
           type: "cashout",
@@ -328,7 +328,7 @@ router.post("/cashout", safeAuth as any, async (req, res) => {
             conversionRate: conversionRate.toString(),
             cashedOutAt: new Date().toISOString(),
           }),
-        },
+        }),
       });
 
       return { transaction, usdValue };

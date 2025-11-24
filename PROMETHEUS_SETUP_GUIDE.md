@@ -181,7 +181,7 @@ sudo nano /etc/alertmanager/alertmanager.yml
 Replace:
 
 -   `YOUR_APP_PASSWORD` → Your Gmail App Password (from [GMAIL_EMAIL_ALERTS_SETUP.md](GMAIL_EMAIL_ALERTS_SETUP.md))
--   `https://hooks.slack.com/services/T00000000/B00000000/XXXXXXXXXXXXXXXXXXXXXXXX` → Your Slack Webhook URL (from [SLACK_WEBHOOK_SETUP.md](SLACK_WEBHOOK_SETUP.md))
+-   `https://hooks.slack.com/services/YOUR/WORKSPACE/TOKEN` → Your Slack Webhook URL (from [SLACK_WEBHOOK_SETUP.md](SLACK_WEBHOOK_SETUP.md))
 -   `ops@advanciapayledger.com` → Your actual ops team email
 
 ### Step 3: Create Systemd Services

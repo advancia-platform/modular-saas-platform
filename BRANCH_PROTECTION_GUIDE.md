@@ -14,8 +14,8 @@
    -   Click "Generate new token (classic)"
    -   Name: `Branch Protection Token`
    -   Select scopes:
-     -   ✅ `repo` (Full control of private repositories)
-     -   ✅ `admin:repo_hook` (Full control of repository hooks)
+   -   ✅ `repo` (Full control of private repositories)
+   -   ✅ `admin:repo_hook` (Full control of repository hooks)
    -   Click "Generate token"
    -   **Copy the token** (you won't see it again!)
 
@@ -91,6 +91,16 @@ Configure as shown in [Manual Configuration](#manual-configuration-steps) below.
 
 ## 🔧 Manual Configuration Steps
 
+### Branches to Protect
+
+This guide covers protection rules for:
+
+-   ✅ **`main`** - Production branch (strictest rules)
+-   ✅ **`staging`** - Integration/QA branch (moderate rules)
+-   ℹ️ **`feature/*`** - Feature branches (no protection needed)
+
+---
+
 ### Step 1: Access Branch Protection Settings
 
 1. Navigate to your repository
@@ -100,17 +110,25 @@ Configure as shown in [Manual Configuration](#manual-configuration-steps) below.
 
 ### Step 2: Configure Branch Pattern
 
-```
+For **main branch** (production):
+
+```text
 Branch name pattern: main
 ```
 
-Or for multiple branches:
+For **staging branch** (integration/QA):
 
-```
-Branch name pattern: main|staging|production
+```text
+Branch name pattern: staging
 ```
 
-### Step 3: Enable Protection Rules
+**Note:** Configure each branch separately with appropriate rules below.
+
+---
+
+## 🔒 Protection Rules for `main` Branch
+
+### Step 3: Enable Protection Rules (Main Branch)
 
 #### ✅ Require Pull Request Before Merging
 
@@ -160,6 +178,60 @@ Integration Tests (optional)
 
 -   [ ] **Allow force pushes** - ❌ **Do NOT enable for main branch**
 -   [ ] **Allow deletions** - ❌ **Do NOT enable for main branch**
+
+### Step 4: Save Changes
+
+Click **Create** or **Save changes**
+
+---
+
+## 🟡 Protection Rules for `staging` Branch
+
+Repeat Step 1-2 above with branch pattern: `staging`
+
+### Step 3: Enable Protection Rules (Staging Branch)
+
+#### ✅ Require Pull Request Before Merging
+
+-   [x] **Require a pull request before merging**
+    -   [x] Require approvals: **1** (less strict than main)
+    -   [x] Dismiss stale pull request approvals when new commits are pushed
+    -   [ ] Require review from Code Owners (optional)
+    -   [ ] Require approval of the most recent reviewable push
+
+#### ✅ Require Status Checks Before Merging
+
+-   [x] **Require status checks to pass before merging**
+    -   [x] Require branches to be up to date before merging
+
+**Status checks to require:**
+
+```text
+build
+type-lint
+CI (pnpm checks)
+```
+
+#### ✅ Additional Rules
+
+-   [x] **Require conversation resolution before merging**
+-   [ ] **Require signed commits** (optional)
+-   [ ] **Require linear history** (optional for staging)
+
+#### 🛡️ Enforcement Settings
+
+-   [ ] **Do not allow bypassing the above settings**
+    -   Leave unchecked for staging (allow force pushes for resets if needed)
+
+#### 🚫 Restrict Who Can Push
+
+-   [ ] **Restrict who can push to matching branches**
+    -   Leave unchecked for open collaboration
+
+#### 📝 Additional Options
+
+-   [x] **Allow force pushes** - ✅ **Enable for staging only** (for integration resets)
+-   [ ] **Allow deletions** - ❌ **Do NOT enable**
 
 ### Step 4: Save Changes
 

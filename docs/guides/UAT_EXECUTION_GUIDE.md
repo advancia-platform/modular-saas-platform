@@ -53,9 +53,9 @@ Create test account → Balance should update within 1 second
 1. Download Postman collection: `Advancia_PAY_UAT_API_Tests.postman_collection.json`
 2. Import into Postman
 3. Set variables:
-   - `api_url`: Your API endpoint (e.g., https://api.advancia.pay)
-   - `auth_token`: Get from login endpoint
-   - `user_id`: Get from login response
+   -   `api_url`: Your API endpoint (e.g., <https://api.advancia.pay>)
+   -   `auth_token`: Get from login endpoint
+   -   `user_id`: Get from login response
 
 #### Test Sequence
 
@@ -120,30 +120,30 @@ Expected: 200 OK, pagination working
 
 #### Access & Navigation
 
-1. Open https://advancia.pay in Chrome
+1. Open <https://advancia.pay> in Chrome
 2. Create test account
 3. Verify no console errors (F12)
 4. Navigate to each main page:
-   - [ ] Dashboard - loads without error
-   - [ ] Wallet - displays balance
-   - [ ] Rewards - displays rewards
-   - [ ] Leaderboard - displays users
-   - [ ] Bookings (MedBeds) - displays form
+   -   [ ] Dashboard - loads without error
+   -   [ ] Wallet - displays balance
+   -   [ ] Rewards - displays rewards
+   -   [ ] Leaderboard - displays users
+   -   [ ] Bookings (MedBeds) - displays form
 
 #### Component Visibility
 
-- [ ] TokenWallet component renders
-- [ ] RewardsDashboard component renders
-- [ ] MedBeds booking form renders
-- [ ] All buttons visible and clickable
+-   [ ] TokenWallet component renders
+-   [ ] RewardsDashboard component renders
+-   [ ] MedBeds booking form renders
+-   [ ] All buttons visible and clickable
 
 #### Response Time Check
 
 Use Chrome DevTools Network tab:
 
-- [ ] Page load < 3 seconds
-- [ ] API calls < 500ms (rewards/leaderboard)
-- [ ] WebSocket connects < 2 seconds
+-   [ ] Page load < 3 seconds
+-   [ ] API calls < 500ms (rewards/leaderboard)
+-   [ ] WebSocket connects < 2 seconds
 
 **Smoke Test Report** - If any failures, STOP and escalate to engineering
 
@@ -387,10 +387,10 @@ time curl -H "Authorization: Bearer $TOKEN" \
 
 Expected:
 
-- Withdraw: < 2 seconds
-- Cashout: < 2 seconds
-- Pending Rewards: < 500ms
-- Leaderboard: < 500ms
+-   Withdraw: < 2 seconds
+-   Cashout: < 2 seconds
+-   Pending Rewards: < 500ms
+-   Leaderboard: < 500ms
 
 #### Test 2: Concurrent Users
 
@@ -525,13 +525,17 @@ On iOS Safari or Android Chrome:
 
 1. Check error message
 2. Verify endpoint exists:
+
    ```bash
    curl -v https://api.advancia.pay/api/tokens/withdraw
    ```
+
 3. Check backend logs:
+
    ```bash
    gh run logs <run-id> --limit 1000
    ```
+
 4. If code issue: Fix → Push → Re-run
 5. If configuration issue: Update env vars → Redeploy
 
@@ -548,11 +552,14 @@ On iOS Safari or Android Chrome:
 
 1. Check WebSocket connection (DevTools → Network → WS)
 2. Verify Socket.IO connecting:
+
    ```
    Check console for "Socket connected" message
    ```
+
 3. Check for firewall/proxy issues
 4. Verify server Socket.IO enabled:
+
    ```bash
    gh run logs <backend-deploy> | grep -i "socket"
    ```
@@ -561,27 +568,27 @@ On iOS Safari or Android Chrome:
 
 **Critical Issues** (system down, data loss):
 
-- Immediate escalation to Engineering Lead
-- Stop UAT
-- Wait for fix
+-   Immediate escalation to Engineering Lead
+-   Stop UAT
+-   Wait for fix
 
 **High Issues** (feature broken):
 
-- Log in Jira/GitHub
-- Escalate to Engineering
-- Can continue other tests
+-   Log in Jira/GitHub
+-   Escalate to Engineering
+-   Can continue other tests
 
 **Medium Issues** (workaround exists):
 
-- Document
-- Continue testing
-- Fix in next iteration
+-   Document
+-   Continue testing
+-   Fix in next iteration
 
 **Low Issues** (cosmetic):
 
-- Document
-- Can defer
-- Note for next release
+-   Document
+-   Can defer
+-   Note for next release
 
 ---
 
@@ -589,30 +596,30 @@ On iOS Safari or Android Chrome:
 
 Before marking UAT complete:
 
-- [ ] **Day 1**: Smoke tests 100% passed
-- [ ] **Day 2**: TokenWallet tests 100% passed
-- [ ] **Day 3**: RewardsDashboard & MedBeds 100% passed
-- [ ] **Day 4**: Performance tests met SLAs
-- [ ] **Day 5**: End-to-end flows successful
-- [ ] **RPA**: All automation verified working
-- [ ] **Security**: No vulnerabilities found
-- [ ] **Cross-browser**: Tested on Chrome, Firefox, Safari
-- [ ] **Mobile**: Tested on iOS and Android
-- [ ] **0 Critical bugs**: All fixed or waived
-- [ ] **0 High bugs**: All fixed or waived
-- [ ] **Product Owner**: Approves go-live
+-   [ ] **Day 1**: Smoke tests 100% passed
+-   [ ] **Day 2**: TokenWallet tests 100% passed
+-   [ ] **Day 3**: RewardsDashboard & MedBeds 100% passed
+-   [ ] **Day 4**: Performance tests met SLAs
+-   [ ] **Day 5**: End-to-end flows successful
+-   [ ] **RPA**: All automation verified working
+-   [ ] **Security**: No vulnerabilities found
+-   [ ] **Cross-browser**: Tested on Chrome, Firefox, Safari
+-   [ ] **Mobile**: Tested on iOS and Android
+-   [ ] **0 Critical bugs**: All fixed or waived
+-   [ ] **0 High bugs**: All fixed or waived
+-   [ ] **Product Owner**: Approves go-live
 
 ### Final Approval
 
 **QA Lead Sign-Off**:
 
-- Name: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
-- Status: [ ] APPROVED [ ] APPROVED WITH WAIVERS [ ] REJECTED
+-   Name: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
+-   Status: [ ] APPROVED [ ] APPROVED WITH WAIVERS [ ] REJECTED
 
 **Product Owner Sign-Off**:
 
-- Name: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
-- Status: [ ] GO-LIVE [ ] HOLD [ ] ROLLBACK
+-   Name: **\*\*\*\***\_**\*\*\*\*** Date: **\_\_\_**
+-   Status: [ ] GO-LIVE [ ] HOLD [ ] ROLLBACK
 
 ---
 
@@ -656,11 +663,11 @@ gh run list --workflow "Advancia Auto Manager" --limit 5
 
 ### First Week
 
-- Daily health checks
-- Monitor user feedback
-- Track error rates
-- Verify RPA automation
-- Collect metrics
+-   Daily health checks
+-   Monitor user feedback
+-   Track error rates
+-   Verify RPA automation
+-   Collect metrics
 
 ---
 
@@ -687,13 +694,13 @@ curl https://api.advancia.pay/api/health
 
 After 1 week of go-live:
 
-- ✅ Error rate < 0.1%
-- ✅ API response times meeting SLAs
-- ✅ 0 critical production issues
-- ✅ User adoption > 50% of test users
-- ✅ RPA automation success rate > 99%
-- ✅ No data inconsistencies
-- ✅ Positive user feedback
+-   ✅ Error rate < 0.1%
+-   ✅ API response times meeting SLAs
+-   ✅ 0 critical production issues
+-   ✅ User adoption > 50% of test users
+-   ✅ RPA automation success rate > 99%
+-   ✅ No data inconsistencies
+-   ✅ Positive user feedback
 
 If all met: **🎉 Launch successful!**
 

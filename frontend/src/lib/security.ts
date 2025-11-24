@@ -243,6 +243,7 @@ export class TokenManager {
   static decodeToken(token: string): any {
     try {
       const base64Url = token.split('.')[1];
+      if (!base64Url) return null;
       const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
       return JSON.parse(atob(base64));
     } catch {
@@ -263,7 +264,7 @@ export class ClickjackingProtection {
     // Prevent page from being loaded in iframe
     if (window.self !== window.top) {
       // Break out of frame
-      window.top!.location = window.self.location;
+      window.top!.location.href = window.self.location.href;
     }
 
     // Add frame-busting CSS
@@ -628,12 +629,3 @@ export function initializeSecurity(config?: {
 
   console.log('✅ Frontend security initialized');
 }
-
-// Export all utilities
-export {
-  ClickjackingProtection,
-  InputSecurity,
-  ScriptProtection,
-  TokenLeakageProtection,
-  TokenManager,
-};

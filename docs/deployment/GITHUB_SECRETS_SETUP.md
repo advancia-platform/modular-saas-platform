@@ -83,7 +83,7 @@ ALERT_TO=security@advanciapayledger.com
 
 **How to get Gmail App Password:**
 
-1. Go to: https://myaccount.google.com/apppasswords
+1. Go to: <https://myaccount.google.com/apppasswords>
 2. Select: **Mail** → **Other (Custom name)**
 3. Copy the 16-character password (remove spaces)
 4. Paste into `EMAIL_PASSWORD` and `SMTP_PASS`
@@ -122,10 +122,10 @@ TWILIO_API_KEY_SECRET=your-api-key-secret
 
 **Where to get:**
 
-- Sign up at: https://console.twilio.com
-- Get Account SID & Auth Token from dashboard
-- Create Verify Service for OTP
-- Purchase a phone number
+-   Sign up at: <https://console.twilio.com>
+-   Get Account SID & Auth Token from dashboard
+-   Create Verify Service for OTP
+-   Purchase a phone number
 
 ---
 
@@ -138,7 +138,7 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 **Where to get:**
 
-1. Sign up at: https://dashboard.stripe.com
+1. Sign up at: <https://dashboard.stripe.com>
 2. Get API keys from **Developers** → **API keys**
 3. Set up webhook endpoint: `/api/payments/webhook`
 4. Copy webhook secret
@@ -184,7 +184,7 @@ RPA_SMS_RATE_LIMIT=5
 
 ## 🎯 For Render Dashboard
 
-1. Go to: https://dashboard.render.com
+1. Go to: <https://dashboard.render.com>
 2. Select service: **advancia-backend-upnf**
 3. Go to: **Environment** tab
 4. Click: **Add Environment Variable**
@@ -197,13 +197,13 @@ RPA_SMS_RATE_LIMIT=5
 
 After adding all variables:
 
-- [ ] Backend starts without errors
-- [ ] Database connection successful
-- [ ] JWT authentication works
-- [ ] Email sending works (test with `/api/auth/test-smtp`)
-- [ ] Push notifications work (if VAPID keys set)
-- [ ] SMS OTP works (if Twilio configured)
-- [ ] Payments work (if Stripe configured)
+-   [ ] Backend starts without errors
+-   [ ] Database connection successful
+-   [ ] JWT authentication works
+-   [ ] Email sending works (test with `/api/auth/test-smtp`)
+-   [ ] Push notifications work (if VAPID keys set)
+-   [ ] SMS OTP works (if Twilio configured)
+-   [ ] Payments work (if Stripe configured)
 
 ---
 
@@ -251,10 +251,10 @@ npm run check-env
 
 ## 📚 Related Documentation
 
-- [RENDER_ENV_VARS_REFERENCE.md](./RENDER_ENV_VARS_REFERENCE.md)
-- [SMTP_QUICK_TEST.md](./SMTP_QUICK_TEST.md)
-- [DNS_AND_SSL_SETUP_GUIDE.md](./DNS_AND_SSL_SETUP_GUIDE.md)
-- [Setup-Notifications.ps1](./Setup-Notifications.ps1)
+-   [RENDER_ENV_VARS_REFERENCE.md](./RENDER_ENV_VARS_REFERENCE.md)
+-   [SMTP_QUICK_TEST.md](./SMTP_QUICK_TEST.md)
+-   [DNS_AND_SSL_SETUP_GUIDE.md](./DNS_AND_SSL_SETUP_GUIDE.md)
+-   [Setup-Notifications.ps1](./Setup-Notifications.ps1)
 
 ---
 
@@ -272,10 +272,10 @@ npm run check-env
 
 ## 📝 Notes
 
-- **Required variables** are marked with ⚠️ - backend won't start without them
-- **Optional variables** enable additional features
-- **Test locally first** before deploying to production
-- **Backup your .env** file securely (encrypted storage only)
+-   **Required variables** are marked with ⚠️ - backend won't start without them
+-   **Optional variables** enable additional features
+-   **Test locally first** before deploying to production
+-   **Backup your .env** file securely (encrypted storage only)
 
 ---
 

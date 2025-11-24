@@ -1,11 +1,12 @@
-import { Router } from 'express';
-import prisma from '../prismaClient';
-import { authenticateToken } from '../middleware/auth';
-import { Decimal } from '@prisma/client/runtime/library';
+import { Decimal } from "@prisma/client/runtime/index-browser";
+import { Router } from "express";
+import { authenticateToken } from "../middleware/auth";
+import prisma from "../prismaClient";
+import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
 
-router.post('/record', authenticateToken as any, async (req, res) => {
+router.post("/record", authenticateToken as any, async (req, res) => {
   try {
     const {
       userId,
@@ -27,11 +28,11 @@ router.post('/record', authenticateToken as any, async (req, res) => {
     } = req.body;
 
     if (!userId) {
-      return res.status(400).json({ error: 'userId is required' });
+      return res.status(400).json({ error: "userId is required" });
     }
 
-    const reading = await prisma.healthReading.create({
-      data: {
+    const reading = await prisma.health_readings.create({
+      data: withDefaults({
         userId,
         heartRate: heartRate || null,
         bloodPressureSys: bloodPressureSys || null,
@@ -49,7 +50,7 @@ router.post('/record', authenticateToken as any, async (req, res) => {
         metadata: null,
         notes: notes || null,
         recordedAt: recordedAt ? new Date(recordedAt) : new Date(),
-      },
+      }),
     });
 
     res.json({
@@ -60,15 +61,15 @@ router.post('/record', authenticateToken as any, async (req, res) => {
         weight: reading.weight?.toString() || null,
         temperature: reading.temperature?.toString() || null,
       },
-      message: 'Health reading recorded successfully',
+      message: "Health reading recorded successfully",
     });
   } catch (error: any) {
-    console.error('[HEALTH] Error recording health data:', error);
-    res.status(500).json({ error: 'Failed to record health reading' });
+    console.error("[HEALTH] Error recording health data:", error);
+    res.status(500).json({ error: "Failed to record health reading" });
   }
 });
 
-router.get('/history/:userId', authenticateToken as any, async (req, res) => {
+router.get("/history/:userId", authenticateToken as any, async (req, res) => {
   try {
     const { userId } = req.params;
     const { startDate, endDate, limit, offset } = req.query;
@@ -85,13 +86,13 @@ router.get('/history/:userId', authenticateToken as any, async (req, res) => {
     const skip = Math.max(0, Number(offset) || 0);
 
     const [readings, total] = await Promise.all([
-      prisma.healthReading.findMany({
+      prisma.health_readings.findMany({
         where,
-        orderBy: { recordedAt: 'desc' },
+        orderBy: { recordedAt: "desc" },
         take,
         skip,
       }),
-      prisma.healthReading.count({ where }),
+      prisma.health_readings.count({ where }),
     ]);
 
     res.json({
@@ -106,22 +107,22 @@ router.get('/history/:userId', authenticateToken as any, async (req, res) => {
       offset: skip,
     });
   } catch (error: any) {
-    console.error('[HEALTH] Error fetching health history:', error);
-    res.status(500).json({ error: 'Failed to fetch health history' });
+    console.error("[HEALTH] Error fetching health history:", error);
+    res.status(500).json({ error: "Failed to fetch health history" });
   }
 });
 
-router.get('/latest/:userId', authenticateToken as any, async (req, res) => {
+router.get("/latest/:userId", authenticateToken as any, async (req, res) => {
   try {
     const { userId } = req.params;
 
-    const reading = await prisma.healthReading.findFirst({
+    const reading = await prisma.health_readings.findFirst({
       where: { userId },
-      orderBy: { recordedAt: 'desc' },
+      orderBy: { recordedAt: "desc" },
     });
 
     if (!reading) {
-      return res.status(404).json({ error: 'No health readings found' });
+      return res.status(404).json({ error: "No health readings found" });
     }
 
     res.json({
@@ -133,12 +134,12 @@ router.get('/latest/:userId', authenticateToken as any, async (req, res) => {
       },
     });
   } catch (error: any) {
-    console.error('[HEALTH] Error fetching latest reading:', error);
-    res.status(500).json({ error: 'Failed to fetch latest reading' });
+    console.error("[HEALTH] Error fetching latest reading:", error);
+    res.status(500).json({ error: "Failed to fetch latest reading" });
   }
 });
 
-router.get('/stats/:userId', authenticateToken as any, async (req, res) => {
+router.get("/stats/:userId", authenticateToken as any, async (req, res) => {
   try {
     const { userId } = req.params;
     const { days } = req.query;
@@ -147,18 +148,18 @@ router.get('/stats/:userId', authenticateToken as any, async (req, res) => {
     const startDate = new Date();
     startDate.setDate(startDate.getDate() - daysBack);
 
-    const readings = await prisma.healthReading.findMany({
+    const readings = await prisma.health_readings.findMany({
       where: {
         userId,
         recordedAt: { gte: startDate },
       },
-      orderBy: { recordedAt: 'desc' },
+      orderBy: { recordedAt: "desc" },
     });
 
     if (readings.length === 0) {
       return res.json({
         stats: null,
-        message: 'No health data available for the specified period',
+        message: "No health data available for the specified period",
       });
     }
 
@@ -206,39 +207,39 @@ router.get('/stats/:userId', authenticateToken as any, async (req, res) => {
       },
     });
   } catch (error: any) {
-    console.error('[HEALTH] Error calculating stats:', error);
-    res.status(500).json({ error: 'Failed to calculate health statistics' });
+    console.error("[HEALTH] Error calculating stats:", error);
+    res.status(500).json({ error: "Failed to calculate health statistics" });
   }
 });
 
-router.delete('/:id', authenticateToken as any, async (req, res) => {
+router.delete("/:id", authenticateToken as any, async (req, res) => {
   try {
     const { id } = req.params;
     const { userId } = req.body;
 
-    const reading = await prisma.healthReading.findUnique({
+    const reading = await prisma.health_readings.findUnique({
       where: { id },
     });
 
     if (!reading) {
-      return res.status(404).json({ error: 'Health reading not found' });
+      return res.status(404).json({ error: "Health reading not found" });
     }
 
     if (reading.userId !== userId) {
-      return res.status(403).json({ error: 'Unauthorized' });
+      return res.status(403).json({ error: "Unauthorized" });
     }
 
-    await prisma.healthReading.delete({
+    await prisma.health_readings.delete({
       where: { id },
     });
 
     res.json({
       success: true,
-      message: 'Health reading deleted successfully',
+      message: "Health reading deleted successfully",
     });
   } catch (error: any) {
-    console.error('[HEALTH] Error deleting reading:', error);
-    res.status(500).json({ error: 'Failed to delete health reading' });
+    console.error("[HEALTH] Error deleting reading:", error);
+    res.status(500).json({ error: "Failed to delete health reading" });
   }
 });
 

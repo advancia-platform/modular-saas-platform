@@ -68,7 +68,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
   }, [sessionUser?.name, sessionUser?.email]);
 
   const initials = useMemo(() => {
-    const parts = displayName.split(/\s+/).filter(Boolean);
+    const parts = (displayName || '').split(/\s+/).filter(Boolean);
     if (!parts.length) return '';
     const primary = parts[0]?.[0] ?? '';
     const secondary = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? '') : '';
@@ -208,7 +208,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
                   {sessionUser?.image ? (
                     <Image
                       src={sessionUser.image}
-                      alt={displayName}
+                      alt={displayName || 'User avatar'}
                       width={48}
                       height={48}
                       className="h-12 w-12 rounded-full object-cover ring-2 ring-blue-500 shrink-0"
@@ -279,7 +279,7 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
             {sessionUser?.image ? (
               <Image
                 src={sessionUser.image}
-                alt={displayName}
+                alt={displayName || 'User avatar'}
                 width={48}
                 height={48}
                 className="h-12 w-12 rounded-full object-cover ring-2 ring-blue-500 shrink-0"
