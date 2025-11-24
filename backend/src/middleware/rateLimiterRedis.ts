@@ -61,9 +61,10 @@ function getIdentifier(req: any): string {
   }
 
   // Fallback to IP address
-  const forwardedFor = req.headers["x-forwarded-for"] as string;
-  if (forwardedFor) {
-    return `ip:${forwardedFor.split(",")[0].trim()}`;
+  const forwardedFor = req.headers["x-forwarded-for"];
+  if (typeof forwardedFor === "string" && forwardedFor) {
+    const firstIp = forwardedFor.split(",")[0];
+    return `ip:${firstIp?.trim() || "unknown"}`;
   }
 
   const realIp = req.headers["x-real-ip"] as string;

@@ -9,7 +9,6 @@ import { NextFunction, Request, Response } from "express";
 import rateLimit from "express-rate-limit";
 import "express-session";
 import { body, ValidationChain, validationResult } from "express-validator";
-import multer from "multer";
 
 // Extend Express Request type
 declare global {
@@ -17,7 +16,7 @@ declare global {
     interface Request {
       sessionID?: string;
       rateLimit?: { resetTime?: Date };
-      file?: multer.File;
+      file?: any; // Simplified for type safety
     }
   }
 }
@@ -217,7 +216,7 @@ export class CSRFProtection {
       }
 
       const token = (req.headers["x-csrf-token"] as string) || req.body._csrf;
-      const sessionId = req.sessionID || req.ip;
+      const sessionId = req.sessionID || req.ip || "anonymous";
 
       if (!token) {
         return res.status(403).json({
@@ -243,7 +242,7 @@ export class CSRFProtection {
   static getTokenHandler() {
     return (req: Request, res: Response) => {
       const sessionId = req.sessionID || req.ip;
-      const token = this.generateToken(sessionId);
+      const token = this.generateToken(sessionId || "anonymous");
 
       res.json({
         success: true,
@@ -270,10 +269,11 @@ export const formRateLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
+    const resetTime = req.rateLimit?.resetTime?.getTime() || Date.now();
     res.status(429).json({
       success: false,
       error: "Too many form submissions. Please try again later.",
-      retryAfter: Math.ceil(req.rateLimit.resetTime?.getTime() || 0 / 1000),
+      retryAfter: Math.ceil(resetTime / 1000),
     });
   },
 });

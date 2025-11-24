@@ -219,7 +219,7 @@ router.get("/", authenticateToken as any, async (req: any, res: Response) => {
 
     const serializedTasks = tasks.map((task) =>
       serializeDecimalFields(task),
-    ) as TaskResponse[];
+    ) as unknown as TaskResponse[];
 
     const response: PaginatedResponse<TaskResponse> = {
       data: serializedTasks,
@@ -316,7 +316,7 @@ router.get(
 
       const serializedTask = serializeDecimalFields(
         taskDetails,
-      ) as TaskResponse;
+      ) as unknown as TaskResponse;
 
       const successResponse: SuccessResponse<TaskResponse> = {
         data: serializedTask,

@@ -49,7 +49,7 @@ export const emailRateLimit = (config: Partial<EmailRateLimitConfig> = {}) => {
       const forwardedFor = req.headers["x-forwarded-for"];
       const ipAddress =
         (typeof forwardedFor === "string"
-          ? forwardedFor.split(",")[0].trim()
+          ? forwardedFor.split(",")[0]?.trim()
           : null) ||
         req.socket.remoteAddress ||
         "unknown";

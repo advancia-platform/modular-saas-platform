@@ -15,9 +15,11 @@ export async function initQueue(): Promise<void> {
     channel = ch;
 
     // Assert queues (create if they don't exist)
-    await channel.assertQueue("notifications", { durable: true });
-    await channel.assertQueue("emails", { durable: true });
-    await channel.assertQueue("crypto-payments", { durable: true });
+    if (channel) {
+      await channel.assertQueue("notifications", { durable: true });
+      await channel.assertQueue("emails", { durable: true });
+      await channel.assertQueue("crypto-payments", { durable: true });
+    }
 
     logger.info("RabbitMQ connected and queues asserted");
   } catch (error) {
