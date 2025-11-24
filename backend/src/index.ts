@@ -314,13 +314,17 @@ app.get("/health", (req, res) => {
 app.use("/api", healthRouter);
 
 // Auth routes (public)
-app.use("/api/auth", tokenRefreshRouter); // Token refresh endpoint
+app.use("/api/auth", tokenRefreshRouter); // Token refresh endpoint (legacy)
+app.use("/api/auth", authRouter); // Legacy auth routes
+
+// NEW JWT Authentication routes
+import authJWTRouter from "./routes/authJWT";
+app.use("/api/auth/v2", authJWTRouter); // Modern JWT-based auth with RBAC
 
 // Regular routes (minimal set enabled)
 // app.use("/api/debit-cards", authenticateToken, debitCardEnhancedRouter); // Enhanced card management
 app.use("/api/support", supportRouter);
 // app.use("/api/ai-analytics", aiAnalyticsRouter);
-app.use("/api/auth", authRouter);
 app.use("/api/payments", paymentsEnhancedRouter); // Stripe payment intents & methods
 
 // Crypto payment providers

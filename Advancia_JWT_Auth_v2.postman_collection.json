@@ -1,0 +1,228 @@
+{
+  "info": {
+    "name": "Advancia Pay - JWT Authentication v2",
+    "description": "Modern JWT-based authentication with RBAC for Advancia Pay platform",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "accessToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "refreshToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Register (Sign Up)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 201) {",
+              "    const data = pm.response.json();",
+              "    pm.collectionVariables.set('accessToken', data.tokens.accessToken);",
+              "    pm.collectionVariables.set('refreshToken', data.tokens.refreshToken);",
+              "    pm.environment.set('userId', data.user.id);",
+              "    console.log('✅ Tokens saved to collection variables');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"username\": \"johndoe\",\n  \"password\": \"SecurePass123!\",\n  \"fullName\": \"John Doe\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/v2/signup",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "v2", "signup"]
+        },
+        "description": "Register a new user account. Returns access and refresh tokens."
+      },
+      "response": []
+    },
+    {
+      "name": "2. Login",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const data = pm.response.json();",
+              "    pm.collectionVariables.set('accessToken', data.tokens.accessToken);",
+              "    pm.collectionVariables.set('refreshToken', data.tokens.refreshToken);",
+              "    pm.environment.set('userId', data.user.id);",
+              "    console.log('✅ Tokens saved to collection variables');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"emailOrUsername\": \"john.doe@example.com\",\n  \"password\": \"SecurePass123!\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/v2/login",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "v2", "login"]
+        },
+        "description": "Login with email/username and password. Returns JWT tokens."
+      },
+      "response": []
+    },
+    {
+      "name": "3. Get Current User (Protected)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/v2/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "v2", "me"]
+        },
+        "description": "Get current authenticated user's profile. Requires valid access token."
+      },
+      "response": []
+    },
+    {
+      "name": "4. Refresh Token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "if (pm.response.code === 200) {",
+              "    const data = pm.response.json();",
+              "    pm.collectionVariables.set('accessToken', data.tokens.accessToken);",
+              "    pm.collectionVariables.set('refreshToken', data.tokens.refreshToken);",
+              "    console.log('✅ Tokens refreshed and saved');",
+              "}"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/v2/refresh",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "v2", "refresh"]
+        },
+        "description": "Refresh expired access token using refresh token."
+      },
+      "response": []
+    },
+    {
+      "name": "5. Logout",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{accessToken}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/v2/logout",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "v2", "logout"]
+        },
+        "description": "Logout user. Client should clear stored tokens."
+      },
+      "response": []
+    },
+    {
+      "name": "Test - Invalid Token (401)",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "invalid_token_here",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/v2/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "v2", "me"]
+        },
+        "description": "Test protected route with invalid token - should return 403"
+      },
+      "response": []
+    },
+    {
+      "name": "Test - No Token (401)",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "{{baseUrl}}/api/auth/v2/me",
+          "host": ["{{baseUrl}}"],
+          "path": ["api", "auth", "v2", "me"]
+        },
+        "description": "Test protected route without token - should return 401"
+      },
+      "response": []
+    }
+  ]
+}
