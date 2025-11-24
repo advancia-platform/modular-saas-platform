@@ -214,6 +214,8 @@ import milestonesRouter, { setMilestoneSocketIO } from "./routes/milestones";
 import projectsRouter, { setProjectSocketIO } from "./routes/projects";
 import tasksRouter, { setTaskSocketIO } from "./routes/tasks";
 import teamsRouter, { setTeamSocketIO } from "./routes/teams";
+// JWT Authentication v2
+import authJWTRouter from "./routes/authJWT";
 // import { setSocketIO as setNotificationSocket } from "./services/notificationService"; // Keep commented for now
 // import "./tracing";
 import { dataMasker } from "./utils/dataMasker";
@@ -316,9 +318,6 @@ app.use("/api", healthRouter);
 // Auth routes (public)
 app.use("/api/auth", tokenRefreshRouter); // Token refresh endpoint (legacy)
 app.use("/api/auth", authRouter); // Legacy auth routes
-
-// NEW JWT Authentication routes
-import authJWTRouter from "./routes/authJWT";
 app.use("/api/auth/v2", authJWTRouter); // Modern JWT-based auth with RBAC
 
 // Regular routes (minimal set enabled)
