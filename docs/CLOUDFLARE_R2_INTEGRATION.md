@@ -26,10 +26,10 @@ Create `backend/src/services/r2StorageService.ts` (added).
 
 ### Functions
 
--   `uploadBuffer(key, buffer, contentType?)`
--   `uploadStream(key, stream, contentType?)`
--   `getObject(key)` returns readable stream.
--   `generatePublicUrl(key)` uses `R2_PUBLIC_BASE_URL` if set.
+- `uploadBuffer(key, buffer, contentType?)`
+- `uploadStream(key, stream, contentType?)`
+- `getObject(key)` returns readable stream.
+- `generatePublicUrl(key)` uses `R2_PUBLIC_BASE_URL` if set.
 
 ## Migration From S3 (Optional One-Off)
 
@@ -55,9 +55,9 @@ Retention script: remove >30 day objects.
 
 ## Security
 
--   Never expose access keys client-side.
--   Rotate keys every 180 days; dual-key window 24h.
--   Scan frontend build: `grep -R R2_ACCESS_KEY_ID frontend/.next || echo "OK"`.
+- Never expose access keys client-side.
+- Rotate keys every 180 days; dual-key window 24h.
+- Scan frontend build: `grep -R R2_ACCESS_KEY_ID frontend/.next || echo "OK"`.
 
 ## Rollback
 

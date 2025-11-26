@@ -13,16 +13,16 @@
 
 #### Before
 
--   Anyone could register freely
--   User created as `active: true` immediately
--   User received JWT token instantly
+- Anyone could register freely
+- User created as `active: true` immediately
+- User received JWT token instantly
 
 #### After
 
--   Users must be approved by admin before accessing protected routes
--   User created as `active: false` (pending approval)
--   User receives token but cannot access protected endpoints until approved
--   Admins are notified of pending registrations
+- Users must be approved by admin before accessing protected routes
+- User created as `active: false` (pending approval)
+- User receives token but cannot access protected endpoints until approved
+- Admins are notified of pending registrations
 
 **New Registration Flow**:
 
@@ -64,26 +64,26 @@ User can now access protected routes ✅
 
 #### Routes Already Protected ✅
 
--   `/api/admin/*` - All admin routes (requireAdmin)
--   `/api/consultation/*` - Most consultation endpoints
--   `/api/debit-card/*` - Card operations
--   `/api/support/user/message` - User support messages
--   `/api/tokens/*` - Token operations
--   `/api/transactions/*` - Transaction endpoints
--   `/api/medbeds/*` - MedBeds operations
--   `/api/rewards/*` - Reward operations
--   `/api/withdrawals/*` - Withdrawal operations
+- `/api/admin/*` - All admin routes (requireAdmin)
+- `/api/consultation/*` - Most consultation endpoints
+- `/api/debit-card/*` - Card operations
+- `/api/support/user/message` - User support messages
+- `/api/tokens/*` - Token operations
+- `/api/transactions/*` - Transaction endpoints
+- `/api/medbeds/*` - MedBeds operations
+- `/api/rewards/*` - Reward operations
+- `/api/withdrawals/*` - Withdrawal operations
 
 #### Routes Needing Protection 🔴
 
--   `/api/auth/login` - Requires validation only
--   `/api/auth/register` - Open endpoint (now with approval)
--   `/api/auth/send-otp` - Rate limited only
--   `/api/auth/verify-otp` - Rate limited only
--   `/api/health/*` - Health checks (public OK)
--   `/api/system/config` - Public config (may need review)
--   `/api/debit-card/:userId/adjust-balance` - Missing auth
--   `/api/users/:userId/role` - Missing auth
+- `/api/auth/login` - Requires validation only
+- `/api/auth/register` - Open endpoint (now with approval)
+- `/api/auth/send-otp` - Rate limited only
+- `/api/auth/verify-otp` - Rate limited only
+- `/api/health/*` - Health checks (public OK)
+- `/api/system/config` - Public config (may need review)
+- `/api/debit-card/:userId/adjust-balance` - Missing auth
+- `/api/users/:userId/role` - Missing auth
 
 ---
 
@@ -176,9 +176,9 @@ router.post("/approve-registration", authenticateToken, requireAdmin, async (req
 
 Add `authenticateToken` middleware to:
 
--   `/api/debit-card/:userId/adjust-balance` → POST only for self or admin
--   `/api/users/:userId/role` → PATCH only for admin
--   Any sensitive routes currently unprotected
+- `/api/debit-card/:userId/adjust-balance` → POST only for self or admin
+- `/api/users/:userId/role` → PATCH only for admin
+- Any sensitive routes currently unprotected
 
 ---
 
@@ -194,16 +194,16 @@ UPDATE users SET active = true WHERE email IS NOT NULL;
 
 **Option B**: Selective Approval
 
--   Review high-value accounts manually
--   Leave low-activity accounts pending
--   Archive old pending accounts after 30 days
+- Review high-value accounts manually
+- Leave low-activity accounts pending
+- Archive old pending accounts after 30 days
 
 ### For New Users (After Deploy)
 
--   All registrations default to `active: false`
--   Admin must approve before user can access
--   User gets email notification of approval/rejection
--   User can log in after approval
+- All registrations default to `active: false`
+- Admin must approve before user can access
+- User gets email notification of approval/rejection
+- User can log in after approval
 
 ---
 
@@ -264,21 +264,21 @@ curl -H "Authorization: Bearer invalid" \
 
 ✅ **Better Security**
 
--   Prevents unauthorized user creation
--   Admins control who gets access
--   Suspicious registrations can be blocked
+- Prevents unauthorized user creation
+- Admins control who gets access
+- Suspicious registrations can be blocked
 
 ✅ **User Management**
 
--   Track pending approvals
--   Disable malicious accounts
--   Compliance with regulations
+- Track pending approvals
+- Disable malicious accounts
+- Compliance with regulations
 
 ✅ **Route Protection**
 
--   All sensitive routes require authentication
--   Prevents data leaks
--   Clear access control
+- All sensitive routes require authentication
+- Prevents data leaks
+- Clear access control
 
 ---
 

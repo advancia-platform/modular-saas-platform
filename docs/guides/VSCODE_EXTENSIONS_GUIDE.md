@@ -8,73 +8,73 @@
 
 ### 1️⃣ **Prisma** - Database ORM Support
 
--   **ID:** `prisma.prisma`
--   **What it does:** Syntax highlighting, intellisense, and formatting for Prisma schema
--   **Why you need it:** All your database models are in Prisma
--   **Status:** ⭐⭐⭐⭐⭐
+- **ID:** `prisma.prisma`
+- **What it does:** Syntax highlighting, intellisense, and formatting for Prisma schema
+- **Why you need it:** All your database models are in Prisma
+- **Status:** ⭐⭐⭐⭐⭐
 
 ### 2️⃣ **TypeScript Vue Plugin** - Vue Type Support
 
--   **ID:** `Vue.volar`
--   **What it does:** Vue 3 support with TypeScript
--   **Why you need it:** Better IntelliSense and error checking
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `Vue.volar`
+- **What it does:** Vue 3 support with TypeScript
+- **Why you need it:** Better IntelliSense and error checking
+- **Status:** ⭐⭐⭐⭐
 
 ### 3️⃣ **ESLint** - Code Quality
 
--   **ID:** `dbaeumer.vscode-eslint`
--   **What it does:** Real-time code quality checking
--   **Why you need it:** Catch bugs before running code
--   **Status:** ⭐⭐⭐⭐⭐
+- **ID:** `dbaeumer.vscode-eslint`
+- **What it does:** Real-time code quality checking
+- **Why you need it:** Catch bugs before running code
+- **Status:** ⭐⭐⭐⭐⭐
 
 ### 4️⃣ **Prettier** - Code Formatter
 
--   **ID:** `esbenp.prettier-vscode`
--   **What it does:** Auto-format code on save
--   **Why you need it:** Consistent code style
--   **Status:** ⭐⭐⭐⭐⭐
+- **ID:** `esbenp.prettier-vscode`
+- **What it does:** Auto-format code on save
+- **Why you need it:** Consistent code style
+- **Status:** ⭐⭐⭐⭐⭐
 
 ### 5️⃣ **REST Client** - Test API Endpoints
 
--   **ID:** `humao.rest-client`
--   **What it does:** Send HTTP requests directly from VS Code
--   **Why you need it:** Test your backend API without Postman
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `humao.rest-client`
+- **What it does:** Send HTTP requests directly from VS Code
+- **Why you need it:** Test your backend API without Postman
+- **Status:** ⭐⭐⭐⭐
 
 ### 6️⃣ **Thunder Client** - Alternative REST Client
 
--   **ID:** `rangav.vscode-thunder-client`
--   **What it does:** Beautiful API testing UI
--   **Why you need it:** Alternative to REST Client or Postman
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `rangav.vscode-thunder-client`
+- **What it does:** Beautiful API testing UI
+- **Why you need it:** Alternative to REST Client or Postman
+- **Status:** ⭐⭐⭐⭐
 
 ### 7️⃣ **PostgreSQL** - Database Management
 
--   **ID:** `ckolkman.vscode-postgres`
--   **What it does:** Connect to PostgreSQL database from VS Code
--   **Why you need it:** Query database directly
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `ckolkman.vscode-postgres`
+- **What it does:** Connect to PostgreSQL database from VS Code
+- **Why you need it:** Query database directly
+- **Status:** ⭐⭐⭐⭐
 
 ### 8️⃣ **GitHub Copilot** - AI Code Assistant
 
--   **ID:** `GitHub.copilot`
--   **What it does:** AI-powered code suggestions
--   **Why you need it:** Write code faster
--   **Status:** ⭐⭐⭐⭐⭐ (Free with GitHub account)
+- **ID:** `GitHub.copilot`
+- **What it does:** AI-powered code suggestions
+- **Why you need it:** Write code faster
+- **Status:** ⭐⭐⭐⭐⭐ (Free with GitHub account)
 
 ### 9️⃣ **Git Graph** - Visualize Git History
 
--   **ID:** `mhutchie.git-graph`
--   **What it does:** Beautiful git commit visualization
--   **Why you need it:** Understand commit history
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `mhutchie.git-graph`
+- **What it does:** Beautiful git commit visualization
+- **Why you need it:** Understand commit history
+- **Status:** ⭐⭐⭐⭐
 
 ### 🔟 **Thunder Client** - REST API Testing
 
--   **ID:** `rangav.vscode-thunder-client`
--   **What it does:** Test APIs without leaving VS Code
--   **Why you need it:** Quick API testing
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `rangav.vscode-thunder-client`
+- **What it does:** Test APIs without leaving VS Code
+- **Why you need it:** Quick API testing
+- **Status:** ⭐⭐⭐⭐
 
 ---
 
@@ -82,52 +82,52 @@
 
 ### **Tailwind CSS IntelliSense** - CSS Helper
 
--   **ID:** `bradlc.vscode-tailwindcss`
--   **What it does:** Auto-complete for Tailwind CSS classes
--   **Why helpful:** Your frontend uses Tailwind
--   **Status:** ⭐⭐⭐⭐⭐
+- **ID:** `bradlc.vscode-tailwindcss`
+- **What it does:** Auto-complete for Tailwind CSS classes
+- **Why helpful:** Your frontend uses Tailwind
+- **Status:** ⭐⭐⭐⭐⭐
 
 ### **Auto Rename Tag** - HTML Helper
 
--   **ID:** `formulahendry.auto-rename-tag`
--   **What it does:** Auto-rename matching HTML/JSX tags
--   **Why helpful:** Faster JSX editing
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `formulahendry.auto-rename-tag`
+- **What it does:** Auto-rename matching HTML/JSX tags
+- **Why helpful:** Faster JSX editing
+- **Status:** ⭐⭐⭐⭐
 
 ### **Thunder Client** - API Testing
 
--   **ID:** `rangav.vscode-thunder-client`
--   **What it does:** Test REST APIs
--   **Why helpful:** Test your backend endpoints
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `rangav.vscode-thunder-client`
+- **What it does:** Test REST APIs
+- **Why helpful:** Test your backend endpoints
+- **Status:** ⭐⭐⭐⭐
 
 ### **Better Comments** - Comment Highlighting
 
--   **ID:** `aaron-bond.better-comments`
--   **What it does:** Color-coded comments
--   **Why helpful:** Organize your comments
--   **Status:** ⭐⭐⭐
+- **ID:** `aaron-bond.better-comments`
+- **What it does:** Color-coded comments
+- **Why helpful:** Organize your comments
+- **Status:** ⭐⭐⭐
 
 ### **Indent Rainbow** - Visual Indentation
 
--   **ID:** `oderwat.indent-rainbow`
--   **What it does:** Color-codes indentation levels
--   **Why helpful:** Spot indentation errors
--   **Status:** ⭐⭐⭐
+- **ID:** `oderwat.indent-rainbow`
+- **What it does:** Color-codes indentation levels
+- **Why helpful:** Spot indentation errors
+- **Status:** ⭐⭐⭐
 
 ### **Path Intellisense** - Auto-complete Paths
 
--   **ID:** `christian-kohler.path-intellisense`
--   **What it does:** Auto-complete file paths
--   **Why helpful:** Faster imports
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `christian-kohler.path-intellisense`
+- **What it does:** Auto-complete file paths
+- **Why helpful:** Faster imports
+- **Status:** ⭐⭐⭐⭐
 
 ### **Todo Highlight** - TODO Comments
 
--   **ID:** `wayou.vscode-todo-highlight`
--   **What it does:** Highlights TODO comments
--   **Why helpful:** Keep track of tasks
--   **Status:** ⭐⭐⭐
+- **ID:** `wayou.vscode-todo-highlight`
+- **What it does:** Highlights TODO comments
+- **Why helpful:** Keep track of tasks
+- **Status:** ⭐⭐⭐
 
 ---
 
@@ -135,24 +135,24 @@
 
 ### **Debugger for Chrome/Edge** - JavaScript Debugging
 
--   **ID:** `msjsdiag.debugger-for-chrome`
--   **What it does:** Debug JavaScript in browser
--   **Why helpful:** Find and fix bugs
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `msjsdiag.debugger-for-chrome`
+- **What it does:** Debug JavaScript in browser
+- **Why helpful:** Find and fix bugs
+- **Status:** ⭐⭐⭐⭐
 
 ### **Jest** - Test Runner
 
--   **ID:** `orta.vscode-jest`
--   **What it does:** Run Jest tests in VS Code
--   **Why helpful:** Test your code
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `orta.vscode-jest`
+- **What it does:** Run Jest tests in VS Code
+- **Why helpful:** Test your code
+- **Status:** ⭐⭐⭐⭐
 
 ### **Docker** - Container Support
 
--   **ID:** `ms-azuretools.vscode-docker`
--   **What it does:** Docker syntax and management
--   **Why helpful:** Work with Docker Compose
--   **Status:** ⭐⭐⭐⭐
+- **ID:** `ms-azuretools.vscode-docker`
+- **What it does:** Docker syntax and management
+- **Why helpful:** Work with Docker Compose
+- **Status:** ⭐⭐⭐⭐
 
 ---
 
@@ -160,31 +160,31 @@
 
 ### **Peacock** - Workspace Color Coding
 
--   **ID:** `johnpapa.vscode-peacock`
--   **What it does:** Color-code workspaces
--   **Why helpful:** Visual workspace organization
--   **Status:** ⭐⭐⭐
+- **ID:** `johnpapa.vscode-peacock`
+- **What it does:** Color-code workspaces
+- **Why helpful:** Visual workspace organization
+- **Status:** ⭐⭐⭐
 
 ### **Code Spell Checker** - Spell Check
 
--   **ID:** `streetsidesoftware.code-spell-checker`
--   **What it does:** Checks spelling in code
--   **Why helpful:** Catch typos
--   **Status:** ⭐⭐⭐
+- **ID:** `streetsidesoftware.code-spell-checker`
+- **What it does:** Checks spelling in code
+- **Why helpful:** Catch typos
+- **Status:** ⭐⭐⭐
 
 ### **GitLens** - Git Supercharger
 
--   **ID:** `eamodio.gitlens`
--   **What it does:** Advanced git info
--   **Why helpful:** See commit history inline
--   **Status:** ⭐⭐⭐⭐⭐
+- **ID:** `eamodio.gitlens`
+- **What it does:** Advanced git info
+- **Why helpful:** See commit history inline
+- **Status:** ⭐⭐⭐⭐⭐
 
 ### **Live Server** - Local Server
 
--   **ID:** `ritwickdey.liveserver`
--   **What it does:** Local development server
--   **Why helpful:** Auto-reload static files
--   **Status:** ⭐⭐⭐
+- **ID:** `ritwickdey.liveserver`
+- **What it does:** Local development server
+- **Why helpful:** Auto-reload static files
+- **Status:** ⭐⭐⭐
 
 ---
 
@@ -299,15 +299,15 @@ code --list-extensions
 
 ### Using Prisma Extension
 
--   Open `backend/prisma/schema.prisma`
--   See syntax highlighting
--   Get IntelliSense suggestions
--   Format with `Shift+Alt+F`
+- Open `backend/prisma/schema.prisma`
+- See syntax highlighting
+- Get IntelliSense suggestions
+- Format with `Shift+Alt+F`
 
 ### Using REST Client
 
--   Create a file: `requests.http`
--   Write requests:
+- Create a file: `requests.http`
+- Write requests:
 
   ```http
   GET http://localhost:3001/health
@@ -321,7 +321,7 @@ code --list-extensions
   }
   ```
 
--   Click "Send Request" above each request
+- Click "Send Request" above each request
 
 ### Using PostgreSQL Extension
 
@@ -332,10 +332,10 @@ code --list-extensions
 
 ### Using GitHub Copilot
 
--   Start typing: `function add(`
--   Copilot suggests completion
--   Press `Tab` to accept
--   Press `Escape` to reject
+- Start typing: `function add(`
+- Copilot suggests completion
+- Press `Tab` to accept
+- Press `Escape` to reject
 
 ---
 
@@ -343,11 +343,11 @@ code --list-extensions
 
 ### Popular Themes
 
--   **Dracula Official** - Dark, beautiful
--   **One Dark Pro** - Popular, clean
--   **Nord** - Arctic blue theme
--   **Synthwave 84** - Retro, vibrant
--   **GitHub Dark** - Official GitHub theme
+- **Dracula Official** - Dark, beautiful
+- **One Dark Pro** - Popular, clean
+- **Nord** - Arctic blue theme
+- **Synthwave 84** - Retro, vibrant
+- **GitHub Dark** - Official GitHub theme
 
 ### Install Theme
 

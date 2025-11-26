@@ -802,16 +802,16 @@ if (type === "credit") {
 
 ## ✅ TOKEN SYSTEM CHECKLIST
 
--   [ ] Prisma schema updated with token models
--   [ ] Database migration completed
--   [ ] Token routes created and tested
--   [ ] Token routes added to backend
--   [ ] TokenWallet component created
--   [ ] TokenSection updated with real component
--   [ ] Bonus tokens awarded on transactions
--   [ ] Withdraw functionality working
--   [ ] Cashout functionality working
--   [ ] Transaction history displaying
+- [ ] Prisma schema updated with token models
+- [ ] Database migration completed
+- [ ] Token routes created and tested
+- [ ] Token routes added to backend
+- [ ] TokenWallet component created
+- [ ] TokenSection updated with real component
+- [ ] Bonus tokens awarded on transactions
+- [ ] Withdraw functionality working
+- [ ] Cashout functionality working
+- [ ] Transaction history displaying
 
 ---
 

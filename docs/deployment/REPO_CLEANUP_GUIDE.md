@@ -48,10 +48,10 @@ ab1d4df - docs: Add CI fix TL;DR
 
 **Most Likely Cause:**
 
--   You cloned the repo twice
--   GitHub Desktop might have created one
--   You created a backup copy manually
--   Both point to same GitHub repo but are separate local folders
+- You cloned the repo twice
+- GitHub Desktop might have created one
+- You created a backup copy manually
+- Both point to same GitHub repo but are separate local folders
 
 **Both are connected to GitHub:**
 
@@ -68,19 +68,19 @@ https://github.com/pdtribe181-prog/-modular-saas-platform.git
 
 The main `-modular-saas-platform` folder:
 
--   Has the LATEST code ✅
--   Has the LATEST commits ✅
--   Connected to GitHub Desktop ✅
--   Being used actively ✅
+- Has the LATEST code ✅
+- Has the LATEST commits ✅
+- Connected to GitHub Desktop ✅
+- Being used actively ✅
 
 ### The Copy Folder is Outdated ❌
 
 The `- Copy` folder:
 
--   Has OLDER code ❌
--   Missing ~20 recent commits ❌
--   Not connected to GitHub Desktop ❌
--   Not being used ❌
+- Has OLDER code ❌
+- Missing ~20 recent commits ❌
+- Not connected to GitHub Desktop ❌
+- Not being used ❌
 
 ---
 
@@ -103,10 +103,10 @@ The `- Copy` folder:
 
 **Why this is safe:**
 
--   Main folder has all current code
--   GitHub has the master copy
--   You can always clone again
--   GitHub Desktop uses the main folder
+- Main folder has all current code
+- GitHub has the master copy
+- You can always clone again
+- GitHub Desktop uses the main folder
 
 **How to Delete:**
 
@@ -136,9 +136,9 @@ Remove-Item -Path "C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform - Backu
 
 If you want to keep both:
 
--   Just make sure GitHub Desktop is using the MAIN folder
--   Don't push from the Copy folder
--   It will waste disk space (~500MB+)
+- Just make sure GitHub Desktop is using the MAIN folder
+- Don't push from the Copy folder
+- It will waste disk space (~500MB+)
 
 ---
 
@@ -273,11 +273,11 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 After cleanup, you should have:
 
--   ✅ ONE repo folder: `-modular-saas-platform`
--   ✅ Latest commits: 024e6d0+
--   ✅ GitHub Desktop working with it
--   ✅ ~500MB freed up
--   ✅ No confusion about which folder to use
+- ✅ ONE repo folder: `-modular-saas-platform`
+- ✅ Latest commits: 024e6d0+
+- ✅ GitHub Desktop working with it
+- ✅ ~500MB freed up
+- ✅ No confusion about which folder to use
 
 ---
 

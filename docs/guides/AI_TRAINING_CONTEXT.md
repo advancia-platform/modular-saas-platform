@@ -13,45 +13,45 @@
 
 ### 1. **Financial Services**
 
--   **Transactions**: Credit/debit transaction management with real-time balance tracking
--   **Crypto Trading**: BTC, ETH, USDT trading with USD conversion
--   **Debit Cards**: Virtual debit card issuance and management
--   **Personal Loans**: Loan application, approval, and repayment tracking
--   **Withdrawals**: Crypto and fiat withdrawal processing
+- **Transactions**: Credit/debit transaction management with real-time balance tracking
+- **Crypto Trading**: BTC, ETH, USDT trading with USD conversion
+- **Debit Cards**: Virtual debit card issuance and management
+- **Personal Loans**: Loan application, approval, and repayment tracking
+- **Withdrawals**: Crypto and fiat withdrawal processing
 
 ### 2. **Health & Wellness**
 
--   **Med Beds Booking**: Advanced wellness chamber reservations (Standard, Enhancement, Diagnostic)
--   **Health Readings**: Vital signs tracking and health analytics
--   **Session Management**: Booking cost calculation, payment status tracking
+- **Med Beds Booking**: Advanced wellness chamber reservations (Standard, Enhancement, Diagnostic)
+- **Health Readings**: Vital signs tracking and health analytics
+- **Session Management**: Booking cost calculation, payment status tracking
 
 ### 3. **Cryptocurrency**
 
--   **Token Wallet (ADVANCIA)**: Native platform token with staking rewards
--   **Multi-Crypto Support**: Bitcoin, Ethereum, Tether (USDT)
--   **Trump Coin Integration**: Specialized wallet for Trump-themed cryptocurrency
--   **Order Management**: Buy/sell orders with status tracking
+- **Token Wallet (ADVANCIA)**: Native platform token with staking rewards
+- **Multi-Crypto Support**: Bitcoin, Ethereum, Tether (USDT)
+- **Trump Coin Integration**: Specialized wallet for Trump-themed cryptocurrency
+- **Order Management**: Buy/sell orders with status tracking
 
 ### 4. **User Management**
 
--   **Authentication**: Email OTP, Password login, TOTP 2FA
--   **User Tiers**: Bronze, Silver, Gold, Platinum with progressive benefits
--   **Rewards System**: Activity-based reward points and bonuses
--   **KYC/Verification**: Identity verification workflows
+- **Authentication**: Email OTP, Password login, TOTP 2FA
+- **User Tiers**: Bronze, Silver, Gold, Platinum with progressive benefits
+- **Rewards System**: Activity-based reward points and bonuses
+- **KYC/Verification**: Identity verification workflows
 
 ### 5. **Support & Communication**
 
--   **Support Tickets**: Multi-category ticketing system (account, transaction, crypto, medbeds)
--   **Live Chat**: Real-time user support via Socket.IO
--   **Consultation Booking**: Professional consultation scheduling
--   **Email Notifications**: Automated transactional emails via Gmail SMTP
+- **Support Tickets**: Multi-category ticketing system (account, transaction, crypto, medbeds)
+- **Live Chat**: Real-time user support via Socket.IO
+- **Consultation Booking**: Professional consultation scheduling
+- **Email Notifications**: Automated transactional emails via Gmail SMTP
 
 ### 6. **Admin & Analytics**
 
--   **Admin Dashboard**: User management, transaction oversight, system monitoring
--   **IP Blocking**: Security management for suspicious activity
--   **Audit Logs**: Comprehensive activity tracking
--   **Session Management**: Active session monitoring and control
+- **Admin Dashboard**: User management, transaction oversight, system monitoring
+- **IP Blocking**: Security management for suspicious activity
+- **Audit Logs**: Comprehensive activity tracking
+- **Session Management**: Active session monitoring and control
 
 ---
 
@@ -61,40 +61,40 @@
 
 #### 1. **Wallet Analysis** (`analyzeTrumpCoinWallet`)
 
--   Analyzes user crypto holdings and balances
--   Provides insights on portfolio composition
--   Tracks crypto order history
--   Calculates total portfolio value
+- Analyzes user crypto holdings and balances
+- Provides insights on portfolio composition
+- Tracks crypto order history
+- Calculates total portfolio value
 
 #### 2. **Cash-Out Eligibility** (`analyzeCashOutEligibility`)
 
--   Evaluates user balance sufficiency
--   Checks transaction history patterns
--   Provides approval/denial recommendations
--   Risk assessment based on user tier
+- Evaluates user balance sufficiency
+- Checks transaction history patterns
+- Provides approval/denial recommendations
+- Risk assessment based on user tier
 
 #### 3. **Product Recommendations** (`generateProductRecommendations`)
 
--   Personalized service suggestions based on user activity
--   Recommends: Debit Cards, Med Beds, Personal Loans, Token Wallet, Crypto Trading
--   Considers user tier, balances, and past behavior
--   Smart cross-selling based on usage patterns
+- Personalized service suggestions based on user activity
+- Recommends: Debit Cards, Med Beds, Personal Loans, Token Wallet, Crypto Trading
+- Considers user tier, balances, and past behavior
+- Smart cross-selling based on usage patterns
 
 #### 4. **Market Insights** (`generateMarketInsights`)
 
--   Platform-wide analytics and trends
--   User engagement metrics (active users, growth trends)
--   Crypto trading volume and sentiment analysis
--   Lending portfolio health
--   Med Beds utilization statistics
--   Automated recommendations for platform optimization
+- Platform-wide analytics and trends
+- User engagement metrics (active users, growth trends)
+- Crypto trading volume and sentiment analysis
+- Lending portfolio health
+- Med Beds utilization statistics
+- Automated recommendations for platform optimization
 
 ### AI Endpoints (`/api/ai-analytics`)
 
--   `GET /wallet/:userId` - Wallet analysis
--   `POST /cashout/:userId` - Cash-out eligibility check
--   `GET /recommendations/:userId` - Personalized product recommendations
--   `GET /market-insights` - Platform market insights
+- `GET /wallet/:userId` - Wallet analysis
+- `POST /cashout/:userId` - Cash-out eligibility check
+- `GET /recommendations/:userId` - Personalized product recommendations
+- `GET /market-insights` - Platform market insights
 
 ---
 
@@ -102,34 +102,34 @@
 
 ### Users & Authentication
 
--   `User`: Core user data with balances (USD, BTC, ETH, USDT)
--   `UserTier`: Tier-based benefits and limits
--   `Reward`: User reward points and bonuses
+- `User`: Core user data with balances (USD, BTC, ETH, USDT)
+- `UserTier`: Tier-based benefits and limits
+- `Reward`: User reward points and bonuses
 
 ### Financial Transactions
 
--   `Transaction`: All financial movements (credit/debit)
--   `Crypto_Orders`: Cryptocurrency buy/sell orders
--   `TokenTransaction`: ADVANCIA token transfers
--   `Loan`: Personal loan records
--   `Withdrawal`: Withdrawal requests
+- `Transaction`: All financial movements (credit/debit)
+- `Crypto_Orders`: Cryptocurrency buy/sell orders
+- `TokenTransaction`: ADVANCIA token transfers
+- `Loan`: Personal loan records
+- `Withdrawal`: Withdrawal requests
 
 ### Health Services
 
--   `MedBedsBooking`: Wellness chamber reservations
--   `HealthReading`: User health metrics
+- `MedBedsBooking`: Wellness chamber reservations
+- `HealthReading`: User health metrics
 
 ### Support & Communication
 
--   `SupportTicket`: User support requests
--   `ChatMessage`: Live chat history
--   `Notification`: Push notifications and emails
+- `SupportTicket`: User support requests
+- `ChatMessage`: Live chat history
+- `Notification`: Push notifications and emails
 
 ### Security & Monitoring
 
--   `AuditLog`: All system activities
--   `IPBlock`: Blocked IP addresses
--   `ActiveSession`: User session tracking
+- `AuditLog`: All system activities
+- `IPBlock`: Blocked IP addresses
+- `ActiveSession`: User session tracking
 
 ---
 
@@ -137,17 +137,17 @@
 
 ### Event Emissions
 
--   `transaction-created` - New transaction notification
--   `global-transaction` - Broadcast to all users
--   `admin:transaction` - Admin dashboard updates
--   `notification` - User-specific notifications
--   `token:transaction` - Token transfer events
--   `sessions:update` - Active session changes
+- `transaction-created` - New transaction notification
+- `global-transaction` - Broadcast to all users
+- `admin:transaction` - Admin dashboard updates
+- `notification` - User-specific notifications
+- `token:transaction` - Token transfer events
+- `sessions:update` - Active session changes
 
 ### Room Structure
 
--   `user-{userId}` - Individual user rooms
--   `admins` - Admin-only broadcasts
+- `user-{userId}` - Individual user rooms
+- `admins` - Admin-only broadcasts
 
 ---
 
@@ -162,17 +162,17 @@
 
 ### Security Middleware
 
--   `authenticateToken`: JWT validation
--   `requireAdmin`: Admin role verification
--   `allowRoles`: Role-based access control
--   Rate limiting: 300 requests per minute per IP
--   CORS: Restricted to allowed origins
+- `authenticateToken`: JWT validation
+- `requireAdmin`: Admin role verification
+- `allowRoles`: Role-based access control
+- Rate limiting: 300 requests per minute per IP
+- CORS: Restricted to allowed origins
 
 ### Security Headers
 
--   Helmet.js for HTTP security headers
--   Input validation on all endpoints
--   SQL injection prevention via Prisma
+- Helmet.js for HTTP security headers
+- Input validation on all endpoints
+- SQL injection prevention via Prisma
 
 ---
 
@@ -180,17 +180,17 @@
 
 ### Stripe Integration
 
--   Webhook endpoint: `/api/payments/webhook`
--   Test mode keys configured
--   Payment intent creation
--   Subscription handling (future feature)
+- Webhook endpoint: `/api/payments/webhook`
+- Test mode keys configured
+- Payment intent creation
+- Subscription handling (future feature)
 
 ### Payment Types
 
--   Debit card purchases ($1000 USD cards)
--   Med Beds session payments
--   Crypto order deposits
--   Loan disbursements
+- Debit card purchases ($1000 USD cards)
+- Med Beds session payments
+- Crypto order deposits
+- Loan disbursements
 
 ---
 
@@ -214,10 +214,10 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 ### CORS Origins
 
--   `http://localhost:3000` (production build)
--   `http://localhost:3001` (dev server with HMR)
--   `https://advanciapayledger.com`
--   `https://www.advanciapayledger.com`
+- `http://localhost:3000` (production build)
+- `http://localhost:3001` (dev server with HMR)
+- `https://advanciapayledger.com`
+- `https://www.advanciapayledger.com`
 
 ---
 
@@ -225,30 +225,30 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 ### Public Routes
 
--   `/api/health` - Health check
--   `/api/auth/login` - User login
--   `/api/auth/register` - User registration
--   `/api/auth/otp` - OTP generation
--   `/api/payments/webhook` - Stripe webhook (raw body)
+- `/api/health` - Health check
+- `/api/auth/login` - User login
+- `/api/auth/register` - User registration
+- `/api/auth/otp` - OTP generation
+- `/api/payments/webhook` - Stripe webhook (raw body)
 
 ### Authenticated Routes
 
--   `/api/transactions/*` - Transaction management
--   `/api/tokens/*` - Token wallet operations
--   `/api/rewards/*` - Reward point management
--   `/api/medbeds/*` - Med Beds booking
--   `/api/support/*` - Support tickets
--   `/api/ai-analytics/*` - AI-powered analytics
--   `/api/withdrawals/*` - Withdrawal requests
--   `/api/debit-card/*` - Card management
+- `/api/transactions/*` - Transaction management
+- `/api/tokens/*` - Token wallet operations
+- `/api/rewards/*` - Reward point management
+- `/api/medbeds/*` - Med Beds booking
+- `/api/support/*` - Support tickets
+- `/api/ai-analytics/*` - AI-powered analytics
+- `/api/withdrawals/*` - Withdrawal requests
+- `/api/debit-card/*` - Card management
 
 ### Admin Routes
 
--   `/api/admin/*` - User management
--   `/api/admin/analytics/*` - Platform analytics
--   `/api/admin/security/*` - Security settings
--   `/api/admin/ip-blocks/*` - IP management
--   `/api/sessions/*` - Session monitoring
+- `/api/admin/*` - User management
+- `/api/admin/analytics/*` - Platform analytics
+- `/api/admin/security/*` - Security settings
+- `/api/admin/ip-blocks/*` - IP management
+- `/api/sessions/*` - Session monitoring
 
 ---
 
@@ -256,23 +256,23 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 
 ### Key Pages
 
--   `/` - Landing page
--   `/dashboard` - User dashboard
--   `/admin/login` - Admin portal
--   `/admin/users` - User management
--   `/admin/analytics` - Analytics dashboard
--   `/medbeds/book` - Med Beds booking
--   `/transactions` - Transaction history
--   `/tokens` - Token wallet
--   `/support` - Support center
+- `/` - Landing page
+- `/dashboard` - User dashboard
+- `/admin/login` - Admin portal
+- `/admin/users` - User management
+- `/admin/analytics` - Analytics dashboard
+- `/medbeds/book` - Med Beds booking
+- `/transactions` - Transaction history
+- `/tokens` - Token wallet
+- `/support` - Support center
 
 ### Components
 
--   `AuthProvider` - Authentication context
--   `ChatbotWidget` - AI assistant
--   `ErrorBoundary` - Error handling
--   `SystemFeedbackBanner` - Status notifications
--   `SilentModeProvider` - Notification controls
+- `AuthProvider` - Authentication context
+- `ChatbotWidget` - AI assistant
+- `ErrorBoundary` - Error handling
+- `SystemFeedbackBanner` - Status notifications
+- `SilentModeProvider` - Notification controls
 
 ---
 
@@ -323,34 +323,34 @@ cd backend && tsx test-ai-service-direct.ts
 ### What the AI Should Understand
 
 1. **User Intent Recognition**
-   -   Identify when users ask about transactions, balances, crypto, med beds, loans
-   -   Understand financial terminology (credit, debit, withdrawal, deposit)
-   -   Recognize health-related queries (booking, chambers, wellness)
-   -   Detect support requests (issues, problems, help needed)
+   - Identify when users ask about transactions, balances, crypto, med beds, loans
+   - Understand financial terminology (credit, debit, withdrawal, deposit)
+   - Recognize health-related queries (booking, chambers, wellness)
+   - Detect support requests (issues, problems, help needed)
 
 2. **Context Awareness**
-   -   Know which services are available on the platform
-   -   Understand relationships between services (e.g., need balance for debit card)
-   -   Recognize user tier impacts on features
-   -   Understand authentication requirements for actions
+   - Know which services are available on the platform
+   - Understand relationships between services (e.g., need balance for debit card)
+   - Recognize user tier impacts on features
+   - Understand authentication requirements for actions
 
 3. **Response Patterns**
-   -   Provide accurate information about service availability
-   -   Guide users to correct endpoints/pages
-   -   Explain requirements for each service
-   -   Suggest relevant alternatives when primary request can't be fulfilled
+   - Provide accurate information about service availability
+   - Guide users to correct endpoints/pages
+   - Explain requirements for each service
+   - Suggest relevant alternatives when primary request can't be fulfilled
 
 4. **Technical Knowledge**
-   -   Understand the API structure and endpoint purposes
-   -   Know authentication requirements
-   -   Recognize error patterns and provide solutions
-   -   Understand database schema relationships
+   - Understand the API structure and endpoint purposes
+   - Know authentication requirements
+   - Recognize error patterns and provide solutions
+   - Understand database schema relationships
 
 5. **Business Logic**
-   -   Know pricing for services (debit cards, med beds, loans)
-   -   Understand tier-based benefits
-   -   Recognize eligibility criteria for services
-   -   Know platform policies and limits
+   - Know pricing for services (debit cards, med beds, loans)
+   - Understand tier-based benefits
+   - Recognize eligibility criteria for services
+   - Know platform policies and limits
 
 ---
 
@@ -396,18 +396,18 @@ cd backend && tsx test-ai-service-direct.ts
 
 ### Common Errors
 
--   **"Access token required"** - User needs to log in
--   **"Insufficient balance"** - User doesn't have enough funds
--   **"Route not found"** - Endpoint doesn't exist or misspelled
--   **"Invalid or expired token"** - Session expired, re-login needed
--   **"Forbidden"** - User lacks required permissions/role
+- **"Access token required"** - User needs to log in
+- **"Insufficient balance"** - User doesn't have enough funds
+- **"Route not found"** - Endpoint doesn't exist or misspelled
+- **"Invalid or expired token"** - Session expired, re-login needed
+- **"Forbidden"** - User lacks required permissions/role
 
 ### Solutions
 
--   Authentication errors → Guide to `/api/auth/login`
--   Balance errors → Suggest deposit or different amount
--   Permission errors → Explain tier requirements or admin-only features
--   Technical errors → Direct to support ticket system
+- Authentication errors → Guide to `/api/auth/login`
+- Balance errors → Suggest deposit or different amount
+- Permission errors → Explain tier requirements or admin-only features
+- Technical errors → Direct to support ticket system
 
 ---
 
@@ -424,10 +424,10 @@ cd backend && tsx test-ai-service-direct.ts
 
 ### Integration Opportunities
 
--   OpenAI API for advanced NLP (currently rule-based)
--   Machine learning models for fraud detection
--   Sentiment analysis on support tickets
--   Automated response generation for FAQs
+- OpenAI API for advanced NLP (currently rule-based)
+- Machine learning models for fraud detection
+- Sentiment analysis on support tickets
+- Automated response generation for FAQs
 
 ---
 
@@ -501,18 +501,18 @@ Content-Type: application/json
 
 ### Current System Stats (as of testing)
 
--   Backend uptime: 427+ seconds stable
--   Database: Connected and responsive
--   Active endpoints: 50+ routes
--   Average response time: <100ms
--   Concurrent connections: Support for 1000+ users
+- Backend uptime: 427+ seconds stable
+- Database: Connected and responsive
+- Active endpoints: 50+ routes
+- Average response time: <100ms
+- Concurrent connections: Support for 1000+ users
 
 ### Monitoring
 
--   Health check: `/api/health`
--   Database status included in health response
--   Socket.IO connection monitoring
--   Real-time error logging to console
+- Health check: `/api/health`
+- Database status included in health response
+- Socket.IO connection monitoring
+- Real-time error logging to console
 
 ---
 
@@ -528,21 +528,21 @@ Content-Type: application/json
 
 **Key Understanding Points:**
 
--   All services require authentication
--   User tiers affect available features
--   Real-time updates via Socket.IO
--   Rule-based AI analytics already in place
--   Security is paramount (JWT, 2FA, rate limiting)
--   Multi-currency support (USD, BTC, ETH, USDT)
+- All services require authentication
+- User tiers affect available features
+- Real-time updates via Socket.IO
+- Rule-based AI analytics already in place
+- Security is paramount (JWT, 2FA, rate limiting)
+- Multi-currency support (USD, BTC, ETH, USDT)
 
 **AI Should Be Able To:**
 
--   Answer questions about any platform feature
--   Guide users to correct pages/endpoints
--   Explain service requirements and pricing
--   Provide personalized recommendations
--   Troubleshoot common issues
--   Direct complex issues to human support
+- Answer questions about any platform feature
+- Guide users to correct pages/endpoints
+- Explain service requirements and pricing
+- Provide personalized recommendations
+- Troubleshoot common issues
+- Direct complex issues to human support
 
 ---
 
@@ -555,8 +555,8 @@ Content-Type: application/json
 
 **Test Credentials:**
 
--   Admin: <admin@test.com> / Admin123!@#
--   User: <user@test.com> / User123!@#
+- Admin: <admin@test.com> / Admin123!@#
+- User: <user@test.com> / User123!@#
 
 ---
 

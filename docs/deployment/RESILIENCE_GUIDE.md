@@ -6,17 +6,17 @@ This guide explains how Advancia Pay Ledger maintains 99.9% uptime with automati
 
 ### ✅ **Always-On Architecture**
 
--   **Auto-restart on crash**: Both frontend and backend restart automatically within 5 seconds
--   **Graceful shutdown**: Ongoing requests complete before restart (15-30 seconds grace period)
--   **Health monitoring**: Services self-heal when database connection drops
--   **Zero-downtime deploys**: Render health checks prevent traffic to unhealthy instances
+- **Auto-restart on crash**: Both frontend and backend restart automatically within 5 seconds
+- **Graceful shutdown**: Ongoing requests complete before restart (15-30 seconds grace period)
+- **Health monitoring**: Services self-heal when database connection drops
+- **Zero-downtime deploys**: Render health checks prevent traffic to unhealthy instances
 
 ### 💙 **User-Friendly Error Experience**
 
--   **Charming maintenance page**: Friendly, reassuring UI instead of technical errors
--   **Error boundaries**: React catches crashes and shows "We'll Be Right Back" instead of white screen
--   **Auto-recovery countdown**: Page checks backend health every 15 seconds automatically
--   **Support contact**: Always visible support email and chat options
+- **Charming maintenance page**: Friendly, reassuring UI instead of technical errors
+- **Error boundaries**: React catches crashes and shows "We'll Be Right Back" instead of white screen
+- **Auto-recovery countdown**: Page checks backend health every 15 seconds automatically
+- **Support contact**: Always visible support email and chat options
 
 ---
 
@@ -48,13 +48,13 @@ maxShutdownDelaySeconds: 15
 
 #### Backend
 
--   `ENABLE_GRACEFUL_SHUTDOWN=true` - Handles SIGTERM/SIGINT gracefully
--   `MAINTENANCE_MODE=false` - Set to `true` to show maintenance message
+- `ENABLE_GRACEFUL_SHUTDOWN=true` - Handles SIGTERM/SIGINT gracefully
+- `MAINTENANCE_MODE=false` - Set to `true` to show maintenance message
 
 #### Frontend
 
--   `MAINTENANCE_MODE=false` - Redirect all traffic to `/maintenance` when `true`
--   `NEXT_PUBLIC_API_URL` - Backend URL for health checks
+- `MAINTENANCE_MODE=false` - Redirect all traffic to `/maintenance` when `true`
+- `NEXT_PUBLIC_API_URL` - Backend URL for health checks
 
 ---
 
@@ -77,10 +77,10 @@ chmod +x scripts/start-resilient.sh
 
 **Features:**
 
--   ✅ Automatically restarts on crash
--   ✅ Health checks after each start
--   ✅ Logs to `logs/` directory with timestamps
--   ✅ Ctrl+C stops all services gracefully
+- ✅ Automatically restarts on crash
+- ✅ Health checks after each start
+- ✅ Logs to `logs/` directory with timestamps
+- ✅ Ctrl+C stops all services gracefully
 
 ### Option 2: PM2 Process Manager
 
@@ -103,11 +103,11 @@ pm2 stop all
 
 **PM2 Features:**
 
--   ✅ 2 backend instances (cluster mode)
--   ✅ Auto-restart on crash (max 10 restarts)
--   ✅ Memory limit: 500MB backend, 300MB frontend
--   ✅ Exponential backoff on rapid restarts
--   ✅ Built-in health checks
+- ✅ 2 backend instances (cluster mode)
+- ✅ Auto-restart on crash (max 10 restarts)
+- ✅ Memory limit: 500MB backend, 300MB frontend
+- ✅ Exponential backoff on rapid restarts
+- ✅ Built-in health checks
 
 ---
 
@@ -119,10 +119,10 @@ pm2 stop all
 
 **What it does:**
 
--   Catches React component crashes
--   Shows friendly "Oops! Taking a Quick Break" page
--   Provides "Try Again" and "Go to Dashboard" buttons
--   Displays technical details in development mode only
+- Catches React component crashes
+- Shows friendly "Oops! Taking a Quick Break" page
+- Provides "Try Again" and "Go to Dashboard" buttons
+- Displays technical details in development mode only
 
 **Already integrated in:** `frontend/src/app/layout.tsx`
 
@@ -154,10 +154,10 @@ app.use(resilientErrorHandler); // Catch all errors
 
 **Handles:**
 
--   SIGTERM (Render/Docker stop)
--   SIGINT (Ctrl+C)
--   Uncaught exceptions
--   Unhandled promise rejections
+- SIGTERM (Render/Docker stop)
+- SIGINT (Ctrl+C)
+- Uncaught exceptions
+- Unhandled promise rejections
 
 **What happens:**
 
@@ -185,12 +185,12 @@ Users can access `/maintenance` page directly to see status
 
 ### Maintenance Page Features
 
--   🎨 Beautiful animated design with rotating gear icon
--   ⏱️ Auto-countdown (checks health every 15 seconds)
--   🔄 "Check Status Now" button
--   📧 Support contact info
--   🌐 Link to status page
--   💬 Reassuring messaging: "We'll Be Right Back! 🚀"
+- 🎨 Beautiful animated design with rotating gear icon
+- ⏱️ Auto-countdown (checks health every 15 seconds)
+- 🔄 "Check Status Now" button
+- 📧 Support contact info
+- 🌐 Link to status page
+- 💬 Reassuring messaging: "We'll Be Right Back! 🚀"
 
 ---
 
@@ -200,10 +200,10 @@ Users can access `/maintenance` page directly to see status
 
 **Backend:**
 
--   `GET /api/health` - Full health check (database + memory)
--   `GET /api/health/live` - Lightweight liveness probe
--   `GET /api/health/ready` - Readiness check (database only)
--   `GET /api/health/startup` - Startup check (10 second warmup)
+- `GET /api/health` - Full health check (database + memory)
+- `GET /api/health/live` - Lightweight liveness probe
+- `GET /api/health/ready` - Readiness check (database only)
+- `GET /api/health/startup` - Startup check (10 second warmup)
 
 **Response Example:**
 
@@ -233,9 +233,9 @@ Users can access `/maintenance` page directly to see status
 
 **Alert thresholds:**
 
--   ⚠️ **Warning**: Response time > 2 seconds
--   🚨 **Critical**: Health check fails 3+ times (90 seconds)
--   🔥 **Emergency**: Down for 5+ minutes
+- ⚠️ **Warning**: Response time > 2 seconds
+- 🚨 **Critical**: Health check fails 3+ times (90 seconds)
+- 🔥 **Emergency**: Down for 5+ minutes
 
 ---
 
@@ -258,9 +258,9 @@ Users can access `/maintenance` page directly to see status
    ```
 
 2. **Common issues:**
-   -   Database connection string wrong → Check `DATABASE_URL`
-   -   Port already in use → Kill process: `lsof -ti:4000 | xargs kill -9`
-   -   Memory limit exceeded → Check `pm2 list` memory column
+   - Database connection string wrong → Check `DATABASE_URL`
+   - Port already in use → Kill process: `lsof -ti:4000 | xargs kill -9`
+   - Memory limit exceeded → Check `pm2 list` memory column
 
 ### Maintenance Mode Stuck
 
@@ -320,10 +320,10 @@ render env-vars set MAINTENANCE_MODE=false --service=advancia-backend
 
 **Upgrade to Starter Plan ($7/month):**
 
--   Persistent disk (logs don't disappear)
--   No cold starts (always warm)
--   More CPU/memory
--   Custom domains included
+- Persistent disk (logs don't disappear)
+- No cold starts (always warm)
+- More CPU/memory
+- Custom domains included
 
 ---
 
@@ -331,20 +331,20 @@ render env-vars set MAINTENANCE_MODE=false --service=advancia-backend
 
 ### ✅ DO
 
--   Monitor health endpoints with external service
--   Set up email alerts for downtime
--   Test maintenance mode in staging first
--   Keep logs for at least 7 days
--   Use PM2 for local development
--   Set `MAINTENANCE_MODE=true` before risky deploys
+- Monitor health endpoints with external service
+- Set up email alerts for downtime
+- Test maintenance mode in staging first
+- Keep logs for at least 7 days
+- Use PM2 for local development
+- Set `MAINTENANCE_MODE=true` before risky deploys
 
 ### ❌ DON'T
 
--   Don't use `process.exit()` in code (use graceful shutdown)
--   Don't ignore uncaught exceptions (they're logged)
--   Don't disable health checks
--   Don't set restart limits too low
--   Don't forget to test error boundaries
+- Don't use `process.exit()` in code (use graceful shutdown)
+- Don't ignore uncaught exceptions (they're logged)
+- Don't disable health checks
+- Don't set restart limits too low
+- Don't forget to test error boundaries
 
 ---
 
@@ -379,10 +379,10 @@ Root/
 
 **Having issues?**
 
--   📧 Email: <support@advanciapayledger.com>
--   💬 Live chat: Available on dashboard
--   📖 Docs: Check `/docs` page when live
--   🐛 Issues: Open GitHub issue with logs
+- 📧 Email: <support@advanciapayledger.com>
+- 💬 Live chat: Available on dashboard
+- 📖 Docs: Check `/docs` page when live
+- 🐛 Issues: Open GitHub issue with logs
 
 ---
 

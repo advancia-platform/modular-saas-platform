@@ -12,18 +12,18 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 ### Test Scope
 
--   ✅ 4 new backend API endpoints
--   ✅ 3 frontend components (TokenWallet, RewardsDashboard, MedBeds)
--   ✅ Real-time updates (Socket.IO)
--   ✅ RPA automation workflows
--   ✅ End-to-end user flows
--   ✅ System performance under load
+- ✅ 4 new backend API endpoints
+- ✅ 3 frontend components (TokenWallet, RewardsDashboard, MedBeds)
+- ✅ Real-time updates (Socket.IO)
+- ✅ RPA automation workflows
+- ✅ End-to-end user flows
+- ✅ System performance under load
 
 ### Out of Scope
 
--   Infrastructure provisioning
--   Security audits (covered separately)
--   Compliance certification (SOC2, etc.)
+- Infrastructure provisioning
+- Security audits (covered separately)
+- Compliance certification (SOC2, etc.)
 
 ---
 
@@ -48,10 +48,10 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 ### 2.3 Real-Time Features
 
--   Socket.IO balance updates
--   Reward notifications
--   Leaderboard rank changes
--   Transaction confirmations
+- Socket.IO balance updates
+- Reward notifications
+- Leaderboard rank changes
+- Transaction confirmations
 
 ---
 
@@ -72,18 +72,18 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   ✅ Response time < 2 seconds
--   ✅ Balance updated in real-time
--   ✅ Socket.IO event emitted to user room
--   ✅ Transaction logged in audit trail
+- ✅ Response time < 2 seconds
+- ✅ Balance updated in real-time
+- ✅ Socket.IO event emitted to user room
+- ✅ Transaction logged in audit trail
 
 **Acceptance Criteria**:
 
--   [ ] Withdrawal successful
--   [ ] Blockchain transaction initiated
--   [ ] Balance reflects immediately
--   [ ] No duplicate transactions
--   [ ] Error handling for invalid addresses
+- [ ] Withdrawal successful
+- [ ] Blockchain transaction initiated
+- [ ] Balance reflects immediately
+- [ ] No duplicate transactions
+- [ ] Error handling for invalid addresses
 
 ---
 
@@ -100,18 +100,18 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   ✅ Response time < 2 seconds
--   ✅ Calculation correct ($0.10 × token count)
--   ✅ USD immediately credited
--   ✅ Transaction recorded
+- ✅ Response time < 2 seconds
+- ✅ Calculation correct ($0.10 × token count)
+- ✅ USD immediately credited
+- ✅ Transaction recorded
 
 **Acceptance Criteria**:
 
--   [ ] Cashout successful
--   [ ] Correct USD amount calculated
--   [ ] Tokens removed from wallet
--   [ ] USD balance updated
--   [ ] Transaction receipt generated
+- [ ] Cashout successful
+- [ ] Correct USD amount calculated
+- [ ] Tokens removed from wallet
+- [ ] USD balance updated
+- [ ] Transaction receipt generated
 
 ---
 
@@ -128,18 +128,18 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   ✅ Response time < 500ms
--   ✅ Only non-expired rewards included
--   ✅ Correct total amount calculated
--   ✅ Proper sorting (by expiration date)
+- ✅ Response time < 500ms
+- ✅ Only non-expired rewards included
+- ✅ Correct total amount calculated
+- ✅ Proper sorting (by expiration date)
 
 **Acceptance Criteria**:
 
--   [ ] All non-expired rewards returned
--   [ ] No expired rewards included
--   [ ] Amounts correctly calculated
--   [ ] Response properly formatted
--   [ ] Pagination works if applicable
+- [ ] All non-expired rewards returned
+- [ ] No expired rewards included
+- [ ] Amounts correctly calculated
+- [ ] Response properly formatted
+- [ ] Pagination works if applicable
 
 ---
 
@@ -156,18 +156,18 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   ✅ Response time < 500ms
--   ✅ Top 10 users returned (by default)
--   ✅ Correct rank ordering
--   ✅ Tier information included
+- ✅ Response time < 500ms
+- ✅ Top 10 users returned (by default)
+- ✅ Correct rank ordering
+- ✅ Tier information included
 
 **Acceptance Criteria**:
 
--   [ ] Correct ranking order
--   [ ] Tier badges accurate
--   [ ] User names displayed
--   [ ] Reward amounts correct
--   [ ] Limit parameter respected
+- [ ] Correct ranking order
+- [ ] Tier badges accurate
+- [ ] User names displayed
+- [ ] Reward amounts correct
+- [ ] Limit parameter respected
 
 ---
 
@@ -179,22 +179,22 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Test Cases**:
 
--   [ ] Display current balance correctly
--   [ ] Show transaction history
--   [ ] Execute transfer to another user
--   [ ] Execute withdrawal to Ethereum
--   [ ] Execute cashout to USD
--   [ ] All endpoints connected
--   [ ] Error messages display properly
--   [ ] Real-time balance updates work
+- [ ] Display current balance correctly
+- [ ] Show transaction history
+- [ ] Execute transfer to another user
+- [ ] Execute withdrawal to Ethereum
+- [ ] Execute cashout to USD
+- [ ] All endpoints connected
+- [ ] Error messages display properly
+- [ ] Real-time balance updates work
 
 **Acceptance Criteria**:
 
--   Balance always matches backend
--   All 5 endpoints functional
--   Loading states visible
--   Error handling appropriate
--   Socket.IO updates within 1 second
+- Balance always matches backend
+- All 5 endpoints functional
+- Loading states visible
+- Error handling appropriate
+- Socket.IO updates within 1 second
 
 ---
 
@@ -204,21 +204,21 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Test Cases**:
 
--   [ ] Display all non-expired pending rewards
--   [ ] Show current tier and progress to next
--   [ ] Display streak counter (if applicable)
--   [ ] Show leaderboard rankings
--   [ ] Claim reward button works
--   [ ] Tier badge displays correctly
--   [ ] Real-time rank updates
+- [ ] Display all non-expired pending rewards
+- [ ] Show current tier and progress to next
+- [ ] Display streak counter (if applicable)
+- [ ] Show leaderboard rankings
+- [ ] Claim reward button works
+- [ ] Tier badge displays correctly
+- [ ] Real-time rank updates
 
 **Acceptance Criteria**:
 
--   Pending rewards accurate
--   Tier progression visible
--   Leaderboard ordered correctly
--   All 4 endpoints functional
--   Socket.IO updates within 1 second
+- Pending rewards accurate
+- Tier progression visible
+- Leaderboard ordered correctly
+- All 4 endpoints functional
+- Socket.IO updates within 1 second
 
 ---
 
@@ -228,18 +228,18 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Test Cases**:
 
--   [ ] Date/time picker works
--   [ ] Submit booking request
--   [ ] Validation messages display
--   [ ] Success confirmation shown
--   [ ] Booking appears in dashboard
+- [ ] Date/time picker works
+- [ ] Submit booking request
+- [ ] Validation messages display
+- [ ] Success confirmation shown
+- [ ] Booking appears in dashboard
 
 **Acceptance Criteria**:
 
--   Form validation working
--   Bookings saved to database
--   User receives confirmation
--   Real-time sync with backend
+- Form validation working
+- Bookings saved to database
+- User receives confirmation
+- Real-time sync with backend
 
 ---
 
@@ -255,10 +255,10 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Acceptance Criteria**:
 
--   [ ] Socket.IO event received
--   [ ] DOM updated immediately
--   [ ] No page refresh needed
--   [ ] Both windows synchronized
+- [ ] Socket.IO event received
+- [ ] DOM updated immediately
+- [ ] No page refresh needed
+- [ ] Both windows synchronized
 
 ---
 
@@ -273,10 +273,10 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Acceptance Criteria**:
 
--   [ ] Socket notification received
--   [ ] Email sent
--   [ ] Notification appears in UI
--   [ ] User can dismiss/acknowledge
+- [ ] Socket notification received
+- [ ] Email sent
+- [ ] Notification appears in UI
+- [ ] User can dismiss/acknowledge
 
 ---
 
@@ -290,9 +290,9 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Acceptance Criteria**:
 
--   [ ] Rankings updated within 5 seconds
--   [ ] User position reflects correctly
--   [ ] Top 10 recalculated accurately
+- [ ] Rankings updated within 5 seconds
+- [ ] User position reflects correctly
+- [ ] Top 10 recalculated accurately
 
 ---
 
@@ -308,9 +308,9 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   [ ] Issue labeled within 1 second
--   [ ] Correct category assigned
--   [ ] Auto-response sent (if configured)
+- [ ] Issue labeled within 1 second
+- [ ] Correct category assigned
+- [ ] Auto-response sent (if configured)
 
 ---
 
@@ -324,11 +324,11 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   [ ] Deployment triggered automatically
--   [ ] Tests pass
--   [ ] Frontend deployed to Render
--   [ ] Backend ready
--   [ ] No manual intervention needed
+- [ ] Deployment triggered automatically
+- [ ] Tests pass
+- [ ] Frontend deployed to Render
+- [ ] Backend ready
+- [ ] No manual intervention needed
 
 ---
 
@@ -341,9 +341,9 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   [ ] Health check runs on schedule
--   [ ] All services report healthy
--   [ ] Alerts triggered if issues found
+- [ ] Health check runs on schedule
+- [ ] All services report healthy
+- [ ] Alerts triggered if issues found
 
 ---
 
@@ -366,11 +366,11 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Acceptance Criteria**:
 
--   [ ] All steps complete without errors
--   [ ] Balances always accurate
--   [ ] Real-time updates throughout
--   [ ] No data inconsistencies
--   [ ] User experience smooth
+- [ ] All steps complete without errors
+- [ ] Balances always accurate
+- [ ] Real-time updates throughout
+- [ ] No data inconsistencies
+- [ ] User experience smooth
 
 ---
 
@@ -387,11 +387,11 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Acceptance Criteria**:
 
--   [ ] App renders correctly
--   [ ] All features accessible
--   [ ] Touch events work properly
--   [ ] No horizontal scrolling
--   [ ] Performance acceptable on mobile
+- [ ] App renders correctly
+- [ ] All features accessible
+- [ ] Touch events work properly
+- [ ] No horizontal scrolling
+- [ ] Performance acceptable on mobile
 
 ---
 
@@ -410,10 +410,10 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Acceptance Criteria**:
 
--   [ ] 95th percentile < SLA
--   [ ] 99th percentile < 2 × SLA
--   [ ] No timeouts
--   [ ] Consistent performance
+- [ ] 95th percentile < SLA
+- [ ] 99th percentile < 2 × SLA
+- [ ] No timeouts
+- [ ] Consistent performance
 
 ---
 
@@ -423,10 +423,10 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   [ ] All requests succeed
--   [ ] No errors or timeouts
--   [ ] Response times acceptable
--   [ ] Database stable
+- [ ] All requests succeed
+- [ ] No errors or timeouts
+- [ ] Response times acceptable
+- [ ] Database stable
 
 ---
 
@@ -436,9 +436,9 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   [ ] Response time < 1 second
--   [ ] All data returned correctly
--   [ ] Pagination working (if applicable)
+- [ ] Response time < 1 second
+- [ ] All data returned correctly
+- [ ] Pagination working (if applicable)
 
 ---
 
@@ -448,17 +448,17 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Test Cases**:
 
--   [ ] Invalid Ethereum address in withdraw
--   [ ] Negative token amount in cashout
--   [ ] Invalid user ID in GET requests
--   [ ] Missing required parameters
+- [ ] Invalid Ethereum address in withdraw
+- [ ] Negative token amount in cashout
+- [ ] Invalid user ID in GET requests
+- [ ] Missing required parameters
 
 **Acceptance Criteria**:
 
--   [ ] 400 Bad Request returned
--   [ ] Error message descriptive
--   [ ] No system errors logged
--   [ ] State remains consistent
+- [ ] 400 Bad Request returned
+- [ ] Error message descriptive
+- [ ] No system errors logged
+- [ ] State remains consistent
 
 ---
 
@@ -471,10 +471,10 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Acceptance Criteria**:
 
--   [ ] 400 or 422 response
--   [ ] Clear error message
--   [ ] No transaction created
--   [ ] Balance unchanged
+- [ ] 400 or 422 response
+- [ ] Clear error message
+- [ ] No transaction created
+- [ ] Balance unchanged
 
 ---
 
@@ -484,10 +484,10 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 **Expected Results**:
 
--   [ ] Error handled gracefully
--   [ ] User sees retry option
--   [ ] No data corruption
--   [ ] Automatic reconnection
+- [ ] Error handled gracefully
+- [ ] User sees retry option
+- [ ] No data corruption
+- [ ] Automatic reconnection
 
 ---
 
@@ -497,24 +497,24 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 ### 4.1 Production Endpoints
 
--   **API Base**: `https://api.advancia.pay` (or current Render URL)
--   **Frontend**: `https://advancia.pay` (or current Render URL)
--   **WebSocket**: `wss://api.advancia.pay` (Socket.IO)
+- **API Base**: `https://api.advancia.pay` (or current Render URL)
+- **Frontend**: `https://advancia.pay` (or current Render URL)
+- **WebSocket**: `wss://api.advancia.pay` (Socket.IO)
 
 ### 4.2 Test Accounts
 
--   **Admin Account**: (provided separately)
--   **Test User 1**: (create during testing)
--   **Test User 2**: (create during testing)
--   **High-Balance User**: (for performance testing)
+- **Admin Account**: (provided separately)
+- **Test User 1**: (create during testing)
+- **Test User 2**: (create during testing)
+- **High-Balance User**: (for performance testing)
 
 ### 4.3 Tools Required
 
--   **API Testing**: Postman or curl
--   **Load Testing**: k6 or Apache JMeter
--   **Browser Testing**: Chrome, Firefox, Safari
--   **Mobile Testing**: iOS Safari, Android Chrome
--   **Monitoring**: Render dashboard, GitHub Actions
+- **API Testing**: Postman or curl
+- **Load Testing**: k6 or Apache JMeter
+- **Browser Testing**: Chrome, Firefox, Safari
+- **Mobile Testing**: iOS Safari, Android Chrome
+- **Monitoring**: Render dashboard, GitHub Actions
 
 ---
 
@@ -534,20 +534,20 @@ This document outlines the comprehensive User Acceptance Testing (UAT) plan for 
 
 ### 6.1 Overall Success Metrics
 
--   ✅ 100% of test cases passed
--   ✅ 0 critical bugs found
--   ✅ 0 high-severity bugs found
--   ✅ Response times meet SLAs
--   ✅ All components functional in production
--   ✅ Real-time updates working correctly
--   ✅ RPA automation verified operational
+- ✅ 100% of test cases passed
+- ✅ 0 critical bugs found
+- ✅ 0 high-severity bugs found
+- ✅ Response times meet SLAs
+- ✅ All components functional in production
+- ✅ Real-time updates working correctly
+- ✅ RPA automation verified operational
 
 ### 6.2 Defect Classification
 
--   **Critical**: System down, data loss, security issue → Fix before UAT sign-off
--   **High**: Feature broken, user data at risk → Fix before sign-off
--   **Medium**: Feature partially working, workaround exists → Can defer to next release
--   **Low**: Minor UI issue, cosmetic → Can defer to next release
+- **Critical**: System down, data loss, security issue → Fix before UAT sign-off
+- **High**: Feature broken, user data at risk → Fix before sign-off
+- **Medium**: Feature partially working, workaround exists → Can defer to next release
+- **Low**: Minor UI issue, cosmetic → Can defer to next release
 
 ---
 
@@ -565,33 +565,33 @@ Screenshot: [If FAIL: Attach screenshot]
 
 ### 7.2 Final UAT Report
 
--   Executive summary
--   Test coverage (% of test cases)
--   Defects by severity
--   Recommendations
--   Sign-off approval
+- Executive summary
+- Test coverage (% of test cases)
+- Defects by severity
+- Recommendations
+- Sign-off approval
 
 ### 7.3 Sign-Off Requirements
 
--   [ ] All test cases executed
--   [ ] All critical bugs fixed
--   [ ] All high-severity bugs fixed
--   [ ] Performance SLAs met
--   [ ] Product Owner approves
--   [ ] Go-live approved
+- [ ] All test cases executed
+- [ ] All critical bugs fixed
+- [ ] All high-severity bugs fixed
+- [ ] Performance SLAs met
+- [ ] Product Owner approves
+- [ ] Go-live approved
 
 ---
 
 ## 8. Go-Live Checklist
 
--   [ ] All UAT test cases passed
--   [ ] Performance validated
--   [ ] Backup procedures tested
--   [ ] Rollback plan documented
--   [ ] Support team trained
--   [ ] Monitoring alerts configured
--   [ ] Incident response plan ready
--   [ ] Stakeholders notified
+- [ ] All UAT test cases passed
+- [ ] Performance validated
+- [ ] Backup procedures tested
+- [ ] Rollback plan documented
+- [ ] Support team trained
+- [ ] Monitoring alerts configured
+- [ ] Incident response plan ready
+- [ ] Stakeholders notified
 
 ---
 
@@ -599,25 +599,25 @@ Screenshot: [If FAIL: Attach screenshot]
 
 ### 9.1 First Week Monitoring
 
--   Real-time error rate tracking
--   Response time monitoring
--   User feedback collection
--   RPA workflow verification
+- Real-time error rate tracking
+- Response time monitoring
+- User feedback collection
+- RPA workflow verification
 
 ### 9.2 Metrics to Track
 
--   API response times (p50, p95, p99)
--   Error rates by endpoint
--   User transaction volume
--   System uptime %
--   RPA automation success rate
+- API response times (p50, p95, p99)
+- Error rates by endpoint
+- User transaction volume
+- System uptime %
+- RPA automation success rate
 
 ### 9.3 Support Escalation
 
--   Critical: Immediate escalation to DevOps
--   High: Escalate to engineering
--   Medium: Log for next sprint
--   Low: Log for backlog
+- Critical: Immediate escalation to DevOps
+- High: Escalate to engineering
+- Medium: Log for next sprint
+- Low: Log for backlog
 
 ---
 

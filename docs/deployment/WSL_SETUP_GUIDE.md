@@ -11,11 +11,11 @@
 
 ### ✅ What You Have
 
--   Windows with PowerShell
--   WSL2 with Ubuntu-24.04 (Running)
--   Docker Desktop (Running)
--   Git configured (already working)
--   Node.js capable environment
+- Windows with PowerShell
+- WSL2 with Ubuntu-24.04 (Running)
+- Docker Desktop (Running)
+- Git configured (already working)
+- Node.js capable environment
 
 ### ⏭️ What We'll Do
 
@@ -542,10 +542,10 @@ git checkout -b development
 
 ## 🔗 Useful Links
 
--   [WSL Documentation](https://docs.microsoft.com/en-us/windows/wsl/)
--   [VS Code WSL Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)
--   [GitHub SSH Setup](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
--   [Node.js Installation](https://nodejs.org/en/download/package-manager/)
+- [WSL Documentation](https://docs.microsoft.com/en-us/windows/wsl/)
+- [VS Code WSL Extension](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-wsl)
+- [GitHub SSH Setup](https://docs.github.com/en/authentication/connecting-to-github-with-ssh)
+- [Node.js Installation](https://nodejs.org/en/download/package-manager/)
 
 ---
 
@@ -553,11 +553,11 @@ git checkout -b development
 
 After following this guide:
 
--   ✅ Project is in WSL
--   ✅ All tools installed
--   ✅ Git configured with SSH
--   ✅ VS Code set up for WSL
--   ✅ Ready to develop!
+- ✅ Project is in WSL
+- ✅ All tools installed
+- ✅ Git configured with SSH
+- ✅ VS Code set up for WSL
+- ✅ Ready to develop!
 
 **Next Steps:**
 

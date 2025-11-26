@@ -90,11 +90,11 @@ Generates 8 new backup codes for the authenticated user. Any existing backup cod
 
 #### Notes
 
--   ⚠️ **CRITICAL**: Codes are only shown once during generation
--   All previous backup codes are invalidated when new ones are generated
--   Codes are 9-digit numbers
--   Codes are hashed using bcrypt before storage
--   Each code can only be used once
+- ⚠️ **CRITICAL**: Codes are only shown once during generation
+- All previous backup codes are invalidated when new ones are generated
+- Codes are 9-digit numbers
+- Codes are hashed using bcrypt before storage
+- Each code can only be used once
 
 #### Example Usage (curl)
 
@@ -211,11 +211,11 @@ Authenticates a user using a backup code. The code is marked as used after succe
 
 #### Notes
 
--   The backup code is marked as used immediately after successful verification
--   A JWT token is issued with 7-day expiration
--   User's `lastLogin` timestamp is updated
--   Warning is shown when 3 or fewer codes remain
--   Once used, a code cannot be used again
+- The backup code is marked as used immediately after successful verification
+- A JWT token is issued with 7-day expiration
+- User's `lastLogin` timestamp is updated
+- Warning is shown when 3 or fewer codes remain
+- Once used, a code cannot be used again
 
 #### Example Usage (curl)
 
@@ -340,10 +340,10 @@ None (GET request)
 
 #### Notes
 
--   Does not reveal actual backup codes
--   `needsRegeneration` is `true` when 3 or fewer codes remain
--   Use this endpoint to display status in user settings
--   Safe to call frequently for UI updates
+- Does not reveal actual backup codes
+- `needsRegeneration` is `true` when 3 or fewer codes remain
+- Use this endpoint to display status in user settings
+- Safe to call frequently for UI updates
 
 #### Example Usage (curl)
 
@@ -443,27 +443,27 @@ CREATE INDEX "backup_codes_isUsed_idx" ON "backup_codes"("isUsed");
 
 ### Storage
 
--   ✅ Codes are hashed with bcrypt before storage
--   ✅ Plain codes are ONLY returned during generation
--   ✅ Codes cannot be retrieved after generation
--   ✅ Used codes are marked and cannot be reused
+- ✅ Codes are hashed with bcrypt before storage
+- ✅ Plain codes are ONLY returned during generation
+- ✅ Codes cannot be retrieved after generation
+- ✅ Used codes are marked and cannot be reused
 
 ### Rate Limiting
 
 Consider implementing:
 
--   Max 3 failed verification attempts per hour
--   Max 5 code generations per day
--   Exponential backoff on failed attempts
+- Max 3 failed verification attempts per hour
+- Max 5 code generations per day
+- Exponential backoff on failed attempts
 
 ### Best Practices
 
--   ✅ Always use HTTPS in production
--   ✅ Require API key for all requests
--   ✅ Validate JWT tokens properly
--   ✅ Log all backup code usage for audit
--   ✅ Notify users via email when codes are used
--   ✅ Implement account lockout after too many failures
+- ✅ Always use HTTPS in production
+- ✅ Require API key for all requests
+- ✅ Validate JWT tokens properly
+- ✅ Log all backup code usage for audit
+- ✅ Notify users via email when codes are used
+- ✅ Implement account lockout after too many failures
 
 ---
 
@@ -552,27 +552,27 @@ curl -X GET https://api.advanciapayledger.com/api/auth/backup-codes-status \
 
 **Solution**:
 
--   Verify the code hasn't been used before
--   Check for typos or extra spaces
--   Ensure code belongs to the correct user
--   Confirm backup codes were generated for this account
+- Verify the code hasn't been used before
+- Check for typos or extra spaces
+- Ensure code belongs to the correct user
+- Confirm backup codes were generated for this account
 
 ### Issue: "No backup codes available"
 
 **Solution**:
 
--   User needs to generate backup codes first
--   OR all codes have been used (generate new ones)
--   Use alternative authentication method
+- User needs to generate backup codes first
+- OR all codes have been used (generate new ones)
+- Use alternative authentication method
 
 ### Issue: Codes not working after generation
 
 **Solution**:
 
--   Wait a few seconds for database sync
--   Check database migration was run
--   Verify codes were saved correctly
--   Check server logs for errors
+- Wait a few seconds for database sync
+- Check database migration was run
+- Verify codes were saved correctly
+- Check server logs for errors
 
 ---
 
@@ -582,9 +582,9 @@ curl -X GET https://api.advanciapayledger.com/api/auth/backup-codes-status \
 
 **Documentation**:
 
--   Main Guide: `BACKUP_CODES_GUIDE.md`
--   Storage Info: `BACKUP_CODES_STORED.md`
--   Your Codes: `AUTH_BACKUP_KEYS.md` (local only, not in Git)
+- Main Guide: `BACKUP_CODES_GUIDE.md`
+- Storage Info: `BACKUP_CODES_STORED.md`
+- Your Codes: `AUTH_BACKUP_KEYS.md` (local only, not in Git)
 
 ---
 
@@ -592,12 +592,12 @@ curl -X GET https://api.advanciapayledger.com/api/auth/backup-codes-status \
 
 ### Version 1.0 (October 18, 2025)
 
--   ✅ Initial implementation
--   ✅ Generate backup codes endpoint
--   ✅ Verify backup code endpoint
--   ✅ Get status endpoint
--   ✅ Database migration
--   ✅ Comprehensive documentation
+- ✅ Initial implementation
+- ✅ Generate backup codes endpoint
+- ✅ Verify backup code endpoint
+- ✅ Get status endpoint
+- ✅ Database migration
+- ✅ Comprehensive documentation
 
 ---
 

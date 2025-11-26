@@ -16,10 +16,10 @@ This guide will help you provide excellent customer support using our AI-powered
 
 ### Quick Access
 
--   **Backend API**: <http://localhost:4000/api>
--   **Frontend**: <http://localhost:3001>
--   **AI Analytics**: <http://localhost:4000/api/ai-analytics>
--   **Admin Chat Monitor**: <http://localhost:3001/admin/chat>
+- **Backend API**: <http://localhost:4000/api>
+- **Frontend**: <http://localhost:3001>
+- **AI Analytics**: <http://localhost:4000/api/ai-analytics>
+- **Admin Chat Monitor**: <http://localhost:3001/admin/chat>
 
 ---
 
@@ -27,27 +27,27 @@ This guide will help you provide excellent customer support using our AI-powered
 
 ### 1. Live Chat Support
 
--   Monitor the Admin Chat Dashboard for incoming messages
--   Respond within 5 minutes during business hours
--   Use knowledge base templates for consistency
--   Escalate complex technical issues
+- Monitor the Admin Chat Dashboard for incoming messages
+- Respond within 5 minutes during business hours
+- Use knowledge base templates for consistency
+- Escalate complex technical issues
 
 ### 2. Support Ticket Management
 
--   Review new tickets in Admin Dashboard
--   Categorize by priority (High, Medium, Low)
--   Respond within:
-    -   Critical (account locked): 2-4 hours
-    -   High (transaction issues): 4-8 hours
-    -   Medium (general questions): 8-24 hours
-    -   Low (feature requests): 24-48 hours
+- Review new tickets in Admin Dashboard
+- Categorize by priority (High, Medium, Low)
+- Respond within:
+  - Critical (account locked): 2-4 hours
+  - High (transaction issues): 4-8 hours
+  - Medium (general questions): 8-24 hours
+  - Low (feature requests): 24-48 hours
 
 ### 3. User Account Management
 
--   Verify user identity before account changes
--   Assist with 2FA setup and password resets
--   Monitor for suspicious activity
--   Report fraud attempts to security team
+- Verify user identity before account changes
+- Assist with 2FA setup and password resets
+- Monitor for suspicious activity
+- Report fraud attempts to security team
 
 ---
 
@@ -66,10 +66,10 @@ To check your balance:
 
 1. Navigate to your Dashboard
 2. Your balances are displayed at the top:
-   -   USD Balance (for fiat transactions)
-   -   BTC Balance (Bitcoin holdings)
-   -   ETH Balance (Ethereum holdings)
-   -   USDT Balance (Tether stablecoin)
+   - USD Balance (for fiat transactions)
+   - BTC Balance (Bitcoin holdings)
+   - ETH Balance (Ethereum holdings)
+   - USDT Balance (Tether stablecoin)
 
 You can also view detailed transaction history in the Transactions section.
 ` ext
@@ -84,22 +84,22 @@ You can also view detailed transaction history in the Transactions section.
 To add funds to your Advancia account:
 
 1. CRYPTO DEPOSIT:
-   -   Go to Crypto Trading → Deposit
-   -   Select your cryptocurrency (BTC/ETH/USDT)
-   -   Send to your unique wallet address
-   -   Funds appear after network confirmation
+   - Go to Crypto Trading → Deposit
+   - Select your cryptocurrency (BTC/ETH/USDT)
+   - Send to your unique wallet address
+   - Funds appear after network confirmation
 
 2. BANK TRANSFER (USD):
-   -   Navigate to Add Funds section
-   -   Select bank transfer option
-   -   Follow wire transfer instructions
-   -   Processing time: 1-3 business days
+   - Navigate to Add Funds section
+   - Select bank transfer option
+   - Follow wire transfer instructions
+   - Processing time: 1-3 business days
 
 3. DEBIT/CREDIT CARD:
-   -   Use the Card Payment option
-   -   Enter card details
-   -   Instant credit to your account
-   -   2.5% processing fee applies
+   - Use the Card Payment option
+   - Enter card details
+   - Instant credit to your account
+   - 2.5% processing fee applies
 
 Need additional help? I'm here!
 ` ext
@@ -155,9 +155,9 @@ FEES:
 
 TIPS:
 
--   Start small to familiarize yourself
--   Monitor market trends in the Market Insights section
--   Set price alerts for your target buy price
+- Start small to familiarize yourself
+- Monitor market trends in the Market Insights section
+- Set price alerts for your target buy price
 
 We also support Ethereum (ETH), Tether (USDT), and ADVANCIA Token!
 ` ext
@@ -180,17 +180,17 @@ STEP-BY-STEP:
    □ Diagnostic ($75) - Comprehensive health scan
 
 3. CHOOSE DATE & TIME:
-   -   Select from available slots
-   -   Sessions run every hour
-   -   Book up to 2 weeks in advance
+   - Select from available slots
+   - Sessions run every hour
+   - Book up to 2 weeks in advance
 
 4. PAYMENT:
-   -   Deducted from USD balance
-   -   Must have sufficient funds
+   - Deducted from USD balance
+   - Must have sufficient funds
 
 5. CONFIRMATION:
-   -   Email confirmation sent immediately
-   -   Calendar reminder 24 hours before
+   - Email confirmation sent immediately
+   - Calendar reminder 24 hours before
 
 CANCELLATION POLICY:
 • Free cancellation 48+ hours before
@@ -247,22 +247,22 @@ SETUP PROCESS:
 3. CHOOSE METHOD:
 
    A) TOTP AUTHENTICATOR APP (Recommended):
-   -   Download Google Authenticator or Authy
-   -   Scan QR code shown on screen
-   -   Enter 6-digit code to verify
-   -   Save backup codes (IMPORTANT!)
+   - Download Google Authenticator or Authy
+   - Scan QR code shown on screen
+   - Enter 6-digit code to verify
+   - Save backup codes (IMPORTANT!)
 
    B) EMAIL OTP:
-   -   Enter your email
-   -   Receive 6-digit code
-   -   Verify code
-   -   2FA active on next login
+   - Enter your email
+   - Receive 6-digit code
+   - Verify code
+   - 2FA active on next login
 
 ⚠️ CRITICAL: Save your 8 backup codes
 
--   Use if you lose your phone
--   Each code works once
--   Store securely offline
+- Use if you lose your phone
+- Each code works once
+- Store securely offline
 
 Enable 2FA now for maximum security!
 ` ext
@@ -308,47 +308,47 @@ If you still can't access your account, I can escalate this to our account recov
 ### When to Escalate to Tier 2 Support
 
 1. **Account Access Issues**
-   -   User locked out after multiple failed attempts
-   -   Lost access to 2FA device and backup codes
-   -   Suspected account compromise
+   - User locked out after multiple failed attempts
+   - Lost access to 2FA device and backup codes
+   - Suspected account compromise
 
 2. **Large Transaction Disputes**
-   -   Disputes over $10,000
-   -   Suspected fraud or unauthorized transactions
-   -   Crypto withdrawal issues
+   - Disputes over $10,000
+   - Suspected fraud or unauthorized transactions
+   - Crypto withdrawal issues
 
 3. **Technical Bugs**
-   -   System errors preventing core functionality
-   -   Data loss or corruption
-   -   Security vulnerabilities
+   - System errors preventing core functionality
+   - Data loss or corruption
+   - Security vulnerabilities
 
 4. **Legal/Compliance**
-   -   KYC verification problems
-   -   Regulatory questions
-   -   Legal document requests
+   - KYC verification problems
+   - Regulatory questions
+   - Legal document requests
 
 5. **Platform Outages**
-   -   Multiple users reporting same issue
-   -   Service degradation
-   -   API failures
+   - Multiple users reporting same issue
+   - Service degradation
+   - API failures
 
 ### How to Escalate
 
 1. **Create Priority Ticket**
-   -   Mark as "HIGH" or "CRITICAL" priority
-   -   Include all relevant details
-   -   Attach screenshots if available
-   -   Tag appropriate team (Security, Technical, Legal)
+   - Mark as "HIGH" or "CRITICAL" priority
+   - Include all relevant details
+   - Attach screenshots if available
+   - Tag appropriate team (Security, Technical, Legal)
 
 2. **Notify Team Lead**
-   -   Immediate notification for critical issues
-   -   Include ticket ID and summary
-   -   Recommend immediate action if needed
+   - Immediate notification for critical issues
+   - Include ticket ID and summary
+   - Recommend immediate action if needed
 
 3. **Update User**
-   -   Inform user of escalation
-   -   Provide ticket reference number
-   -   Set realistic expectations for response time
+   - Inform user of escalation
+   - Provide ticket reference number
+   - Set realistic expectations for response time
 
 ---
 
@@ -357,44 +357,44 @@ If you still can't access your account, I can escalate this to our account recov
 ### Admin Dashboard Features
 
 1. **User Management** (`/admin/users`)
-   -   Search and view user accounts
-   -   Check verification status
-   -   View balance and transaction history
-   -   Modify user tier (Bronze, Silver, Gold, Platinum)
-   -   Lock/unlock accounts
+   - Search and view user accounts
+   - Check verification status
+   - View balance and transaction history
+   - Modify user tier (Bronze, Silver, Gold, Platinum)
+   - Lock/unlock accounts
 
 2. **Transaction Monitoring** (`/admin/transactions`)
-   -   View all platform transactions
-   -   Filter by date, amount, type
-   -   Check transaction status
-   -   Refund processing
+   - View all platform transactions
+   - Filter by date, amount, type
+   - Check transaction status
+   - Refund processing
 
 3. **Support Tickets** (`/admin/support`)
-   -   View all open tickets
-   -   Assign tickets to team members
-   -   Update ticket status
-   -   Add internal notes
-   -   Close resolved tickets
+   - View all open tickets
+   - Assign tickets to team members
+   - Update ticket status
+   - Add internal notes
+   - Close resolved tickets
 
 4. **Live Chat Monitor** (`/admin/chat`)
-   -   View active chat sessions
-   -   Join conversations
-   -   Send replies to users
-   -   View chat history
-   -   See new ticket notifications
+   - View active chat sessions
+   - Join conversations
+   - Send replies to users
+   - View chat history
+   - See new ticket notifications
 
 5. **IP Blocking** (`/admin/ip-blocks`)
-   -   View blocked IPs
-   -   Add new blocks
-   -   Unblock IPs
-   -   View block reasons
+   - View blocked IPs
+   - Add new blocks
+   - Unblock IPs
+   - View block reasons
 
 6. **Analytics** (`/admin/analytics`)
-   -   Platform usage statistics
-   -   User growth trends
-   -   Transaction volumes
-   -   Revenue metrics
-   -   Service utilization
+   - Platform usage statistics
+   - User growth trends
+   - Transaction volumes
+   - Revenue metrics
+   - Service utilization
 
 ### Using AI Analytics API
 
@@ -451,10 +451,10 @@ Response: Platform-wide analytics and trends
 
 **Solutions:**
 
--   Password reset link
--   2FA recovery with backup codes
--   Wait for auto-unlock or admin unlock
--   Contact account recovery team
+- Password reset link
+- 2FA recovery with backup codes
+- Wait for auto-unlock or admin unlock
+- Contact account recovery team
 
 ### Issue 2: "Transaction not showing"
 
@@ -467,9 +467,9 @@ Response: Platform-wide analytics and trends
 
 **Solutions:**
 
--   Wait for network confirmations (can take 30-60 min for crypto)
--   Check with blockchain explorer using transaction hash
--   Create investigation ticket if funds were deducted but not credited
+- Wait for network confirmations (can take 30-60 min for crypto)
+- Check with blockchain explorer using transaction hash
+- Create investigation ticket if funds were deducted but not credited
 
 ### Issue 3: "Withdrawal taking too long"
 
@@ -482,10 +482,10 @@ Response: Platform-wide analytics and trends
 
 **Solutions:**
 
--   Explain normal processing times (1-24 hours)
--   Verify user identity if KYC not complete
--   Check with admin if approval is pending
--   Create priority ticket if exceeding SLA
+- Explain normal processing times (1-24 hours)
+- Verify user identity if KYC not complete
+- Check with admin if approval is pending
+- Create priority ticket if exceeding SLA
 
 ### Issue 4: "Med Beds booking failed"
 
@@ -498,10 +498,10 @@ Response: Platform-wide analytics and trends
 
 **Solutions:**
 
--   Guide user to add funds if insufficient
--   Suggest alternative time slots
--   Create technical ticket if system issue
--   Manually process booking if payment went through
+- Guide user to add funds if insufficient
+- Suggest alternative time slots
+- Create technical ticket if system issue
+- Manually process booking if payment went through
 
 ### Issue 5: "Debit card not working"
 
@@ -515,11 +515,11 @@ Response: Platform-wide analytics and trends
 
 **Solutions:**
 
--   Remind user card balance = USD balance
--   Unfreeze card if frozen
--   Verify card details are correct
--   Test with small transaction
--   Issue new card if defective
+- Remind user card balance = USD balance
+- Unfreeze card if frozen
+- Verify card details are correct
+- Test with small transaction
+- Issue new card if defective
 
 ---
 
@@ -528,34 +528,34 @@ Response: Platform-wide analytics and trends
 ### Key Performance Indicators (KPIs)
 
 1. **Response Time**
-   -   Target: < 5 minutes for initial response
-   -   Measured: Time from message received to first reply
+   - Target: < 5 minutes for initial response
+   - Measured: Time from message received to first reply
 
 2. **Resolution Time**
-   -   Target: < 24 hours for 80% of tickets
-   -   Measured: Time from ticket creation to closure
+   - Target: < 24 hours for 80% of tickets
+   - Measured: Time from ticket creation to closure
 
 3. **Customer Satisfaction (CSAT)**
-   -   Target: > 90% satisfaction rate
-   -   Measured: Post-interaction survey
+   - Target: > 90% satisfaction rate
+   - Measured: Post-interaction survey
 
 4. **First Contact Resolution (FCR)**
-   -   Target: > 70% resolved on first contact
-   -   Measured: Tickets resolved without escalation
+   - Target: > 70% resolved on first contact
+   - Measured: Tickets resolved without escalation
 
 5. **Ticket Volume**
-   -   Monitor daily ticket trends
-   -   Identify common issues for knowledge base updates
+   - Monitor daily ticket trends
+   - Identify common issues for knowledge base updates
 
 ### Daily Checklist
 
--   [ ] Check for overnight tickets (Priority: High first)
--   [ ] Monitor live chat for active sessions
--   [ ] Review open tickets and update status
--   [ ] Check for system alerts or outages
--   [ ] Update knowledge base with new solutions
--   [ ] Report metrics to team lead
--   [ ] Flag recurring issues for product team
+- [ ] Check for overnight tickets (Priority: High first)
+- [ ] Monitor live chat for active sessions
+- [ ] Review open tickets and update status
+- [ ] Check for system alerts or outages
+- [ ] Update knowledge base with new solutions
+- [ ] Report metrics to team lead
+- [ ] Flag recurring issues for product team
 
 ---
 
@@ -599,10 +599,10 @@ Response: Platform-wide analytics and trends
 
 ### Data Privacy
 
--   Never ask for passwords
--   Don't share other users' information
--   Use secure channels for sensitive data
--   Follow GDPR/privacy regulations
+- Never ask for passwords
+- Don't share other users' information
+- Use secure channels for sensitive data
+- Follow GDPR/privacy regulations
 
 ### Verification Procedures
 
@@ -615,12 +615,12 @@ Before making account changes:
 
 ### Red Flags (Potential Fraud)
 
--   Multiple account access attempts
--   Sudden large withdrawals
--   Unusual location access
--   Requests to bypass security measures
--   Pressure for immediate action
--   Requests to send funds to "support" addresses
+- Multiple account access attempts
+- Sudden large withdrawals
+- Unusual location access
+- Requests to bypass security measures
+- Pressure for immediate action
+- Requests to send funds to "support" addresses
 
 **Action:** Report immediately to security team
 
@@ -630,51 +630,51 @@ Before making account changes:
 
 ### Internal Support
 
--   **Team Lead:** [Insert contact]
--   **Technical Support:** <tech@advanciapayledger.com>
--   **Security Team:** <security@advanciapayledger.com>
--   **Compliance:** <compliance@advanciapayledger.com>
+- **Team Lead:** [Insert contact]
+- **Technical Support:** <tech@advanciapayledger.com>
+- **Security Team:** <security@advanciapayledger.com>
+- **Compliance:** <compliance@advanciapayledger.com>
 
 ### External Support (for users)
 
--   **General Support:** <support@advanciapayledger.com>
--   **Technical Issues:** <tech@advanciapayledger.com>
--   **Billing Questions:** <billing@advanciapayledger.com>
+- **General Support:** <support@advanciapayledger.com>
+- **Technical Issues:** <tech@advanciapayledger.com>
+- **Billing Questions:** <billing@advanciapayledger.com>
 
 ### Emergency Escalation
 
--   **Critical Security:** [Phone number]
--   **System Outage:** [Phone number]
--   **Legal/Compliance:** [Phone number]
+- **Critical Security:** [Phone number]
+- **System Outage:** [Phone number]
+- **Legal/Compliance:** [Phone number]
 
 ---
 
 ## 💡 Pro Tips for Success
 
 1. **Be Proactive**
-   -   Anticipate user needs
-   -   Offer additional help before they ask
-   -   Suggest relevant features they might not know about
+   - Anticipate user needs
+   - Offer additional help before they ask
+   - Suggest relevant features they might not know about
 
 2. **Use Positive Language**
-   -   "I can help you with that" instead of "I can't..."
-   -   "Let's fix this together" instead of "You need to..."
-   -   "This will be resolved soon" instead of "This might take a while"
+   - "I can help you with that" instead of "I can't..."
+   - "Let's fix this together" instead of "You need to..."
+   - "This will be resolved soon" instead of "This might take a while"
 
 3. **Personalize Responses**
-   -   Use user's name
-   -   Reference their specific situation
-   -   Show empathy and understanding
+   - Use user's name
+   - Reference their specific situation
+   - Show empathy and understanding
 
 4. **Stay Updated**
-   -   Review knowledge base updates weekly
-   -   Attend team training sessions
-   -   Share learnings with the team
+   - Review knowledge base updates weekly
+   - Attend team training sessions
+   - Share learnings with the team
 
 5. **Document Everything**
-   -   Add notes to tickets
-   -   Update knowledge base with new solutions
-   -   Track common issues for product improvements
+   - Add notes to tickets
+   - Update knowledge base with new solutions
+   - Track common issues for product improvements
 
 ---
 
@@ -690,10 +690,10 @@ Before making account changes:
 
 ### Quick Reference Cards
 
--   **Transaction Limits by Tier** (see Platform Policies section in AI_KNOWLEDGE_BASE.md)
--   **Service Pricing** (Debit Card: $1000, Med Beds: $50-$100, Loans: Variable)
--   **Processing Times** (Crypto: 30-60 min, Bank Transfer: 1-3 days, Cards: Instant)
--   **Tier Requirements** (Bronze: Free, Silver: $500 volume, Gold: $5k, Platinum: $50k)
+- **Transaction Limits by Tier** (see Platform Policies section in AI_KNOWLEDGE_BASE.md)
+- **Service Pricing** (Debit Card: $1000, Med Beds: $50-$100, Loans: Variable)
+- **Processing Times** (Crypto: 30-60 min, Bank Transfer: 1-3 days, Cards: Instant)
+- **Tier Requirements** (Bronze: Free, Silver: $500 volume, Gold: $5k, Platinum: $50k)
 
 ---
 
@@ -701,35 +701,35 @@ Before making account changes:
 
 ### Week 1: Foundation
 
--   [ ] Read complete AI_TRAINING_CONTEXT.md
--   [ ] Study AI_KNOWLEDGE_BASE.md conversation examples
--   [ ] Get admin dashboard access
--   [ ] Practice with test accounts
--   [ ] Shadow 10 support interactions
+- [ ] Read complete AI_TRAINING_CONTEXT.md
+- [ ] Study AI_KNOWLEDGE_BASE.md conversation examples
+- [ ] Get admin dashboard access
+- [ ] Practice with test accounts
+- [ ] Shadow 10 support interactions
 
 ### Week 2: Hands-On
 
--   [ ] Handle supervised chat sessions
--   [ ] Respond to low-priority tickets
--   [ ] Learn admin tools (user lookup, transaction check)
--   [ ] Complete training exercises
--   [ ] Get feedback from team lead
+- [ ] Handle supervised chat sessions
+- [ ] Respond to low-priority tickets
+- [ ] Learn admin tools (user lookup, transaction check)
+- [ ] Complete training exercises
+- [ ] Get feedback from team lead
 
 ### Week 3: Independence
 
--   [ ] Handle tickets independently
--   [ ] Participate in live chat support
--   [ ] Escalate appropriately
--   [ ] Contribute to knowledge base
--   [ ] Achieve 85%+ CSAT score
+- [ ] Handle tickets independently
+- [ ] Participate in live chat support
+- [ ] Escalate appropriately
+- [ ] Contribute to knowledge base
+- [ ] Achieve 85%+ CSAT score
 
 ### Week 4: Mastery
 
--   [ ] Handle all ticket types
--   [ ] Meet response time SLAs
--   [ ] Mentor new team members
--   [ ] Identify process improvements
--   [ ] Achieve 90%+ CSAT score
+- [ ] Handle all ticket types
+- [ ] Meet response time SLAs
+- [ ] Mentor new team members
+- [ ] Identify process improvements
+- [ ] Achieve 90%+ CSAT score
 
 ---
 
@@ -737,19 +737,19 @@ Before making account changes:
 
 ### Our Commitment
 
--   **Fast Response:** < 5 minutes for live chat
--   **Accurate Information:** Use verified knowledge base
--   **Empathetic Service:** Understand user frustration
--   **Complete Resolution:** Follow through until solved
--   **Professional Demeanor:** Always courteous and helpful
+- **Fast Response:** < 5 minutes for live chat
+- **Accurate Information:** Use verified knowledge base
+- **Empathetic Service:** Understand user frustration
+- **Complete Resolution:** Follow through until solved
+- **Professional Demeanor:** Always courteous and helpful
 
 ### User Experience Goals
 
--   Users feel heard and understood
--   Issues are resolved efficiently
--   Users learn to self-serve when possible
--   Trust in Advancia platform is strengthened
--   Users become advocates for the platform
+- Users feel heard and understood
+- Issues are resolved efficiently
+- Users learn to self-serve when possible
+- Trust in Advancia platform is strengthened
+- Users become advocates for the platform
 
 ---
 

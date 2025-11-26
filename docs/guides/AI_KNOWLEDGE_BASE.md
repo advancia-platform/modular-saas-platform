@@ -16,10 +16,10 @@ To check your balance:
 
 1. Navigate to your Dashboard
 2. Your balances are displayed at the top:
-   -   USD Balance (for fiat transactions)
-   -   BTC Balance (Bitcoin holdings)
-   -   ETH Balance (Ethereum holdings)
-   -   USDT Balance (Tether stablecoin)
+   - USD Balance (for fiat transactions)
+   - BTC Balance (Bitcoin holdings)
+   - ETH Balance (Ethereum holdings)
+   - USDT Balance (Tether stablecoin)
 
 You can also view detailed transaction history in the Transactions section.
 ` ext
@@ -31,22 +31,22 @@ You can also view detailed transaction history in the Transactions section.
 To add funds to your Advancia account:
 
 1. CRYPTO DEPOSIT:
-   -   Go to Crypto Trading → Deposit
-   -   Select your cryptocurrency (BTC/ETH/USDT)
-   -   Send to your unique wallet address
-   -   Funds appear after network confirmation
+   - Go to Crypto Trading → Deposit
+   - Select your cryptocurrency (BTC/ETH/USDT)
+   - Send to your unique wallet address
+   - Funds appear after network confirmation
 
 2. BANK TRANSFER (USD):
-   -   Navigate to Add Funds section
-   -   Select bank transfer option
-   -   Follow wire transfer instructions
-   -   Processing time: 1-3 business days
+   - Navigate to Add Funds section
+   - Select bank transfer option
+   - Follow wire transfer instructions
+   - Processing time: 1-3 business days
 
 3. DEBIT/CREDIT CARD:
-   -   Use the Card Payment option
-   -   Enter card details
-   -   Instant credit to your account
-   -   2.5% processing fee applies
+   - Use the Card Payment option
+   - Enter card details
+   - Instant credit to your account
+   - 2.5% processing fee applies
 
 Need help? Contact <support@advanciapayledger.com>
 ` ext
@@ -76,10 +76,10 @@ WHAT TO DO:
 If issue persists:
 → Create a Support Ticket with:
 
--   Transaction ID (if available)
--   Amount you tried to send
--   Timestamp of the attempt
--   Error message screenshot
+- Transaction ID (if available)
+- Amount you tried to send
+- Timestamp of the attempt
+- Error message screenshot
 
 Support team typically responds within 24 hours.
 ` ext
@@ -115,9 +115,9 @@ FEES:
 
 TIPS:
 
--   Start small to familiarize yourself
--   Monitor market trends in the Market Insights section
--   Set price alerts for your target buy price
+- Start small to familiarize yourself
+- Monitor market trends in the Market Insights section
+- Set price alerts for your target buy price
 
 Need more crypto options? We also support:
 • Ethereum (ETH)
@@ -151,8 +151,8 @@ FEES:
 
 PROCESSING TIME:
 
--   Approval: 15-60 minutes
--   Blockchain confirmation: 30-60 minutes (3 confirmations)
+- Approval: 15-60 minutes
+- Blockchain confirmation: 30-60 minutes (3 confirmations)
 
 SECURITY TIPS:
 ⚠️ Always verify wallet address (copy-paste carefully)
@@ -262,24 +262,24 @@ STEP-BY-STEP BOOKING:
    □ Diagnostic ($75)
 
 3. CHOOSE DATE & TIME:
-   -   Select from available slots
-   -   Sessions run every hour
-   -   Book up to 2 weeks in advance
+   - Select from available slots
+   - Sessions run every hour
+   - Book up to 2 weeks in advance
 
 4. ADD NOTES (Optional):
-   -   Specific wellness goals
-   -   Health concerns
-   -   First-time visitor info
+   - Specific wellness goals
+   - Health concerns
+   - First-time visitor info
 
 5. PAYMENT:
-   -   Deducted from USD balance
-   -   Must have sufficient funds
-   -   No refunds within 24 hours
+   - Deducted from USD balance
+   - Must have sufficient funds
+   - No refunds within 24 hours
 
 6. CONFIRMATION:
-   -   Email confirmation sent immediately
-   -   Calendar reminder 24 hours before
-   -   Session details in your dashboard
+   - Email confirmation sent immediately
+   - Calendar reminder 24 hours before
+   - Session details in your dashboard
 
 BEFORE YOUR SESSION:
 • Arrive 10 minutes early
@@ -330,10 +330,10 @@ HOW TO PURCHASE:
 
 CARD DETAILS DISPLAYED:
 
--   16-digit card number
--   Expiration date
--   CVV security code
--   Your name as cardholder
+- 16-digit card number
+- Expiration date
+- CVV security code
+- Your name as cardholder
 
 USING YOUR CARD:
 • Online: Enter card details at checkout
@@ -387,9 +387,9 @@ APPLICATION PROCESS:
 2. Select loan amount and term
 3. Review your estimated rate
 4. Submit application with:
-   -   Employment details
-   -   Income verification
-   -   Purpose of loan
+   - Employment details
+   - Income verification
+   - Purpose of loan
 5. Await approval (24-48 hours)
 6. Funds deposited to USD balance upon approval
 
@@ -481,40 +481,40 @@ SETUP PROCESS:
 3. CHOOSE METHOD:
 
    A) TOTP AUTHENTICATOR APP (Recommended):
-   -   Download Google Authenticator or Authy
-   -   Scan QR code shown on screen
-   -   Enter 6-digit code to verify
-   -   Save backup codes (IMPORTANT!)
+   - Download Google Authenticator or Authy
+   - Scan QR code shown on screen
+   - Enter 6-digit code to verify
+   - Save backup codes (IMPORTANT!)
 
    B) EMAIL OTP:
-   -   Enter your email
-   -   Receive 6-digit code
-   -   Verify code
-   -   2FA active on next login
+   - Enter your email
+   - Receive 6-digit code
+   - Verify code
+   - 2FA active on next login
 
 BACKUP CODES:
 ⚠️ CRITICAL: Save your 8 backup codes
 
--   Use if you lose your phone
--   Each code works once
--   Store securely offline
+- Use if you lose your phone
+- Each code works once
+- Store securely offline
 
 USING 2FA:
 • Enter code after password at login
 • Required for sensitive actions:
 
--   Withdrawals
--   Card viewing
--   Account settings changes
--   Large transactions
+- Withdrawals
+- Card viewing
+- Account settings changes
+- Large transactions
 
 LOST ACCESS?
 → Use backup codes
 → Contact <support@advanciapayledger.com> with:
 
--   Account email
--   Photo ID
--   Recent transaction details
+- Account email
+- Photo ID
+- Recent transaction details
 
 BENEFITS:
 ✓ 99.9% protection against unauthorized access
@@ -560,10 +560,10 @@ Email: <support@advanciapayledger.com>
 Subject: "Password Reset Assistance"
 Include:
 
--   Registered email
--   Username (if known)
--   Account creation date (approximate)
--   Recent transaction details (for verification)
+- Registered email
+- Username (if known)
+- Account creation date (approximate)
+- Recent transaction details (for verification)
 
 Response time: Within 4 hours during business hours
 
@@ -940,11 +940,11 @@ View your current limits: Settings → Account Limits
 
 ### Tone
 
--   Professional yet friendly
--   Helpful and patient
--   Clear and concise
--   Empathetic to user concerns
--   Educational (explain WHY, not just HOW)
+- Professional yet friendly
+- Helpful and patient
+- Clear and concise
+- Empathetic to user concerns
+- Educational (explain WHY, not just HOW)
 
 ### Structure
 

@@ -4,8 +4,8 @@ This guide explains how to backup and restore the PostgreSQL database using the 
 
 ## Prerequisites
 
--   Docker and Docker Compose installed
--   Database container running (started via `docker-compose up -d`)
+- Docker and Docker Compose installed
+- Database container running (started via `docker-compose up -d`)
 
 ## Backup Database
 
@@ -19,9 +19,9 @@ Run the backup script from the project root:
 
 This will:
 
--   Create a timestamped backup file in `./db_backups/`
--   Automatically clean up old backups (keeps last 10)
--   Show backup file size and location
+- Create a timestamped backup file in `./db_backups/`
+- Automatically clean up old backups (keeps last 10)
+- Show backup file size and location
 
 ### Backup File Location
 
@@ -143,5 +143,5 @@ rm ./db_backups/backup_*.sql
 
 ## Additional Resources
 
--   [PostgreSQL Backup Documentation](https://www.postgresql.org/docs/current/backup.html)
--   [Docker Compose Documentation](https://docs.docker.com/compose/)
+- [PostgreSQL Backup Documentation](https://www.postgresql.org/docs/current/backup.html)
+- [Docker Compose Documentation](https://docs.docker.com/compose/)

@@ -26,9 +26,9 @@ https://advanciapayledger.com
 
 **Expected:**
 
--   ✅ Should redirect to `/auth/login` page
--   ✅ See "Advancia Pay" login page with gradient background
--   ✅ Two login options: Regular login + One-Time Code
+- ✅ Should redirect to `/auth/login` page
+- ✅ See "Advancia Pay" login page with gradient background
+- ✅ Two login options: Regular login + One-Time Code
 
 ---
 
@@ -36,9 +36,9 @@ https://advanciapayledger.com
 
 At bottom of login page:
 
--   ✅ Look for "Don't have an account? Create Account"
--   ✅ Click "Create Account" link
--   ✅ Should navigate to `/auth/register`
+- ✅ Look for "Don't have an account? Create Account"
+- ✅ Click "Create Account" link
+- ✅ Should navigate to `/auth/register`
 
 ---
 
@@ -58,9 +58,9 @@ Fill out the registration form:
 
 **Expected:**
 
--   ✅ Loading state: "Creating Account..."
--   ✅ Redirect to login page after success
--   ✅ May see "Registration successful" message
+- ✅ Loading state: "Creating Account..."
+- ✅ Redirect to login page after success
+- ✅ May see "Registration successful" message
 
 ---
 
@@ -81,8 +81,8 @@ On login page (`/auth/login`):
 2. Enter email: `pdtribe181@gmail.com`
 3. Click "Send Code"
 4. **Expected:**
-   -   OTP sent to your email (if email service configured)
-   -   OR see error if email not configured (that's okay for testing)
+   - OTP sent to your email (if email service configured)
+   - OR see error if email not configured (that's okay for testing)
 
 ---
 
@@ -92,14 +92,14 @@ After successful login:
 
 **Expected:**
 
--   ✅ Redirect to `https://advanciapayledger.com/dashboard`
--   ✅ See dashboard with:
-    -   Sidebar navigation
-    -   Balance overview
-    -   Quick actions
-    -   Recent transactions
--   ✅ Your username displayed
--   ✅ Full access to all features
+- ✅ Redirect to `https://advanciapayledger.com/dashboard`
+- ✅ See dashboard with:
+  - Sidebar navigation
+  - Balance overview
+  - Quick actions
+  - Recent transactions
+- ✅ Your username displayed
+- ✅ Full access to all features
 
 ---
 
@@ -107,9 +107,9 @@ After successful login:
 
 1. Click logout button (usually in sidebar or profile menu)
 2. **Expected:**
-   -   Redirect back to `/auth/login`
-   -   Can't access dashboard without login
-   -   Must login again to access
+   - Redirect back to `/auth/login`
+   - Can't access dashboard without login
+   - Must login again to access
 
 ---
 
@@ -118,9 +118,9 @@ After successful login:
 1. **Logout first** (or use incognito mode)
 2. Try to visit: `https://advanciapayledger.com/dashboard`
 3. **Expected:**
-   -   ✅ Automatically redirect to `/auth/login`
-   -   ✅ Cannot access dashboard without authentication
-   -   ✅ See "Verifying access..." loading screen briefly
+   - ✅ Automatically redirect to `/auth/login`
+   - ✅ Cannot access dashboard without authentication
+   - ✅ See "Verifying access..." loading screen briefly
 
 ---
 
@@ -128,31 +128,31 @@ After successful login:
 
 ### **✅ Registration Works:**
 
--   [ ] Can create account with <pdtribe181@gmail.com>
--   [ ] Password validation works (min 6 chars)
--   [ ] Password confirmation matches
--   [ ] Terms checkbox required
--   [ ] Redirects to login after success
+- [ ] Can create account with <pdtribe181@gmail.com>
+- [ ] Password validation works (min 6 chars)
+- [ ] Password confirmation matches
+- [ ] Terms checkbox required
+- [ ] Redirects to login after success
 
 ### **✅ Login Works:**
 
--   [ ] Can login with email + password
--   [ ] Wrong password shows error
--   [ ] Successful login redirects to dashboard
--   [ ] Token stored in browser (check DevTools → Application → localStorage)
+- [ ] Can login with email + password
+- [ ] Wrong password shows error
+- [ ] Successful login redirects to dashboard
+- [ ] Token stored in browser (check DevTools → Application → localStorage)
 
 ### **✅ Authentication Protection:**
 
--   [ ] Root page (`/`) redirects to login
--   [ ] Dashboard requires authentication
--   [ ] Direct dashboard access blocked without login
--   [ ] Logout clears authentication
+- [ ] Root page (`/`) redirects to login
+- [ ] Dashboard requires authentication
+- [ ] Direct dashboard access blocked without login
+- [ ] Logout clears authentication
 
 ### **✅ Error Handling:**
 
--   [ ] No ugly CloudFront errors visible
--   [ ] Friendly error messages shown
--   [ ] Clean redirect on errors
+- [ ] No ugly CloudFront errors visible
+- [ ] Friendly error messages shown
+- [ ] Clean redirect on errors
 
 ---
 
@@ -171,9 +171,9 @@ After successful login:
 
 **Possible causes:**
 
--   Backend database connection issue
--   Check backend logs in Render
--   Verify migrations ran successfully (7/7)
+- Backend database connection issue
+- Check backend logs in Render
+- Verify migrations ran successfully (7/7)
 
 **Check backend logs:**
 
@@ -185,15 +185,15 @@ After successful login:
 
 **Expected behavior:**
 
--   OTP requires email service (SendGrid, AWS SES, etc.)
--   If not configured yet, OTP won't work
--   Use email/password login instead for now
+- OTP requires email service (SendGrid, AWS SES, etc.)
+- If not configured yet, OTP won't work
+- Use email/password login instead for now
 
 **To fix OTP later:**
 
--   Configure email service in backend
--   Add SMTP credentials to environment
--   Test email sending
+- Configure email service in backend
+- Add SMTP credentials to environment
+- Test email sending
 
 ### **Problem: "Stuck on loading screen"**
 
@@ -272,25 +272,25 @@ Dashboard displays! (✅)
 
 **Current Status:**
 
--   ✅ Backend: Live and healthy
--   ✅ Frontend: Deployed with auth enforcement
--   ✅ Database: 7 migrations applied
--   ✅ DNS: Configured and working
--   ✅ SSL: Active via Cloudflare
+- ✅ Backend: Live and healthy
+- ✅ Frontend: Deployed with auth enforcement
+- ✅ Database: 7 migrations applied
+- ✅ DNS: Configured and working
+- ✅ SSL: Active via Cloudflare
 
 **What Works:**
 
--   ✅ Registration
--   ✅ Email/Password Login
--   ✅ Dashboard access control
--   ✅ Authentication protection
--   ✅ Error handling
+- ✅ Registration
+- ✅ Email/Password Login
+- ✅ Dashboard access control
+- ✅ Authentication protection
+- ✅ Error handling
 
 **What Might Not Work Yet:**
 
--   ⏳ OTP login (needs email service)
--   ⏳ Email verification (if enabled)
--   ⏳ Password reset (needs email service)
+- ⏳ OTP login (needs email service)
+- ⏳ Email verification (if enabled)
+- ⏳ Password reset (needs email service)
 
 ---
 
@@ -299,21 +299,21 @@ Dashboard displays! (✅)
 Once you confirm registration and login work:
 
 1. **Test other features:**
-   -   Transaction creation
-   -   Balance updates
-   -   Settings page
-   -   Profile management
+   - Transaction creation
+   - Balance updates
+   - Settings page
+   - Profile management
 
 2. **Create more test accounts:**
-   -   Different email addresses
-   -   Test multiple users
-   -   Verify user isolation
+   - Different email addresses
+   - Test multiple users
+   - Verify user isolation
 
 3. **Production ready!**
-   -   Your platform is live
-   -   Users can register
-   -   Secure authentication
-   -   Professional appearance
+   - Your platform is live
+   - Users can register
+   - Secure authentication
+   - Professional appearance
 
 ---
 
@@ -321,8 +321,8 @@ Once you confirm registration and login work:
 
 Let me know:
 
--   ✅ What works
--   ❌ Any errors you see
--   📸 Screenshots if needed
+- ✅ What works
+- ❌ Any errors you see
+- 📸 Screenshots if needed
 
 I'm here to help fix any issues! 🚀

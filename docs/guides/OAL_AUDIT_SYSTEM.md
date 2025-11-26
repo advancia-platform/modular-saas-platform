@@ -51,14 +51,14 @@ GET /api/oal
 
 **Query Parameters:**
 
--   `object` - Filter by object (e.g., "ledger.balance")
--   `action` - Filter by action (e.g., "adjust")
--   `location` - Filter by location (e.g., "admin.panel")
--   `status` - Filter by status (PENDING, APPROVED, REJECTED)
--   `createdById` - Filter by creator
--   `subjectId` - Filter by subject user
--   `limit` - Results limit (default: 100)
--   `offset` - Results offset (default: 0)
+- `object` - Filter by object (e.g., "ledger.balance")
+- `action` - Filter by action (e.g., "adjust")
+- `location` - Filter by location (e.g., "admin.panel")
+- `status` - Filter by status (PENDING, APPROVED, REJECTED)
+- `createdById` - Filter by creator
+- `subjectId` - Filter by subject user
+- `limit` - Results limit (default: 100)
+- `offset` - Results offset (default: 0)
 
 **Response:**
 
@@ -329,31 +329,31 @@ if (approved.status === "APPROVED") {
 
 ### Object Patterns
 
--   `ledger.balance` - Financial ledger operations
--   `user.role` - User role changes
--   `user.status` - User account status
--   `system.config` - System configuration
--   `transaction.reversal` - Transaction reversals
--   `withdrawal.limit` - Withdrawal limit changes
+- `ledger.balance` - Financial ledger operations
+- `user.role` - User role changes
+- `user.status` - User account status
+- `system.config` - System configuration
+- `transaction.reversal` - Transaction reversals
+- `withdrawal.limit` - Withdrawal limit changes
 
 ### Action Patterns
 
--   `create` - Creating new records
--   `update` - Updating existing records
--   `delete` - Deleting records
--   `adjust` - Financial adjustments
--   `approve` - Approvals
--   `reject` - Rejections
--   `suspend` - Suspensions
--   `restore` - Restorations
+- `create` - Creating new records
+- `update` - Updating existing records
+- `delete` - Deleting records
+- `adjust` - Financial adjustments
+- `approve` - Approvals
+- `reject` - Rejections
+- `suspend` - Suspensions
+- `restore` - Restorations
 
 ### Location Patterns
 
--   `admin.panel` - Admin dashboard actions
--   `admin.api` - Admin API calls
--   `cron.job` - Scheduled job actions
--   `api.endpoint` - Public API actions
--   `support.ticket` - Support-initiated actions
+- `admin.panel` - Admin dashboard actions
+- `admin.api` - Admin API calls
+- `cron.job` - Scheduled job actions
+- `api.endpoint` - Public API actions
+- `support.ticket` - Support-initiated actions
 
 ## 🧪 Testing
 
@@ -397,13 +397,13 @@ Example test output:
 
 Optimized for common queries:
 
--   `@@index([object])` - Filter by object type
--   `@@index([action])` - Filter by action type
--   `@@index([location])` - Filter by location
--   `@@index([status])` - Filter by status
--   `@@index([createdById])` - Track admin actions
--   `@@index([subjectId])` - Find logs for specific users
--   `@@index([createdAt])` - Chronological queries
+- `@@index([object])` - Filter by object type
+- `@@index([action])` - Filter by action type
+- `@@index([location])` - Filter by location
+- `@@index([status])` - Filter by status
+- `@@index([createdById])` - Track admin actions
+- `@@index([subjectId])` - Find logs for specific users
+- `@@index([createdAt])` - Chronological queries
 
 ## 🚀 Migration
 
