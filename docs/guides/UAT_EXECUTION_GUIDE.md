@@ -27,6 +27,7 @@ Expected response:
 Open in browser:
 
 ```
+
 <https://advancia.pay>
 ```text`n
 Expected: Frontend loads with no console errors
