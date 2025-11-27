@@ -2,6 +2,11 @@
 import dotenv from "dotenv";
 dotenv.config();
 
+// Prometheus monitoring setup
+import client from "prom-client";
+import gcStats from "prometheus-gc-stats";
+import { setupSwagger } from "./utils/swagger";
+
 // Sentry setup
 const Sentry = require("@sentry/node");
 Sentry.init({
@@ -9,6 +14,52 @@ Sentry.init({
   tracesSampleRate: 1.0,
   sendDefaultPii: true,
 });
+
+// Initialize Prometheus metrics collection
+const collectDefaultMetrics = client.collectDefaultMetrics;
+collectDefaultMetrics({
+  gcDurationBuckets: [0.001, 0.01, 0.1, 1, 2, 5],
+});
+
+// Initialize GC stats collection
+gcStats(client.register)();
+
+// Custom metrics for monitoring
+const httpRequestDuration = new client.Histogram({
+  name: "http_request_duration_seconds",
+  help: "HTTP request duration in seconds",
+  labelNames: ["method", "route", "status_code"],
+  buckets: [0.1, 0.5, 1, 2, 5],
+});
+
+const httpRequestsTotal = new client.Counter({
+  name: "http_requests_total",
+  help: "Total number of HTTP requests",
+  labelNames: ["method", "route", "status_code"],
+});
+
+const notificationPreferencesOpsTotal = new client.Counter({
+  name: "notification_preferences_operations_total",
+  help: "Total notification preferences operations",
+  labelNames: ["operation", "status"],
+});
+
+const activeUsersGauge = new client.Gauge({
+  name: "active_users_current",
+  help: "Current number of active users",
+});
+
+const databaseConnectionsGauge = new client.Gauge({
+  name: "database_connections_current",
+  help: "Current number of database connections",
+});
+
+// Register custom metrics
+client.register.registerMetric(httpRequestDuration);
+client.register.registerMetric(httpRequestsTotal);
+client.register.registerMetric(notificationPreferencesOpsTotal);
+client.register.registerMetric(activeUsersGauge);
+client.register.registerMetric(databaseConnectionsGauge);
 
 // Example AI SDK usage (must be inside an async function)
 const { generateText } = require("ai");
@@ -150,6 +201,7 @@ import authAdminRouter, {
 console.log("[DIAG] About to import prismaClient...");
 console.log("[DIAG] prismaClient imported successfully");
 // import adminWalletsRouter from "./routes/adminWallets"; // Disabled for crash isolation
+import adminWalletsRouter from "./routes/adminWallets";
 // import adminBulkActionsRouter from "./routes/adminBulkActions";
 // import aiAnalyticsRouter from "./routes/aiAnalytics";
 // import amplitudeAnalyticsRouter from "./routes/amplitudeAnalytics";
@@ -166,14 +218,16 @@ console.log("[DIAG] authRouter imported successfully");
 // import emailRouter from "./routes/email"; // Email templates router
 // import emailTestRouter from "./routes/email-test"; // Email testing endpoints
 // import emailsRouter from "./routes/emails";
+// import authEnhancedRouter from "./routes/authEnhanced"; // Enhanced authentication with session management - TEMP DISABLED
 import emailSignupRouter from "./routes/emailSignup"; // Email magic link signup
+import emailVerificationRouter from "./routes/emailVerification"; // Email verification with Resend
+import gitopsRouter from "./routes/gitops"; // GitOps integration for ArgoCD, Prometheus, Grafana
 import healthRouter from "./routes/health";
 // import invoicesRouter from "./routes/invoices";
 // import ipBlocksRouter from "./routes/ipBlocks"; // TEMP DISABLED to unblock startup
 // import marketingRouter from "./routes/marketing";
 // import medbedsRouter, { setMedbedsSocketIO } from "./routes/medbeds";
 // import oalRouter, { setOALSocketIO } from "./routes/oal";
-import passwordRecoveryRouter from "./routes/passwordRecovery"; // Password recovery & user details
 import handleStripeWebhook, {
   setPaymentsSocketIO,
 } from "./routes/paymentsWebhook";
@@ -181,6 +235,7 @@ import handleStripeWebhook, {
 //   handleStripeWebhook,
 //   setPaymentsSocketIO,
 // } from "./routes/payments";
+import nowpaymentsRouter from "./routes/nowpayments"; // NOWPayments crypto integration
 import paymentsEnhancedRouter from "./routes/paymentsEnhanced";
 // import rewardsRouter from "./routes/rewards";
 // import securityLevelRouter from "./routes/securityLevel"; // Disabled to isolate middleware crash
@@ -196,7 +251,7 @@ import tokensRouter, { setTokenSocketIO } from "./routes/tokens";
 import trustRouter from "./routes/trust"; // Scam Adviser & trust verification
 // import trustpilotRouter from "./routes/trustpilot"; // Removed - using simple widget embed instead
 // import trustScoreRouter from "./routes/trustScore"; // User trust & reputation system (TEMPORARILY DISABLED)
-import nowpaymentsRouter from "./routes/nowpayments"; // NOWPayments crypto provider (200+ coins)
+// import nowpaymentsRouter from "./routes/nowpayments"; // NOWPayments crypto provider (TEMPORARILY DISABLED for startup fix)
 import pricesRouter from "./routes/prices";
 import securityRouter from "./routes/security"; // Breach monitoring & IP protection
 import storageRouter from "./routes/storage";
@@ -206,6 +261,7 @@ import transactionsRouter, {
   setTransactionSocketIO,
 } from "./routes/transactions";
 import twoFactorRouter from "./routes/twoFactor";
+import uploadsRouter from "./routes/uploads"; // R2 file uploads with authentication
 // import adminUsersRouter, { setAdminUsersSocketIO } from "./routes/users"; // File not in active codebase
 // import walletsRouter from "./routes/wallets"; // File not in active codebase
 import withdrawalsRouter from "./routes/withdrawals";
@@ -214,8 +270,19 @@ import milestonesRouter, { setMilestoneSocketIO } from "./routes/milestones";
 import projectsRouter, { setProjectSocketIO } from "./routes/projects";
 import tasksRouter, { setTaskSocketIO } from "./routes/tasks";
 import teamsRouter, { setTeamSocketIO } from "./routes/teams";
+// Notification management
+import adminNotificationLogsRouter from "./routes/adminNotificationLogs";
+import notificationPreferencesRouter from "./routes/notificationPreferences";
+import notificationsRouter from "./routes/notifications";
+// Email services
+import preferencesRouter from "./routes/preferences";
+import resendRouter from "./routes/resend";
 // JWT Authentication v2
+import adminRouter from "./routes/admin";
+import adminDashboardRouter from "./routes/adminDashboard";
 import authJWTRouter from "./routes/authJWT";
+import authSecureRouter from "./routes/authSecure";
+import complianceRouter, { setComplianceSocketIO } from "./routes/compliance"; // GitOps compliance monitoring
 // import { setSocketIO as setNotificationSocket } from "./services/notificationService"; // Keep commented for now
 // import "./tracing";
 import { dataMasker } from "./utils/dataMasker";
@@ -291,15 +358,16 @@ app.use(
 // Enrich tracing spans with route + user info early
 // app.use(enrichRequestSpan);
 
-// Stripe webhook MUST use raw body, so register it BEFORE express.json()
-// app.post(
-//   "/api/payments/webhook",
-//   express.raw({ type: "application/json" }),
-//   handleStripeWebhook
-// );
+// CRITICAL: Stripe webhook needs raw body BEFORE express.json()
+app.post(
+  "/api/payments/webhook",
+  express.raw({ type: "application/json" }),
+  handleStripeWebhook,
+);
 
-// JSON parser and common middlewares AFTER webhook
+// Then apply JSON parser for all other routes
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(helmetMiddleware());
 app.use(sanitizeInput);
 app.use(dataMasker.createResponseSanitizer());
@@ -307,28 +375,107 @@ app.use(validateInput);
 app.use(activityLogger);
 app.use("/api", rateLimit({ windowMs: 60_000, maxRequests: 300 }));
 
+// API documentation (Swagger) available at /api-docs
+setupSwagger(app);
+
+// Prometheus metrics endpoint
+app.get("/metrics", async (_req, res) => {
+  res.set("Content-Type", client.register.contentType);
+  res.end(await client.register.metrics());
+});
+
+// Enhanced health check endpoint with detailed status
+app.get("/health", async (req, res) => {
+  try {
+    // Check database connection
+    await prisma.$queryRaw`SELECT 1`;
+
+    // Update active users metric
+    const activeUsers = activeSessions.size;
+    activeUsersGauge.set(activeUsers);
+
+    // Database connection pool status
+    // Note: Prisma metrics API might not be available in all versions
+    try {
+      // Check if $metrics is available
+      if (
+        "$metrics" in prisma &&
+        typeof (prisma as any).$metrics === "object"
+      ) {
+        const dbMetrics = await (prisma as any).$metrics.histogram();
+        databaseConnectionsGauge.set(
+          Array.isArray(dbMetrics) ? dbMetrics.length : 0,
+        );
+      } else {
+        // Fallback: assume 1 connection if metrics not available
+        databaseConnectionsGauge.set(1);
+      }
+    } catch (metricsError) {
+      // Fallback if metrics are not available
+      databaseConnectionsGauge.set(1);
+    }
+
+    const healthData = {
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      memory: process.memoryUsage(),
+      activeUsers,
+      environment: process.env.NODE_ENV,
+      version: process.env.npm_package_version || "1.0.0",
+    };
+
+    res.status(200).json(healthData);
+  } catch (error: any) {
+    console.error("[HEALTH] Health check failed:", error);
+    res.status(503).json({
+      status: "unhealthy",
+      timestamp: new Date().toISOString(),
+      error:
+        process.env.NODE_ENV === "development"
+          ? error?.message || "Unknown error"
+          : "Service unavailable",
+    });
+  }
+});
+
 // Root health check endpoint (for load balancers/monitoring - no /api prefix)
-app.get("/health", (req, res) => {
+app.get("/", (req, res) => {
   res.status(200).json({ status: "ok", timestamp: new Date().toISOString() });
 });
 
 // Health check endpoint (critical for production monitoring)
 app.use("/api", healthRouter);
 
+// GitOps integration routes (ArgoCD, Prometheus, Grafana)
+app.use("/api/gitops", gitopsRouter);
+app.use("/api/compliance", safeAuth, safeAdmin, complianceRouter); // Compliance monitoring (admin only)
+
 // Auth routes (public)
 app.use("/api/auth", tokenRefreshRouter); // Token refresh endpoint (legacy)
 app.use("/api/auth", authRouter); // Legacy auth routes
+// app.use("/api/auth/enhanced", authRefreshRouter); // Enhanced auth with refresh token support - TEMP DISABLED
 app.use("/api/auth/v2", authJWTRouter); // Modern JWT-based auth with RBAC
+app.use("/api/auth/secure", authSecureRouter); // Secure auth with bcrypt password hashing and reset
+// app.use("/api/auth-enhanced", authEnhancedRouter); // Enhanced auth with session management and TOTP - TEMP DISABLED
+
+// Demo and test routes for enhanced authentication
+import analyticsRouter from "./routes/analytics";
+import demoRouter from "./routes/demo";
+import subscriptionsRouter from "./routes/subscriptions";
+app.use("/api/test", demoRouter); // Permission-based access control demo routes
 
 // Regular routes (minimal set enabled)
 // app.use("/api/debit-cards", authenticateToken, debitCardEnhancedRouter); // Enhanced card management
 app.use("/api/support", supportRouter);
+app.use("/api/subscriptions", subscriptionsRouter);
+app.use("/api/analytics", analyticsRouter); // Analytics dashboard with JWT auth + rate limiting
 // app.use("/api/ai-analytics", aiAnalyticsRouter);
 app.use("/api/payments", paymentsEnhancedRouter); // Stripe payment intents & methods
 
 // Crypto payment providers
 // app.use("/api/cryptomus", cryptomusRouter); // Route file not available
-app.use("/api/nowpayments", nowpaymentsRouter); // NOWPayments crypto payments (200+ coins, 0.5% fees)
+app.use("/api/nowpayments", nowpaymentsRouter); // NOWPayments crypto payments - NOW ENABLED
 
 // Admin routes - PROTECTED with requireAdmin middleware
 // app.use(
@@ -359,22 +506,22 @@ app.use("/api/nowpayments", nowpaymentsRouter); // NOWPayments crypto payments (
 //   userApprovalRouter
 // );
 app.use("/api/admin/telegram", safeAuth, safeAdmin, telegramRouter);
-// Admin wallets route temporarily disabled
-// app.use(
-//   "/api/admin/wallets",
-//   safeAuth,
-//   safeAdmin,
-//   adminWalletsRouter
-// );
+// Admin wallets route
+app.use("/api/admin/wallets", safeAuth, safeAdmin, adminWalletsRouter);
 // app.use("/api/admin", authenticateToken, requireAdmin, adminUsersRouter); // Routes not available
-// app.use("/api/admin", authenticateToken, requireAdmin, adminDashboardRouter); // Routes not available
-// app.use("/api/admin", authenticateToken, requireAdmin, adminRouter); // Routes not available
+app.use("/api/admin", authenticateToken, requireAdmin, adminDashboardRouter);
+app.use("/api/admin", authenticateToken, requireAdmin, adminRouter);
+app.use("/api/admin", adminNotificationLogsRouter); // Admin notification logs with built-in auth
 // app.use(
 //   "/api/admin/bulk",
 //   authenticateToken,
 //   requireAdmin,
 //   adminBulkActionsRouter
 // ); // Bulk user actions
+
+// Trust and reputation routes
+app.use("/api/trust", trustRouter); // Trust scoring, reviews, reputation
+app.use("/api/uploads", uploadsRouter); // R2 file uploads (authenticated)
 
 // Admin auth (public - for login)
 app.use("/api/auth/admin", authAdminRouter);
@@ -409,8 +556,9 @@ app.use("/api/storage", storageRouter); // Cloudflare R2 object storage operatio
 // app.use("/api/rewards", rewardsRouter);
 app.use("/api/auth/2fa", twoFactorRouter);
 // app.use("/api/health-readings", healthReadingsRouter);
-app.use("/api/password-recovery", passwordRecoveryRouter); // Password recovery & admin user lookup
+// app.use("/api/password-recovery", passwordRecoveryRouter); // Password recovery & admin user lookup
 app.use("/api/auth", emailSignupRouter); // Email magic link signup
+app.use("/api/email", emailVerificationRouter); // Email verification with Resend
 
 // Project Management routes
 app.use("/api/teams", teamsRouter);
@@ -423,6 +571,18 @@ app.use("/api/teams", teamsRouter);
 app.use("/api/projects", projectsRouter);
 app.use("/api/tasks", tasksRouter);
 app.use("/api/milestones", milestonesRouter);
+
+// Notification management routes
+app.use("/api/notifications", authenticateToken, notificationsRouter);
+app.use(
+  "/api/notification-preferences",
+  authenticateToken,
+  notificationPreferencesRouter,
+);
+
+// Email service routes (Resend integration)
+app.use("/api/resend", authenticateToken, resendRouter);
+app.use("/api/preferences", authenticateToken, preferencesRouter);
 
 // Socket.IO connection handling
 // JWT auth for Socket.IO handshake
@@ -506,6 +666,7 @@ setPaymentsSocketIO(io);
 // setWithdrawalSocketIO(io); // Function may not be exported
 // setOALSocketIO(io); // Keep disabled if OAL route disabled
 setTokenSocketIO(io);
+setComplianceSocketIO(io); // Compliance monitoring real-time updates
 // Project Management Socket.IO injection
 setTeamSocketIO(io);
 setProjectSocketIO(io);
@@ -551,6 +712,7 @@ const PORT = config.port || process.env.PORT || 5000;
 // Async bootstrap to allow awaiting service initializers (e.g. RabbitMQ)
 async function bootstrap() {
   console.log("[DIAG] Bootstrap function called");
+
   try {
     console.log("[DIAG] Initializing RabbitMQ queue...");
     await initQueue();
@@ -560,6 +722,93 @@ async function bootstrap() {
       "[INIT] RabbitMQ initialization failed (continuing without queue)",
       e,
     );
+  }
+
+  // Initialize digest cron jobs
+  if (process.env.ENABLE_CRON === "true") {
+    try {
+      const cron = require("node-cron");
+      const {
+        generateDailyDigests,
+        generateWeeklyDigests,
+      } = require("./services/digestService");
+      const {
+        generateWeeklyComplianceReport,
+        generateMonthlyComplianceReport,
+      } = require("./services/complianceReporting");
+
+      // Run daily digests at midnight
+      cron.schedule("0 0 * * *", async () => {
+        console.log("[CRON] Running daily digest generation...");
+        try {
+          await generateDailyDigests();
+          console.log("[CRON] Daily digest generation completed");
+        } catch (error) {
+          console.error("[CRON] Daily digest generation failed:", error);
+        }
+      });
+
+      // Run weekly compliance reports every Monday at 8 AM
+      cron.schedule("0 8 * * MON", async () => {
+        console.log("[CRON] Running weekly compliance report generation...");
+        try {
+          await generateWeeklyComplianceReport();
+          console.log("[CRON] Weekly compliance report generation completed");
+        } catch (error) {
+          console.error(
+            "[CRON] Weekly compliance report generation failed:",
+            error,
+          );
+        }
+      });
+
+      // Run monthly compliance reports on the 1st of each month at 9 AM
+      cron.schedule("0 9 1 * *", async () => {
+        console.log("[CRON] Running monthly compliance report generation...");
+        try {
+          await generateMonthlyComplianceReport();
+          console.log("[CRON] Monthly compliance report generation completed");
+        } catch (error) {
+          console.error(
+            "[CRON] Monthly compliance report generation failed:",
+            error,
+          );
+        }
+      });
+
+      // Run weekly digests on Sunday at midnight
+      cron.schedule("0 0 * * 0", async () => {
+        console.log("[CRON] Running weekly digest generation...");
+        try {
+          await generateWeeklyDigests();
+          console.log("[CRON] Weekly digest generation completed");
+        } catch (error) {
+          console.error("[CRON] Weekly digest generation failed:", error);
+        }
+      });
+
+      console.log("[INIT] Digest cron jobs scheduled");
+    } catch (e) {
+      console.error("[INIT] Failed to initialize digest cron jobs:", e);
+    }
+  } else {
+    console.log("[INIT] Cron jobs disabled, skipping digest scheduler");
+  }
+
+  // Initialize enhanced authentication cleanup service
+  try {
+    // const { cleanupService } = await import("./services/cleanupService");
+    // if (process.env.SESSION_CLEANUP_ENABLED !== "false") {
+    //   cleanupService.start();
+    //   console.log("[INIT] Enhanced authentication cleanup service started");
+    // } else {
+    //   console.log(
+    //     "[INIT] Session cleanup disabled (SESSION_CLEANUP_ENABLED=false)",
+    //   );
+    // }
+    console.log("[INIT] Cleanup service temporarily disabled");
+  } catch (e) {
+    console.error("[INIT] Failed to start cleanup service:", e);
   }
 
   server.listen(PORT, () => {
@@ -706,3 +955,10 @@ function handleShutdownSignal(signal: string) {
 
 process.on("SIGINT", () => handleShutdownSignal("SIGINT"));
 process.on("SIGTERM", () => handleShutdownSignal("SIGTERM"));
+
+// Initialize Telegram bot for trust analysis
+import { initializeTelegramBot } from "./services/telegramTrustBot";
+initializeTelegramBot();
+
+// Export app for testing
+export default app;
