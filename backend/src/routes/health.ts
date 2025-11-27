@@ -1,6 +1,8 @@
-import express, { Request, Response } from 'express';
-import prisma from '../prismaClient';
-import { getRedis } from '../services/redisClient';
+import express, { Request, Response } from "express";
+import logger from "../logger";
+import prisma from "../prismaClient";
+import { checkR2Connection } from "../services/r2Client";
+import { getRedis } from "../services/redisClient";
 
 const router = express.Router();
 
@@ -9,30 +11,30 @@ const router = express.Router();
  * Lightweight health check - returns 200 if process is up
  * Use for load balancer health checks
  */
-router.get('/health', async (req: Request, res: Response) => {
+router.get("/health", async (req: Request, res: Response) => {
   try {
     // Test database connectivity
     await prisma.$queryRaw`SELECT 1`;
 
     res.status(200).json({
-      status: 'healthy',
+      status: "healthy",
       timestamp: new Date().toISOString(),
       uptime: process.uptime(),
-      environment: process.env.NODE_ENV || 'development',
-      database: 'connected',
-      version: '1.0.0',
+      environment: process.env.NODE_ENV || "development",
+      database: "connected",
+      version: "1.0.0",
     });
   } catch (error: any) {
-    console.error('[HEALTH CHECK] Database connection failed:', error.message);
+    console.error("[HEALTH CHECK] Database connection failed:", error.message);
 
     res.status(503).json({
-      status: 'unhealthy',
+      status: "unhealthy",
       timestamp: new Date().toISOString(),
-      environment: process.env.NODE_ENV || 'development',
-      database: 'disconnected',
+      environment: process.env.NODE_ENV || "development",
+      database: "disconnected",
       error:
-        process.env.NODE_ENV === 'production'
-          ? 'Service unavailable'
+        process.env.NODE_ENV === "production"
+          ? "Service unavailable"
           : error.message,
     });
   }
@@ -43,9 +45,9 @@ router.get('/health', async (req: Request, res: Response) => {
  * Liveness probe - process is running
  * Returns 200 immediately without external checks
  */
-router.get('/live', (req: Request, res: Response) => {
+router.get("/live", (req: Request, res: Response) => {
   res.status(200).json({
-    status: 'alive',
+    status: "alive",
     timestamp: new Date().toISOString(),
     uptime: process.uptime(),
   });
@@ -56,16 +58,16 @@ router.get('/live', (req: Request, res: Response) => {
  * Readiness probe - service can accept traffic
  * Checks DB and Redis connectivity
  */
-router.get('/ready', async (req: Request, res: Response) => {
+router.get("/ready", async (req: Request, res: Response) => {
   const checks: Record<string, string> = {};
   let ready = true;
 
   // Check database
   try {
     await prisma.$queryRaw`SELECT 1`;
-    checks.database = 'ok';
+    checks.database = "ok";
   } catch (err) {
-    checks.database = 'fail';
+    checks.database = "fail";
     ready = false;
   }
 
@@ -74,26 +76,103 @@ router.get('/ready', async (req: Request, res: Response) => {
   if (redis) {
     try {
       await redis.ping();
-      checks.redis = 'ok';
+      checks.redis = "ok";
     } catch (err) {
-      checks.redis = 'fail';
+      checks.redis = "fail";
       ready = false;
     }
   } else {
-    checks.redis = 'not_configured';
+    checks.redis = "not_configured";
   }
 
   if (ready) {
     res.status(200).json({
-      status: 'ready',
+      status: "ready",
       timestamp: new Date().toISOString(),
       checks,
     });
   } else {
     res.status(503).json({
-      status: 'not_ready',
+      status: "not_ready",
       timestamp: new Date().toISOString(),
       checks,
+    });
+  }
+});
+
+/**
+ * GET /api/health/detailed
+ * Extended health check including R2 connectivity
+ * Use for monitoring dashboards and debugging
+ */
+router.get("/health/detailed", async (req: Request, res: Response) => {
+  try {
+    const health = {
+      status: "healthy",
+      timestamp: new Date().toISOString(),
+      uptime: process.uptime(),
+      environment: process.env.NODE_ENV || "development",
+      services: {
+        database: {
+          status: "unknown" as string,
+          message: undefined as string | undefined,
+        },
+        redis: {
+          status: "unknown" as string,
+          message: undefined as string | undefined,
+        },
+        r2: {
+          status: "unknown" as string,
+          message: undefined as string | undefined,
+        },
+      },
+    };
+
+    // Check database
+    try {
+      await prisma.$queryRaw`SELECT 1`;
+      health.services.database = { status: "connected", message: undefined };
+    } catch (error: any) {
+      health.services.database = { status: "error", message: error.message };
+      health.status = "degraded";
+    }
+
+    // Check Redis if configured
+    const redis = getRedis();
+    if (redis) {
+      try {
+        await redis.ping();
+        health.services.redis = { status: "connected", message: undefined };
+      } catch (error: any) {
+        health.services.redis = { status: "error", message: error.message };
+        health.status = "degraded";
+      }
+    } else {
+      health.services.redis = { status: "not_configured", message: undefined };
+    }
+
+    // Check R2 (Cloudflare Object Storage)
+    try {
+      const r2Health = await checkR2Connection();
+      health.services.r2 = r2Health.connected
+        ? { status: "connected", message: undefined }
+        : { status: "error", message: r2Health.error };
+
+      if (!r2Health.connected) {
+        health.status = "degraded";
+      }
+    } catch (error: any) {
+      health.services.r2 = { status: "error", message: error.message };
+      health.status = "degraded";
+    }
+
+    res.status(health.status === "healthy" ? 200 : 503).json(health);
+  } catch (error: any) {
+    logger.error("Detailed health check failed", { error: error.message });
+    res.status(503).json({
+      status: "error",
+      timestamp: new Date().toISOString(),
+      message: error.message,
     });
   }
 });

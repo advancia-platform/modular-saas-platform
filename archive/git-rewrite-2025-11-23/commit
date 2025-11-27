@@ -1,6 +1,0 @@
-tree dec74fccd9759091d4327cebfb897a09a9033d54
-parent 5d47dac3d7af7b338c1ea0076ecdc8feaf87af97
-author pdtribe181-prog <pdtribe181-prog@users.noreply.github.com> 1762811889 +0100
-committer pdtribe181-prog <pdtribe181-prog@users.noreply.github.com> 1762811889 +0100
-
-Disable autoDeploy; require GitHub 'production' environment for auto-deploy; document approvals and secrets

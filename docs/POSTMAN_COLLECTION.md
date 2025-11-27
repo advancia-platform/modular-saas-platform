@@ -13,6 +13,7 @@ Authorization: Bearer <JWT_TOKEN>
 ```
 
 ### Environment Variables
+
 Configure these in your Postman environment:
 
 | Variable | Description | Example |
@@ -31,6 +32,7 @@ Configure these in your Postman environment:
 ### 🔐 Authentication Endpoints
 
 #### 1. Login (Get JWT Token)
+
 **POST** `/api/auth/login`
 
 ```http
@@ -44,6 +46,7 @@ Content-Type: application/json
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -57,6 +60,7 @@ Content-Type: application/json
 ```
 
 #### 2. Get Current User
+
 **GET** `/api/auth/me`
 
 ```http
@@ -65,6 +69,7 @@ Authorization: Bearer {{admin_token}}
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "id": "123e4567-e89b-12d3-a456-426614174000",
@@ -79,6 +84,7 @@ Authorization: Bearer {{admin_token}}
 ### 🔔 Notification Preferences Endpoints
 
 #### 3. Get All Preferences (Admin/Auditor/Viewer)
+
 **GET** `/api/notification-preferences`
 
 ```http
@@ -87,6 +93,7 @@ Authorization: Bearer {{admin_token}}
 ```
 
 **Expected Response (200) - Admin/Auditor/Viewer:**
+
 ```json
 {
   "success": true,
@@ -115,6 +122,7 @@ Authorization: Bearer {{admin_token}}
 ```
 
 #### 4. Create Preference (Admin Only)
+
 **POST** `/api/notification-preferences`
 
 ```http
@@ -131,6 +139,7 @@ Content-Type: application/json
 ```
 
 **Expected Response (201) - Admin:**
+
 ```json
 {
   "success": true,
@@ -147,6 +156,7 @@ Content-Type: application/json
 ```
 
 **Expected Response (403) - Auditor/Viewer:**
+
 ```json
 {
   "success": false,
@@ -158,6 +168,7 @@ Content-Type: application/json
 ```
 
 #### 5. Update Preference (Admin Only)
+
 **PUT** `/api/notification-preferences/{{preference_id}}`
 
 ```http
@@ -172,6 +183,7 @@ Content-Type: application/json
 ```
 
 **Expected Response (200) - Admin:**
+
 ```json
 {
   "success": true,
@@ -188,6 +200,7 @@ Content-Type: application/json
 ```
 
 #### 6. Delete Preference (Admin Only)
+
 **DELETE** `/api/notification-preferences/{{preference_id}}`
 
 ```http
@@ -196,6 +209,7 @@ Authorization: Bearer {{admin_token}}
 ```
 
 **Expected Response (200) - Admin:**
+
 ```json
 {
   "success": true,
@@ -209,6 +223,7 @@ Authorization: Bearer {{admin_token}}
 ### 📊 Audit & Analytics Endpoints
 
 #### 7. Get Audit Logs (Admin/Auditor)
+
 **GET** `/api/audit/logs`
 
 ```http
@@ -217,6 +232,7 @@ Authorization: Bearer {{auditor_token}}
 ```
 
 **Expected Response (200) - Admin/Auditor:**
+
 ```json
 {
   "success": true,
@@ -247,6 +263,7 @@ Authorization: Bearer {{auditor_token}}
 ```
 
 **Expected Response (403) - Viewer:**
+
 ```json
 {
   "success": false,
@@ -256,6 +273,7 @@ Authorization: Bearer {{auditor_token}}
 ```
 
 #### 8. Export User Preferences (Admin/User Self)
+
 **GET** `/api/notification-preferences/export`
 
 ```http
@@ -264,6 +282,7 @@ Authorization: Bearer {{admin_token}}
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -291,6 +310,7 @@ Authorization: Bearer {{admin_token}}
 ### 🔗 Integration Management Endpoints
 
 #### 9. Get Integration Status (Admin/Auditor)
+
 **GET** `/api/integrations/status`
 
 ```http
@@ -299,6 +319,7 @@ Authorization: Bearer {{admin_token}}
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -323,6 +344,7 @@ Authorization: Bearer {{admin_token}}
 ```
 
 #### 10. Test Integration (Admin Only)
+
 **POST** `/api/integrations/test`
 
 ```http
@@ -341,6 +363,7 @@ Content-Type: application/json
 ```
 
 **Expected Response (200):**
+
 ```json
 {
   "success": true,
@@ -358,27 +381,35 @@ Content-Type: application/json
 ## 🛡️ RBAC Enforcement Tests
 
 ### Admin Role Tests
+
 ✅ **Can perform all operations:**
+
 - Create, read, update, delete preferences
 - Access audit logs
 - Manage integrations
 - Export user data
 
 ### Auditor Role Tests
+
 ✅ **Can perform read operations:**
+
 - Read preferences
 - Access audit logs
 - View integration status
 
 ❌ **Cannot perform write operations:**
+
 - Create/update/delete preferences (403 Forbidden)
 - Manage integrations (403 Forbidden)
 
 ### Viewer Role Tests
+
 ✅ **Can perform limited read operations:**
+
 - Read preferences
 
 ❌ **Cannot perform restricted operations:**
+
 - Access audit logs (403 Forbidden)
 - Create/update/delete preferences (403 Forbidden)
 - Manage integrations (403 Forbidden)
@@ -388,6 +419,7 @@ Content-Type: application/json
 ## 🚨 Error Response Examples
 
 ### 401 Unauthorized (Invalid/Missing JWT)
+
 ```json
 {
   "success": false,
@@ -397,6 +429,7 @@ Content-Type: application/json
 ```
 
 ### 403 Forbidden (Insufficient Permissions)
+
 ```json
 {
   "success": false,
@@ -408,6 +441,7 @@ Content-Type: application/json
 ```
 
 ### 404 Not Found
+
 ```json
 {
   "success": false,
@@ -418,6 +452,7 @@ Content-Type: application/json
 ```
 
 ### 422 Validation Error
+
 ```json
 {
   "success": false,
@@ -437,6 +472,7 @@ Content-Type: application/json
 ```
 
 ### 500 Internal Server Error
+
 ```json
 {
   "success": false,
@@ -451,6 +487,7 @@ Content-Type: application/json
 ## 🧪 Testing Scenarios
 
 ### Scenario 1: Admin Workflow
+
 1. **Login as Admin** → Get JWT token
 2. **Create Preference** → POST with admin token (expect 201)
 3. **Update Preference** → PUT with admin token (expect 200)
@@ -458,18 +495,21 @@ Content-Type: application/json
 5. **Delete Preference** → DELETE with admin token (expect 200)
 
 ### Scenario 2: Auditor Workflow
+
 1. **Login as Auditor** → Get JWT token
 2. **Read Preferences** → GET with auditor token (expect 200)
 3. **Try to Create Preference** → POST with auditor token (expect 403)
 4. **View Audit Logs** → GET with auditor token (expect 200)
 
 ### Scenario 3: Viewer Workflow
+
 1. **Login as Viewer** → Get JWT token
 2. **Read Preferences** → GET with viewer token (expect 200)
 3. **Try to Access Audit Logs** → GET with viewer token (expect 403)
 4. **Try to Create Preference** → POST with viewer token (expect 403)
 
 ### Scenario 4: Unauthorized Access
+
 1. **No Token** → Any request without Authorization header (expect 401)
 2. **Invalid Token** → Request with malformed JWT (expect 401)
 3. **Expired Token** → Request with expired JWT (expect 401)
@@ -543,6 +583,7 @@ Content-Type: application/json
 ## ✅ Success Criteria
 
 This Postman collection ensures:
+
 - ✅ **Authentication** → JWT validation for all protected endpoints
 - ✅ **RBAC Enforcement** → Role-based access control properly tested
 - ✅ **Audit Logging** → All preference changes generate audit entries  

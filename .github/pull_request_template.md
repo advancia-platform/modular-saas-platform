@@ -1,21 +1,39 @@
----
-name: 🚀 Standard Pull Request
-about: Use this template for all pull requests
-title: "[TYPE] Brief description"
-labels: ["needs-review"]
----
+# Pull Request Template
 
 ## 📋 Description
 
-<!-- Provide a clear and concise description of what this PR does -->
+Please provide a clear and concise description of the changes made.
 
-### What changed?
+---
 
-<!-- Describe the changes made in this PR -->
+## ✅ Checklist
 
-### Why was this needed?
+- [ ] Code builds and tests pass locally
+- [ ] Linter passes (`pre-commit run --all-files`)
+- [ ] Documentation updated (`README.md`, `SECURITY.md`, etc.)
+- [ ] **CHANGELOG.md updated** with Added/Changed/Fixed/Security section
+- [ ] No secrets or credentials committed
+- [ ] PR linked to an issue
 
-<!-- Explain the motivation and context for these changes -->
+---
+
+## 🔒 Security & Compliance
+
+- [ ] Security review checklist followed (see `SECURITY.md`)
+- [ ] Required reviewers auto-assigned via CODEOWNERS
+- [ ] Sensitive changes documented in `SECURITY.md`
+
+---
+
+## 📸 Screenshots / Evidence (if applicable)
+
+Attach screenshots, logs, or test results to support your changes.
+
+---
+
+## 🧭 Additional Notes
+
+Add any extra context or references here.
 
 ---
 
@@ -72,6 +90,7 @@ Part of #
 - [ ] Integration tests added/updated
 - [ ] E2E tests added/updated (if applicable)
 - [ ] Manual test scenarios:
+
   ```
   <!-- List manual test scenarios -->
   1.
@@ -138,6 +157,7 @@ Part of #
 
 - [ ] No new environment variables
 - [ ] New variables added (document below):
+
   ```bash
   # Add to backend/.env or frontend/.env.local
   NEW_VARIABLE=value
@@ -147,6 +167,7 @@ Part of #
 
 - [ ] No breaking changes
 - [ ] Breaking changes documented below:
+
   ```
   <!-- Describe breaking changes and migration path -->
   ```
@@ -207,6 +228,7 @@ Part of #
 - [ ] No performance impact expected
 - [ ] Performance improvement expected
 - [ ] Potential performance impact (document below):
+
   ```
   <!-- Describe performance considerations -->
   ```

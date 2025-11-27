@@ -4,20 +4,20 @@ This directory contains Terraform configuration for managing infrastructure as c
 
 ## 🏗️ Infrastructure Components
 
--   **Vercel**: Frontend Next.js deployment
--   **Cloudflare**: DNS, CDN, WAF, and DDoS protection
--   **PostgreSQL**: Database configuration and extensions
--   **Security**: Auto-generated secrets for JWT, sessions, encryption
+- **Vercel**: Frontend Next.js deployment
+- **Cloudflare**: DNS, CDN, WAF, and DDoS protection
+- **PostgreSQL**: Database configuration and extensions
+- **Security**: Auto-generated secrets for JWT, sessions, encryption
 
 ## 📋 Prerequisites
 
 1. **Terraform**: v1.14.0 or later (already installed)
 2. **Accounts Required**:
-   -   Vercel account with API token
-   -   Cloudflare account with API token
-   -   PostgreSQL database (Render or local)
-   -   Stripe account (for payments)
-   -   Cryptomus account (for crypto payments)
+   - Vercel account with API token
+   - Cloudflare account with API token
+   - PostgreSQL database (Render or local)
+   - Stripe account (for payments)
+   - Cryptomus account (for crypto payments)
 
 ## 🚀 Quick Start
 
@@ -40,9 +40,9 @@ terraform init
 
 This will:
 
--   Download required providers (Vercel, Cloudflare, PostgreSQL)
--   Initialize the backend state file
--   Prepare the working directory
+- Download required providers (Vercel, Cloudflare, PostgreSQL)
+- Initialize the backend state file
+- Prepare the working directory
 
 ### 3. Review the Plan
 
@@ -78,9 +78,9 @@ terraform/
 
 **NEVER commit these files:**
 
--   `terraform.tfvars` - Contains sensitive credentials
--   `terraform.tfstate` - May contain sensitive data
--   `*.backup` - Backup state files
+- `terraform.tfvars` - Contains sensitive credentials
+- `terraform.tfstate` - May contain sensitive data
+- `*.backup` - Backup state files
 
 **Already in .gitignore:**
 
@@ -95,11 +95,11 @@ terraform/.terraform/
 
 Terraform automatically generates secure secrets for:
 
--   JWT signing keys (64 characters)
--   JWT refresh tokens (64 characters)
--   Session secrets (64 characters)
--   OTP secrets (32 characters)
--   Wallet encryption keys (32 characters)
+- JWT signing keys (64 characters)
+- JWT refresh tokens (64 characters)
+- Session secrets (64 characters)
+- OTP secrets (32 characters)
+- Wallet encryption keys (32 characters)
 
 View generated secrets:
 
@@ -112,26 +112,26 @@ terraform output session_secret
 
 ### Vercel Resources
 
--   `vercel_project.frontend` - Next.js frontend project
--   `vercel_project_domain.frontend_domain` - Custom domain configuration
+- `vercel_project.frontend` - Next.js frontend project
+- `vercel_project_domain.frontend_domain` - Custom domain configuration
 
 ### Cloudflare Resources
 
--   `cloudflare_record.frontend` - DNS A record for frontend
--   `cloudflare_record.backend` - DNS A record for API
--   `cloudflare_ruleset.waf_custom_rules` - WAF security rules
--   `cloudflare_page_rule.cache_static_assets` - CDN caching
--   `cloudflare_page_rule.api_no_cache` - API cache bypass
+- `cloudflare_record.frontend` - DNS A record for frontend
+- `cloudflare_record.backend` - DNS A record for API
+- `cloudflare_ruleset.waf_custom_rules` - WAF security rules
+- `cloudflare_page_rule.cache_static_assets` - CDN caching
+- `cloudflare_page_rule.api_no_cache` - API cache bypass
 
 ### PostgreSQL Resources
 
--   `postgresql_database.advancia` - Main database
--   `postgresql_extension.uuid_ossp` - UUID generation
--   `postgresql_extension.pgcrypto` - Cryptographic functions
+- `postgresql_database.advancia` - Main database
+- `postgresql_extension.uuid_ossp` - UUID generation
+- `postgresql_extension.pgcrypto` - Cryptographic functions
 
 ### Security Resources
 
--   `random_password.*` - Auto-generated secure secrets
+- `random_password.*` - Auto-generated secure secrets
 
 ## 📊 Common Commands
 
@@ -234,10 +234,10 @@ terraform plan
 
 ## 🔗 Useful Links
 
--   [Terraform Documentation](https://www.terraform.io/docs)
--   [Vercel Provider](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
--   [Cloudflare Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
--   [PostgreSQL Provider](https://registry.terraform.io/providers/cyrilgdn/postgresql/latest/docs)
+- [Terraform Documentation](https://www.terraform.io/docs)
+- [Vercel Provider](https://registry.terraform.io/providers/vercel/vercel/latest/docs)
+- [Cloudflare Provider](https://registry.terraform.io/providers/cloudflare/cloudflare/latest/docs)
+- [PostgreSQL Provider](https://registry.terraform.io/providers/cyrilgdn/postgresql/latest/docs)
 
 ## ⚠️ Important Notes
 
@@ -289,7 +289,7 @@ After running `terraform apply`:
 
 For issues or questions:
 
--   Check `terraform plan` output for errors
--   Review Terraform logs with `TF_LOG=DEBUG`
--   Consult provider documentation
--   Review `../TROUBLESHOOTING.md` for platform-specific issues
+- Check `terraform plan` output for errors
+- Review Terraform logs with `TF_LOG=DEBUG`
+- Consult provider documentation
+- Review `../TROUBLESHOOTING.md` for platform-specific issues

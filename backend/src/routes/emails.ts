@@ -1,10 +1,9 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response, Router } from "express";
+import prisma from "../prismaClient";
 import emailService from "../services/emailService";
 import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // POST /api/emails/send - Send transactional email
 router.post("/send", async (req: Request, res: Response) => {

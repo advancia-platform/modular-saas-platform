@@ -1,10 +1,71 @@
-# Evaluation Framework - Quick Start Guide
+# Security Evaluation Framework
+
+This directory contains the evaluation framework for testing and validating the authentication and security hardening implementation.
 
 ## Overview
 
-This evaluation framework assesses the Trust & Trustpilot system implementation using Azure AI Evaluation SDK with custom evaluators.
+The evaluation framework tests:
 
-## Setup (5 minutes)
+- Password strength validation
+- Account lockout mechanisms
+- Rate limiting enforcement
+- JWT token security
+- Authentication flows
+- Admin security measures
+- Payment security
+
+## Structure
+
+```
+evaluation/
+├── README.md                           # This file
+├── requirements.txt                    # Python dependencies
+├── .env.example                        # Environment template
+├── setup.py                            # Setup validation script
+├── data/
+│   ├── password_test_cases.jsonl      # Password strength test data
+│   ├── auth_test_cases.jsonl          # Authentication flow test data
+│   ├── rate_limit_test_cases.jsonl    # Rate limiting test data
+│   └── security_scenarios.jsonl       # Comprehensive security tests
+├── evaluators/
+│   ├── __init__.py
+│   ├── password_strength_evaluator.py # Custom password validation evaluator
+│   ├── rate_limit_evaluator.py        # Rate limiting effectiveness evaluator
+│   ├── account_lockout_evaluator.py   # Account lockout evaluator
+│   └── jwt_security_evaluator.py      # JWT token security evaluator
+├── run_evaluation.py                   # Main evaluation script
+└── results/                            # Evaluation results (generated)
+    └── .gitkeep
+```
+
+## Quick Start
+
+```bash
+# 1. Navigate to evaluation directory
+cd evaluation
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Copy and configure environment
+cp .env.example .env
+# Edit .env with your configuration
+
+# 4. Start backend server (in another terminal)
+cd ../backend && npm run dev
+
+# 5. Run evaluation
+python run_evaluation.py
+```
+
+## Prerequisites
+
+- Python 3.9+
+- Backend server running on http://localhost:4000
+- Node.js 18+ (for backend)
+- PostgreSQL database (for backend)
+
+## Setup
 
 ### 1. Install Dependencies
 
@@ -13,267 +74,576 @@ cd evaluation
 pip install -r requirements.txt
 ```
 
-### 2. Verify Test Data
+Required packages:
 
-Test data files are already created in `evaluation/data/`:
+- `requests` - HTTP client for API testing
+- `python-dotenv` - Environment variable management
+- `pytest` - Testing framework
+- `jsonlines` - JSONL file parsing
 
--   ✅ `trust_score_tests.jsonl` - 10 trust score calculation tests
--   ✅ `invitation_tests.jsonl` - 10 invitation eligibility tests
--   ✅ `api_tests.jsonl` - 5 API response quality tests
+### 2. Configure Environment
 
-### 3. Run Evaluation
+Copy the example environment file and configure:
+
+```bash
+cp .env.example .env
+```
+
+Edit `.env` with your configuration:
+
+```bash
+# Backend API URL
+BACKEND_URL=http://localhost:4000
+
+# Test user credentials (will be created if not exist)
+TEST_EMAIL=evaltest@example.com
+TEST_PASSWORD=EvalTest123!@#
+
+# Optional: LLM-based evaluators (for advanced analysis)
+# OPENAI_API_KEY=your-openai-key
+# OPENAI_MODEL=gpt-4
+```
+
+### 3. Verify Backend is Running
+
+```bash
+# Test backend health
+curl http://localhost:4000/health
+
+# Should return: {"status":"healthy"}
+```
+
+## Running Evaluations
+
+### Run All Evaluations
 
 ```bash
 python run_evaluation.py
 ```
 
-## Expected Output
+### Run Specific Evaluation
 
-```
-🚀 Starting Trust & Trustpilot System Evaluation
-============================================================
-✓ Directories created
+```bash
+# Password strength only
+python run_evaluation.py --test password
 
-=== Running Trust Score Evaluation ===
-✓ Trust Score Accuracy: 100.00%
+# Rate limiting only
+python run_evaluation.py --test rate_limit
 
-=== Running Invitation Eligibility Evaluation ===
-✓ Invitation Logic Accuracy: 100.00%
+# Authentication flow only
+python run_evaluation.py --test auth_flow
 
-=== Running API Response Evaluation ===
-✓ API Completeness: 100.00%
-✓ Data Type Accuracy: 100.00%
-✓ Response Time Score: 100.00%
-
-=== Generating Summary Report ===
-✓ Summary report saved to evaluation/results/summary.json
-
-============================================================
-EVALUATION SUMMARY
-============================================================
-
-✅ TRUST_SCORE: PASS
-   - accuracy: 100.00%
-
-✅ INVITATION: PASS
-   - accuracy: 100.00%
-
-✅ API: PASS
-   - completeness: 100.00%
-   - type_accuracy: 100.00%
-   - response_time: 100.00%
-
-============================================================
-OVERALL STATUS: PASS
-============================================================
-
-✅ All evaluations passed!
+# JWT security only
+python run_evaluation.py --test jwt
 ```
 
-## Results Location
+### Run with Verbose Output
 
-All results are saved to `evaluation/results/`:
+```bash
+python run_evaluation.py --verbose
+```
 
--   `trust_score_results.json` - Detailed trust score evaluation
--   `invitation_results.json` - Detailed invitation logic evaluation
--   `api_results.json` - Detailed API quality evaluation
--   `summary.json` - Overall summary report
+### Generate Report
 
-## Understanding Results
+```bash
+python run_evaluation.py --report html
+# Creates: results/evaluation_report.html
+```
 
-### Trust Score Evaluation
+## Evaluation Metrics
 
-**Metrics:**
+### 1. Password Strength Validation
 
--   `trust_score_accuracy`: Percentage of correct calculations (target: 100%)
--   `score_difference`: Average difference from expected
--   `within_tolerance`: Percentage within ±2 points
+**Evaluator**: `PasswordStrengthEvaluator` (Custom Code-based)
 
-**Pass Criteria:** ≥95% accuracy
+**Metrics**:
 
-### Invitation Eligibility Evaluation
+- `password_accepted`: Boolean - Whether password was accepted
+- `validation_correct`: Boolean - Whether validation matched expected result
+- `error_message_quality`: 1-5 - Quality of error message
+- `execution_time_ms`: Float - Time taken for validation
 
-**Metrics:**
+**Expected Behaviors**:
 
--   `invitation_logic_correct`: Percentage of correct eligibility decisions (target: 100%)
--   Individual check results for each criterion
+- Reject passwords < 12 characters
+- Reject passwords without uppercase letters
+- Reject passwords without lowercase letters
+- Reject passwords without numbers
+- Reject passwords without special characters
+- Reject common passwords (password, 123456, etc.)
+- Accept strong passwords meeting all criteria
 
-**Pass Criteria:** ≥98% accuracy
+### 2. Account Lockout Effectiveness
 
-### API Quality Evaluation
+**Evaluator**: `AccountLockoutEvaluator` (Custom Code-based)
 
-**Metrics:**
+**Metrics**:
 
--   `api_completeness`: Percentage of expected fields present (target: 100%)
--   `data_type_accuracy`: Percentage of correct data types (target: 100%)
--   `response_time_score`: Percentage meeting latency target (target: ≥80%)
+- `lockout_triggered`: Boolean - Whether account was locked after max attempts
+- `attempts_before_lockout`: Int - Number of attempts before lockout (expected: 5)
+- `lockout_duration_minutes`: Float - How long account stays locked (expected: 15)
+- `reset_on_success`: Boolean - Whether lockout resets after successful login
+- `proper_error_code`: Boolean - Returns 429 with ACCOUNT_LOCKED
 
-**Pass Criteria:**
+**Expected Behaviors**:
 
--   Completeness ≥95%
--   Type accuracy = 100%
--   Response time ≥80%
+- Lock account after 5 consecutive failed attempts
+- Return 429 status with `error: "ACCOUNT_LOCKED"` or `code: "ACCOUNT_LOCKED"`
+- Lockout duration = 15 minutes
+- Reset failure counter on successful login
+- Provide `retryAfter` timestamp in response
 
-## Custom Evaluators
+### 3. Rate Limiting Enforcement
 
-Five custom code-based evaluators are implemented:
+**Evaluator**: `RateLimitEvaluator` (Custom Code-based)
 
-1. **TrustScoreEvaluator** - Validates trust score calculation
-2. **InvitationEligibilityEvaluator** - Validates invitation logic
-3. **APICompletenessEvaluator** - Validates API responses
-4. **DataTypeEvaluator** - Validates data types
-5. **ResponseTimeEvaluator** - Validates performance
+**Metrics**:
 
-All evaluators follow Azure AI Evaluation SDK patterns with `__init__()` and `__call__()` methods.
+- `rate_limit_enforced`: Boolean - Whether rate limit was enforced
+- `requests_before_limit`: Int - Requests before hitting limit
+- `expected_limit`: Int - Expected rate limit value
+- `admin_bypass_works`: Boolean - Whether admin bypass functions
+- `error_code`: String - HTTP status code when limited
 
-## Adding New Test Cases
+**Expected Behaviors**:
 
-### Trust Score Tests
+- Auth endpoints: 5 requests per 15 minutes
+- Registration: 3 requests per hour
+- Password reset: 3 requests per hour
+- Payments: 10 requests per 10 minutes
+- Admin users bypass all rate limits
+- Return 429 status with retryAfter
 
-Add to `evaluation/data/trust_score_tests.jsonl`:
+### 4. JWT Security Validation
+
+**Evaluator**: `JWTSecurityEvaluator` (Custom Code-based)
+
+**Metrics**:
+
+- `token_format_valid`: Boolean - Token structure is valid
+- `signature_verified`: Boolean - Token signature is valid
+- `claims_present`: Boolean - Required claims (iss, aud, exp) present
+- `expiry_checked`: Boolean - Expired tokens rejected
+- `invalid_tokens_rejected`: Boolean - Malformed tokens rejected
+
+**Expected Behaviors**:
+
+- Reject requests without tokens (401)
+- Reject invalid tokens (403)
+- Reject expired tokens (403)
+- Accept valid tokens with correct claims
+- Validate issuer and audience
+
+### 5. Authentication Flow Completeness
+
+**Evaluator**: `TaskAdherenceEvaluator` (Built-in Prompt-based)
+
+**Purpose**: Validates complete auth flows work end-to-end
+
+**Test Scenarios**:
+
+- Registration → Email verification → Login
+- Login → Token refresh → Protected resource access
+- Failed login → Account lockout → Wait → Successful login
+- Password reset → New password validation → Login
+
+### 6. Security Response Quality
+
+**Evaluator**: Custom Prompt-based with LLM
+
+**Purpose**: Evaluates quality of security error messages
+
+**Metrics**:
+
+- `information_leakage`: 1-5 - Whether error reveals sensitive info
+- `user_friendliness`: 1-5 - How clear and helpful the message is
+- `security_appropriate`: 1-5 - Whether message follows security best practices
+
+## Test Data Format
+
+### password_test_cases.jsonl
+
+```jsonl
+{"password": "short", "should_accept": false, "reason": "Too short (< 12 chars)", "expected_error": "Password must be at least 12 characters"}
+{"password": "alllowercase123!", "should_accept": false, "reason": "Missing uppercase", "expected_error": "Password must contain at least one uppercase letter"}
+{"password": "ALLUPPERCASE123!", "should_accept": false, "reason": "Missing lowercase", "expected_error": "Password must contain at least one lowercase letter"}
+{"password": "NoNumbers!", "should_accept": false, "reason": "Missing number", "expected_error": "Password must contain at least one number"}
+{"password": "NoSpecialChar123", "should_accept": false, "reason": "Missing special character", "expected_error": "Password must contain at least one special character"}
+{"password": "Password123!", "should_accept": false, "reason": "Common password", "expected_error": "common password"}
+{"password": "MyS3cur3P@ssw0rd!", "should_accept": true, "reason": "Strong password", "expected_error": null}
+```
+
+### auth_test_cases.jsonl
+
+```jsonl
+{"test_name": "signup_weak_password", "endpoint": "/api/auth/signup", "method": "POST", "payload": {"email": "weak@test.com", "password": "weak", "firstName": "Test", "lastName": "User"}, "expected_status": 400}
+{"test_name": "signup_strong_password", "endpoint": "/api/auth/signup", "method": "POST", "payload": {"email": "strong@test.com", "password": "StrongP@ss123", "firstName": "Test", "lastName": "User"}, "expected_status": 201}
+{"test_name": "login_correct_credentials", "endpoint": "/api/auth/login", "method": "POST", "payload": {"email": "strong@test.com", "password": "StrongP@ss123"}, "expected_status": 200}
+```
+
+### rate_limit_test_cases.jsonl
+
+```jsonl
+{"endpoint": "/api/auth/login", "method": "POST", "limit": 5, "window_seconds": 900, "description": "Login rate limit"}
+{"endpoint": "/api/auth/signup", "method": "POST", "limit": 3, "window_seconds": 3600, "description": "Signup rate limit"}
+{"endpoint": "/api/payments/create-intent", "method": "POST", "limit": 10, "window_seconds": 600, "description": "Payment rate limit", "requires_auth": true}
+```
+
+## Results Interpretation
+
+### Overall Security Score
+
+The framework calculates an overall security score (0-100) based on:
+
+- Password validation: 20 points
+- Account lockout: 20 points
+- Rate limiting: 20 points
+- JWT security: 20 points
+- Auth flow completeness: 10 points
+- Error message security: 10 points
+
+**Score Interpretation**:
+
+- 90-100: Excellent - Production ready
+- 80-89: Good - Minor improvements needed
+- 70-79: Fair - Several issues to address
+- <70: Poor - Major security concerns
+
+### Example Results Output
 
 ```json
 {
-  "test_id": "trust_NEW",
-  "ssl_valid": true,
-  "domain_age_months": 15,
-  "trustpilot_rating": 4.2,
-  "social_presence": true,
-  "expected_score": 85,
-  "description": "Your description"
+  "overall_score": 95,
+  "timestamp": "2025-01-26T10:30:00Z",
+  "backend_url": "http://localhost:4000",
+  "test_duration_seconds": 45.3,
+  "summary": {
+    "total_tests": 50,
+    "passed": 47,
+    "failed": 3,
+    "skipped": 0
+  },
+  "category_scores": {
+    "password_validation": { "score": 100, "passed": 10, "failed": 0 },
+    "account_lockout": { "score": 100, "passed": 5, "failed": 0 },
+    "rate_limiting": { "score": 90, "passed": 9, "failed": 1 },
+    "jwt_security": { "score": 100, "passed": 8, "failed": 0 },
+    "auth_flow": { "score": 85, "passed": 10, "failed": 2 }
+  },
+  "issues_found": [
+    {
+      "severity": "medium",
+      "category": "rate_limiting",
+      "test": "payment_rate_limit_enforcement",
+      "message": "Payment endpoint allows 11 requests before limiting (expected 10)",
+      "recommendation": "Review rate limiting configuration for payment endpoints"
+    }
+  ],
+  "passed_tests": [
+    "password_length_validation",
+    "password_complexity_validation"
+    // ...
+  ],
+  "failed_tests": [
+    {
+      "name": "payment_rate_limit_exact",
+      "category": "rate_limiting",
+      "expected": "Limit at 10 requests",
+      "actual": "Limited at 11 requests",
+      "details": "Off-by-one error in rate limiter"
+    }
+  ]
 }
 ```
 
-### Invitation Tests
+## Continuous Evaluation
 
-Add to `evaluation/data/invitation_tests.jsonl`:
+### GitHub Actions Integration
 
-```json
-{
-  "test_id": "invite_NEW",
-  "transaction_id": "tx_NEW",
-  "amount": 20.0,
-  "status": "completed",
-  "days_since_transaction": 10,
-  "user_email": "test@example.com",
-  "already_invited": false,
-  "expected_eligible": true,
-  "description": "Your description"
-}
-```
-
-### API Tests
-
-Add to `evaluation/data/api_tests.jsonl`:
-
-```json
-{"test_id": "api_NEW", "endpoint": "/api/trust/report", "response_data": {...}, "expected_fields": [...], "response_time_ms": 300, "description": "Your description"}
-```
-
-Then run `python run_evaluation.py` again.
-
-## CI/CD Integration
-
-### GitHub Actions
-
-Create `.github/workflows/evaluation.yml`:
+Add to `.github/workflows/security-evaluation.yml`:
 
 ```yaml
-name: Trust System Evaluation
+name: Security Evaluation
 
 on:
   push:
-    branches: [main, preview]
-    paths:
-      - "backend/src/services/**"
-      - "backend/src/routes/trust.ts"
-      - "evaluation/**"
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: "0 2 * * 1" # Weekly on Monday at 2 AM UTC
 
 jobs:
   evaluate:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: testdb
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: "18"
+
+      - name: Setup Python
         uses: actions/setup-python@v4
         with:
           python-version: "3.11"
 
-      - name: Install dependencies
+      - name: Install backend dependencies
+        run: |
+          cd backend
+          npm ci
+
+      - name: Setup database
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
+        run: |
+          cd backend
+          npx prisma migrate deploy
+          npx prisma db seed
+
+      - name: Start backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/testdb
+          JWT_SECRET: test-jwt-secret
+          NODE_ENV: test
+        run: |
+          cd backend
+          npm run build
+          npm start &
+
+          # Wait for server to be ready
+          timeout 30 bash -c 'until curl -f http://localhost:4000/health; do sleep 1; done'
+
+      - name: Install evaluation dependencies
         run: |
           cd evaluation
           pip install -r requirements.txt
 
       - name: Run evaluation
+        env:
+          BACKEND_URL: http://localhost:4000
         run: |
           cd evaluation
-          python run_evaluation.py
+          python run_evaluation.py --report json --output results/ci-run.json
 
       - name: Upload results
         uses: actions/upload-artifact@v3
         with:
           name: evaluation-results
           path: evaluation/results/
+
+      - name: Check security score
+        run: |
+          cd evaluation
+          SCORE=$(python -c "import json; print(json.load(open('results/ci-run.json'))['overall_score'])")
+          echo "Security Score: $SCORE/100"
+
+          if [ "$SCORE" -lt 80 ]; then
+            echo "❌ Security score too low: $SCORE (minimum: 80)"
+            exit 1
+          fi
+
+          echo "✅ Security score acceptable: $SCORE"
+
+      - name: Comment PR with results
+        if: github.event_name == 'pull_request'
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const results = JSON.parse(fs.readFileSync('evaluation/results/ci-run.json', 'utf8'));
+
+            const comment = `## 🔒 Security Evaluation Results
+
+            **Overall Score:** ${results.overall_score}/100
+            **Tests Passed:** ${results.summary.passed}/${results.summary.total_tests}
+            **Duration:** ${results.test_duration_seconds}s
+
+            ### Category Scores
+            ${Object.entries(results.category_scores).map(([cat, data]) => 
+              `- **${cat}**: ${data.score}/100 (${data.passed}/${data.passed + data.failed} passed)`
+            ).join('\n')}
+
+            ${results.issues_found.length > 0 ? `
+            ### ⚠️ Issues Found
+            ${results.issues_found.map(issue => 
+              `- **[${issue.severity.toUpperCase()}]** ${issue.message}`
+            ).join('\n')}
+            ` : '✅ No issues found'}
+            `;
+
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: comment
+            });
 ```
+
+## Best Practices
+
+1. **Run Before Deployment**: Always run evaluation before deploying to production
+2. **Monitor Trends**: Track security scores over time
+3. **Update Test Data**: Add new test cases as you discover edge cases
+4. **Review Failures**: Investigate all failed tests, even if score is high
+5. **Automate**: Integrate into CI/CD pipeline
+6. **Regular Audits**: Run comprehensive evaluation weekly
 
 ## Troubleshooting
 
-### Issue: Module not found
-
-**Solution:**
+### Backend Not Responding
 
 ```bash
-pip install azure-ai-evaluation pandas
+# Check if backend is running
+curl http://localhost:4000/health
+
+# Check backend logs
+cd ../backend
+npm run dev
+
+# Verify database connection
+cd ../backend
+npx prisma studio
 ```
 
-### Issue: Test data file not found
-
-**Solution:**
-Check that you're running from the repository root:
+### Authentication Failures
 
 ```bash
-# From repository root
-python evaluation/run_evaluation.py
+# Test signup
+curl -X POST http://localhost:4000/api/auth/signup \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"TestPassword123!","firstName":"Test","lastName":"User"}'
 
-# OR
-cd evaluation
-python run_evaluation.py
+# Test login
+curl -X POST http://localhost:4000/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"TestPassword123!"}'
 ```
 
-### Issue: Evaluation fails
+### Rate Limiting Interference
 
-**Solution:**
+If tests fail due to existing rate limits:
 
-1. Check test data format (valid JSONL)
-2. Verify all required fields present
-3. Check for timestamp fields (not supported)
+```bash
+# Option 1: Wait for rate limit window to expire (15 minutes)
 
-## Next Steps
+# Option 2: Restart backend to clear in-memory rate limit data
+cd ../backend
+npm run dev
 
-1. ✅ Run initial baseline evaluation
-2. 📊 Review detailed results in `evaluation/results/`
-3. 🔄 Add to CI/CD pipeline
-4. 📈 Track metrics over time
-5. 🎯 Add more test cases as system grows
+# Option 3: Use different test emails for each run
+export TEST_EMAIL=evaltest-$(date +%s)@example.com
+```
 
-## Documentation
+### Database Issues
 
--   **Full Framework Guide**: `EVALUATION_FRAMEWORK.md`
--   **Custom Evaluators**: `evaluators.py`
--   **Main Script**: `run_evaluation.py`
+```bash
+# Reset database
+cd ../backend
+npx prisma migrate reset --force
+
+# Apply migrations
+npx prisma migrate deploy
+
+# Seed test data
+npx prisma db seed
+```
+
+### Python Dependencies
+
+```bash
+# Upgrade pip
+pip install --upgrade pip
+
+# Install with specific versions
+pip install -r requirements.txt --no-cache-dir
+
+# Virtual environment recommended
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+## Development
+
+### Adding New Tests
+
+1. Create test data in `data/` directory:
+
+   ```jsonl
+   {
+     "test_name": "my_test",
+     "endpoint": "/api/endpoint",
+     "expected_status": 200
+   }
+   ```
+
+2. Add evaluator in `evaluators/`:
+
+   ```python
+   # evaluators/my_evaluator.py
+   def evaluate_my_feature(test_case):
+       # Implementation
+       return {"passed": True, "score": 100}
+   ```
+
+3. Register in `run_evaluation.py`:
+   ```python
+   evaluators = {
+       "my_feature": MyFeatureEvaluator()
+   }
+   ```
+
+### Running Tests Locally
+
+```bash
+# Run with pytest
+pytest run_evaluation.py -v
+
+# Run specific test
+python run_evaluation.py --test password --verbose
+
+# Debug mode
+python run_evaluation.py --debug
+```
 
 ## Support
 
-For questions or issues with the evaluation framework:
+For issues or questions:
 
-1. Check `EVALUATION_FRAMEWORK.md` for detailed documentation
-2. Review Azure AI Evaluation SDK docs: <https://learn.microsoft.com/azure/ai-studio/how-to/develop/evaluate-sdk>
-3. Inspect evaluation results in `evaluation/results/`
+1. Check the main `SECURITY_HARDENING_GUIDE.md` in `docs/`
+2. Review test logs in `results/` directory
+3. Check backend logs for API errors
+4. Open an issue in the repository with:
+   - Evaluation results JSON
+   - Backend logs
+   - Steps to reproduce
+
+## References
+
+- Main documentation: `docs/SECURITY_HARDENING_GUIDE.md`
+- Backend routes: `backend/src/routes/`
+- Security middleware: `backend/src/middleware/security.ts`
+- Auth implementation: `backend/src/routes/auth.ts`
 
 ---
 
-**Framework Status**: ✅ Production Ready
-**Last Updated**: November 18, 2025
-**Test Coverage**: Trust Score (10 tests), Invitations (10 tests), API Quality (5 tests)
+**Last Updated**: January 26, 2025  
+**Framework Version**: 1.0  
+**Compatible with**: Backend v1.0+, Node.js 18+, Python 3.9+

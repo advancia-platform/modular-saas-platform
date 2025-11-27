@@ -38,10 +38,12 @@ Implements #
 
 1. **Backend Changes:**
    -
+
    -
 
 2. **Frontend Changes:**
    -
+
    -
 
 3. ## **Database Changes:**
@@ -122,6 +124,7 @@ FEATURE_API_KEY=your-api-key
 
 - [ ] No migration needed
 - [ ] Migration included:
+
   ```bash
   npx prisma migrate dev --name add_feature_name
   ```

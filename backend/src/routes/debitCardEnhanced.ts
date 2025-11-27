@@ -1,11 +1,10 @@
-import { PrismaClient } from "@prisma/client";
 import crypto from "crypto";
 import { Request, Response, Router } from "express";
 import logger from "../logger";
 import { authenticateToken } from "../middleware/auth";
+import prisma from "../prismaClient";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 /**
  * GET /api/debit-cards/my-cards

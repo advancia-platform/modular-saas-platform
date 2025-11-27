@@ -8,6 +8,7 @@ It ensures resilience against outages, disasters, and security incidents.
 ## 🎯 Business Continuity Objectives
 
 ### Core Business Functions
+
 - **User authentication** and authorization (RBAC)
 - **Notification preference management** (read/write operations)
 - **Real-time notification delivery** via email, SMS, and Slack
@@ -15,6 +16,7 @@ It ensures resilience against outages, disasters, and security incidents.
 - **System health monitoring** and alerting
 
 ### Continuity Goals
+
 - **Maintain service availability** during disruptions
 - **Protect user data** with secure, tested backups
 - **Ensure rapid recovery** with minimal downtime
@@ -26,7 +28,8 @@ It ensures resilience against outages, disasters, and security incidents.
 ## 🔒 Backup Strategy
 
 ### Database Backups
-- **Frequency**: 
+
+- **Frequency**:
   - Production: Hourly incremental, daily full backup
   - Staging: Daily full backup
 - **Retention**:
@@ -38,12 +41,14 @@ It ensures resilience against outages, disasters, and security incidents.
 - **Verification**: Automated daily backup integrity checks
 
 ### Application Backups
+
 - **Code repository**: GitHub with automatic mirroring to GitLab
 - **Configuration**: Infrastructure-as-code stored in version control
 - **Secrets**: Backed up in secure vaults (AWS Secrets Manager, Azure Key Vault)
 - **Documentation**: Version-controlled and automatically published
 
 ### Backup Testing
+
 - **Monthly**: Automated backup restoration tests in isolated environment
 - **Quarterly**: Full disaster recovery drill with complete system rebuild
 - **Annual**: Cross-region recovery test validating geographic redundancy
@@ -53,6 +58,7 @@ It ensures resilience against outages, disasters, and security incidents.
 ## 🌐 Failover & Redundancy
 
 ### Application Architecture
+
 - **Multi-region deployment**:
   - Primary: US East (production workloads)
   - Secondary: US West (hot standby)
@@ -62,12 +68,14 @@ It ensures resilience against outages, disasters, and security incidents.
 - **Circuit breakers**: Automatic degraded mode for failing dependencies
 
 ### Database Redundancy
+
 - **Hot standby replica** in secondary region with <1 second lag
 - **Read replicas** for scaling and load distribution
 - **Automatic failover** via managed database service (RDS Multi-AZ)
 - **Point-in-time recovery** capability for data corruption scenarios
 
 ### Integration Redundancy
+
 - **Notification channels**:
   - Email: Primary (Resend) → Fallback (SendGrid)
   - SMS: Primary (Twilio) → Fallback (AWS SNS)
@@ -81,6 +89,7 @@ It ensures resilience against outages, disasters, and security incidents.
 ## ⏱️ Recovery Objectives
 
 ### Recovery Time Objectives (RTO)
+
 - **Critical services**: ≤ 2 hours
   - User authentication and basic preference access
   - Core notification delivery (email)
@@ -92,12 +101,14 @@ It ensures resilience against outages, disasters, and security incidents.
   - Advanced administrative features
 
 ### Recovery Point Objectives (RPO)
+
 - **User preference data**: ≤ 15 minutes of data loss maximum
 - **Audit logs**: ≤ 5 minutes of data loss maximum
 - **System configurations**: ≤ 1 hour of data loss maximum
 - **Performance metrics**: ≤ 1 day of data loss acceptable
 
 ### Service Level Priorities
+
 1. **Priority 1**: Authentication and basic preference read operations
 2. **Priority 2**: Preference updates and email notifications
 3. **Priority 3**: SMS and Slack notifications
@@ -108,8 +119,10 @@ It ensures resilience against outages, disasters, and security incidents.
 ## 🚨 Disaster Scenarios & Response Plans
 
 ### Scenario 1: Cloud Provider Regional Outage
+
 **Trigger**: Primary AWS region becomes unavailable
 **Response**:
+
 1. **Immediate** (0-15 minutes):
    - Automated DNS failover to secondary region
    - Load balancer redirects traffic to standby infrastructure
@@ -124,8 +137,10 @@ It ensures resilience against outages, disasters, and security incidents.
    - Perform data synchronization if necessary
 
 ### Scenario 2: Database Corruption or Complete Loss
+
 **Trigger**: Database becomes inaccessible or corrupted beyond repair
 **Response**:
+
 1. **Immediate** (0-30 minutes):
    - Isolate corrupted database to prevent further damage
    - Activate read-only mode using latest read replica
@@ -140,8 +155,10 @@ It ensures resilience against outages, disasters, and security incidents.
    - Implement additional monitoring to prevent recurrence
 
 ### Scenario 3: Security Breach or Compromise
+
 **Trigger**: Confirmed unauthorized access or data breach
 **Response**:
+
 1. **Immediate** (0-15 minutes):
    - Isolate affected systems from network
    - Revoke all authentication tokens and API keys
@@ -156,8 +173,10 @@ It ensures resilience against outages, disasters, and security incidents.
    - Implement additional security controls
 
 ### Scenario 4: Complete Infrastructure Loss
+
 **Trigger**: Loss of primary cloud account or infrastructure
 **Response**:
+
 1. **Immediate** (0-60 minutes):
    - Activate pre-provisioned infrastructure in secondary cloud provider
    - Restore application from source code and infrastructure-as-code
@@ -172,8 +191,10 @@ It ensures resilience against outages, disasters, and security incidents.
    - Update documentation with new infrastructure details
 
 ### Scenario 5: Key Personnel Unavailability
+
 **Trigger**: Critical team members unavailable due to emergency
 **Response**:
+
 1. **Immediate** (0-30 minutes):
    - Activate on-call rotation and escalation procedures
    - Access shared credential vaults and runbooks
@@ -192,6 +213,7 @@ It ensures resilience against outages, disasters, and security incidents.
 ## 🧭 Communication Plans
 
 ### Internal Communication
+
 - **Incident commander**: Designated responder coordinates all activities
 - **Communication channels**:
   - Slack: #disaster-recovery channel for real-time coordination
@@ -204,8 +226,9 @@ It ensures resilience against outages, disasters, and security incidents.
   - Legal/Compliance: Regulatory notification requirements
 
 ### External Communication
+
 - **Status page**: Automated updates for user-facing impact
-- **Customer notifications**: 
+- **Customer notifications**:
   - Email alerts for service disruptions >30 minutes
   - In-app notifications for feature degradation
   - Social media for widespread outages
@@ -219,6 +242,7 @@ It ensures resilience against outages, disasters, and security incidents.
 ### Communication Templates
 
 #### Internal Status Update
+
 ```
 🚨 DISASTER RECOVERY UPDATE
 Time: [Timestamp]
@@ -231,6 +255,7 @@ Issues: [Any blockers or complications]
 ```
 
 #### Customer Communication
+
 ```
 [URGENT] Service Disruption Notice
 
@@ -250,12 +275,14 @@ We apologize for the inconvenience and appreciate your patience.
 ## 🧭 Testing & Drills
 
 ### Disaster Recovery Testing Schedule
+
 - **Monthly**: Backup restoration tests (automated)
 - **Quarterly**: Failover tests to secondary region
 - **Semi-annually**: Full disaster recovery simulation
 - **Annually**: Cross-cloud provider migration test
 
 ### Testing Methodology
+
 1. **Planning phase**:
    - Define test scenario and success criteria
    - Identify test team and communication channels
@@ -270,6 +297,7 @@ We apologize for the inconvenience and appreciate your patience.
    - Update procedures and documentation
 
 ### Test Scenarios
+
 - **Database corruption**: Restore from backup and verify data integrity
 - **Regional outage**: Failover to secondary infrastructure
 - **Security incident**: Complete system rebuild from clean state
@@ -277,6 +305,7 @@ We apologize for the inconvenience and appreciate your patience.
 - **Third-party failure**: Operation with degraded external services
 
 ### Drill Documentation
+
 - **Test reports**: Stored in `docs/drills/` with date and scenario
 - **Lessons learned**: Process improvements and procedure updates
 - **Metrics tracking**: RTO/RPO achievement over time
@@ -287,6 +316,7 @@ We apologize for the inconvenience and appreciate your patience.
 ## 📊 Business Impact Analysis
 
 ### Service Dependencies
+
 - **Critical dependencies**:
   - Database (PostgreSQL): Core data storage
   - Authentication service: User access control
@@ -299,12 +329,14 @@ We apologize for the inconvenience and appreciate your patience.
   - Slack integration: Team notifications
 
 ### Revenue Impact
+
 - **Direct revenue impact**: $0/hour (notification service is cost center)
 - **Indirect impact**: User satisfaction and retention
 - **Compliance penalties**: Potential fines for extended audit log outages
 - **Recovery costs**: Cloud resources and personnel time during incidents
 
 ### Operational Impact
+
 - **Customer support**: Increased ticket volume during outages
 - **Development velocity**: Reduced during recovery efforts
 - **Compliance obligations**: Audit log availability requirements
@@ -315,6 +347,7 @@ We apologize for the inconvenience and appreciate your patience.
 ## 📋 Recovery Procedures
 
 ### Standard Operating Procedures
+
 1. **Assessment**: Determine scope and cause of disaster
 2. **Decision**: Choose appropriate recovery strategy
 3. **Notification**: Alert stakeholders and activate teams
@@ -324,13 +357,16 @@ We apologize for the inconvenience and appreciate your patience.
 7. **Documentation**: Record lessons learned and improvements
 
 ### Recovery Checklists
+
 Located in `docs/runbooks/disaster-recovery/`:
+
 - `database-recovery.md`: Database restoration procedures
 - `infrastructure-recovery.md`: Cloud infrastructure rebuild
 - `security-incident-response.md`: Breach response procedures
 - `communication-templates.md`: Stakeholder notification templates
 
 ### Recovery Tools
+
 - **Infrastructure-as-code**: Terraform/CloudFormation for rapid rebuild
 - **Backup automation**: Scripts for database and configuration restore
 - **Monitoring setup**: Automated monitoring deployment scripts
@@ -341,6 +377,7 @@ Located in `docs/runbooks/disaster-recovery/`:
 ## ✅ Success Criteria
 
 ### Recovery Success Metrics
+
 - **RTO achievement**: Recovery completed within defined objectives
 - **RPO achievement**: Data loss minimized within acceptable limits
 - **Functionality verification**: All critical services operational
@@ -348,13 +385,16 @@ Located in `docs/runbooks/disaster-recovery/`:
 - **Security confirmation**: No unauthorized access during recovery
 
 ### Continuous Improvement
+
 - **Regular plan updates**: Quarterly review and updates based on changes
 - **Technology evolution**: Adoption of new tools and best practices
 - **Team training**: Regular training on procedures and tools
 - **Vendor relationships**: Maintain support agreements and escalation paths
 
 ### Business Continuity Outcomes
+
 By following this plan, the organization achieves:
+
 - **Minimized downtime** during disasters and major incidents
 - **Protected user data** with secure, tested backup procedures
 - **Maintained compliance** with regulatory and audit requirements

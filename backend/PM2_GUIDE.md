@@ -417,10 +417,10 @@ pm2 plus
 
 Features:
 
--   Real-time metrics dashboard
--   Exception tracking
--   Custom alerts
--   Performance profiling
+- Real-time metrics dashboard
+- Exception tracking
+- Custom alerts
+- Performance profiling
 
 ### Custom Monitoring
 
@@ -460,9 +460,9 @@ pm2 start ecosystem.config.cjs --env production
 
 **Why both?**
 
--   **PM2**: Handles crashes and restarts instantly
--   **Watchdog**: Monitors API health and sends alerts
--   **Parse-watchdog**: Provides historical analysis and trends
+- **PM2**: Handles crashes and restarts instantly
+- **Watchdog**: Monitors API health and sends alerts
+- **Parse-watchdog**: Provides historical analysis and trends
 
 ---
 
@@ -537,32 +537,32 @@ node --inspect src/index.js
 
 ### 1. Development vs Production
 
--   **Dev**: `watch: true`, single instance, lower memory limit
--   **Prod**: `watch: false`, multiple instances (cluster), higher memory limit
+- **Dev**: `watch: true`, single instance, lower memory limit
+- **Prod**: `watch: false`, multiple instances (cluster), higher memory limit
 
 ### 2. Log Management
 
--   Enable log rotation: `pm2 install pm2-logrotate`
--   Set max file size: `pm2 set pm2-logrotate:max_size 10M`
--   Retain logs: `pm2 set pm2-logrotate:retain 7` (7 days)
+- Enable log rotation: `pm2 install pm2-logrotate`
+- Set max file size: `pm2 set pm2-logrotate:max_size 10M`
+- Retain logs: `pm2 set pm2-logrotate:retain 7` (7 days)
 
 ### 3. Monitoring
 
--   Check `pm2 status` daily
--   Set up alerts for high restart counts
--   Use `parse-watchdog.ps1` for weekly analysis
+- Check `pm2 status` daily
+- Set up alerts for high restart counts
+- Use `parse-watchdog.ps1` for weekly analysis
 
 ### 4. Updates
 
--   Use `pm2 reload` for zero-downtime updates
--   Always run `npm install` before reloading
--   Test in staging before production
+- Use `pm2 reload` for zero-downtime updates
+- Always run `npm install` before reloading
+- Test in staging before production
 
 ### 5. Backups
 
--   Save PM2 process list: `pm2 save`
--   Backup ecosystem.config.cjs with code
--   Document environment variables
+- Save PM2 process list: `pm2 save`
+- Backup ecosystem.config.cjs with code
+- Document environment variables
 
 ---
 
@@ -570,13 +570,13 @@ node --inspect src/index.js
 
 **What PM2 Gives You:**
 
--   ✅ Automatic restart on crashes
--   ✅ Memory management (auto-restart on high usage)
--   ✅ Zero-downtime reloads
--   ✅ Cluster mode for multi-core scaling
--   ✅ Comprehensive logging
--   ✅ Startup on boot
--   ✅ Real-time monitoring
+- ✅ Automatic restart on crashes
+- ✅ Memory management (auto-restart on high usage)
+- ✅ Zero-downtime reloads
+- ✅ Cluster mode for multi-core scaling
+- ✅ Comprehensive logging
+- ✅ Startup on boot
+- ✅ Real-time monitoring
 
 **Quick Commands:**
 
@@ -591,19 +591,19 @@ pm2 stop advancia-backend                       # Stop
 
 **Integration:**
 
--   PM2 handles process management
--   Watchdog scripts monitor API health
--   parse-watchdog.ps1 analyzes historical data
--   All work together for maximum reliability
+- PM2 handles process management
+- Watchdog scripts monitor API health
+- parse-watchdog.ps1 analyzes historical data
+- All work together for maximum reliability
 
 ---
 
 ## 📞 Support
 
--   **PM2 Docs**: <https://pm2.keymetrics.io/docs/usage/quick-start/>
--   **Cluster Mode**: <https://pm2.keymetrics.io/docs/usage/cluster-mode/>
--   **Log Rotation**: <https://github.com/keymetrics/pm2-logrotate>
--   **PM2 Plus**: <https://pm2.io/>
+- **PM2 Docs**: <https://pm2.keymetrics.io/docs/usage/quick-start/>
+- **Cluster Mode**: <https://pm2.keymetrics.io/docs/usage/cluster-mode/>
+- **Log Rotation**: <https://github.com/keymetrics/pm2-logrotate>
+- **PM2 Plus**: <https://pm2.io/>
 
 ---
 

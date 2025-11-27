@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'react-toastify';
+import { io, Socket } from 'socket.io-client';
 
 export interface Notification {
   id: string;
@@ -24,7 +24,19 @@ export interface NotificationPreferences {
   smsEnabled: boolean;
   inAppEnabled: boolean;
   pushEnabled: boolean;
-  categoryPreferences: Record<string, boolean>;
+  transactionAlerts: boolean;
+  securityAlerts: boolean;
+  systemAlerts: boolean;
+  rewardAlerts: boolean;
+  adminAlerts: boolean;
+  withdrawals: boolean;
+  complianceAlerts: boolean;
+  auditLogs: boolean;
+  promotionalEmails: boolean;
+  enableDigest: boolean;
+  digestFrequency: 'NONE' | 'DAILY' | 'WEEKLY';
+  createdAt: string;
+  updatedAt: string;
 }
 
 let socketInstance: Socket | null = null;
@@ -203,13 +215,19 @@ export const useNotifications = (userId?: string) => {
     if (!userId) return;
 
     try {
-      const response = await fetch(`${API_URL}/api/notifications/preferences`, {
-        credentials: 'include',
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${API_URL}/api/notification-preferences`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
       });
 
       if (response.ok) {
         const data = await response.json();
-        setPreferences(data);
+        if (data.success) {
+          setPreferences(data.data);
+        }
       }
     } catch (error) {
       console.error('Failed to fetch preferences:', error);
@@ -220,17 +238,24 @@ export const useNotifications = (userId?: string) => {
   const updatePreferences = useCallback(
     async (updates: Partial<NotificationPreferences>) => {
       try {
-        const response = await fetch(`${API_URL}/api/notifications/preferences`, {
+        const token = localStorage.getItem('token');
+        const response = await fetch(`${API_URL}/api/notification-preferences`, {
           method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
+          headers: { 
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
           body: JSON.stringify(updates),
         });
 
         if (response.ok) {
           const data = await response.json();
-          setPreferences(data);
-          toast.success('Preferences updated');
+          if (data.success) {
+            setPreferences(data.data);
+            toast.success('Preferences updated');
+          }
+        } else {
+          throw new Error('Failed to update preferences');
         }
       } catch (error) {
         console.error('Failed to update preferences:', error);

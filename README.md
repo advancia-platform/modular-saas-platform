@@ -1,32 +1,183 @@
-# 💳 Advancia Pay Ledger — Fintech SaaS
+# 🚀 Advancia Pay Ledger - Modular SaaS Platform
 
-Advancia Pay is a secure, scalable fintech SaaS platform built with **Next.js 14**, **Node.js/Express**, and **PostgreSQL**, deployed on **Render** (backend) and **Vercel** (frontend) with **Cloudflare** edge protection.
-It provides authentication, payments, crypto wallets, dashboards, and real-time notifications — ready for production.
+[![Build Status](https://github.com/advancia-platform/modular-saas-platform/actions/workflows/api-tests-coverage.yml/badge.svg)](https://github.com/advancia-platform/modular-saas-platform/actions)
+[![codecov](https://codecov.io/gh/advancia-platform/modular-saas-platform/branch/main/graph/badge.svg)](https://codecov.io/gh/advancia-platform/modular-saas-platform)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+![Node.js](https://img.shields.io/badge/node.js-18.x-green.svg)
+![Python](https://img.shields.io/badge/python-3.11-blue.svg)
+[![GitHub issues](https://img.shields.io/github/issues/advancia-platform/modular-saas-platform.svg)](https://github.com/advancia-platform/modular-saas-platform/issues)
+[![GitHub pull requests](https://img.shields.io/github/issues-pr/advancia-platform/modular-saas-platform.svg)](https://github.com/advancia-platform/modular-saas-platform/pulls)
 
 ---
 
-## 🏗️ Architecture
+## 📖 Overview
 
-**Stack Overview:**
+Advancia Pay Ledger is a **production-ready fintech platform** implementing comprehensive notification preferences management with granular categories across multiple integration services:
 
--   **Frontend** → Next.js 14 App Router (Vercel)
--   **Backend** → Node.js + Express + Socket.IO (Render)
--   **Database** → PostgreSQL (Render)
--   **Backups** → Cloudflare R2 (S3-compatible, automated nightly via GitHub Actions)
--   **CDN/DNS** → Cloudflare (WAF, SSL, Rate Limiting, Bot Protection)
--   **Monitoring** → Sentry
--   **CI/CD** → GitHub Actions (tests + automated backups)
+- **Resend** for transactional emails, alerts, and compliance reports
+- **Cryptomus** for crypto payment notifications and transaction alerts
+- **Telegram** for real-time critical notifications and admin alerts
+- **NOWPayments** for advanced cryptocurrency payments (150+ currencies, instant settlements)
+
+The backend features **enterprise-grade RBAC enforcement** with comprehensive audit logging. The platform provides seamless preference management across user roles with real-time Socket.IO updates.
+
+---
+
+## 🛠 Features
+
+- ✅ **Granular notification categories** (transactions, security, compliance, marketing)
+- ✅ **Multi-role access control** (Admin, Auditor, Viewer, User)
+- ✅ **Real-time notifications** via Socket.IO with user-specific rooms
+- ✅ **Comprehensive audit logging** for compliance and security
+- ✅ **Multi-provider integrations** (Resend, Cryptomus, Telegram, NOWPayments 150+ crypto)
+- ✅ **Advanced crypto payments** with NOWPayments (instant settlements, 0.5% fees)
+- ✅ **Enterprise payment security** with webhook verification and audit trails
+- ✅ **Automated API testing** with 80%+ coverage enforcement
+- ✅ **CI/CD pipeline** with security scanning and quality gates
+- ✅ **Production deployment** on Render (backend) and Vercel (frontend)
+
+---
+
+## 📊 Project Health
+
+- **Build Status** → CI/CD pipeline runs on every push with comprehensive testing
+- **Coverage** → minimum 80% enforced, tracked via Codecov with detailed reporting
+- **Security** → Automated security scanning with Bandit and Safety
+- **Issues & PRs** → Live activity indicators and automated quality checks
+- **License & Runtime** → MIT licensed, Node.js 18.x and Python 3.11 supported
+
+---
+
+## 🎯 Quick Start
+
+### Prerequisites
+
+- Node.js 18+
+- Docker & Docker Compose
+- PostgreSQL
+- VS Code (recommended)
+
+### 1. Open Workspace
+
+```bash
+cd modular-saas-platform
+code modular-saas-platform.code-workspace
+```
+
+### 2. Local Development
+
+```bash
+# Start all services
+docker-compose up -d
+
+# Backend development
+cd backend && npm install && npm run dev
+
+# Frontend development
+cd frontend && npm install && npm run dev
+```
+
+### 3. Access Applications
+
+- 🌐 Frontend: <http://localhost:3000>
+- 🔧 Backend API: <http://localhost:4000>
+- 📊 Prisma Studio: <http://localhost:5555>
+
+## 🚀 GitOps Deployment
+
+### Development
+
+```bash
+cd infra/gitops/kustomize/overlays/development
+kustomize build . | kubectl apply -f -
+```
+
+### Production
+
+```bash
+cd infra/gitops/kustomize/overlays/production
+kustomize build . | kubectl apply -f -
+```
+
+## 🌟 NOWPayments Integration
+
+Advancia Pay Ledger features a **production-ready NOWPayments integration** supporting 150+ cryptocurrencies with enterprise-grade security:
+
+### 🚀 Key Features
+
+- **150+ Cryptocurrencies** → Bitcoin, Ethereum, Tether, Binance Coin, Cardano, Polkadot, and more
+- **Instant Settlements** → Real-time payment processing with automatic currency conversion
+- **Low Fees** → Industry-leading rates starting from 0.5% with transparent pricing
+- **Enterprise Security** → HMAC-SHA512 webhook verification, non-custodial architecture
+- **Global Reach** → Worldwide cryptocurrency acceptance with regulatory compliance
+
+### 💻 Components
+
+- **Backend API**: `/api/nowpayments/*` - Complete payment processing API
+- **React Widget**: `NOWPaymentsWidget.tsx` - Advanced payment interface
+- **Payment Buttons**: Enhanced `PaymentButton.tsx` with NOWPayments support
+- **Demo Page**: `PaymentDemo.tsx` - Interactive payment showcase
+
+### 🔧 Environment Configuration
+
+```bash
+# NOWPayments API Configuration
+NOWPAYMENTS_API_KEY=your_api_key_here
+NOWPAYMENTS_IPN_SECRET=your_webhook_secret
+
+# Optional: Sandbox mode for testing
+NODE_ENV=development  # Enables sandbox mode
+```
+
+### 📊 API Endpoints
+
+```bash
+# Get supported cryptocurrencies
+GET /api/nowpayments/currencies
+
+# Get minimum payment amount
+GET /api/nowpayments/min-amount/:currency
+
+# Get payment estimate
+POST /api/nowpayments/estimate
+
+# Create payment invoice
+POST /api/nowpayments/create-invoice
+
+# Payment status webhook
+POST /api/nowpayments/webhook
+```
+
+### 📦 Usage Example
+
+```tsx
+import NOWPaymentsWidget from "@/components/NOWPaymentsWidget";
+
+<NOWPaymentsWidget amount={100} currency="USD" orderId="order_123" onSuccess={(data) => console.log("Payment successful:", data)} onError={(error) => console.error("Payment failed:", error)} />;
+```
+
+---
+
+- ✅ **Multi-tenant SaaS architecture**
+- ✅ **GitOps deployment pipeline**
+- ✅ **Performance optimized frontend**
+- ✅ **Microservices backend**
+- ✅ **Comprehensive monitoring**
+- ✅ **Enterprise security**
 
 ---
 
 ## 🔗 Quick Links
 
--   Deployment checklist: `DEPLOY_CHECKLIST_PRODUCTION.md`
--   Backup workflow guide: `.github/workflows/BACKUP_WORKFLOW.md`
--   DNS cutover plan: `CLOUDFLARE_DNS_PLAN.md`
--   Cloudflare DNS records template: `cloudflare/DNS_RECORDS.template.yml`
--   Render blueprint: `render.yaml`
--   Frontend rewrites: `frontend/next.config.mjs`
+- **Production Deploy**: `DEPLOY_CHECKLIST_PRODUCTION.md`
+- **GitOps Setup**: `GITOPS_DEPLOYMENT_GUIDE.md`
+- **Compliance Monitoring**: `COMPLIANCE_MONITORING_INTEGRATION.md`
+- **AI Foundation**: `AI_AGENT_FOUNDATION.md`
+- **Backup workflow**: `.github/workflows/BACKUP_WORKFLOW.md`
+- **DNS cutover plan**: `CLOUDFLARE_DNS_PLAN.md`
+- **Cloudflare DNS**: `cloudflare/DNS_RECORDS.template.yml`
+- **Render blueprint**: `render.yaml`
+- **Frontend config**: `frontend/next.config.mjs`
 
 ---
 
@@ -34,10 +185,10 @@ It provides authentication, payments, crypto wallets, dashboards, and real-time 
 
 **Production Stack:**
 
--   **Backend**: Render (Web Service + PostgreSQL)
--   **Frontend**: Vercel (Next.js)
--   **Backups**: Cloudflare R2 (automated nightly via GitHub Actions)
--   **CDN**: Cloudflare
+- **Backend**: Render (Web Service + PostgreSQL)
+- **Frontend**: Vercel (Next.js)
+- **Backups**: Cloudflare R2 (automated nightly via GitHub Actions)
+- **CDN**: Cloudflare
 
 **Quick Deploy:**
 
@@ -45,13 +196,14 @@ It provides authentication, payments, crypto wallets, dashboards, and real-time 
 2. **Frontend**: Push to `main` branch → Vercel auto-deploys
 3. **Environment Variables**: Configure in Render & Vercel dashboards
 
-See detailed guide: `deploy-vercel.ps1` for frontend, `scripts/trigger-render-deploy.sh` for backend
+See detailed guide: `deploy-vercel.ps1` for frontend,
+`scripts/trigger-render-deploy.sh` for backend
 
 ---
 
 ## ⚡ Quick Start (Local Dev)
 
-```bash
+````bashbash
 # Backend (Terminal 1)
 cd backend
 npm install
@@ -62,7 +214,7 @@ npm run dev
 cd frontend
 npm install
 npm run dev
-```
+```bash
 
 **Access:**
 
@@ -75,11 +227,40 @@ See `backend/.env.example` for required keys (JWT_SECRET, STRIPE keys, DATABASE_
 
 ---
 
+## 🚀 GitOps & Kubernetes Deployment
+
+**Enterprise GitOps Pipeline:**
+
+```bash
+# Deploy to Kubernetes with ArgoCD
+./scripts/deploy-enterprise-gitops.ps1
+
+# Validate compliance monitoring
+./scripts/validate-compliance-monitoring.ps1
+
+# Check GitOps deployment status
+./scripts/validate-gitops-deployment.ps1
+```
+
+**Components:**
+
+-   🏗️ **Infrastructure**: Kubernetes manifests in `ai-agent-k8s/`
+-   🤖 **AI DevOps Agent**: Automated deployment in `ai-agent/`
+-   📊 **Compliance Dashboard**: Real-time monitoring at `/compliance`
+-   🔄 **ArgoCD**: GitOps continuous deployment
+-   📈 **Monitoring**: Prometheus, Grafana, ELK stack integration
+
+See `GITOPS_DEPLOYMENT_GUIDE.md` for detailed setup instructions.
+
+---
+
 ## 📊 Features
 
 -   🔐 **Authentication** → Email OTP (Gmail SMTP), JWT, 2FA/TOTP, password recovery
 -   💳 **Fiat Payments** → Stripe integration (cards, webhooks)
 -   ₿ **Crypto Payments** → Cryptomus (BTC, ETH, USDT), custodial HD wallets
+-   🌟 **NOWPayments** → 150+ cryptocurrencies, instant settlements, low fees
+-   🔐 **Multi-Provider Security** → Webhook verification, signature validation, audit trails
 -   💰 **Multi-Currency** → USD, BTC, ETH, USDT balances per user
 -   🎁 **Rewards System** → Token distribution, user tiers
 -   📈 **Dashboard** → Real-time charts, transaction history, analytics
@@ -87,6 +268,10 @@ See `backend/.env.example` for required keys (JWT_SECRET, STRIPE keys, DATABASE_
 -   ⚙️ **Backend** → RESTful API, Prisma ORM, Socket.IO, rate limiting
 -   🔒 **Security** → Cloudflare WAF, Sentry monitoring, audit logs
 -   📦 **DevOps** → GitHub Actions CI/CD, automated DB backups
+-   🤖 **GitOps** → ArgoCD enterprise deployment, Kubernetes manifests
+-   📊 **Compliance** → Real-time monitoring, regulatory framework tracking
+-   🛡️ **AI Security** → Automated threat detection, policy enforcement
+-   📈 **Observability** → Prometheus metrics, ELK stack integration
 
 ---
 
@@ -141,3 +326,4 @@ Note: Some organizations disable prompt files; if you do not see the setting, it
 ## 📜 License
 
 MIT License — free to use and modify with attribution.
+````

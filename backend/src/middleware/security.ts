@@ -55,6 +55,12 @@ export function rateLimit(options: RateLimitOptions) {
 
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
+      // Skip rate limiting for admin users (prevents lockout)
+      const user = (req as any).user;
+      if (user && (user.role === 'admin' || user.isAdmin === true)) {
+        return next();
+      }
+
       const identifier = req.ip || req.socket.remoteAddress || 'unknown';
 
       if (redisLimiter) {

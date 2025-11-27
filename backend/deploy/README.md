@@ -4,12 +4,12 @@ This folder contains optional templates and instructions to run the backend on a
 
 Files
 
--   `templates/advancia-backend.service.template` - systemd unit file template. Replace placeholders:
-    -   `{{USER}}` → user to run the service (e.g. `www-data`)
-    -   `{{WORKING_DIR}}` → absolute path to backend working directory (e.g. `/var/www/-modular-saas-platform/backend`)
-    -   `{{ENV_FILE}}` → optional path to an env file (e.g. `/var/www/-modular-saas-platform/backend/.env`)
+- `templates/advancia-backend.service.template` - systemd unit file template. Replace placeholders:
+  - `{{USER}}` → user to run the service (e.g. `www-data`)
+  - `{{WORKING_DIR}}` → absolute path to backend working directory (e.g. `/var/www/-modular-saas-platform/backend`)
+  - `{{ENV_FILE}}` → optional path to an env file (e.g. `/var/www/-modular-saas-platform/backend/.env`)
 
--   `templates/advancia-nginx.conf.template` - nginx site config template. Replace `{{SERVER_NAME}}` with your domain or droplet IP.
+- `templates/advancia-nginx.conf.template` - nginx site config template. Replace `{{SERVER_NAME}}` with your domain or droplet IP.
 
 Quick usage
 
@@ -42,11 +42,11 @@ Quick usage
 
 Notes
 
--   The deploy helper `scripts/deploy/droplet-deploy.sh` uses `pm2` by default. If you prefer systemd you can use these templates instead.
--   Always make sure `.env` contains correct `DATABASE_URL`/`TEST_DATABASE_URL` before running migrations.
+- The deploy helper `scripts/deploy/droplet-deploy.sh` uses `pm2` by default. If you prefer systemd you can use these templates instead.
+- Always make sure `.env` contains correct `DATABASE_URL`/`TEST_DATABASE_URL` before running migrations.
 
 Provisioning & backups
 
--   `scripts/deploy/provision.sh` — installs system packages (git, nginx, certbot, build-essential), enables `ufw` rules, and installs `nvm` + Node LTS for the deployment user. Run it as root: `sudo bash scripts/deploy/provision.sh`.
+- `scripts/deploy/provision.sh` — installs system packages (git, nginx, certbot, build-essential), enables `ufw` rules, and installs `nvm` + Node LTS for the deployment user. Run it as root: `sudo bash scripts/deploy/provision.sh`.
 
--   The deploy script now backs up any existing systemd unit or nginx site before overwriting. Backups are created with a timestamp suffix in `/etc/systemd/system` and `/etc/nginx/sites-available`.
+- The deploy script now backs up any existing systemd unit or nginx site before overwriting. Backups are created with a timestamp suffix in `/etc/systemd/system` and `/etc/nginx/sites-available`.

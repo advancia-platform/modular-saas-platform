@@ -2,9 +2,9 @@
 
 ## ✅ Current Status
 
--   **Unit Tests**: 15/15 passing (100%) ✨
--   **Integration Tests**: Skipped (require test database setup)
--   **Total Test Coverage**: All critical paths covered
+- **Unit Tests**: 15/15 passing (100%) ✨
+- **Integration Tests**: Skipped (require test database setup)
+- **Total Test Coverage**: All critical paths covered
 
 ## Test Suites
 
@@ -14,17 +14,17 @@
 
 Tests authentication flows including:
 
--   User registration with approval workflow
--   Login with credentials
--   Password validation
--   Duplicate user prevention
--   Invalid credentials handling
+- User registration with approval workflow
+- Login with credentials
+- Password validation
+- Duplicate user prevention
+- Invalid credentials handling
 
 **Mock Configuration**:
 
--   Prisma models: User, UserProfile, AdminNotification, Session
--   bcryptjs for password hashing
--   All mocks prevent external calls
+- Prisma models: User, UserProfile, AdminNotification, Session
+- bcryptjs for password hashing
+- All mocks prevent external calls
 
 ### 2. Health Tests (`tests/health.test.ts`)
 
@@ -87,10 +87,10 @@ Basic sanity checks for test environment configuration.
 
 All external services are mocked to prevent real calls during tests:
 
--   ✅ **nodemailer**: No real emails sent (aligns with Email OTP system)
--   ✅ **web-push**: No real push notifications sent
--   ✅ **Socket.IO**: No real WebSocket connections
--   ✅ **bcrypt**: Fast mock hashing (speeds up tests)
+- ✅ **nodemailer**: No real emails sent (aligns with Email OTP system)
+- ✅ **web-push**: No real push notifications sent
+- ✅ **Socket.IO**: No real WebSocket connections
+- ✅ **bcrypt**: Fast mock hashing (speeds up tests)
 
 ### 🗄️ Database Cleanup
 
@@ -98,9 +98,9 @@ All external services are mocked to prevent real calls during tests:
 
 **Files**:
 
--   `tests/globalSetup.ts` - Cleans DB before all tests
--   `tests/globalTeardown.ts` - Cleans DB after all tests
--   `tests/setup.ts` - Provides `cleanDatabase()` utility
+- `tests/globalSetup.ts` - Cleans DB before all tests
+- `tests/globalTeardown.ts` - Cleans DB after all tests
+- `tests/setup.ts` - Provides `cleanDatabase()` utility
 
 **Approach**:
 
@@ -190,27 +190,27 @@ npm test -- --verbose
 
 ### Tests Hanging
 
--   Check for open database connections
--   Ensure `forceExit: true` in jest.config.js
--   Verify all async operations are properly awaited
+- Check for open database connections
+- Ensure `forceExit: true` in jest.config.js
+- Verify all async operations are properly awaited
 
 ### Database Errors
 
--   Ensure test database exists and is accessible
--   Check DATABASE_URL in tests/setup.ts
--   Verify migrations are applied
+- Ensure test database exists and is accessible
+- Check DATABASE_URL in tests/setup.ts
+- Verify migrations are applied
 
 ### Mock Errors
 
--   Check that all required Prisma models are mocked
--   Ensure mock return values match expected schema
--   Verify mock implementations in tests/setup.ts
+- Check that all required Prisma models are mocked
+- Ensure mock return values match expected schema
+- Verify mock implementations in tests/setup.ts
 
 ### Deadlock Errors
 
--   Ensure `maxWorkers: 1` in jest.config.js
--   Check that cleanup functions respect foreign keys
--   Verify tables are deleted in correct order
+- Ensure `maxWorkers: 1` in jest.config.js
+- Check that cleanup functions respect foreign keys
+- Verify tables are deleted in correct order
 
 ## Best Practices
 
@@ -228,14 +228,14 @@ npm test -- --verbose
 
 ## Files Reference
 
--   `tests/setup.ts` - Global test configuration, mocks, utilities
--   `tests/globalSetup.ts` - Pre-test database cleanup
--   `tests/globalTeardown.ts` - Post-test database cleanup
--   `tests/auth.test.ts` - Authentication endpoint tests
--   `tests/health.test.ts` - Health check tests
--   `tests/smoke.test.ts` - Basic sanity tests
--   `tests/integration.test.ts` - Full integration tests (skipped)
--   `jest.config.js` - Jest configuration
+- `tests/setup.ts` - Global test configuration, mocks, utilities
+- `tests/globalSetup.ts` - Pre-test database cleanup
+- `tests/globalTeardown.ts` - Post-test database cleanup
+- `tests/auth.test.ts` - Authentication endpoint tests
+- `tests/health.test.ts` - Health check tests
+- `tests/smoke.test.ts` - Basic sanity tests
+- `tests/integration.test.ts` - Full integration tests (skipped)
+- `jest.config.js` - Jest configuration
 
 ## Contributing
 
@@ -252,16 +252,16 @@ When adding new tests:
 
 Tests are designed to run in CI environments:
 
--   No external dependencies (when mocked properly)
--   Deterministic results
--   Fast execution (< 10 seconds for unit tests)
--   Clear failure messages
--   Proper exit codes
+- No external dependencies (when mocked properly)
+- Deterministic results
+- Fast execution (< 10 seconds for unit tests)
+- Clear failure messages
+- Proper exit codes
 
 For CI pipelines, ensure:
 
--   Set `NODE_ENV=test`
--   Provide test database credentials (for integration tests)
--   Run migrations before tests
--   Collect coverage reports
--   Fail pipeline on test failures
+- Set `NODE_ENV=test`
+- Provide test database credentials (for integration tests)
+- Run migrations before tests
+- Collect coverage reports
+- Fail pipeline on test failures

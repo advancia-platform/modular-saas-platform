@@ -8,12 +8,12 @@ Complete guide to implementing Sentry error tracking for production-grade error 
 
 Sentry provides real-time error tracking with:
 
--   **Stack traces** - See exactly where errors occur
--   **Request context** - HTTP headers, body, user info
--   **Release tracking** - Know which version caused errors
--   **Performance monitoring** - Identify slow endpoints
--   **Breadcrumbs** - Debug trail leading to errors
--   **Slack/Email alerts** - Get notified immediately
+- **Stack traces** - See exactly where errors occur
+- **Request context** - HTTP headers, body, user info
+- **Release tracking** - Know which version caused errors
+- **Performance monitoring** - Identify slow endpoints
+- **Breadcrumbs** - Debug trail leading to errors
+- **Slack/Email alerts** - Get notified immediately
 
 ---
 
@@ -27,9 +27,9 @@ npm install @sentry/node @sentry/tracing @sentry/profiling-node
 
 **Packages:**
 
--   `@sentry/node` - Core Sentry SDK
--   `@sentry/tracing` - Performance monitoring
--   `@sentry/profiling-node` - CPU profiling
+- `@sentry/node` - Core Sentry SDK
+- `@sentry/tracing` - Performance monitoring
+- `@sentry/profiling-node` - CPU profiling
 
 ---
 
@@ -55,8 +55,8 @@ APP_VERSION=1.0.0
 **Production (Render/Heroku/etc):**
 Add environment variable in hosting platform:
 
--   Key: `SENTRY_DSN`
--   Value: Your DSN from Sentry dashboard
+- Key: `SENTRY_DSN`
+- Value: Your DSN from Sentry dashboard
 
 ### Step 3: Verify Integration
 
@@ -91,10 +91,10 @@ app.use(sentryErrorHandler());
 
 Sentry automatically captures:
 
--   ✅ Uncaught exceptions
--   ✅ Unhandled promise rejections
--   ✅ Express route errors
--   ✅ Middleware errors
+- ✅ Uncaught exceptions
+- ✅ Unhandled promise rejections
+- ✅ Express route errors
+- ✅ Middleware errors
 
 **No code changes needed!** Just deploy and errors will appear in Sentry.
 
@@ -236,9 +236,9 @@ Actions:
 
 **Project Settings → Alerts → General:**
 
--   **Minimum interval**: 5 minutes (prevents spam)
--   **Digest frequency**: Daily summary at 9 AM
--   **Resolve notifications**: Yes (notify when fixed)
+- **Minimum interval**: 5 minutes (prevents spam)
+- **Digest frequency**: Daily summary at 9 AM
+- **Resolve notifications**: Yes (notify when fixed)
 
 ---
 
@@ -278,10 +278,10 @@ Warning → Daily digest only
 
 **Avoid:**
 
--   Alerting on every single error
--   Alerting on expected errors (validation failures)
--   Alerting on test environments
--   Alerting on health check failures
+- Alerting on every single error
+- Alerting on expected errors (validation failures)
+- Alerting on test environments
+- Alerting on health check failures
 
 **Example: Filter out noise**
 
@@ -315,23 +315,23 @@ beforeSend(event, hint) {
 
 **Issues Tab:**
 
--   Active errors grouped by type
--   Error frequency over time
--   User impact (how many users affected)
--   First seen / Last seen timestamps
+- Active errors grouped by type
+- Error frequency over time
+- User impact (how many users affected)
+- First seen / Last seen timestamps
 
 **Performance Tab:**
 
--   Slowest endpoints
--   Average response time
--   Throughput (requests/sec)
--   Database query performance
+- Slowest endpoints
+- Average response time
+- Throughput (requests/sec)
+- Database query performance
 
 **Releases Tab:**
 
--   Which version introduced errors
--   Error trends by release
--   Deployment impact analysis
+- Which version introduced errors
+- Error trends by release
+- Deployment impact analysis
 
 ### Useful Filters
 
@@ -415,12 +415,12 @@ environment:production AND error.type:TypeError
 
 **This tells you:**
 
--   ✅ Exact error type and message
--   ✅ Full stack trace with line numbers
--   ✅ Request details (URL, method, headers, body)
--   ✅ Which user experienced it
--   ✅ Context tags (feature, environment)
--   ✅ Actions leading up to error
+- ✅ Exact error type and message
+- ✅ Full stack trace with line numbers
+- ✅ Request details (URL, method, headers, body)
+- ✅ Which user experienced it
+- ✅ Context tags (feature, environment)
+- ✅ Actions leading up to error
 
 ---
 
@@ -469,17 +469,17 @@ parse-watchdog.ps1 analyzes trends
 
 **Free Plan Includes:**
 
--   ✅ 5,000 errors/month
--   ✅ 10,000 performance events/month
--   ✅ 1 team member
--   ✅ 30-day data retention
--   ✅ All integrations (Slack, email, webhooks)
+- ✅ 5,000 errors/month
+- ✅ 10,000 performance events/month
+- ✅ 1 team member
+- ✅ 30-day data retention
+- ✅ All integrations (Slack, email, webhooks)
 
 **Paid Plans:**
 
--   **Developer**: $26/month - 50K errors
--   **Team**: $80/month - 100K errors + advanced features
--   **Business**: Custom pricing - unlimited errors
+- **Developer**: $26/month - 50K errors
+- **Team**: $80/month - 100K errors + advanced features
+- **Business**: Custom pricing - unlimited errors
 
 **For MVP**: Free tier is plenty! 5K errors/month = 166/day = 7/hour.
 
@@ -489,31 +489,31 @@ parse-watchdog.ps1 analyzes trends
 
 ### Now (MVP Stage) ✅ COMPLETED
 
--   ✅ Install Sentry SDK
--   ✅ Add DSN to environment
--   ✅ Integrate in `src/index.js`
--   ✅ Create `src/utils/sentry.js`
+- ✅ Install Sentry SDK
+- ✅ Add DSN to environment
+- ✅ Integrate in `src/index.js`
+- ✅ Create `src/utils/sentry.js`
 
 ### Before Launch (Pre-Production)
 
--   📦 Create Sentry project
--   📦 Add production DSN to hosting
--   📦 Connect Slack workspace
--   📦 Create 2-3 basic alert rules
+- 📦 Create Sentry project
+- 📦 Add production DSN to hosting
+- 📦 Connect Slack workspace
+- 📦 Create 2-3 basic alert rules
 
 ### After Launch (Production)
 
--   🔔 Monitor Sentry dashboard daily
--   🔔 Adjust alert thresholds based on traffic
--   🔔 Add user context in auth routes
--   🔔 Add breadcrumbs to critical flows
+- 🔔 Monitor Sentry dashboard daily
+- 🔔 Adjust alert thresholds based on traffic
+- 🔔 Add user context in auth routes
+- 🔔 Add breadcrumbs to critical flows
 
 ### Scaling (6-12 months)
 
--   📊 Enable performance monitoring
--   📊 Track custom metrics
--   📊 Create release tracking workflow
--   📊 Upgrade to paid plan if needed
+- 📊 Enable performance monitoring
+- 📊 Track custom metrics
+- 📊 Create release tracking workflow
+- 📊 Upgrade to paid plan if needed
 
 ---
 
@@ -627,37 +627,37 @@ Sentry.init({
 
 **What You Have Now:**
 
--   ✅ Sentry SDK installed
--   ✅ Integration in `src/index.js`
--   ✅ Utility functions in `src/utils/sentry.js`
--   ✅ Automatic error capture
--   ✅ Global error handlers
--   ✅ Request context capture
--   ✅ Ready for Slack alerts
+- ✅ Sentry SDK installed
+- ✅ Integration in `src/index.js`
+- ✅ Utility functions in `src/utils/sentry.js`
+- ✅ Automatic error capture
+- ✅ Global error handlers
+- ✅ Request context capture
+- ✅ Ready for Slack alerts
 
 **What You Need:**
 
--   📦 Sentry account (free)
--   📦 DSN added to `.env`
--   📦 Slack integration (5 minutes)
--   📦 Alert rules (10 minutes)
+- 📦 Sentry account (free)
+- 📦 DSN added to `.env`
+- 📦 Slack integration (5 minutes)
+- 📦 Alert rules (10 minutes)
 
 **Benefits:**
 
--   🎯 Never miss critical errors
--   🎯 Debug with full context
--   🎯 Alert team on high error rates
--   🎯 Track errors by release version
--   🎯 Monitor performance automatically
+- 🎯 Never miss critical errors
+- 🎯 Debug with full context
+- 🎯 Alert team on high error rates
+- 🎯 Track errors by release version
+- 🎯 Monitor performance automatically
 
 ---
 
 ## 📞 Resources
 
--   **Sentry Docs**: <https://docs.sentry.io/platforms/node/>
--   **Alert Rules**: <https://docs.sentry.io/product/alerts/>
--   **Slack Integration**: <https://docs.sentry.io/product/integrations/slack/>
--   **Best Practices**: <https://docs.sentry.io/product/best-practices/>
+- **Sentry Docs**: <https://docs.sentry.io/platforms/node/>
+- **Alert Rules**: <https://docs.sentry.io/product/alerts/>
+- **Slack Integration**: <https://docs.sentry.io/product/integrations/slack/>
+- **Best Practices**: <https://docs.sentry.io/product/best-practices/>
 
 ---
 

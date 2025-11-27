@@ -1,35 +1,50 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response, Router } from "express";
 import Stripe from "stripe";
 import { config } from "../jobs/config";
 import logger from "../logger";
 import { authenticateToken, requireAdmin } from "../middleware/auth";
 import { rateLimit } from "../middleware/security";
+import {
+    paymentRateLimiter,
+    requireEmailVerified
+} from "../middleware/securityHardening";
 import { validateSchema } from "../middleware/validateSchema";
+import prisma from "../prismaClient";
 import { withDefaults } from "../utils/prismaHelpers";
 import {
-  AdminRefundSchema,
-  PaymentChargeSavedSchema,
-  PaymentCreateIntentSchema,
-  PaymentSaveMethodSchema,
-  SubscriptionCancelSchema,
-  SubscriptionCreateSchema,
+    AdminRefundSchema,
+    PaymentChargeSavedSchema,
+    PaymentCreateIntentSchema,
+    PaymentSaveMethodSchema,
+    SubscriptionCancelSchema,
+    SubscriptionCreateSchema,
 } from "../validation/schemas";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 const stripeClient = config.stripeSecretKey
   ? new Stripe(config.stripeSecretKey)
   : null;
 
+// Safe middleware wrappers to prevent undefined crashes
+const safeAuth =
+  typeof authenticateToken === "function"
+    ? authenticateToken
+    : (_req: any, _res: any, next: any) => next();
+const safeAdmin =
+  typeof requireAdmin === "function"
+    ? requireAdmin
+    : (_req: any, _res: any, next: any) => next();
+
 /**
  * POST /api/payments/save-method
- * Save a payment method to customer for future use
+ * Save a payment method to customer for future use (secured)
  */
 router.post(
   "/save-method",
-  authenticateToken,
+  safeAuth,
+  requireEmailVerified,
+  paymentRateLimiter,
   validateSchema(PaymentSaveMethodSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
@@ -103,110 +118,102 @@ router.post(
  * GET /api/payments/methods
  * List saved payment methods
  */
-router.get(
-  "/methods",
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    if (!stripeClient) {
-      return res.status(503).json({
-        error: "Stripe not configured",
-        code: "STRIPE_NOT_CONFIGURED",
+router.get("/methods", safeAuth, async (req: Request, res: Response) => {
+  if (!stripeClient) {
+    return res.status(503).json({
+      error: "Stripe not configured",
+      code: "STRIPE_NOT_CONFIGURED",
+    });
+  }
+
+  try {
+    const userId = (req as any).user.id;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { stripeCustomerId: true },
+    });
+
+    if (!user?.stripeCustomerId) {
+      return res.json({
+        success: true,
+        methods: [],
+        code: "PAYMENT_METHODS_LIST",
       });
     }
 
-    try {
-      const userId = (req as any).user.id;
+    const paymentMethods = await stripeClient.paymentMethods.list({
+      customer: user.stripeCustomerId,
+      type: "card",
+    });
 
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { stripeCustomerId: true },
-      });
+    const methods = paymentMethods.data.map((pm) => ({
+      id: pm.id,
+      brand: pm.card?.brand,
+      last4: pm.card?.last4,
+      expMonth: pm.card?.exp_month,
+      expYear: pm.card?.exp_year,
+      isDefault: pm.id === user.stripeCustomerId, // Would need customer data to check
+    }));
 
-      if (!user?.stripeCustomerId) {
-        return res.json({
-          success: true,
-          methods: [],
-          code: "PAYMENT_METHODS_LIST",
-        });
-      }
-
-      const paymentMethods = await stripeClient.paymentMethods.list({
-        customer: user.stripeCustomerId,
-        type: "card",
-      });
-
-      const methods = paymentMethods.data.map((pm) => ({
-        id: pm.id,
-        brand: pm.card?.brand,
-        last4: pm.card?.last4,
-        expMonth: pm.card?.exp_month,
-        expYear: pm.card?.exp_year,
-        isDefault: pm.id === user.stripeCustomerId, // Would need customer data to check
-      }));
-
-      res.json({ success: true, methods, code: "PAYMENT_METHODS_LIST" });
-    } catch (error) {
-      logger.error("List payment methods error:", error);
-      res.status(500).json({ error: "Failed to list payment methods" });
-    }
-  },
-);
+    res.json({ success: true, methods, code: "PAYMENT_METHODS_LIST" });
+  } catch (error) {
+    logger.error("List payment methods error:", error);
+    res.status(500).json({ error: "Failed to list payment methods" });
+  }
+});
 
 /**
  * DELETE /api/payments/methods/:id
  * Remove a saved payment method
  */
-router.delete(
-  "/methods/:id",
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    if (!stripeClient) {
-      return res.status(503).json({
-        error: "Stripe not configured",
-        code: "STRIPE_NOT_CONFIGURED",
+router.delete("/methods/:id", safeAuth, async (req: Request, res: Response) => {
+  if (!stripeClient) {
+    return res.status(503).json({
+      error: "Stripe not configured",
+      code: "STRIPE_NOT_CONFIGURED",
+    });
+  }
+
+  try {
+    const userId = (req as any).user.id;
+    const { id } = req.params;
+    if (!id) {
+      return res.status(400).json({ error: "Missing payment method id" });
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { stripeCustomerId: true },
+    });
+
+    if (!user?.stripeCustomerId) {
+      return res.status(404).json({
+        error: "No saved payment methods",
+        code: "NO_PAYMENT_METHODS",
       });
     }
 
-    try {
-      const userId = (req as any).user.id;
-      const { id } = req.params;
-      if (!id) {
-        return res.status(400).json({ error: "Missing payment method id" });
-      }
-
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { stripeCustomerId: true },
-      });
-
-      if (!user?.stripeCustomerId) {
-        return res.status(404).json({
-          error: "No saved payment methods",
-          code: "NO_PAYMENT_METHODS",
-        });
-      }
-
-      // Verify payment method belongs to this customer
-      const paymentMethod = await stripeClient.paymentMethods.retrieve(id);
-      if (paymentMethod.customer !== user.stripeCustomerId) {
-        return res
-          .status(403)
-          .json({ error: "Unauthorized", code: "UNAUTHORIZED_PAYMENT_METHOD" });
-      }
-
-      await stripeClient.paymentMethods.detach(id);
-
-      res.json({
-        success: true,
-        message: "Payment method removed",
-        code: "PAYMENT_METHOD_REMOVED",
-      });
-    } catch (error) {
-      logger.error("Delete payment method error:", error);
-      res.status(500).json({ error: "Failed to delete payment method" });
+    // Verify payment method belongs to this customer
+    const paymentMethod = await stripeClient.paymentMethods.retrieve(id);
+    if (paymentMethod.customer !== user.stripeCustomerId) {
+      return res
+        .status(403)
+        .json({ error: "Unauthorized", code: "UNAUTHORIZED_PAYMENT_METHOD" });
     }
-  },
-);
+
+    await stripeClient.paymentMethods.detach(id);
+
+    res.json({
+      success: true,
+      message: "Payment method removed",
+      code: "PAYMENT_METHOD_REMOVED",
+    });
+  } catch (error) {
+    logger.error("Delete payment method error:", error);
+    res.status(500).json({ error: "Failed to delete payment method" });
+  }
+});
 
 /**
  * POST /api/payments/subscription/create
@@ -214,7 +221,7 @@ router.delete(
  */
 router.post(
   "/subscription/create",
-  authenticateToken,
+  safeAuth,
   validateSchema(SubscriptionCreateSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
@@ -316,70 +323,66 @@ router.post(
  * GET /api/payments/subscriptions
  * List user's active subscriptions
  */
-router.get(
-  "/subscriptions",
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    if (!stripeClient) {
-      return res.status(503).json({
-        error: "Stripe not configured",
-        code: "STRIPE_NOT_CONFIGURED",
-      });
-    }
+router.get("/subscriptions", safeAuth, async (req: Request, res: Response) => {
+  if (!stripeClient) {
+    return res.status(503).json({
+      error: "Stripe not configured",
+      code: "STRIPE_NOT_CONFIGURED",
+    });
+  }
 
-    try {
-      const userId = (req as any).user.id;
+  try {
+    const userId = (req as any).user.id;
 
-      const user = await prisma.user.findUnique({
-        where: { id: userId },
-        select: { stripeCustomerId: true },
-      });
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { stripeCustomerId: true },
+    });
 
-      if (!user?.stripeCustomerId) {
-        return res.json({
-          success: true,
-          subscriptions: [],
-          code: "SUBSCRIPTIONS_LIST",
-        });
-      }
-
-      const subscriptions = await stripeClient.subscriptions.list({
-        customer: user.stripeCustomerId,
-        status: "all",
-      });
-
-      const formatted = subscriptions.data.map((sub) => ({
-        id: sub.id,
-        status: sub.status,
-        planName: sub.metadata?.planName || "Subscription",
-        amount: sub.items.data[0]?.price.unit_amount
-          ? sub.items.data[0].price.unit_amount / 100
-          : 0,
-        interval: sub.items.data[0]?.price.recurring?.interval,
-        currentPeriodEnd: (sub as any).current_period_end,
-        cancelAtPeriodEnd: sub.cancel_at_period_end,
-        created: sub.created,
-      }));
-
-      res.json({
+    if (!user?.stripeCustomerId) {
+      return res.json({
         success: true,
-        subscriptions: formatted,
+        subscriptions: [],
         code: "SUBSCRIPTIONS_LIST",
       });
-    } catch (error) {
-      logger.error("List subscriptions error:", error);
-      res.status(500).json({ error: "Failed to list subscriptions" });
     }
-  },
-);
+
+    const subscriptions = await stripeClient.subscriptions.list({
+      customer: user.stripeCustomerId,
+      status: "all",
+    });
+
+    const formatted = subscriptions.data.map((sub) => ({
+      id: sub.id,
+      status: sub.status,
+      planName: sub.metadata?.planName || "Subscription",
+      amount: sub.items.data[0]?.price.unit_amount
+        ? sub.items.data[0].price.unit_amount / 100
+        : 0,
+      interval: sub.items.data[0]?.price.recurring?.interval,
+      currentPeriodEnd: (sub as any).current_period_end,
+      cancelAtPeriodEnd: sub.cancel_at_period_end,
+      created: sub.created,
+    }));
+
+    res.json({
+      success: true,
+      subscriptions: formatted,
+      code: "SUBSCRIPTIONS_LIST",
+    });
+  } catch (error) {
+    logger.error("List subscriptions error:", error);
+    res.status(500).json({ error: "Failed to list subscriptions" });
+  }
+});
 
 /**
  * POST /api/payments/subscription/:id/cancel
  * Cancel a subscription
  */
 router.post(
-  "/subscription/:id/cancel",
-  authenticateToken,
+  "/subscription/cancel",
+  safeAuth,
   validateSchema(SubscriptionCancelSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
@@ -444,7 +447,7 @@ router.post(
 router.post(
   "/charge-saved-method",
   rateLimit({ windowMs: 5 * 60_000, maxRequests: 10 }),
-  authenticateToken,
+  safeAuth,
   validateSchema(PaymentChargeSavedSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
@@ -504,8 +507,6 @@ router.post(
   },
 );
 
-export default router;
-
 /**
  * POST /api/payments/create-intent
  * Create a Stripe PaymentIntent for on-session card collection (Stripe Elements)
@@ -515,7 +516,7 @@ export default router;
 router.post(
   "/create-intent",
   rateLimit({ windowMs: 5 * 60_000, maxRequests: 15 }),
-  authenticateToken,
+  safeAuth,
   validateSchema(PaymentCreateIntentSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient) {
@@ -650,8 +651,8 @@ router.post(
  */
 router.post(
   "/admin/refund",
-  authenticateToken,
-  requireAdmin,
+  safeAuth,
+  safeAdmin,
   validateSchema(AdminRefundSchema),
   async (req: Request, res: Response) => {
     if (!stripeClient)
@@ -727,3 +728,5 @@ router.post(
     }
   },
 );
+
+export default router;

@@ -1,1 +1,0 @@
-Disable autoDeploy; require GitHub 'production' environment for auto-deploy; document approvals and secrets

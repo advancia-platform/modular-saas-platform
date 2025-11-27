@@ -1,6 +1,8 @@
+import * as Sentry from "@sentry/node";
 import * as nodemailer from "nodemailer";
 import { Server as SocketServer } from "socket.io";
 import webpush from "web-push";
+import { logger } from "../logger";
 import prisma from "../prismaClient";
 import { withDefaults } from "../utils/prismaHelpers";
 
@@ -36,6 +38,59 @@ let io: SocketServer | null = null;
 export function setSocketIO(socketServer: SocketServer) {
   io = socketServer;
   console.log("✅ Socket.IO injected into notification service");
+}
+
+/**
+ * Log email to NotificationLog table for admin auditing and compliance
+ */
+async function logEmailToDatabase(
+  userId: string,
+  email: string,
+  subject: string,
+  message: string,
+  template: string = "notification",
+  provider: string = "gmail",
+  status: string = "sent",
+  metadata?: Record<string, any>
+): Promise<void> {
+  try {
+    await prisma.notificationLog.create({
+      data: {
+        userId,
+        email,
+        subject,
+        message,
+        template,
+        provider,
+        status,
+        metadata: metadata || {},
+      },
+    });
+
+    logger.info("Email logged to database", {
+      userId,
+      email,
+      subject,
+      provider,
+      status,
+    });
+  } catch (error) {
+    logger.error("Failed to log email to database", {
+      error: error instanceof Error ? error.message : "Unknown error",
+      userId,
+      email,
+      subject,
+    });
+
+    // Track in Sentry for monitoring
+    Sentry.captureException(error, {
+      tags: {
+        component: "notification-service",
+        operation: "email-logging"
+      },
+      extra: { userId, email, subject, provider, status }
+    });
+  }
 }
 
 interface NotificationPayload {
@@ -160,32 +215,44 @@ async function sendEmail(
       return;
     }
 
+    const htmlMessage = `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
+        <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+          <h2 style="color: #3B82F6; margin-top: 0;">${subject}</h2>
+          <p style="color: #374151; line-height: 1.6; font-size: 16px;">${message}</p>
+          <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
+          <p style="font-size: 12px; color: #6B7280;">
+            This is an automated notification from Advancia Pay Ledger.
+            <a href="${
+              process.env.FRONTEND_URL || "http://localhost:3000"
+            }/settings/notifications" style="color: #3B82F6; text-decoration: none;">Manage preferences</a>
+          </p>
+        </div>
+      </div>
+    `;
+
     await emailTransporter.sendMail({
       from: EMAIL_FROM,
       replyTo: EMAIL_REPLY_TO,
       to: user.email,
       subject,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9fafb;">
-          <div style="background-color: white; border-radius: 8px; padding: 30px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-            <h2 style="color: #3B82F6; margin-top: 0;">${subject}</h2>
-            <p style="color: #374151; line-height: 1.6; font-size: 16px;">${message}</p>
-            <hr style="border: none; border-top: 1px solid #E5E7EB; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #6B7280;">
-              This is an automated notification from Advancia Pay Ledger.
-              <a href="${
-                process.env.FRONTEND_URL || "http://localhost:3000"
-              }/settings/notifications" style="color: #3B82F6; text-decoration: none;">Manage preferences</a>
-            </p>
-          </div>
-        </div>
-      `,
+      html: htmlMessage,
     });
+
+    // Log email to NotificationLog for admin auditing
+    await logEmailToDatabase(userId, user.email, subject, message, "notification", "gmail", "sent");
 
     await logDelivery(notificationId, "email", "sent");
     console.log(`✅ Email sent to ${user.email}`);
   } catch (error) {
     const errorMsg = error instanceof Error ? error.message : "Unknown error";
+
+    // Log failed email attempt
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (user?.email) {
+      await logEmailToDatabase(userId, user.email, subject, message, "notification", "gmail", "failed", { error: errorMsg });
+    }
+
     await logDelivery(notificationId, "email", "failed", errorMsg);
     console.error("❌ Email send failed:", error);
   }
@@ -546,6 +613,188 @@ export async function notifyAllAdmins(
     return notifications;
   } catch (error) {
     console.error("❌ Error notifying admins:", error);
+    throw error;
+  }
+}
+
+// Withdrawal-specific notification functions
+export async function notifyWithdrawal(userId: string, amount: number, currency: string, txId: string) {
+  try {
+    const message = `Your withdrawal of ${currency} ${amount} has been processed successfully.`;
+
+    await createNotification({
+      userId,
+      type: "all",
+      priority: "normal",
+      category: "transaction",
+      title: "Withdrawal Processed",
+      message,
+      data: {
+        amount,
+        currency,
+        txId,
+        actionUrl: `${process.env.FRONTEND_URL}/transactions/${txId}`
+      }
+    });
+
+    logger.info(`Withdrawal notification sent to user ${userId}`, {
+      userId,
+      amount,
+      currency,
+      txId
+    });
+
+  } catch (error) {
+    logger.error('Failed to send withdrawal notification', {
+      userId,
+      amount,
+      currency,
+      txId,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+
+    // Track error in Sentry
+    Sentry.captureException(error, {
+      tags: {
+        service: 'notification',
+        type: 'withdrawal'
+      },
+      extra: {
+        userId,
+        amount,
+        currency,
+        txId
+      }
+    });
+
+    throw error;
+  }
+}
+
+export async function notifyComplianceIssue(userId: string, issue: string, severity: 'LOW' | 'MEDIUM' | 'HIGH' = 'MEDIUM') {
+  try {
+    const message = `A ${severity.toLowerCase()} priority compliance issue was detected: ${issue}. Please review immediately.`;
+
+    await createNotification({
+      userId,
+      type: "all",
+      priority: severity === 'HIGH' ? 'urgent' : severity === 'MEDIUM' ? 'high' : 'normal',
+      category: "security",
+      title: `Compliance Alert - ${severity} Priority`,
+      message,
+      data: {
+        issue,
+        severity,
+        actionUrl: `${process.env.FRONTEND_URL}/compliance`,
+        requiresImmedateAction: severity === 'HIGH'
+      }
+    });
+
+    logger.warn(`Compliance alert sent to user ${userId}`, {
+      userId,
+      issue,
+      severity
+    });
+
+  } catch (error) {
+    logger.error('Failed to send compliance notification', {
+      userId,
+      issue,
+      severity,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+
+    // Track compliance notification failures in Sentry with high priority
+    Sentry.captureException(error, {
+      level: 'error',
+      tags: {
+        service: 'notification',
+        type: 'compliance',
+        severity: severity
+      },
+      extra: {
+        userId,
+        issue,
+        severity
+      }
+    });
+
+    throw error;
+  }
+}
+
+export async function notifyAuditEvent(userId: string, event: string, metadata?: Record<string, any>) {
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, role: true }
+    });
+
+    if (!user) {
+      logger.error(`User ${userId} not found for audit notification`);
+      return;
+    }
+
+    // Only notify admins of audit events
+    if (!['SUPER_ADMIN', 'FINANCE_ADMIN', 'SUPPORT_ADMIN'].includes(user.role)) {
+      return;
+    }
+
+    const message = `An audit event occurred: ${event}.`;
+
+    await createNotification({
+      userId,
+      type: "all",
+      priority: "high",
+      category: "admin",
+      title: "Audit Event Logged",
+      message,
+      data: {
+        event,
+        metadata,
+        actionUrl: `${process.env.FRONTEND_URL}/admin/audit`
+      }
+    });
+
+    // Also send to admins room via Socket.IO
+    if (io) {
+      io.to('admins').emit('audit-event', {
+        type: 'audit',
+        event,
+        message,
+        userId,
+        timestamp: new Date().toISOString(),
+        metadata
+      });
+    }
+
+    logger.info(`Audit notification sent to admin ${userId}`, {
+      userId,
+      event,
+      metadata
+    });
+
+  } catch (error) {
+    logger.error('Failed to send audit notification', {
+      userId,
+      event,
+      metadata,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    });
+
+    // Track audit notification failures in Sentry
+    Sentry.captureException(error, {
+      tags: {
+        service: 'notification',
+        type: 'audit'
+      },
+      extra: {
+        userId,
+        event,
+        metadata
+      }
+    });
+
     throw error;
   }
 }

@@ -271,4 +271,72 @@ describe("Auth Routes", () => {
       expect(res.body).toHaveProperty("error");
     });
   });
+
+  describe("Enhanced Authentication Security", () => {
+    it("should reject weak passwords", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .set("x-api-key", API_KEY)
+        .send({
+          email: `test-weak-${Date.now()}@example.com`,
+          password: "weak",
+          username: `weakuser-${Date.now()}`,
+          firstName: "Test",
+          lastName: "User",
+        });
+
+      expect(response.status).toBe(400);
+
+      // Fix: Handle both error formats per Advancia Pay patterns
+      const error = response.body.error;
+      const errorMessage =
+        typeof error === "string"
+          ? error
+          : error?.message || JSON.stringify(error);
+
+      expect(errorMessage).toMatch(/password/i);
+    });
+
+    it("should enforce minimum password length", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .set("x-api-key", API_KEY)
+        .send({
+          email: `test-short-${Date.now()}@example.com`,
+          password: "12345",
+          username: `shortuser-${Date.now()}`,
+          firstName: "Test",
+          lastName: "User",
+        });
+
+      expect(response.status).toBe(400);
+
+      const error = response.body.error;
+      const errorMessage =
+        typeof error === "string"
+          ? error
+          : error?.message || JSON.stringify(error);
+
+      expect(errorMessage.toLowerCase()).toContain("at least 6");
+    });
+
+    it("should accept strong passwords", async () => {
+      const response = await request(app)
+        .post("/api/auth/register")
+        .set("x-api-key", API_KEY)
+        .send({
+          email: `test-strong-${Date.now()}@example.com`,
+          password: "StrongPassword123!@#",
+          username: `stronguser-${Date.now()}`,
+          firstName: "Test",
+          lastName: "User",
+        });
+
+      expect(response.status).toBe(201);
+      expect(response.body).toHaveProperty("token");
+      expect(response.body.message).toContain(
+        "Registration submitted. Awaiting admin approval.",
+      );
+    });
+  });
 });

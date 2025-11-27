@@ -19,10 +19,11 @@ export default function PaymentButton({
 }: PaymentButtonProps) {
   const [loading, setLoading] = useState<string | null>(null);
 
-  async function handlePayment(provider: 'stripe' | 'cryptomus') {
+  async function handlePayment(provider: 'stripe' | 'cryptomus' | 'nowpayments') {
     setLoading(provider);
     try {
-      const res = await fetch('/api/payments/create-session', {
+      const endpoint = provider === 'nowpayments' ? '/api/nowpayments/create-invoice' : '/api/payments/create-session';
+      const res = await fetch(endpoint, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -56,7 +57,7 @@ export default function PaymentButton({
   }
 
   return (
-    <div className="flex gap-4">
+    <div className="flex gap-4 flex-wrap">
       <button
         onClick={() => handlePayment('stripe')}
         disabled={!!loading}
@@ -81,6 +82,19 @@ export default function PaymentButton({
           <span>₿</span>
         )}
         Pay with Crypto
+      </button>
+
+      <button
+        onClick={() => handlePayment('nowpayments')}
+        disabled={!!loading}
+        className="px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-lg hover:from-purple-700 hover:to-pink-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-semibold"
+      >
+        {loading === 'nowpayments' ? (
+          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+        ) : (
+          <span>🌟</span>
+        )}
+        NOWPayments (150+ Crypto)
       </button>
     </div>
   );

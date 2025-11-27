@@ -7,6 +7,7 @@ This document provides comprehensive documentation for Role-Based Access Control
 ## 🎯 Overview
 
 The RBAC system implements a hierarchical permission model with three primary roles:
+
 - **Admin**: Full system access with create, read, update, delete permissions
 - **Auditor**: Read access to data and audit logs for compliance monitoring  
 - **Viewer**: Limited read access to basic preference data
@@ -16,6 +17,7 @@ The RBAC system implements a hierarchical permission model with three primary ro
 ## 👥 Role Definitions
 
 ### 🔴 Admin Role
+
 **Permissions**: Full CRUD operations + system management
 
 | Resource | Create | Read | Update | Delete | Export | Audit |
@@ -27,12 +29,14 @@ The RBAC system implements a hierarchical permission model with three primary ro
 | System Configuration | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 **Use Cases**:
+
 - System administrators
 - DevOps engineers  
 - Platform managers
 - Security administrators
 
 ### 🟡 Auditor Role
+
 **Permissions**: Read access + audit capabilities
 
 | Resource | Create | Read | Update | Delete | Export | Audit |
@@ -44,12 +48,14 @@ The RBAC system implements a hierarchical permission model with three primary ro
 | System Configuration | ❌ | ✅ | ❌ | ❌ | ❌ | ✅ |
 
 **Use Cases**:
+
 - Compliance officers
 - Internal auditors
 - Regulatory reviewers
 - Quality assurance teams
 
 ### 🟢 Viewer Role  
+
 **Permissions**: Limited read access
 
 | Resource | Create | Read | Update | Delete | Export | Audit |
@@ -63,6 +69,7 @@ The RBAC system implements a hierarchical permission model with three primary ro
 *Limited to own user profile only
 
 **Use Cases**:
+
 - Read-only dashboard access
 - Customer support (limited)
 - Business analysts (restricted data)
@@ -249,6 +256,7 @@ function PreferenceActions({ userRole }: { userRole: string }) {
 ### Standard Error Responses
 
 #### 401 Unauthorized
+
 ```json
 {
   "success": false,
@@ -259,6 +267,7 @@ function PreferenceActions({ userRole }: { userRole: string }) {
 ```
 
 #### 403 Forbidden  
+
 ```json
 {
   "success": false,
@@ -275,6 +284,7 @@ function PreferenceActions({ userRole }: { userRole: string }) {
 ```
 
 #### 422 Validation Error
+
 ```json
 {
   "success": false,
@@ -298,6 +308,7 @@ function PreferenceActions({ userRole }: { userRole: string }) {
 ### Backend Implementation
 
 #### 1. Role-based Middleware
+
 ```typescript
 // middleware/rbac.ts
 export const requirePermissions = (resource: string, action: string) => {
@@ -337,6 +348,7 @@ router.post('/preferences',
 ```
 
 #### 2. Audit Logging
+
 ```typescript
 // services/auditLogger.ts
 export class AuditLogger {
@@ -381,6 +393,7 @@ export class AuditLogger {
 ### Frontend Implementation
 
 #### 1. Role-based Components
+
 ```tsx
 // components/RoleGuard.tsx
 interface RoleGuardProps {
@@ -413,6 +426,7 @@ export function RoleGuard({ requiredRoles, fallback, children }: RoleGuardProps)
 ```
 
 #### 2. Permission Hooks
+
 ```tsx
 // hooks/usePermissions.ts
 export function usePermissions() {
@@ -453,6 +467,7 @@ function PreferenceManagement() {
 ## 🧪 Testing RBAC
 
 ### Unit Tests
+
 ```typescript
 describe('RBAC Middleware', () => {
   it('should allow admin to create preferences', async () => {
@@ -481,6 +496,7 @@ describe('RBAC Middleware', () => {
 ```
 
 ### Integration Tests
+
 ```typescript
 describe('Preference API RBAC', () => {
   test('Admin can create preference', async () => {
@@ -521,6 +537,7 @@ describe('Preference API RBAC', () => {
 ### Audit Trail Requirements
 
 **Every API call logs**:
+
 - User ID and role
 - Action performed
 - Resource accessed
@@ -530,6 +547,7 @@ describe('Preference API RBAC', () => {
 - Request details
 
 **Quarterly Reviews**:
+
 - User role assignments
 - Permission matrices
 - Access patterns analysis
@@ -541,21 +559,25 @@ describe('Preference API RBAC', () => {
 ## ✅ Best Practices
 
 ### 1. Principle of Least Privilege
+
 - Assign minimum required permissions
 - Regular review and cleanup of permissions
 - Time-limited elevated access when needed
 
 ### 2. Role Separation
+
 - Clear boundaries between admin/auditor/viewer roles
 - No overlapping permissions that could compromise security
 - Regular validation of role definitions
 
 ### 3. Audit Everything
+
 - Log all permission checks (success and failure)
 - Monitor for privilege escalation attempts
 - Regular review of audit logs for anomalies
 
 ### 4. Secure Implementation
+
 - Never trust client-side permission checks
 - Always validate permissions server-side
 - Use JWT tokens with short expiration times

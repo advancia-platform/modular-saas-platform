@@ -166,3 +166,62 @@ describe.skip("Payments API", () => {
     });
   });
 });
+
+describe("Enhanced Payments - Create Intent", () => {
+  let authToken: string;
+  let testUserId: string;
+
+  beforeAll(async () => {
+    // Create test user with valid password per security rules
+    const signupResponse = await request(app)
+      .post("/api/auth/register")
+      .set("x-api-key", process.env.API_KEY || "dev-api-key-123")
+      .send({
+        email: `payment-test-${Date.now()}@example.com`,
+        password: "ValidTest123!@#", // 12+ chars, complexity
+        username: `paymentuser-${Date.now()}`,
+        firstName: "Payment",
+        lastName: "Test",
+      });
+
+    expect(signupResponse.status).toBe(201);
+    testUserId = signupResponse.body.user?.id || "";
+    authToken = signupResponse.body.token;
+  });
+
+  afterAll(async () => {
+    // Cleanup test user
+    if (testUserId) {
+      await request(app)
+        .delete(`/api/users/${testUserId}`)
+        .set("Authorization", `Bearer ${authToken}`)
+        .set("x-api-key", process.env.API_KEY || "dev-api-key-123");
+    }
+  });
+
+  it("should create payment intent with proper authentication", async () => {
+    // Fix: Verify route is registered in backend/src/index.ts
+    // Check: app.use('/api/payments', paymentsRoutes);
+
+    const response = await request(app)
+      .post("/api/payments/create-intent") // Match exact route from payments.ts
+      .set("Authorization", `Bearer ${authToken}`)
+      .set("x-api-key", process.env.API_KEY || "dev-api-key-123")
+      .send({
+        amount: 1000,
+        currency: "usd",
+        description: "Test payment",
+      });
+
+    // If 404, the route may not be registered or path is wrong
+    if (response.status === 404) {
+      console.error(
+        "Payment route not found. Check backend/src/index.ts route registration:",
+      );
+      console.error("Expected: app.use('/api/payments', paymentsRoutes);");
+    }
+
+    expect(response.status).toBe(200);
+    expect(response.body).toHaveProperty("clientSecret");
+  });
+});

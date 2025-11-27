@@ -1,13 +1,15 @@
-import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import crypto from "crypto";
 import { Request, Response, Router } from "express";
 import logger from "../logger";
 import { adminAuth } from "../middleware/adminAuth";
+import {
+    passwordResetRateLimiter
+} from "../middleware/securityHardening";
+import prisma from "../prismaClient";
 import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // ==========================================
 // USER ENDPOINTS
@@ -15,9 +17,12 @@ const prisma = new PrismaClient();
 
 /**
  * POST /api/password-recovery/request
- * User requests password reset
+ * User requests password reset (rate-limited)
  */
-router.post("/request", async (req: Request, res: Response) => {
+router.post(
+  "/request",
+  passwordResetRateLimiter,
+  async (req: Request, res: Response) => {
   try {
     const { email } = req.body;
 

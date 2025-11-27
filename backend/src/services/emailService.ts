@@ -1,25 +1,155 @@
-import nodemailer from 'nodemailer';
+// backend/src/services/emailService.ts
+import nodemailer from "nodemailer";
+import { logger } from "../logger";
+import { resetPasswordTemplate, verificationTemplate, welcomeTemplate } from "./emailTemplates";
+import { emailTheme } from "./emailTheme";
+import { notificationTemplate } from "./notificationTemplate";
 
-// Initialize nodemailer transporter with Gmail SMTP
-let transporter: nodemailer.Transporter | null = null;
+// Create transporter
+const transporter = nodemailer.createTransporter({
+  host: process.env.SMTP_HOST || "smtp.gmail.com",
+  port: parseInt(process.env.SMTP_PORT || "587", 10),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER || process.env.EMAIL_USER,
+    pass: process.env.SMTP_PASS || process.env.EMAIL_PASSWORD,
+  },
+  tls: {
+    rejectUnauthorized: false // For development - remove in production
+  }
+});
 
-if (process.env.EMAIL_USER && process.env.EMAIL_PASSWORD) {
+// Verify transporter configuration on startup
+transporter.verify((error, success) => {
+  if (error) {
+    logger.error('SMTP configuration error:', error);
+  } else {
+    logger.info('SMTP server is ready to send emails');
+  }
+});
+
+export async function sendResetEmail(to: string, token: string): Promise<void> {
   try {
-    transporter = nodemailer.createTransport({
-      host: process.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false, // true for 465, false for other ports
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASSWORD,
-      },
+    const resetUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/password-reset?token=${token}`;
+    const template = resetPasswordTemplate(resetUrl);
+
+    await transporter.sendMail({
+      from: `"${emailTheme.brandName} Support" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+      to,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
     });
-  } catch (err) {
-    console.error('Failed to initialize nodemailer transporter:', err);
-    transporter = null;
+
+    logger.info('Password reset email sent', { to, token: token.substring(0, 8) + '...' });
+  } catch (error: any) {
+    logger.error('Failed to send password reset email', { to, error: error.message });
+    throw new Error('Failed to send password reset email');
   }
 }
 
+export async function sendVerificationEmail(to: string, token: string): Promise<void> {
+  try {
+    const verifyUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/verify?token=${token}`;
+    const template = verificationTemplate(verifyUrl);
+
+    await transporter.sendMail({
+      from: `"${emailTheme.brandName} Support" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+      to,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+
+    logger.info('Verification email sent', { to });
+  } catch (error: any) {
+    logger.error('Failed to send verification email', { to, error: error.message });
+    throw new Error('Failed to send verification email');
+  }
+}
+
+export async function sendWelcomeEmail(to: string): Promise<void> {
+  try {
+    const dashboardUrl = `${process.env.FRONTEND_URL || "http://localhost:3000"}/dashboard`;
+    const template = welcomeTemplate(dashboardUrl);
+
+    await transporter.sendMail({
+      from: `"${emailTheme.brandName} Team" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+      to,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+
+    logger.info('Welcome email sent', { to });
+  } catch (error: any) {
+    logger.error('Failed to send welcome email', { to, error: error.message });
+    throw new Error('Failed to send welcome email');
+  }
+}
+
+export async function sendNotificationEmail(
+  to: string,
+  subject: string,
+  message: string,
+  actionUrl?: string
+): Promise<void> {
+  try {
+    const template = notificationTemplate(subject, message, actionUrl);
+
+    await transporter.sendMail({
+      from: `"${emailTheme.brandName} Notifications" <${process.env.SMTP_USER || process.env.EMAIL_USER}>`,
+      to,
+      subject: template.subject,
+      text: template.text,
+      html: template.html,
+    });
+
+    logger.info('Notification email sent', { to, subject });
+  } catch (error: any) {
+    logger.error('Failed to send notification email', { to, subject, error: error.message });
+    throw new Error('Failed to send notification email');
+  }
+}
+
+// Specific notification functions for different use cases
+export async function notifyWithdrawal(userEmail: string, amount: number, txId: string): Promise<void> {
+  await sendNotificationEmail(
+    userEmail,
+    "Withdrawal Processed",
+    `Your withdrawal of $${amount.toFixed(2)} has been processed successfully.`,
+    `${process.env.FRONTEND_URL}/transactions/${txId}`
+  );
+}
+
+export async function notifyComplianceIssue(userEmail: string, issue: string): Promise<void> {
+  await sendNotificationEmail(
+    userEmail,
+    "Compliance Alert",
+    `A compliance issue was detected: ${issue}. Please review immediately.`,
+    `${process.env.FRONTEND_URL}/compliance`
+  );
+}
+
+export async function notifyAuditEvent(adminEmail: string, event: string): Promise<void> {
+  await sendNotificationEmail(
+    adminEmail,
+    "Audit Event Logged",
+    `An audit event occurred: ${event}.`,
+    `${process.env.FRONTEND_URL}/audit`
+  );
+}
+
+export async function notifySecurityAlert(userEmail: string, alertType: string, details: string): Promise<void> {
+  await sendNotificationEmail(
+    userEmail,
+    "Security Alert",
+    `Security alert: ${alertType}. ${details}`,
+    `${process.env.FRONTEND_URL}/security`
+  );
+}
+
+// Legacy EmailService class for backward compatibility
 export interface EmailOptions {
   to: string;
   subject: string;
@@ -39,27 +169,25 @@ export class EmailService {
   ): Promise<{ success: boolean; id?: string; error?: string }> {
     try {
       if (!process.env.EMAIL_USER || !process.env.EMAIL_PASSWORD) {
-        console.warn(
-          'EMAIL_USER or EMAIL_PASSWORD not configured. Email not sent.',
-        );
+        console.warn('EMAIL_USER or EMAIL_PASSWORD not configured. Email not sent.');
         return { success: false, error: 'Email service not configured' };
       }
 
       if (!transporter) {
-        console.warn('Nodemailer transporter not initialized. Email not sent.');
-        return { success: false, error: 'Email service not configured' };
+        throw new Error('Email transporter not initialized');
       }
 
-      const info = await transporter.sendMail({
+      const result = await transporter.sendMail({
         from: options.from || this.from,
         to: options.to,
         subject: options.subject,
         html: options.html,
       });
 
-      return { success: true, id: info.messageId };
+      logger.info('Legacy email sent', { to: options.to, messageId: result.messageId });
+      return { success: true, id: result.messageId };
     } catch (error: any) {
-      console.error('Email service error:', error);
+      logger.error('Failed to send legacy email', { error: error.message, to: options.to });
       return { success: false, error: error.message };
     }
   }

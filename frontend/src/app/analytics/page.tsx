@@ -1,67 +1,121 @@
 'use client';
 
-import SidebarLayout from '@/components/SidebarLayout';
-import RewardsDashboard from '@/components/RewardsDashboard';
-import TokenWallet from '@/components/TokenWallet';
-import HealthDashboard from '@/components/HealthDashboard';
-import { useSession } from 'next-auth/react';
+import axios from 'axios';
+import React, { useEffect, useState } from "react";
 
-const DEMO_ANALYTICS_USER_ID = '00000000-0000-0000-0000-000000000002';
+const backendApi = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:4000',
+  withCredentials: true,
+});
 
-type SessionUser = {
-  id?: string;
-  email?: string;
-  role?: string;
+// Auto-attach JWT from localStorage
+backendApi.interceptors.request.use(
+  (config) => {
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('jwt') || sessionStorage.getItem('jwt');
+      if (token) {
+        config.headers.Authorization = `Bearer ${token}`;
+      }
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+type ChartPoint = { date: string; revenue: number; users: number; transactions: number };
+
+type DashboardResponse = {
+  revenue: { current: number; previous: number; trend: number };
+  users: { current: number; previous: number; trend: number };
+  transactions: { current: number; previous: number; trend: number };
+  conversionRate: { current: number; previous: number; trend: number };
+  chartData: ChartPoint[];
 };
 
+function KpiCard({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="p-4 bg-white rounded shadow">
+      <p className="text-gray-500">{label}</p>
+      <h2 className="text-2xl font-bold">{value}</h2>
+    </div>
+  );
+}
+
 export default function AnalyticsPage() {
-  const { data: session } = useSession();
+  const [data, setData] = useState<DashboardResponse | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const sessionUser = session?.user as SessionUser | undefined;
-  const userId =
-    sessionUser?.id && sessionUser.id.length > 0 ? sessionUser.id : DEMO_ANALYTICS_USER_ID;
+  const fetchAnalytics = async () => {
+    try {
+      const res = await backendApi.get<DashboardResponse>("/api/analytics/dashboard");
+      setData(res.data);
+    } catch (err: any) {
+      if (err.response?.status === 429) {
+        setError("You're sending requests too quickly. Please wait a moment.");
+      } else if (err.response?.status === 401) {
+        setError("Please log in to view analytics.");
+      } else {
+        setError("Failed to load analytics.");
+      }
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  // Check if user is admin
-  const userRole = sessionUser?.role || sessionUser?.email;
-  const isAdmin =
-    userRole === 'admin' ||
-    sessionUser?.email === 'admin@advancia.com' ||
-    sessionUser?.email?.includes('admin');
+  useEffect(() => {
+    fetchAnalytics();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (loading) {
+    return <div className="p-6">Loading analytics…</div>;
+  }
+  if (error) {
+    return <div className="p-6 text-red-600">{error}</div>;
+  }
+  if (!data) {
+    return <div className="p-6">No data available.</div>;
+  }
+
+  const currency = (n: number) => `$${n.toLocaleString()}`;
 
   return (
-    <SidebarLayout>
-      <div className="min-h-screen bg-slate-50 px-4 py-8 md:px-10">
-        <div className="mx-auto flex w-full max-w-7xl flex-col gap-10">
-          <header className="flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-wide text-blue-500">
-                Analytics Control Center
-              </p>
-              <h1 className="mt-1 text-4xl font-bold text-slate-900">
-                Performance & Wellness Intelligence
-              </h1>
-              <p className="mt-2 max-w-2xl text-base text-slate-600">
-                Track your rewards and wellness metrics from a single, streamlined view.
-              </p>
-            </div>
-          </header>
+    <div className="p-6 space-y-6">
+      <h1 className="text-2xl font-semibold">Analytics Dashboard</h1>
 
-          <section className="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
-            <div className="space-y-8">
-              <RewardsDashboard userId={userId} />
-            </div>
-            {isAdmin && (
-              <div className="space-y-8">
-                <TokenWallet userId={userId} />
-              </div>
-            )}
-          </section>
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        <KpiCard label="Total Revenue" value={currency(data.revenue.current)} />
+        <KpiCard label="Active Users" value={data.users.current} />
+        <KpiCard label="Transactions" value={data.transactions.current} />
+        <KpiCard label="Conversion Rate" value={`${data.conversionRate.current}%`} />
+      </div>
 
-          <section>
-            <HealthDashboard userId={userId} />
-          </section>
+      <div className="bg-white rounded shadow p-4">
+        <h2 className="text-lg font-semibold mb-2">Daily Overview</h2>
+        <div className="overflow-x-auto">
+          <table className="min-w-full text-sm">
+            <thead>
+              <tr className="text-left">
+                <th className="p-2">Date</th>
+                <th className="p-2">Revenue</th>
+                <th className="p-2">Users</th>
+                <th className="p-2">Transactions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data.chartData.map((pt) => (
+                <tr key={pt.date} className="border-t">
+                  <td className="p-2">{pt.date}</td>
+                  <td className="p-2">{currency(pt.revenue)}</td>
+                  <td className="p-2">{pt.users}</td>
+                  <td className="p-2">{pt.transactions}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
-    </SidebarLayout>
+    </div>
   );
 }

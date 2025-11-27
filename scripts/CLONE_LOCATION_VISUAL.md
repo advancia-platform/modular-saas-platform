@@ -13,10 +13,10 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 **Why it's wrong:**
 
--   GitHub Desktop app folder
--   Gets updated and deleted
--   You can't work here properly
--   GitHub Desktop will delete your code on updates!
+- GitHub Desktop app folder
+- Gets updated and deleted
+- You can't work here properly
+- GitHub Desktop will delete your code on updates!
 
 ---
 
@@ -33,10 +33,10 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 **Why it's right:**
 
--   Your personal folder
--   Safe and permanent
--   Easy to access
--   GitHub Desktop manages it properly
+- Your personal folder
+- Safe and permanent
+- Easy to access
+- GitHub Desktop manages it properly
 
 ---
 

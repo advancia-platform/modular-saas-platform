@@ -3,11 +3,11 @@
 ## ✅ Completed Steps
 
 1. **Prisma Schema Created**: `backend/prisma/schema.prisma`
-   -   User model (authentication)
-   -   Transaction model (financial records)
-   -   DebitCard model (card management)
-   -   Session model (user sessions)
-   -   AuditLog model (compliance tracking)
+   - User model (authentication)
+   - Transaction model (financial records)
+   - DebitCard model (card management)
+   - Session model (user sessions)
+   - AuditLog model (compliance tracking)
 
 2. **Prisma Client Generated**: TypeScript types and client created successfully
 
@@ -164,32 +164,32 @@ npx prisma migrate status
 
 ## 🔍 Current Status
 
--   ✅ Prisma schema created with 5 models
--   ✅ Prisma client generated successfully
--   ⏸️ Database migration pending (requires PostgreSQL setup)
--   ⏸️ Transaction routes still using in-memory storage
+- ✅ Prisma schema created with 5 models
+- ✅ Prisma client generated successfully
+- ⏸️ Database migration pending (requires PostgreSQL setup)
+- ⏸️ Transaction routes still using in-memory storage
 
 ## 🚨 Common Issues
 
 **Error: "Authentication failed against database server"**
 
--   PostgreSQL is not running or credentials are wrong
--   Check if PostgreSQL service is active: `Get-Service postgresql*`
--   Verify DATABASE_URL in `.env` matches your database credentials
+- PostgreSQL is not running or credentials are wrong
+- Check if PostgreSQL service is active: `Get-Service postgresql*`
+- Verify DATABASE_URL in `.env` matches your database credentials
 
 **Error: "Can't reach database server"**
 
--   PostgreSQL is not installed or not running
--   For Docker: check container status with `docker ps`
--   Verify port 5432 is not blocked by firewall
+- PostgreSQL is not installed or not running
+- For Docker: check container status with `docker ps`
+- Verify port 5432 is not blocked by firewall
 
 **Error: "Database does not exist"**
 
--   Create the database first using `psql` or pgAdmin
--   Or use `npx prisma db push` to create database automatically
+- Create the database first using `psql` or pgAdmin
+- Or use `npx prisma db push` to create database automatically
 
 ## 📖 Resources
 
--   [Prisma Documentation](https://www.prisma.io/docs)
--   [PostgreSQL Download](https://www.postgresql.org/download/windows/)
--   [Docker PostgreSQL Image](https://hub.docker.com/_/postgres)
+- [Prisma Documentation](https://www.prisma.io/docs)
+- [PostgreSQL Download](https://www.postgresql.org/download/windows/)
+- [Docker PostgreSQL Image](https://hub.docker.com/_/postgres)

@@ -19,7 +19,9 @@
     "noEmit": false,
     "noEmitOnError": false,
     "declaration": false,
-    "outDir": "./dist"
+    "outDir": "./dist",
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo"
   },
   "include": ["src/**/*"],
   "exclude": [
@@ -36,8 +38,11 @@
     "src/tracing.ts",
     "src/utils/fakeDataGenerator.ts",
     "src/rpa/scheduler.ts",
+    "src/**/__tests__/**/*",
     "tests/**/*",
     "**/*.test.ts",
-    "**/*.spec.ts"
+    "**/*.test.js",
+    "**/*.spec.ts",
+    "**/*.spec.js"
   ]
 }

@@ -64,13 +64,11 @@ backend/logs/status-cron.log
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Environment Variables & Secrets
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Ignore all environment files
+# Ignore all environment files (prevent duplicates)
 .env
 .env.*
-# BUT allow .example templates (safe to commit)
+# BUT allow ONLY .env.example (single source of truth)
 !.env.example
-!.env*.example
-!.env.*.example
 # Specific additional patterns
 encrypted_secrets_*.env
 backend/.env
@@ -210,13 +208,21 @@ docker-compose.override.yml
 .docker/
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-# Backup Files
+# Backup Files & Duplicates
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 *.bak
 *.backup
 *.old
 *_backup
 *_old
+*_backup.*
+*_old.*
+*_copy.*
+*.tmp
+
+# Python duplicates
+**/*_test.py.bak
+**/*_old.py
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 # Keep Essential Config Files

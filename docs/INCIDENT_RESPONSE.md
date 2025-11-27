@@ -7,6 +7,7 @@ This document defines the process for detecting, classifying, responding to, and
 ## 🔍 Detection
 
 ### Automated Detection
+
 - **Monitoring alerts** via Prometheus, Grafana, PagerDuty, Slack
 - **Threshold-based alerts**:
   - API error rate >1%
@@ -17,12 +18,14 @@ This document defines the process for detecting, classifying, responding to, and
   - Authentication service outage
 
 ### Manual Detection
+
 - **User reports** via support channels, GitHub issues
 - **Team member discovery** during development or testing
 - **Security vulnerability disclosures** via [SECURITY.md](SECURITY.md)
 - **Third-party service notifications** (Resend, Twilio, Slack outages)
 
 ### Monitoring Tools
+
 - **Primary**: Prometheus + Grafana dashboards
 - **Alerting**: PagerDuty for critical, Slack for warnings
 - **Log aggregation**: ELK Stack or cloud logging
@@ -35,13 +38,15 @@ This document defines the process for detecting, classifying, responding to, and
 ### Severity Levels
 
 #### Critical (P0)
+
 - **Full system outage** - Complete service unavailability
 - **Data breach confirmed** - User data exposed or compromised
 - **Compliance violation** - GDPR, CCPA, or audit requirement breach
 - **Security incident** - Active attack, unauthorized access
 - **Response time**: 15 minutes acknowledgment, 1 hour initial response
 
-#### High (P1) 
+#### High (P1)
+
 - **Major functionality broken** - Core features unusable
 - **High error rate** - >5% of requests failing
 - **Severely degraded performance** - >2x normal response times
@@ -49,6 +54,7 @@ This document defines the process for detecting, classifying, responding to, and
 - **Response time**: 1 hour acknowledgment, 4 hours initial response
 
 #### Medium (P2)
+
 - **Partial feature outage** - Non-critical features affected
 - **Minor security issue** - Potential vulnerability discovered
 - **Performance degradation** - Noticeable but not severe slowdown
@@ -56,6 +62,7 @@ This document defines the process for detecting, classifying, responding to, and
 - **Response time**: 4 hours acknowledgment, 24 hours initial response
 
 #### Low (P3)
+
 - **Cosmetic bug** - UI issues that don't affect functionality
 - **Documentation issue** - Outdated or incorrect documentation
 - **Non-urgent enhancement** - Feature improvement requests
@@ -66,12 +73,14 @@ This document defines the process for detecting, classifying, responding to, and
 ## 🚨 Response Workflow
 
 ### Immediate Response (0-15 minutes)
+
 1. **Acknowledge** incident in monitoring system
 2. **Create incident channel** in Slack (#incident-YYYY-MM-DD-###)
 3. **Page on-call engineer** for P0/P1 incidents
 4. **Initial assessment** of scope and impact
 
 ### Assessment Phase (15-60 minutes)
+
 1. **Assign incident commander** (senior team member on-call)
 2. **Gather information**:
    - Affected systems and users
@@ -83,6 +92,7 @@ This document defines the process for detecting, classifying, responding to, and
    - External: Status page update (if user-facing)
 
 ### Containment Phase (1-4 hours)
+
 1. **Stop the bleeding**:
    - Disable affected features
    - Rollback recent deployments
@@ -93,6 +103,7 @@ This document defines the process for detecting, classifying, responding to, and
 4. **Update stakeholders** every 30 minutes for P0/P1
 
 ### Resolution Phase (Variable)
+
 1. **Implement fix**:
    - Code changes for bugs
    - Configuration updates
@@ -106,6 +117,7 @@ This document defines the process for detecting, classifying, responding to, and
 4. **Monitor closely** for 24 hours post-resolution
 
 ### Recovery Phase (24-72 hours)
+
 1. **Verify full recovery** across all metrics
 2. **Remove temporary workarounds**
 3. **Update monitoring and alerts** if needed
@@ -117,6 +129,7 @@ This document defines the process for detecting, classifying, responding to, and
 ## 🛡️ Security Incidents
 
 ### Immediate Actions
+
 - **Isolate affected systems** to prevent further damage
 - **Revoke compromised credentials** immediately
 - **Change all related passwords** and API keys
@@ -124,18 +137,21 @@ This document defines the process for detecting, classifying, responding to, and
 - **Preserve forensic evidence** before cleanup
 
 ### Credential Management
+
 - **Rotate secrets** in GitHub Secrets and environment variables
 - **Update API keys** for Resend, Twilio, Slack integrations
 - **Refresh JWT secrets** and invalidate existing tokens
 - **Verify RBAC permissions** haven't been compromised
 
 ### User Notification
+
 - **Assess data exposure** - determine what user data was affected
 - **Legal consultation** for GDPR/CCPA notification requirements
 - **Notify affected users** within 72 hours if data breach confirmed
 - **Provide guidance** on protective actions users should take
 
 ### Documentation
+
 - **Security incident report** in `docs/incidents/security/`
 - **Timeline reconstruction** with detailed actions taken
 - **Impact assessment** including data, systems, and users affected
@@ -146,12 +162,14 @@ This document defines the process for detecting, classifying, responding to, and
 ## 📞 Communication
 
 ### Internal Communication
+
 - **Incident commander** coordinates all communication
 - **Slack channel** for real-time updates (#incident-YYYY-MM-DD-###)
 - **Email updates** to management for P0/P1 incidents
 - **Video calls** for complex incidents requiring collaboration
 
 ### External Communication
+
 - **Status page updates** for user-facing incidents
 - **GitHub Security Advisories** for security vulnerabilities
 - **Customer notifications** via email for significant impact
@@ -160,6 +178,7 @@ This document defines the process for detecting, classifying, responding to, and
 ### Communication Templates
 
 #### Initial Alert
+
 ```
 🚨 INCIDENT ALERT
 Severity: [P0/P1/P2/P3]
@@ -171,6 +190,7 @@ ETA: [If known]
 ```
 
 #### Status Update
+
 ```
 📊 INCIDENT UPDATE
 Time: [Timestamp]
@@ -181,6 +201,7 @@ ETA: [Updated estimate]
 ```
 
 #### Resolution Notice
+
 ```
 ✅ INCIDENT RESOLVED
 Duration: [Total time]
@@ -195,6 +216,7 @@ Postmortem: [Scheduled date/time]
 ## 📊 Escalation
 
 ### Escalation Triggers
+
 - **Incident duration** exceeds SLA targets
 - **Severity increase** during investigation
 - **Multi-system impact** discovered
@@ -202,12 +224,14 @@ Postmortem: [Scheduled date/time]
 - **Media attention** or public visibility
 
 ### Escalation Chain
+
 1. **On-call engineer** → **Team lead** (30 minutes for P0, 2 hours for P1)
 2. **Team lead** → **Engineering manager** (1 hour for P0, 4 hours for P1)  
 3. **Engineering manager** → **CTO** (2 hours for P0, 8 hours for P1)
 4. **CTO** → **CEO** (4 hours for P0, 24 hours for P1)
 
 ### Executive Communication
+
 - **Situation summary** in business terms
 - **Customer impact** assessment
 - **Financial impact** if applicable
@@ -219,12 +243,14 @@ Postmortem: [Scheduled date/time]
 ## 📜 Postmortem Process
 
 ### Timeline
+
 - **Schedule**: Within 72 hours of resolution
 - **Duration**: 90 minutes maximum
 - **Attendees**: Incident responders, stakeholders, optional management
 - **Document**: Completed within 1 week of meeting
 
 ### Postmortem Template
+
 ```markdown
 # Incident Postmortem: [Title]
 
@@ -265,6 +291,7 @@ Postmortem: [Scheduled date/time]
 ```
 
 ### Action Item Tracking
+
 - **Assign owners** for each action item
 - **Set due dates** based on priority
 - **Track progress** in weekly team meetings
@@ -276,17 +303,20 @@ Postmortem: [Scheduled date/time]
 ## 🔄 Continuous Improvement
 
 ### Incident Analysis
+
 - **Monthly incident review** examining trends and patterns
 - **Quarterly deeper analysis** of recurring issues
 - **Annual process review** and methodology updates
 
 ### Process Improvements
+
 - **Update runbooks** based on incident learnings
 - **Improve monitoring** to detect issues earlier
 - **Enhance automation** to reduce manual response time
 - **Training updates** for team members
 
 ### Metrics and KPIs
+
 - **Mean Time to Detection (MTTD)**: How quickly we find issues
 - **Mean Time to Acknowledgment (MTTA)**: Response time to alerts
 - **Mean Time to Resolution (MTTR)**: Total incident duration
@@ -298,18 +328,21 @@ Postmortem: [Scheduled date/time]
 ## 🛠️ Tools and Resources
 
 ### Incident Management Tools
+
 - **PagerDuty**: Alerting and on-call management
 - **Slack**: Communication and coordination
 - **GitHub Issues**: Incident tracking and documentation
 - **Grafana**: Metrics visualization and analysis
 
 ### Runbooks Location
+
 - **General procedures**: `docs/runbooks/`
 - **Service-specific**: `docs/runbooks/services/`
 - **Emergency contacts**: `docs/runbooks/contacts.md`
 - **Disaster recovery**: `docs/runbooks/disaster-recovery.md`
 
 ### Reference Materials
+
 - [OPERATIONS.md](OPERATIONS.md) - Daily operational procedures
 - [SERVICE_LEVELS.md](SERVICE_LEVELS.md) - SLA targets and error budgets
 - [BUSINESS_CONTINUITY.md](BUSINESS_CONTINUITY.md) - Disaster recovery plans
@@ -320,38 +353,41 @@ Postmortem: [Scheduled date/time]
 ## ✅ Success Criteria
 
 Effective incident response achieves:
+
 - **Fast detection** and acknowledgment within SLA targets
 - **Clear communication** to all stakeholders throughout incident
 - **Rapid resolution** with minimal user impact
 - **Thorough documentation** for learning and compliance
 - **Continuous improvement** through postmortem action items
 - **Team preparedness** through regular drills and training
- - **Team preparedness** through regular drills and training
+- **Team preparedness** through regular drills and training
 
 ---
 
 ## 💰 Financial Impact Assessment
 
 ### Business Impact Calculations
+
 - **Revenue impact**:
-   - Lost transactions during payment gateway outages
-   - Subscription cancellations due to service disruption
-   - Customer acquisition costs for churned users
+  - Lost transactions during payment gateway outages
+  - Subscription cancellations due to service disruption
+  - Customer acquisition costs for churned users
 - **SLA penalties**:
-   - Enterprise customer contract penalties
-   - Cloud provider SLA credits owed
-   - Third-party service level breach costs
+  - Enterprise customer contract penalties
+  - Cloud provider SLA credits owed
+  - Third-party service level breach costs
 - **Reputation damage**:
-   - Estimated customer churn from incident
-   - Cost of customer retention campaigns
-   - Marketing spend to rebuild trust
+  - Estimated customer churn from incident
+  - Cost of customer retention campaigns
+  - Marketing spend to rebuild trust
 - **Recovery costs**:
-   - Engineering overtime costs
-   - Emergency vendor support fees
-   - Additional infrastructure provisioning
-   - External consultant fees
+  - Engineering overtime costs
+  - Emergency vendor support fees
+  - Additional infrastructure provisioning
+  - External consultant fees
 
 ### Financial Escalation Thresholds
+
 - **$1K impact**: Notify team lead and document
 - **$5K impact**: Notify engineering manager
 - **$10K impact**: Notify finance team and CTO
@@ -360,6 +396,7 @@ Effective incident response achieves:
 - **$100K+ impact**: CEO and board immediate notification
 
 ### Financial Impact Tracking Template
+
 ```markdown
 ## Financial Impact Assessment
 
@@ -390,6 +427,7 @@ Effective incident response achieves:
 ## 🎯 Incident Response Testing & Drills
 
 ### Quarterly Drill Schedule
+
 - **Q1**: Notification system failure simulation
 - **Q2**: Database corruption and recovery drill
 - **Q3**: Security breach response exercise
@@ -398,6 +436,7 @@ Effective incident response achieves:
 ### Drill Types
 
 #### Tabletop Exercises (Monthly)
+
 - **Scenario-based discussions** without system changes
 - **Cross-team coordination** practice
 - **Decision-making process** validation
@@ -405,6 +444,7 @@ Effective incident response achieves:
 - **Documentation**: `docs/drills/tabletop-YYYY-MM.md`
 
 #### Game Day Exercises (Quarterly)
+
 - **Controlled production environment** testing
 - **Real system stress testing** with safeguards
 - **End-to-end incident response** practice
@@ -412,6 +452,7 @@ Effective incident response achieves:
 - **Documentation**: `docs/drills/gameday-YYYY-QX.md`
 
 #### Chaos Engineering (Monthly)
+
 - **Intentional system failures** in staging
 - **Monitoring system validation**
 - **Automatic recovery testing**
@@ -419,6 +460,7 @@ Effective incident response achieves:
 - **Documentation**: `docs/drills/chaos-YYYY-MM.md`
 
 ### Post-Drill Assessment Template
+
 ```markdown
 # Drill Assessment: [Drill Name] - [Date]
 
@@ -455,47 +497,50 @@ Effective incident response achieves:
 ## 📢 Enhanced Customer Communication
 
 ### Status Page Integration
+
 - **Automated updates** from monitoring systems
-   - Prometheus alerts trigger status page updates
-   - Component-specific status tracking
-   - Real-time incident impact visualization
+  - Prometheus alerts trigger status page updates
+  - Component-specific status tracking
+  - Real-time incident impact visualization
 - **Component-specific status** tracking:
-   - API endpoints (Authentication, Preferences, Payments)
-   - Dashboard application
-   - Notification services (Email, SMS, Push)
-   - Payment processing (Stripe, NOWPayments, Cryptomus)
-   - Database and storage systems
+  - API endpoints (Authentication, Preferences, Payments)
+  - Dashboard application
+  - Notification services (Email, SMS, Push)
+  - Payment processing (Stripe, NOWPayments, Cryptomus)
+  - Database and storage systems
 - **Historical incident data** for transparency
-   - 90-day incident history
-   - Uptime statistics and trends
-   - Maintenance window scheduling
+  - 90-day incident history
+  - Uptime statistics and trends
+  - Maintenance window scheduling
 - **Subscription management** for user notifications
-   - Email alerts for incidents affecting user's services
-   - SMS notifications for critical outages
-   - Webhook integration for enterprise customers
+  - Email alerts for incidents affecting user's services
+  - SMS notifications for critical outages
+  - Webhook integration for enterprise customers
 
 ### Customer Support Integration
+
 - **Support ticket auto-creation** for widespread incidents
-   - Automatic ticket generation for P0/P1 incidents
-   - Template responses for common incident types
-   - Proactive customer outreach for affected accounts
+  - Automatic ticket generation for P0/P1 incidents
+  - Template responses for common incident types
+  - Proactive customer outreach for affected accounts
 - **Prepared response templates**:
-   - Service outage acknowledgment
-   - Progress updates during resolution
-   - Post-incident follow-up and remediation
-   - Compensation or credit information
+  - Service outage acknowledgment
+  - Progress updates during resolution
+  - Post-incident follow-up and remediation
+  - Compensation or credit information
 - **Escalation to technical team**:
-   - Direct line to incident commander for enterprise customers
-   - Technical liaison for complex customer issues
-   - Engineering consultation for customer-specific problems
+  - Direct line to incident commander for enterprise customers
+  - Technical liaison for complex customer issues
+  - Engineering consultation for customer-specific problems
 - **Post-incident follow-up**:
-   - Personal outreach to significantly impacted customers
-   - Service review and optimization recommendations
-   - Prevention measures communication
+  - Personal outreach to significantly impacted customers
+  - Service review and optimization recommendations
+  - Prevention measures communication
 
 ### Customer Communication Templates
 
 #### Service Outage Notification
+
 ```
 Subject: [Service Status] Investigating Issues with [Service Name]
 
@@ -513,6 +558,7 @@ Status Page: [URL]
 ```
 
 #### Resolution Notification
+
 ```
 Subject: [Service Status] Issues with [Service Name] Resolved
 
@@ -534,6 +580,7 @@ Thank you for your patience.
 ## 📊 Incident Metrics & Reporting
 
 ### Real-Time Incident Dashboard
+
 - **Active incidents** with severity and duration
 - **MTTR trends** over time by severity
 - **Incident frequency** by service component
@@ -542,6 +589,7 @@ Thank you for your patience.
 ### Executive Reporting
 
 #### Monthly Incident Summary
+
 ```markdown
 # Monthly Incident Report - [Month Year]
 
@@ -576,6 +624,7 @@ Thank you for your patience.
 ```
 
 #### Quarterly Trend Analysis
+
 - **Incident pattern analysis** across quarters
 - **Service reliability trends** by component
 - **Team response improvement** metrics
@@ -584,12 +633,14 @@ Thank you for your patience.
 - **Investment recommendations** for reliability
 
 ### Financial Impact Reporting
+
 - **Monthly incident cost** breakdown
 - **Annual reliability investment** vs. incident costs
 - **Customer retention impact** from incidents
 - **Revenue protection ROI** from reliability investments
 
 ### Compliance Reporting
+
 - **Regulatory incident reporting** (GDPR, CCPA, SOC2)
 - **Audit trail completeness** verification
 - **Control effectiveness** measurement
@@ -599,34 +650,37 @@ Thank you for your patience.
 ## 🔄 Business Continuity During Incidents
 
 ### Disaster Recovery Triggers
-- **Regional outage**: 
-   - Automatic failover to secondary region (US-East → US-West)
-   - DNS routing update via Cloudflare
-   - Database replica promotion
-- **Database corruption**: 
-   - Immediate database isolation
-   - Restore from latest backup (RPO: 15 minutes)
-   - Data integrity verification
-   - Gradual service restoration
-- **Complete service failure**: 
-   - Activate disaster recovery site (RTO: 1 hour)
-   - Emergency communication to all stakeholders
-   - Manual service restoration procedures
-   - Extended monitoring and validation
+
+- **Regional outage**:
+  - Automatic failover to secondary region (US-East → US-West)
+  - DNS routing update via Cloudflare
+  - Database replica promotion
+- **Database corruption**:
+  - Immediate database isolation
+  - Restore from latest backup (RPO: 15 minutes)
+  - Data integrity verification
+  - Gradual service restoration
+- **Complete service failure**:
+  - Activate disaster recovery site (RTO: 1 hour)
+  - Emergency communication to all stakeholders
+  - Manual service restoration procedures
+  - Extended monitoring and validation
 
 ### Communication During DR Events
+
 - **Customer communication**:
-   - Pre-drafted templates for major outages
-   - Multi-channel notification (email, SMS, status page)
-   - Regular updates every 15 minutes for critical incidents
+  - Pre-drafted templates for major outages
+  - Multi-channel notification (email, SMS, status page)
+  - Regular updates every 15 minutes for critical incidents
 - **Stakeholder updates**:
-   - Board/investor notification for extended outages (>4 hours)
-   - Partner notification for integration impacts
+  - Board/investor notification for extended outages (>4 hours)
+  - Partner notification for integration impacts
 - **Media response**:
-   - PR team activation for public incidents
-   - Prepared statements for security incidents
+  - PR team activation for public incidents
+  - Prepared statements for security incidents
 
 ### Business Impact Mitigation
+
 - **Revenue protection**: Alternative payment processing during outages
 - **Customer retention**: Proactive support and compensation
 - **Reputation management**: Transparent communication and rapid resolution

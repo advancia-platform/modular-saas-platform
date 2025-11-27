@@ -3,15 +3,15 @@
  * Tests for reward claiming and listing endpoints
  */
 
+import { Decimal } from "@prisma/client/runtime/index-browser";
 import request from "supertest";
-import app from "../test-app";
 import prisma from "../../src/prismaClient";
-import { Decimal } from "@prisma/client/runtime/library";
 import {
+  cleanupTestUsers,
   createTestUser,
   generateUserToken,
-  cleanupTestUsers,
 } from "../setup/adminSetup";
+import app from "../test-app";
 
 const API_KEY = process.env.API_KEY || "dev-api-key-123";
 
@@ -29,7 +29,7 @@ describe("Rewards API", () => {
     userToken = generateUserToken(userId);
 
     // Create test rewards
-    const rewards = await prisma.reward.createMany({
+    const rewards = await prisma.rewards.createMany({
       data: [
         {
           userId,
@@ -70,7 +70,7 @@ describe("Rewards API", () => {
     });
 
     // Get the created reward IDs
-    const createdRewards = await prisma.reward.findMany({
+    const createdRewards = await prisma.rewards.findMany({
       where: { userId },
       select: { id: true },
     });
@@ -79,11 +79,11 @@ describe("Rewards API", () => {
 
   afterAll(async () => {
     // Cleanup rewards
-    await prisma.reward.deleteMany({
+    await prisma.rewards.deleteMany({
       where: { userId },
     });
     // Cleanup wallet if created
-    await prisma.tokenWallet.deleteMany({
+    await prisma.token_wallets.deleteMany({
       where: { userId },
     });
     await cleanupTestUsers();

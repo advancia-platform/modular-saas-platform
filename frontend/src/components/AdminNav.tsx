@@ -1,28 +1,29 @@
 'use client';
 
-import { useRouter, usePathname } from 'next/navigation';
 import {
-  Users,
-  Shield,
   Activity,
-  Settings,
-  LogOut,
   BarChart3,
-  Wallet,
-  FileText,
-  Lock,
-  MessageSquare,
-  Ticket,
-  Database,
-  Monitor,
   CreditCard,
+  Database,
+  FileText,
   Globe,
+  Lock,
+  LogOut,
+  MessageSquare,
+  Monitor,
+  Settings,
+  Shield,
+  Ticket,
+  Users,
+  Wallet,
 } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
 
 const navItems = [
   { name: 'Sessions', path: '/admin/sessions', icon: Shield },
   { name: 'Subscribers', path: '/admin/subscribers', icon: Users },
   { name: 'Users', path: '/admin/users', icon: Users },
+  { name: 'Roles', path: '/admin/roles', icon: Shield },
   { name: 'Dashboard', path: '/admin/dashboard', icon: BarChart3 },
   { name: 'Analytics', path: '/admin/analytics', icon: Activity },
   { name: 'Withdrawals', path: '/admin/withdrawals', icon: Wallet },

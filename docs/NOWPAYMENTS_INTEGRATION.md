@@ -44,11 +44,13 @@ app.use("/api/nowpayments", nowpaymentsRouter); // Auto-enabled
 ## 📊 API Endpoints
 
 ### Get Supported Currencies
+
 ```http
 GET /api/nowpayments/currencies
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -57,11 +59,13 @@ GET /api/nowpayments/currencies
 ```
 
 ### Get Minimum Payment Amount
+
 ```http
 GET /api/nowpayments/min-amount/:currency
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -71,6 +75,7 @@ GET /api/nowpayments/min-amount/:currency
 ```
 
 ### Get Payment Estimate
+
 ```http
 POST /api/nowpayments/estimate
 Content-Type: application/json
@@ -83,6 +88,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -94,6 +100,7 @@ Content-Type: application/json
 ```
 
 ### Create Payment Invoice
+
 ```http
 POST /api/nowpayments/create-invoice
 Content-Type: application/json
@@ -108,6 +115,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -120,6 +128,7 @@ Content-Type: application/json
 ```
 
 ### Payment Status Webhook
+
 ```http
 POST /api/nowpayments/webhook
 Content-Type: application/json
@@ -218,6 +227,7 @@ const isValidSignature = signature === providedSignature;
 ### Audit Trail
 
 All payment transactions are logged with:
+
 - Payment ID and invoice ID
 - User information (if authenticated)
 - Transaction amounts and currencies
@@ -227,6 +237,7 @@ All payment transactions are logged with:
 ## 📱 Payment Flow
 
 ### 1. User Initiates Payment
+
 ```typescript
 // Frontend component triggers payment creation
 const response = await fetch('/api/nowpayments/create-invoice', {
@@ -242,6 +253,7 @@ const response = await fetch('/api/nowpayments/create-invoice', {
 ```
 
 ### 2. NOWPayments Invoice Creation
+
 ```typescript
 // Backend creates invoice with NOWPayments
 const invoice = await createInvoice({
@@ -254,11 +266,13 @@ const invoice = await createInvoice({
 ```
 
 ### 3. User Pays on NOWPayments
+
 - User redirected to NOWPayments checkout page
 - Selects wallet and confirms payment
 - Payment processed on blockchain
 
 ### 4. Webhook Notification
+
 ```typescript
 // Backend receives payment status updates
 app.post('/api/nowpayments/webhook', (req, res) => {
@@ -270,6 +284,7 @@ app.post('/api/nowpayments/webhook', (req, res) => {
 ```
 
 ### 5. Order Completion
+
 - Payment status updated in real-time via Socket.IO
 - Order fulfillment triggered automatically
 - User receives confirmation notification
@@ -291,6 +306,7 @@ https://api-sandbox.nowpayments.io/v1
 ### Test API Keys
 
 Use NOWPayments sandbox credentials for testing:
+
 - API Key: Contact NOWPayments for sandbox credentials
 - Webhook Secret: Generated in NOWPayments sandbox dashboard
 
@@ -327,27 +343,35 @@ const invoice = await fetch('/api/nowpayments/create-invoice', {
 ### Common Issues
 
 #### 1. API Key Not Found
+
 ```
 Error: NOWPayments API key not configured
 ```
+
 **Solution**: Add `NOWPAYMENTS_API_KEY` to your `.env` file.
 
 #### 2. Webhook Signature Verification Failed
+
 ```
 Error: Invalid webhook signature
 ```
+
 **Solution**: Verify `NOWPAYMENTS_IPN_SECRET` matches your NOWPayments dashboard settings.
 
 #### 3. Currency Not Supported
+
 ```
 Error: Minimum amount not available for currency
 ```
+
 **Solution**: Check currency code is correct and supported using `/api/nowpayments/currencies`.
 
 #### 4. Sandbox Mode Issues
+
 ```
 Error: Invalid API key for production
 ```
+
 **Solution**: Ensure using correct API keys for environment (sandbox vs production).
 
 ### Debug Logging
@@ -386,6 +410,7 @@ NOWPAYMENTS_IPN_SECRET=your_production_webhook_secret
 ### Webhook URL Configuration
 
 Configure your webhook URL in the NOWPayments dashboard:
+
 ```
 https://yourdomain.com/api/nowpayments/webhook
 ```
@@ -397,6 +422,7 @@ Ensure your webhook endpoint has a valid SSL certificate as required by NOWPayme
 ### Monitoring
 
 Monitor payment transactions using:
+
 - Application logs
 - Sentry error tracking
 - Custom Prometheus metrics

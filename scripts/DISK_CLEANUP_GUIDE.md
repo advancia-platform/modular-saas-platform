@@ -108,19 +108,19 @@ if ($duplicates.Count -gt 0) {
 ### For Maximum Safety
 
 1. **Option 1: Manual Delete** (Recommended for first-timers)
-   -   Most transparent
-   -   You can verify before deleting
-   -   Takes 30 seconds
+   - Most transparent
+   - You can verify before deleting
+   - Takes 30 seconds
 
 2. **Option 2: PowerShell Script** (Recommended for developers)
-   -   Automated but safe
-   -   Error handling included
-   -   Very reliable
+   - Automated but safe
+   - Error handling included
+   - Very reliable
 
 3. **Option 3: Full Cleanup** (Best for comprehensive cleanup)
-   -   Removes ALL duplicates automatically
-   -   Safe checks included
-   -   Most thorough
+   - Removes ALL duplicates automatically
+   - Safe checks included
+   - Most thorough
 
 ---
 
@@ -149,15 +149,15 @@ Total: ~500 MB used
 
 ### Keep These
 
--   ✅ `-modular-saas-platform` (main folder)
--   ✅ Any projects in WSL (`\\wsl$\Ubuntu-24.04\home\...`)
--   ✅ Any other project folders you actively use
+- ✅ `-modular-saas-platform` (main folder)
+- ✅ Any projects in WSL (`\\wsl$\Ubuntu-24.04\home\...`)
+- ✅ Any other project folders you actively use
 
 ### Safe to Delete
 
--   ❌ `-modular-saas-platform - Copy` (duplicate)
--   ❌ Any folder with "- Copy" suffix
--   ❌ Any old/archived versions
+- ❌ `-modular-saas-platform - Copy` (duplicate)
+- ❌ Any folder with "- Copy" suffix
+- ❌ Any old/archived versions
 
 ---
 
@@ -165,18 +165,18 @@ Total: ~500 MB used
 
 Before deleting:
 
--   [ ] You're looking at the right folder (has "- Copy" in name)
--   [ ] You've verified it's a duplicate
--   [ ] You have the current version elsewhere
--   [ ] You've got the path correct
--   [ ] You're ready to delete
+- [ ] You're looking at the right folder (has "- Copy" in name)
+- [ ] You've verified it's a duplicate
+- [ ] You have the current version elsewhere
+- [ ] You've got the path correct
+- [ ] You're ready to delete
 
 After deleting:
 
--   [ ] Duplicate folder is gone
--   [ ] Main project still exists
--   [ ] Check Recycle Bin (optional)
--   [ ] Verify disk space freed
+- [ ] Duplicate folder is gone
+- [ ] Main project still exists
+- [ ] Check Recycle Bin (optional)
+- [ ] Verify disk space freed
 
 ---
 
@@ -222,16 +222,16 @@ if (Test-Path $path) { Remove-Item -Path $path -Recurse -Force; Write-Host "✅ 
 
 ## ❓ Questions?
 
--   **Q: Will this break my project?**  
+- **Q: Will this break my project?**  
   A: No! You're only deleting the duplicate. Your main project is safe.
 
--   **Q: Can I undo this?**  
+- **Q: Can I undo this?**  
   A: Yes! It goes to Recycle Bin first. Check Recycle Bin if needed.
 
--   **Q: How much disk space will I save?**  
+- **Q: How much disk space will I save?**  
   A: About 500 MB (the size of the duplicate folder).
 
--   **Q: Should I delete the duplicate?**  
+- **Q: Should I delete the duplicate?**  
   A: Yes! You only need one copy. Having duplicates wastes space.
 
 ---

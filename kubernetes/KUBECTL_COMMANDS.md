@@ -239,16 +239,16 @@ kubectl delete secret payment-secrets -n advancia-pay
 
 ## Production Checklist
 
--   [ ] SSL/TLS certificates configured
--   [ ] Secrets properly created and secured
--   [ ] Resource limits set appropriately
--   [ ] HPA configured and tested
--   [ ] Network policies applied
--   [ ] PodDisruptionBudgets configured
--   [ ] Monitoring and logging set up
--   [ ] Backup strategy implemented
--   [ ] Disaster recovery plan tested
--   [ ] Load testing completed
+- [ ] SSL/TLS certificates configured
+- [ ] Secrets properly created and secured
+- [ ] Resource limits set appropriately
+- [ ] HPA configured and tested
+- [ ] Network policies applied
+- [ ] PodDisruptionBudgets configured
+- [ ] Monitoring and logging set up
+- [ ] Backup strategy implemented
+- [ ] Disaster recovery plan tested
+- [ ] Load testing completed
 
 ## Quick Commands Reference
 

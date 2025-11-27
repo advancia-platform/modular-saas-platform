@@ -4,11 +4,11 @@
 
 This backend now includes comprehensive distributed tracing using OpenTelemetry. Traces help you:
 
--   Monitor request flow through your application
--   Identify performance bottlenecks
--   Debug issues in production
--   Analyze database query performance
--   Track API dependencies
+- Monitor request flow through your application
+- Identify performance bottlenecks
+- Debug issues in production
+- Analyze database query performance
+- Track API dependencies
 
 ## Quick Start
 
@@ -42,10 +42,10 @@ npm run dev
 1. Make requests to your API (e.g., `curl http://localhost:4000/api/health`)
 2. Open AI Toolkit trace viewer in VS Code
 3. See detailed traces of each request including:
-   -   HTTP request/response timing
-   -   Express middleware execution
-   -   Database queries (Prisma)
-   -   External API calls
+   - HTTP request/response timing
+   - Express middleware execution
+   - Database queries (Prisma)
+   - External API calls
 
 ## What Gets Traced Automatically
 
@@ -53,29 +53,29 @@ The tracing setup automatically instruments:
 
 ### ✅ HTTP Requests
 
--   All incoming HTTP requests to Express
--   Request headers, method, URL
--   Response status codes, timing
--   Error stack traces
+- All incoming HTTP requests to Express
+- Request headers, method, URL
+- Response status codes, timing
+- Error stack traces
 
 ### ✅ Express Middleware
 
--   Each middleware execution as a span
--   Middleware timing
--   Route handlers
+- Each middleware execution as a span
+- Middleware timing
+- Route handlers
 
 ### ✅ Database Queries (Prisma)
 
--   SQL queries executed
--   Query parameters (sanitized)
--   Query execution time
--   Connection pool metrics
+- SQL queries executed
+- Query parameters (sanitized)
+- Query execution time
+- Connection pool metrics
 
 ### ✅ External HTTP Calls
 
--   Axios requests
--   Node.js `http`/`https` module calls
--   Response timing
+- Axios requests
+- Node.js `http`/`https` module calls
+- Response timing
 
 ## Configuration Options
 
@@ -222,7 +222,7 @@ OTEL_EXPORTER_OTLP_ENDPOINT=YOUR_APPINSIGHTS_CONNECTION_STRING
    ```
 
 4. **Verify AI Toolkit trace viewer is running**
-   -   Run `AI Toolkit: Open Trace Viewer` in VS Code
+   - Run `AI Toolkit: Open Trace Viewer` in VS Code
 
 ### High Memory Usage
 
@@ -261,16 +261,16 @@ import "./tracing";
 
 Tracing overhead is minimal:
 
--   **HTTP requests**: ~0.1-0.5ms per request
--   **Database queries**: ~0.05-0.2ms per query
--   **Memory**: ~10-50MB additional heap usage
--   **CPU**: <1% additional CPU usage
+- **HTTP requests**: ~0.1-0.5ms per request
+- **Database queries**: ~0.05-0.2ms per query
+- **Memory**: ~10-50MB additional heap usage
+- **CPU**: <1% additional CPU usage
 
 For production, consider:
 
--   Using sampling (trace 10% of requests)
--   Tail-based sampling (only trace errors/slow requests)
--   Batch exports to reduce network overhead
+- Using sampling (trace 10% of requests)
+- Tail-based sampling (only trace errors/slow requests)
+- Batch exports to reduce network overhead
 
 ## Best Practices
 
@@ -287,10 +287,10 @@ For production, consider:
 
 ## Resources
 
--   [OpenTelemetry Docs](https://opentelemetry.io/docs/)
--   [AI Toolkit Tracing](https://github.com/microsoft/vscode-ai-toolkit)
--   [Prisma Instrumentation](https://www.prisma.io/docs/concepts/components/prisma-client/opentelemetry-tracing)
--   [Express Instrumentation](https://opentelemetry.io/docs/instrumentation/js/libraries/express/)
+- [OpenTelemetry Docs](https://opentelemetry.io/docs/)
+- [AI Toolkit Tracing](https://github.com/microsoft/vscode-ai-toolkit)
+- [Prisma Instrumentation](https://www.prisma.io/docs/concepts/components/prisma-client/opentelemetry-tracing)
+- [Express Instrumentation](https://opentelemetry.io/docs/instrumentation/js/libraries/express/)
 
 ## Support
 

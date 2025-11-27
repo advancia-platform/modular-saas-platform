@@ -7,6 +7,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
 ## 🔍 Monitoring
 
 ### Application Metrics
+
 - **Request latency (p95, p99)**
   - Target: p95 ≤ 300ms, p99 ≤ 500ms
   - Measured via Express middleware and Prometheus
@@ -18,6 +19,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
   - Measured via integration adapter logs and webhooks
 
 ### Infrastructure Metrics
+
 - **CPU, memory, disk usage**
   - Alert thresholds: CPU >80%, Memory >85%, Disk >90%
 - **Database query performance**
@@ -28,6 +30,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
   - Email digest generation
 
 ### Tools
+
 - **Primary**: Prometheus + Grafana dashboards
 - **Backup**: Cloud provider monitoring (AWS CloudWatch, Azure Monitor, GCP Operations)
 - **Alerting**: PagerDuty for critical issues, Slack for warnings
@@ -37,6 +40,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
 ## 📜 Logging
 
 ### Backend
+
 - **Structured JSON logs** (timestamp, user, action, role, result)
 - **Log levels**: error, warn, info, debug
 - **Key events logged**:
@@ -49,11 +53,13 @@ This document defines day‑to‑day monitoring, logging, and incident response 
   - Compliance tracking for GDPR/CCPA
 
 ### Frontend
+
 - **Console warnings/errors** captured via Sentry
 - **User interaction tracking** (preference changes, errors)
 - **Performance metrics** (page load times, API response times)
 
 ### Retention Policy
+
 - **Staging**: Logs stored for 90 days
 - **Production**: Logs stored for 1 year
 - **Audit logs**: Retained for 7 years for compliance
@@ -64,6 +70,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
 ## 🚨 Incident Response
 
 ### Detection
+
 - **Automated alerts** triggered via monitoring (PagerDuty/Slack)
 - **Threshold-based alerts**:
   - Error rate >1%
@@ -72,12 +79,14 @@ This document defines day‑to‑day monitoring, logging, and incident response 
   - Failed notifications >5%
 
 ### Classification
+
 - **Critical**: Full outage, data breach, compliance violation
 - **High**: Major functionality broken, high error rate, degraded performance
 - **Medium**: Partial feature outage, minor security issue
 - **Low**: Cosmetic bug, documentation issue, non‑urgent
 
 ### Response Workflow
+
 1. **Acknowledge** incident within 30 minutes
 2. **Assign** incident commander (maintainer on call)
 3. **Contain** issue (disable affected service, rollback deployment)
@@ -86,6 +95,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
 6. **Verify** resolution with smoke tests and monitoring
 
 ### Escalation
+
 - **Critical incidents**: Immediate escalation to team lead
 - **Security incidents**: CISO notification within 1 hour
 - **Data breaches**: Legal/compliance team notification
@@ -95,6 +105,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
 ## 🛡️ Security Operations
 
 ### Regular Security Tasks
+
 - **Weekly dependency scans** (`npm audit`, `pip-audit`)
 - **Monthly RBAC verification tests**
   - Verify Admin/Auditor/Viewer permissions
@@ -106,6 +117,7 @@ This document defines day‑to‑day monitoring, logging, and incident response 
   - Database credentials
 
 ### Security Monitoring
+
 - **Failed authentication attempts** (>5 in 15 minutes)
 - **Privilege escalation attempts**
 - **Unusual access patterns** (off-hours, unusual locations)
@@ -116,24 +128,29 @@ This document defines day‑to‑day monitoring, logging, and incident response 
 ## 🧭 Operational Playbook
 
 ### Deployment Schedule
+
 - **Staging deploys**: Daily, auto from `develop` branch
 - **Production deploys**: Weekly, manual approval required
 - **Hotfixes**: Emergency deploys for critical issues
 
 ### Rollback Procedures
+
 1. **Immediate rollback**: Redeploy previous Docker tag
 2. **Database rollback**: Reverse migrations if schema changes
 3. **Verification**: Run smoke tests to confirm stability
 4. **Documentation**: Log rollback reason and resolution
 
 ### Smoke Tests
+
 Run after every deploy to confirm system health:
+
 - **API health checks**: `/health`, `/api/auth/me`
 - **Database connectivity**: Basic query execution
 - **Integration tests**: Notification delivery verification
 - **UI functionality**: Key user workflows
 
 ### Backup Procedures
+
 - **Database backups**: Daily automated backups
 - **Code repository**: GitHub with branch protection
 - **Configuration**: Secrets backed up in secure vault
@@ -144,6 +161,7 @@ Run after every deploy to confirm system health:
 ## 📊 Reporting
 
 ### Weekly Operations Report
+
 - **Uptime percentage**: Target ≥99.9%
 - **Error rate**: Target ≤0.1%
 - **Response time trends**: p95/p99 latency
@@ -152,12 +170,14 @@ Run after every deploy to confirm system health:
 - **Coverage status**: Test coverage metrics
 
 ### Monthly Summary
+
 - **Performance trends**: Month-over-month comparisons
 - **Capacity planning**: Resource utilization analysis
 - **Security posture**: Vulnerability scan results
 - **User feedback**: Support ticket analysis
 
 ### Quarterly Governance Review
+
 - **Compliance status**: GDPR, CCPA, SOC2 adherence
 - **Roadmap progress**: Feature delivery against plan
 - **Audit findings**: Security and compliance review results
@@ -169,12 +189,14 @@ Run after every deploy to confirm system health:
 ## 🔧 Maintenance Windows
 
 ### Scheduled Maintenance
+
 - **Frequency**: Monthly, second Saturday of each month
 - **Duration**: Maximum 2 hours
 - **Notification**: 48 hours advance notice via email/Slack
 - **Activities**: Security updates, dependency upgrades, infrastructure maintenance
 
 ### Emergency Maintenance
+
 - **Authorization**: Team lead approval required
 - **Communication**: Immediate notification via all channels
 - **Documentation**: Incident report required within 24 hours
@@ -184,11 +206,13 @@ Run after every deploy to confirm system health:
 ## 📞 Contact Information
 
 ### On-Call Rotation
+
 - **Primary**: Team lead (24/7 for critical issues)
 - **Secondary**: Senior developer (backup)
 - **Escalation**: Engineering manager
 
 ### Communication Channels
+
 - **Internal**: Slack #ops-notifications, #incidents
 - **External**: status.advancia.com updates
 - **Emergency**: PagerDuty alerts, direct phone calls
@@ -198,6 +222,7 @@ Run after every deploy to confirm system health:
 ## ✅ Success Metrics
 
 By following this operations guide, we ensure:
+
 - **High availability**: 99.9%+ uptime
 - **Fast incident response**: <30 minute acknowledgment
 - **Proactive monitoring**: Issues detected before user impact

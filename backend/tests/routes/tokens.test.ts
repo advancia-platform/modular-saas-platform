@@ -4,13 +4,13 @@
  */
 
 import request from "supertest";
-import app from "../test-app";
 import prisma from "../../src/prismaClient";
 import {
+  cleanupTestUsers,
   createTestUser,
   generateUserToken,
-  cleanupTestUsers,
 } from "../setup/adminSetup";
+import app from "../test-app";
 
 const API_KEY = process.env.API_KEY || "dev-api-key-123";
 
@@ -31,12 +31,12 @@ describe("Token Wallet API", () => {
   afterAll(async () => {
     // Cleanup token transactions
     if (walletId) {
-      await prisma.tokenTransaction.deleteMany({
+      await prisma.token_transactions.deleteMany({
         where: { walletId },
       });
     }
     // Cleanup wallet
-    await prisma.tokenWallet.deleteMany({
+    await prisma.token_wallets.deleteMany({
       where: { userId },
     });
     await cleanupTestUsers();
@@ -80,11 +80,14 @@ describe("Token Wallet API", () => {
   describe("GET /api/tokens/history/:userId", () => {
     beforeAll(async () => {
       // Ensure wallet exists
-      const wallet = await prisma.tokenWallet.upsert({
+      let wallet = await prisma.token_wallets.findUnique({
         where: { userId },
-        update: {},
-        create: { userId },
       });
+      if (!wallet) {
+        wallet = await prisma.token_wallets.create({
+          data: { userId },
+        });
+      }
       walletId = wallet.id;
 
       // Create some test transactions
@@ -181,18 +184,29 @@ describe("Token Wallet API", () => {
       recipientToken = generateUserToken(recipientId);
 
       // Ensure sender has balance
-      await prisma.tokenWallet.upsert({
+      let senderWallet = await prisma.token_wallets.findUnique({
         where: { userId },
-        update: { balance: 1000 },
-        create: { userId, balance: 1000 },
       });
+      if (!senderWallet) {
+        await prisma.token_wallets.create({
+          data: { userId, balance: 1000 },
+        });
+      } else {
+        await prisma.token_wallets.update({
+          where: { userId },
+          data: { balance: 1000 },
+        });
+      }
 
       // Ensure recipient has wallet
-      await prisma.tokenWallet.upsert({
+      const recipientWallet = await prisma.token_wallets.findUnique({
         where: { userId: recipientId },
-        update: {},
-        create: { userId: recipientId },
       });
+      if (!recipientWallet) {
+        await prisma.token_wallets.create({
+          data: { userId: recipientId },
+        });
+      }
     });
 
     afterAll(async () => {

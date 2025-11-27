@@ -214,5 +214,6 @@
   },
   "testing.automaticallyOpenTestResults": "neverOpen",
   "prisma.pinToPrisma6": false,
-  "yaml.maxItemsComputed": 10000
+  "yaml.maxItemsComputed": 10000,
+  "git.ignoreLimitWarning": true
 }

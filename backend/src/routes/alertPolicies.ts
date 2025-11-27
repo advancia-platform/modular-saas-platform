@@ -144,8 +144,8 @@ router.post("/", requireSuperAdmin, async (req: AuthenticatedRequest, res) => {
         channels: validated.channels,
         severity: validated.severity,
         enabled: validated.enabled,
-        createdBy: req.user!.id,
-        updatedBy: req.user!.id,
+        createdBy: req.user!.id || "",
+        updatedBy: req.user!.id || "",
       }),
     });
 
@@ -153,7 +153,7 @@ router.post("/", requireSuperAdmin, async (req: AuthenticatedRequest, res) => {
     await logPolicyChange({
       policyId: policy.id,
       action: "created",
-      changedBy: req.user!.id,
+      changedBy: req.user!.id || "",
       userEmail: req.user!.email,
       userRole: req.user!.role,
       ipAddress: (req as ReqWithParams).ip,
@@ -231,7 +231,7 @@ router.put(
       await logPolicyChange({
         policyId: updatedPolicy.id,
         action: "updated",
-        changedBy: req.user!.id,
+        changedBy: req.user!.id || "",
         userEmail: req.user!.email,
         userRole: req.user!.role,
         ipAddress: (req as ReqWithParams).ip,
@@ -308,7 +308,7 @@ router.delete(
       await logPolicyChange({
         policyId: currentPolicy.id,
         action: "deleted",
-        changedBy: req.user!.id,
+        changedBy: req.user!.id || "",
         userEmail: req.user!.email,
         userRole: req.user!.role,
         ipAddress: (req as ReqWithParams).ip,
@@ -396,7 +396,7 @@ router.patch(
       await logPolicyChange({
         policyId: updatedPolicy.id,
         action: enabled ? "enabled" : "disabled",
-        changedBy: req.user!.id,
+        changedBy: req.user!.id || "",
         userEmail: req.user!.email,
         userRole: req.user!.role,
         ipAddress: (req as ReqWithParams).ip,

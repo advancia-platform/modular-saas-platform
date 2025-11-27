@@ -1,6 +1,27 @@
-# Code Owners for critical paths
-# Require review from designated owners for sensitive changes
+# CODEOWNERS
+# Each line is a file pattern followed by one or more owners.
+# Owners are GitHub usernames or team names (@org/team).
 
+# Documentation
+docs/* @docs-team
+
+# Security policies
+docs/SECURITY.md @security-team
+docs/GOVERNANCE_OVERVIEW.md @compliance-team
+
+# Roadmap
+docs/ROADMAP.md @product-team
+
+# Backend code
+backend/* @backend-team
+
+# Terraform infrastructure
+terraform/* @devops-team
+
+# Scripts
+scripts/* @automation-team
+
+# Critical paths (maintain existing specific ownership)
 # Prisma schema changes - database structure
 /backend/prisma/schema.prisma @muchaeljohn739337-cloud
 
@@ -32,3 +53,6 @@
 /DEPLOYMENT*.md @muchaeljohn739337-cloud
 /SECURITY*.md @muchaeljohn739337-cloud
 /.github/copilot-instructions.md @muchaeljohn739337-cloud
+
+# Default catch-all
+* @repo-maintainers

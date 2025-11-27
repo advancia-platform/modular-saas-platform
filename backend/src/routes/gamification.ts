@@ -1,11 +1,10 @@
-import { PrismaClient } from "@prisma/client";
 import { Request, Response, Router } from "express";
 import logger from "../logger";
 import { authenticateToken } from "../middleware/auth";
+import prisma from "../prismaClient";
 import { withDefaults } from "../utils/prismaHelpers";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // User tier levels with benefits
 const USER_TIERS = {

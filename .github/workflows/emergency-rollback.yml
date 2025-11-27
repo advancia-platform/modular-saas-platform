@@ -1,13 +1,203 @@
-name: Emergency Rollback
+name: Emergency Rollback Notifications
 
 on:
   workflow_dispatch:
     inputs:
-      reason:
-        description: "Reason for emergency rollback"
+      rollback_reason:
+        description: 'Reason for rollback'
+        required: true
+        type: choice
+        options:
+          - security-incident
+          - service-outage
+          - deployment-failure
+          - data-integrity-issue
+          - performance-degradation
+          - other
+      severity:
+        description: 'Incident severity'
+        required: true
+        type: choice
+        options:
+          - critical
+          - high
+          - medium
+          - low
+      affected_services:
+        description: 'Affected services (comma-separated)'
         required: true
         type: string
-      notify_team:
+        default: 'backend,frontend'
+      rollback_commit:
+        description: 'Commit SHA to rollback to'
+        required: true
+        type: string
+      incident_commander:
+        description: 'Incident commander'
+        required: true
+        type: string
+      estimated_downtime:
+        description: 'Estimated downtime (minutes)'
+        required: false
+        type: string
+        default: '15'
+
+env:
+  INCIDENT_ID: ${{ github.run_id }}-rollback
+  ROLLBACK_TIMESTAMP: ${{ github.event.created_at }}
+  SEVERITY: ${{ github.event.inputs.severity }}
+  REASON: ${{ github.event.inputs.rollback_reason }}
+
+jobs:
+  create-incident-issue:
+    runs-on: ubuntu-latest
+    outputs:
+      issue-number: ${{ steps.create-issue.outputs.issue-number }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Create Incident Tracking Issue
+        id: create-issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const severity = process.env.SEVERITY;
+            const reason = process.env.REASON;
+            const incidentId = process.env.INCIDENT_ID;
+            const services = '${{ github.event.inputs.affected_services }}';
+            const commander = '${{ github.event.inputs.incident_commander }}';
+            const downtime = '${{ github.event.inputs.estimated_downtime }}';
+            const rollbackCommit = '${{ github.event.inputs.rollback_commit }}';
+
+            const severityEmoji = {
+              'critical': '🚨',
+              'high': '⚠️',
+              'medium': '⚡',
+              'low': 'ℹ️'
+            };
+
+            const issueBody = `
+            # ${severityEmoji[severity]} Emergency Rollback Initiated
+
+            **Incident ID:** \`${incidentId}\`
+            **Severity:** ${severity.toUpperCase()}
+            **Incident Commander:** @${commander}
+            **Rollback Initiated:** ${new Date().toISOString()}
+            **Estimated Downtime:** ${downtime} minutes
+
+            ## Incident Details
+            - **Reason:** ${reason.replace('-', ' ')}
+            - **Affected Services:** ${services}
+            - **Rollback Target:** \`${rollbackCommit}\`
+            - **Triggered By:** @${{ github.actor }}
+
+            ## Immediate Actions Checklist
+            ### 1. Communication
+            - [ ] PagerDuty incident created (auto)
+            - [ ] Slack #incidents channel notified (auto)
+            - [ ] Teams stakeholders notified (auto)
+            - [ ] Customer support team informed
+            - [ ] Status page updated if customer-facing
+
+            ### 2. Technical Response
+            - [ ] Rollback deployment initiated
+            - [ ] Database migration rollback (if needed)
+            - [ ] Cache cleared/invalidated
+            - [ ] CDN purged (if needed)
+            - [ ] Health checks verified
+
+            ### 3. Monitoring
+            - [ ] Error rates returning to normal
+            - [ ] Response times improved
+            - [ ] User complaints stopped
+            - [ ] SLA metrics stabilized
+
+            ### 4. Investigation
+            - [ ] Root cause analysis started
+            - [ ] Timeline documented
+            - [ ] Impact assessment completed
+            - [ ] Lessons learned captured
+
+            ## Escalation Contacts
+            - **Platform Lead:** @platform-lead
+            - **Engineering Manager:** @eng-manager
+            - **CTO:** @cto (critical incidents only)
+            - **Customer Success:** @customer-success
+
+            ## Timeline
+            | Time | Action | Status |
+            |------|--------|--------|
+            | ${new Date().toISOString()} | Rollback initiated | ✅ |
+            | | Service health verified | ⏳ |
+            | | Customer communication sent | ⏳ |
+            | | Post-incident review scheduled | ⏳ |
+
+            ---
+
+            **Next Steps:** Update timeline above as actions are completed.
+            `;
+
+            const issue = await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `${severityEmoji[severity]} ROLLBACK: ${reason} - ${incidentId}`,
+              body: issueBody,
+              labels: ['incident', 'rollback', severity, reason],
+              assignees: [commander]
+            });
+
+            return issue.data.number;
+
+  trigger-pagerduty:
+    runs-on: ubuntu-latest
+    needs: create-incident-issue
+
+    steps:
+      - name: Create PagerDuty Incident
+        run: |
+          # Determine severity mapping
+          case "${{ env.SEVERITY }}" in
+            "critical") PD_SEVERITY="critical" ;;
+            "high") PD_SEVERITY="error" ;;
+            "medium") PD_SEVERITY="warning" ;;
+            "low") PD_SEVERITY="info" ;;
+            *) PD_SEVERITY="error" ;;
+          esac
+
+          curl -X POST "https://events.pagerduty.com/v2/enqueue" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "routing_key": "${{ secrets.PAGERDUTY_ROUTING_KEY }}",
+              "event_action": "trigger",
+              "payload": {
+                "summary": "EMERGENCY ROLLBACK: ${{ env.REASON }} - Severity: ${{ env.SEVERITY }}",
+                "severity": "'$PD_SEVERITY'",
+                "source": "GitHub Actions Emergency Response",
+                "component": "deployment",
+                "group": "advancia-pay",
+                "class": "rollback",
+                "custom_details": {
+                  "incident_id": "${{ env.INCIDENT_ID }}",
+                  "rollback_reason": "${{ env.REASON }}",
+                  "severity": "${{ env.SEVERITY }}",
+                  "affected_services": "${{ github.event.inputs.affected_services }}",
+                  "incident_commander": "${{ github.event.inputs.incident_commander }}",
+                  "rollback_commit": "${{ github.event.inputs.rollback_commit }}",
+                  "estimated_downtime": "${{ github.event.inputs.estimated_downtime }} minutes",
+                  "github_issue": "${{ github.server_url }}/${{ github.repository }}/issues/${{ needs.create-incident-issue.outputs.issue-number }}",
+                  "workflow_run": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+                }
+              }
+            }'
+
+  notify-slack:
+    runs-on: ubuntu-latest
+    needs: create-incident-issue
+
+    steps:
+      - name: Slack Critical Alert
         description: "Send urgent notifications to team"
         required: true
         type: boolean

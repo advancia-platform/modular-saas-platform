@@ -1,248 +1,321 @@
-# Advancia Pay Ledger - Deployment Guide
+# Deployment Guide 🚀
 
-## Quick Overview
-
-**Production Stack:**
-
--   **Backend + Database**: Render
--   **Frontend**: Vercel
--   **Backups**: Digital Ocean Spaces
--   **CDN/DNS**: Cloudflare
--   **Monitoring**: Sentry
--   **Cost**: $19/month
+This document explains how to deploy the Advancia Pay Ledger to **staging** and **production** environments safely and securely.
 
 ---
 
-## 1. Backend Deployment (Render)
+## 🛠 Prerequisites
 
-### A. Create PostgreSQL Database
+### Development Environment
 
-1. Go to [Render Dashboard](https://dashboard.render.com) → **New** → **PostgreSQL**
-2. Configure:
-   -   **Name**: `advancia-pay-db`
-   -   **Region**: Choose closest to your users
-   -   **Plan**: Starter ($7/mo) or Free (90-day trial)
-3. Copy **Internal Database URL** (starts with `postgresql://`)
+- Node.js 18+ and Python 3.11+ installed
+- PostgreSQL 13+ and Redis 6+ available
+- Git with SSH keys configured
+- Docker and Docker Compose for local development
 
-### B. Create Web Service
+### Cloud Requirements
 
-1. **Render Dashboard** → **New** → **Web Service**
-2. Connect GitHub repo: `your-org/-modular-saas-platform`
-3. Configure:
-   -   **Name**: `advancia-pay-backend`
-   -   **Root Directory**: Leave empty
-   -   **Build Command**: `cd backend && npm install && npx prisma generate && npx prisma migrate deploy`
-   -   **Start Command**: `cd backend && npm start`
-   -   **Branch**: `main`
-4. Add environment variables (see `backend/.env.example`)
-5. Deploy!
-
-**Backend URL**: `https://advancia-pay-backend.onrender.com`
+- GitHub repository with Actions enabled
+- Render account for backend deployment
+- Vercel account for frontend deployment
+- Cloudflare account for CDN and DNS
+- Digital Ocean Spaces for backups (optional)
 
 ---
 
-## 2. Frontend Deployment (Vercel)
+## 🔐 Environment Configuration
 
-### A. Import Project
-
-1. Go to [Vercel Dashboard](https://vercel.com/dashboard) → **Add New** → **Project**
-2. Import from GitHub: `your-org/-modular-saas-platform`
-3. Configure:
-   -   **Framework Preset**: Next.js
-   -   **Root Directory**: `frontend`
-4. Add environment variables:
-
-   ```bash
-   NEXT_PUBLIC_API_URL=https://advancia-pay-backend.onrender.com
-   NEXT_PUBLIC_WS_URL=https://advancia-pay-backend.onrender.com
-   ```
-
-5. Deploy!
-
-**Frontend URL**: `https://advancia-pay.vercel.app`
-
----
-
-## 3. Digital Ocean Spaces (Backups)
-
-### A. Create Space
-
-1. [Digital Ocean Dashboard](https://cloud.digitalocean.com) → **Spaces** → **Create Space**
-2. Configure:
-   -   **Name**: `advancia-backups`
-   -   **Region**: New York 3 (or closest)
-   -   **CDN**: Disabled
-3. **Cost**: $5/month
-
-### B. Generate Access Keys
-
-1. **API** → **Spaces Keys** → **Generate New Key**
-2. Save **Access Key** and **Secret Key**
-
-### C. Add to GitHub Secrets
-
-Repository → **Settings** → **Secrets** → **Actions**:
-
-```
-DO_SPACES_KEY=<your-access-key>
-DO_SPACES_SECRET=<your-secret-key>
-DO_SPACES_ENDPOINT=nyc3.digitaloceanspaces.com
-DO_SPACES_REGION=nyc3
-DO_SPACES_BUCKET=advancia-backups
-DATABASE_URL=<render-postgresql-internal-url>
-```
-
-**Backups run nightly at 2 AM UTC** via `.github/workflows/backup-and-migrate.yml`
-
----
-
-## 4. Cloudflare Configuration
-
-### A. Add Custom Domains
-
-**Vercel**:
-
-1. Vercel → Project Settings → Domains → Add `app.advancia.pay`
-2. Copy CNAME record
-
-**Cloudflare**:
-
-1. DNS → Add CNAME:
-   -   **Name**: `app`
-   -   **Target**: `cname.vercel-dns.com`
-   -   **Proxy**: ✅ Enabled
-
-2. Add CNAME for API (optional):
-   -   **Name**: `api`
-   -   **Target**: `advancia-pay-backend.onrender.com`
-   -   **Proxy**: ✅ Enabled
-
-### B. SSL/TLS Settings
-
-1. **SSL/TLS** → Mode: **Full (strict)**
-2. Enable:
-   -   ✅ Always Use HTTPS
-   -   ✅ Automatic HTTPS Rewrites
-   -   ✅ Minimum TLS 1.2
-
----
-
-## 5. Update Environment Variables
-
-After DNS propagates:
-
-**Render** (backend):
+### Required Secrets (GitHub Repository Settings)
 
 ```bash
-FRONTEND_URL=https://app.advancia.pay
+# Authentication
+JWT_SECRET=your-jwt-secret-key
+JWT_REFRESH_SECRET=your-jwt-refresh-secret
+
+# Database
+DATABASE_URL=postgresql://user:password@host:port/database
+
+# Payment Providers
+STRIPE_SECRET_KEY=sk_live_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+CRYPTOMUS_API_KEY=your-cryptomus-api-key
+CRYPTOMUS_MERCHANT_ID=your-cryptomus-merchant-id
+
+# Email Services
+EMAIL_USER=your-email@gmail.com
+EMAIL_PASSWORD=your-app-password
+SMTP_HOST=smtp.gmail.com
+SMTP_PORT=587
+RESEND_API_KEY=re_...
+SENDGRID_API_KEY=SG...
+
+# Push Notifications
+VAPID_PUBLIC_KEY=your-vapid-public-key
+VAPID_PRIVATE_KEY=your-vapid-private-key
+
+# Monitoring
+SENTRY_DSN=https://...@sentry.io/...
+
+# AWS (for backups)
+AWS_ACCESS_KEY_ID=your-aws-key
+AWS_SECRET_ACCESS_KEY=your-aws-secret
+S3_BACKUPS_BUCKET=your-backup-bucket
 ```
 
-**Vercel** (frontend):
+---
+
+## 🌐 Deployment Environments
+
+### Local Development
 
 ```bash
-NEXT_PUBLIC_API_URL=https://api.advancia.pay
-NEXT_PUBLIC_WS_URL=wss://api.advancia.pay
-```
+# Start local services
+docker-compose up -d
 
-Redeploy both services.
-
----
-
-## 6. Stripe Webhook Configuration
-
-1. [Stripe Dashboard](https://dashboard.stripe.com) → **Developers** → **Webhooks**
-2. Add endpoint: `https://api.advancia.pay/api/payments/webhook`
-3. Events: `payment_intent.succeeded`, `payment_intent.failed`
-4. Copy **Signing Secret** → Update in Render
-
----
-
-## 7. Post-Deployment Checklist
-
--   [ ] Backend health: `curl https://api.advancia.pay/api/health`
--   [ ] Frontend loads: `https://app.advancia.pay`
--   [ ] User registration works
--   [ ] Login functional
--   [ ] WebSocket connects (check browser console)
--   [ ] Stripe test payment succeeds
--   [ ] Sentry receiving errors
--   [ ] Nightly backups running (check GitHub Actions)
--   [ ] Cloudflare SSL active (green padlock)
-
----
-
-## 8. Local Development
-
-```bash
-# Backend (Terminal 1)
+# Backend setup
 cd backend
 npm install
-npx prisma generate
+npx prisma migrate dev
 npm run dev
 
-# Frontend (Terminal 2)
+# Frontend setup (new terminal)
 cd frontend
 npm install
 npm run dev
 ```
 
-Access:
+### Staging Environment
 
--   Frontend: <http://localhost:3000>
--   Backend: <http://localhost:4000/api/health>
--   Database UI: `cd backend && npx prisma studio`
+- **Purpose**: Testing new features before production
+- **Branch**: `develop` or feature branches
+- **URL**: `staging.advancia.com`
+- **Database**: Staging PostgreSQL instance
+- **Coverage**: ≥80% required for deployment
+
+### Production Environment
+
+- **Purpose**: Live environment for end users
+- **Branch**: `main` only
+- **URL**: `app.advancia.com`
+- **Database**: Production PostgreSQL with backups
+- **Coverage**: ≥80% required (raising to 85% in v1.2.0)
 
 ---
 
-## 9. Rollback Procedures
+## 🚀 Deployment Process
 
-### Render Backend
+### Automated CI/CD Pipeline
 
-1. Dashboard → Deploys → Find last stable deployment
-2. Click **⋮** → **Redeploy**
+#### 1. Pre-deployment Checks
 
-### Vercel Frontend
+- ✅ All tests pass with coverage ≥80%
+- ✅ ESLint and Prettier checks pass
+- ✅ Security scans complete (Bandit, Safety, npm audit)
+- ✅ At least one reviewer approval
+- ✅ Branch is up to date with base branch
 
-1. Dashboard → Deployments → Find stable deployment
-2. Click **⋮** → **Promote to Production**
+#### 2. Build Process
 
-### Database Restore
+```yaml
+# Backend build
+npm install --production
+npm run build
+
+# Frontend build
+npm install
+npm run build
+npm run export
+```
+
+#### 3. Database Migrations
 
 ```bash
-# Download from DO Spaces
-s3cmd get s3://advancia-backups/backup-YYYY-MM-DD.sql.gz
+# Run pending migrations
+npx prisma migrate deploy
 
-# Restore
-gunzip -c backup-YYYY-MM-DD.sql.gz | psql $DATABASE_URL
+# Verify migration success
+npx prisma db push --preview-feature
+```
+
+#### 4. Deployment Execution
+
+- **Backend**: Deployed to Render with auto-scaling
+- **Frontend**: Deployed to Vercel with global CDN
+- **Database**: Migrations applied automatically
+- **Monitoring**: Sentry deployment tracking enabled
+
+---
+
+## 📋 Manual Deployment Steps
+
+### Backend (Render)
+
+1. Connect GitHub repository to Render
+2. Configure environment variables from secrets
+3. Set build command: `npm install && npm run build`
+4. Set start command: `npm start`
+5. Enable auto-deploy on `main` branch push
+
+### Frontend (Vercel)
+
+1. Connect GitHub repository to Vercel
+2. Configure environment variables for API endpoints
+3. Set framework preset to Next.js
+4. Configure custom domain and SSL
+5. Enable auto-deploy on `main` branch push
+
+### Database Setup
+
+1. Create PostgreSQL instance on Render
+2. Configure connection pooling
+3. Set up automated backups
+4. Run initial migration: `npx prisma migrate deploy`
+5. Verify connection and create admin user
+
+---
+
+## 🔄 Rollback Strategy
+
+### Automatic Rollback Triggers
+
+- Health check failures for >5 minutes
+- Error rate >1% for >2 minutes
+- Response time >5 seconds for >3 minutes
+
+### Manual Rollback Process
+
+```bash
+# Revert to previous release
+gh release view --json tagName
+gh release download v1.0.0
+
+# Database rollback (if needed)
+npx prisma migrate reset --force
+npx prisma migrate deploy
+
+# Verify rollback success
+curl -f https://api.advancia.com/health
 ```
 
 ---
 
-## 10. Monitoring & Logs
+## 🔍 Post-Deployment Verification
 
-**Render**:
+### Health Checks
 
--   Real-time logs: Dashboard → Logs tab
--   Export: Last 7 days
+```bash
+# Backend health check
+curl -f https://api.advancia.com/health
 
-**Vercel**:
+# Frontend accessibility
+curl -f https://app.advancia.com
 
--   Real-time logs: Dashboard → Functions → View logs
+# Database connectivity
+npx prisma db push --preview-feature
 
-**Sentry**:
+# Socket.IO connection
+node scripts/test-socket-connection.js
+```
 
--   Errors: <https://sentry.io/organizations/your-org/projects/advancia-pay-backend>
+### Monitoring Dashboard
+
+- **Uptime**: 99.9% target
+- **Response Time**: <200ms average
+- **Error Rate**: <0.1%
+- **Database Performance**: Query time <50ms
+- **Socket.IO**: Connection success >99%
 
 ---
 
-## Support
+## 🚨 Emergency Procedures
 
--   **Render**: <https://render.com/docs>
--   **Vercel**: <https://vercel.com/docs>
--   **Cloudflare**: <https://developers.cloudflare.com>
--   **Digital Ocean**: <https://docs.digitalocean.com/products/spaces>
+### Critical Issue Response
+
+1. **Immediate**: Take down affected service if security risk
+2. **Assess**: Determine scope and impact
+3. **Communicate**: Notify users via status page
+4. **Fix**: Apply hotfix or rollback
+5. **Verify**: Confirm resolution
+6. **Post-mortem**: Document incident and improvements
+
+### Security Incident
+
+1. **Isolate**: Disconnect affected systems
+2. **Assess**: Determine data exposure
+3. **Notify**: Follow SECURITY.md reporting process
+4. **Patch**: Apply security fix immediately
+5. **Audit**: Review logs and access patterns
+6. **Report**: Comply with regulatory requirements
 
 ---
 
-**Estimated Setup Time**: 2-3 hours  
-**Monthly Cost**: $19 (production) | $0 (free tier for development)
+## 📊 Deployment Metrics
+
+### Success Criteria
+
+- **Deployment Time**: <10 minutes end-to-end
+- **Zero Downtime**: <30 seconds service interruption
+- **Rollback Time**: <2 minutes if needed
+- **Success Rate**: >99% deployment success
+
+### Performance Targets
+
+- **API Response**: <200ms average
+- **Page Load**: <2 seconds first load
+- **Database Queries**: <50ms average
+- **Socket.IO Latency**: <100ms
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### Database Connection
+
+```bash
+# Check connection string
+echo $DATABASE_URL
+
+# Test connection
+npx prisma db push --preview-feature
+
+# Reset if corrupted
+npx prisma migrate reset --force
+```
+
+#### Environment Variables
+
+```bash
+# Verify all required vars
+node -e "console.log(process.env.JWT_SECRET ? 'JWT_SECRET: OK' : 'JWT_SECRET: MISSING')"
+
+# Check Render dashboard for missing vars
+# Verify GitHub Secrets are properly set
+```
+
+#### Build Failures
+
+```bash
+# Clear cache and rebuild
+rm -rf node_modules/.cache
+npm ci
+npm run build
+
+# Check for TypeScript errors
+npx tsc --noEmit
+```
+
+---
+
+## 📚 Additional Resources
+
+- **Render Documentation**: <https://render.com/docs>
+- **Vercel Documentation**: <https://vercel.com/docs>
+- **Prisma Deployment**: <https://www.prisma.io/docs/guides/deployment>
+- **GitHub Actions**: <https://docs.github.com/en/actions>
+- **Internal Runbooks**: See `docs/deployment/` folder
+
+---
+
+_This deployment guide is reviewed and updated with each major release._

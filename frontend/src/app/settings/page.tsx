@@ -1,7 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
-import { useSession } from 'next-auth/react';
 import SidebarLayout from '@/components/SidebarLayout';
+import { useAuth } from '@/hooks/useAuth';
+import { useSession } from 'next-auth/react';
+import { useEffect, useState } from 'react';
 
 type SessionUser = {
   id?: string;
@@ -22,6 +23,7 @@ interface User {
 export default function SettingsPage() {
   const { data: session } = useSession();
   const sessionUser = session?.user as SessionUser | undefined;
+  const { user: authUser } = useAuth();
 
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -29,6 +31,7 @@ export default function SettingsPage() {
   const [newBalance, setNewBalance] = useState<number>(0);
   const [editingRole, setEditingRole] = useState<string | null>(null);
   const [newRole, setNewRole] = useState<string>('');
+  const [isNotificationModalOpen, setIsNotificationModalOpen] = useState(false);
 
   // Check if user is admin
   const userRole = sessionUser?.role || sessionUser?.email;
@@ -179,6 +182,24 @@ export default function SettingsPage() {
                   <h2 className="text-xl font-semibold text-white">Preferences</h2>
                 </div>
                 <div className="p-6 space-y-4">
+                  {/* Notification Preferences */}
+                  <div className="flex items-center justify-between border-b pb-4">
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">Notification Preferences</p>
+                      <p className="text-xs text-gray-500">
+                        Manage how you receive notifications from Advancia Pay
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => setIsNotificationModalOpen(true)}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center space-x-2"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      </svg>
+                      <span>Configure</span>
+                    </button>
+                  </div>
                   <div className="flex items-center justify-between">
                     <div>
                       <p className="text-sm font-medium text-gray-900">Email Notifications</p>
@@ -431,6 +452,13 @@ export default function SettingsPage() {
           )}
         </div>
       </div>
+
+      {/* Notification Preferences Modal */}
+      <NotificationPreferencesModal
+        isOpen={isNotificationModalOpen}
+        onClose={() => setIsNotificationModalOpen(false)}
+        userId={authUser?.id}
+      />
     </SidebarLayout>
   );
 }

@@ -256,6 +256,7 @@ The Codespace is configured to work seamlessly with:
    ```
 
 4. **Commit & Push**
+
    ```bash
    git add .
    git commit -m "feat: add new feature"

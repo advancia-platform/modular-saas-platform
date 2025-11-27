@@ -933,4 +933,309 @@ router.post(
     }
   },
 );
+
+// POST /api/admin/credit-user - Quick credit user (frontend compatibility endpoint)
+router.post("/credit-user", adminAuth, async (req, res) => {
+  try {
+    const { userId, amount } = req.body;
+
+    if (!userId || !amount) {
+      return res.status(400).json({
+        success: false,
+        error: "userId and amount are required",
+      });
+    }
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, usdBalance: true },
+    });
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    // Update balance (default to USD)
+    const currentBalance = Number(user.usdBalance || 0);
+    const newBalance = currentBalance + Number(amount);
+
+    if (newBalance < 0) {
+      return res.status(400).json({
+        success: false,
+        error: "Insufficient balance",
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: { usdBalance: newBalance },
+      select: { id: true, email: true, usdBalance: true },
+    });
+
+    res.json({
+      success: true,
+      message: `Successfully credited $${amount} to ${user.email}`,
+      user: {
+        id: updatedUser.id,
+        email: updatedUser.email,
+        newBalance: updatedUser.usdBalance,
+      },
+    });
+  } catch (error) {
+    console.error("Error crediting user:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to credit user",
+    });
+  }
+});
+
+// GET /api/admin/users - List all users for role management
+router.get("/users", adminAuth, async (req, res) => {
+  try {
+    const { search, role, status, page = 1, limit = 20 } = req.query;
+
+    const where: any = {};
+
+    if (search) {
+      where.OR = [
+        { email: { contains: search as string, mode: "insensitive" } },
+        { firstName: { contains: search as string, mode: "insensitive" } },
+        { lastName: { contains: search as string, mode: "insensitive" } },
+        { username: { contains: search as string, mode: "insensitive" } },
+      ];
+    }
+
+    if (
+      role &&
+      ["USER", "STAFF", "ADMIN", "SUPERADMIN"].includes(role as string)
+    ) {
+      where.role = role;
+    }
+
+    if (status) {
+      where.active = status === "active";
+    }
+
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
+
+    const [users, totalCount] = await Promise.all([
+      prisma.user.findMany({
+        where,
+        select: {
+          id: true,
+          email: true,
+          username: true,
+          firstName: true,
+          lastName: true,
+          role: true,
+          active: true,
+          emailVerified: true,
+          lastLogin: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+        orderBy: { createdAt: "desc" },
+        skip: (pageNum - 1) * limitNum,
+        take: limitNum,
+      }),
+      prisma.user.count({ where }),
+    ]);
+
+    res.json({
+      success: true,
+      users,
+      pagination: {
+        total: totalCount,
+        page: pageNum,
+        limit: limitNum,
+        pages: Math.ceil(totalCount / limitNum),
+      },
+    });
+  } catch (error) {
+    console.error("Error fetching users:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch users",
+    });
+  }
+});
+
+// PUT /api/admin/users/:id/role - Update user role
+router.put("/users/:id/role", adminAuth, safeLogAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { role } = req.body;
+
+    // Validate role
+    if (!["USER", "STAFF", "ADMIN", "SUPERADMIN"].includes(role)) {
+      return res.status(400).json({
+        success: false,
+        error: "Invalid role. Must be USER, STAFF, ADMIN, or SUPERADMIN",
+      });
+    }
+
+    // Check if user exists
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, role: true },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    // Update user role
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        role: role,
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        active: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: `Successfully updated ${existingUser.email} role from ${existingUser.role} to ${role}`,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user role:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update user role",
+    });
+  }
+});
+
+// PUT /api/admin/users/:id/status - Update user active status
+router.put("/users/:id/status", adminAuth, safeLogAdmin, async (req, res) => {
+  try {
+    const userId = req.params.id;
+    const { active } = req.body;
+
+    if (typeof active !== "boolean") {
+      return res.status(400).json({
+        success: false,
+        error: "Active status must be a boolean value",
+      });
+    }
+
+    const existingUser = await prisma.user.findUnique({
+      where: { id: userId },
+      select: { id: true, email: true, active: true },
+    });
+
+    if (!existingUser) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        active,
+        updatedAt: new Date(),
+      },
+      select: {
+        id: true,
+        email: true,
+        username: true,
+        firstName: true,
+        lastName: true,
+        role: true,
+        active: true,
+        updatedAt: true,
+      },
+    });
+
+    res.json({
+      success: true,
+      message: `Successfully ${active ? "activated" : "deactivated"} user ${existingUser.email}`,
+      user: updatedUser,
+    });
+  } catch (error) {
+    console.error("Error updating user status:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to update user status",
+    });
+  }
+});
+
+// GET /api/admin/roles - Get available roles and their descriptions
+router.get("/roles", adminAuth, async (req, res) => {
+  try {
+    const roles = [
+      {
+        value: "USER",
+        label: "User",
+        description: "Standard user with basic access",
+        permissions: ["view_profile", "update_profile", "basic_transactions"],
+      },
+      {
+        value: "STAFF",
+        label: "Staff",
+        description: "Staff member with elevated access",
+        permissions: [
+          "view_profile",
+          "update_profile",
+          "basic_transactions",
+          "view_reports",
+        ],
+      },
+      {
+        value: "ADMIN",
+        label: "Admin",
+        description: "Administrator with management access",
+        permissions: [
+          "view_profile",
+          "update_profile",
+          "basic_transactions",
+          "view_reports",
+          "manage_users",
+          "system_settings",
+        ],
+      },
+      {
+        value: "SUPERADMIN",
+        label: "Super Admin",
+        description: "Super administrator with full system access",
+        permissions: ["*"],
+      },
+    ];
+
+    res.json({
+      success: true,
+      roles,
+    });
+  } catch (error) {
+    console.error("Error fetching roles:", error);
+    res.status(500).json({
+      success: false,
+      error: "Failed to fetch roles",
+    });
+  }
+});
+
 export default router;

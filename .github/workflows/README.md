@@ -164,7 +164,7 @@ npx tsc --noEmit
 
 ## 🎯 Best Practices
 
-### ✅ DO:
+### ✅ DO
 
 - Keep `package-lock.json` committed and synced
 - Run `npm ci` (not `npm install`) in CI
@@ -173,7 +173,7 @@ npx tsc --noEmit
 - Use `continue-on-error: true` for non-critical steps
 - Upload build artifacts for debugging
 
-### ❌ DON'T:
+### ❌ DON'T
 
 - Don't commit `.env` files (use GitHub Secrets)
 - Don't use `npm install` in CI (use `npm ci`)

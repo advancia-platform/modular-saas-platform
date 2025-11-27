@@ -10,15 +10,13 @@ import { getTestJWTSecret } from "./testEnv";
 export async function createTestAdmin() {
   const hashedPassword = await bcrypt.hash("Admin123!@#", 10);
 
-  return await prisma.user.upsert({
+  // Delete if exists first
+  await prisma.user.deleteMany({
     where: { email: adminUserFixture.email },
-    update: {
-      role: "ADMIN",
-      approved: true,
-      emailVerified: true,
-      active: true,
-    },
-    create: {
+  });
+
+  return await prisma.user.create({
+    data: {
       id: adminUserFixture.id,
       email: adminUserFixture.email,
       username: adminUserFixture.username,

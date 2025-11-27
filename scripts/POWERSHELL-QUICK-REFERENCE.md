@@ -192,9 +192,9 @@ When something breaks:
 
 1. Read the error message completely
 2. Check the relevant logs:
-   -   Backend: npm run dev output
-   -   Database: docker compose logs db
-   -   Frontend: browser console (F12)
+   - Backend: npm run dev output
+   - Database: docker compose logs db
+   - Frontend: browser console (F12)
 3. Search error in docs (Google the exact error)
 4. Try the fix in TROUBLESHOOTING section
 5. If still stuck, share the full error message

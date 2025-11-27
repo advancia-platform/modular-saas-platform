@@ -33,9 +33,9 @@ stripe login
 
 This will:
 
--   Open your browser
--   Ask you to authorize the CLI
--   Return to terminal when complete
+- Open your browser
+- Ask you to authorize the CLI
+- Return to terminal when complete
 
 ### 3. Start Webhook Forwarding
 
@@ -90,9 +90,9 @@ This will create a checkout session. To complete the payment:
 1. Copy the payment URL from the test output
 2. Open it in your browser
 3. Use Stripe test card: `4242 4242 4242 4242`
-   -   Any future expiry date
-   -   Any 3-digit CVC
-   -   Any ZIP code
+   - Any future expiry date
+   - Any 3-digit CVC
+   - Any ZIP code
 4. Complete the payment
 
 **Watch the Stripe CLI terminal** - you should see:
@@ -124,32 +124,32 @@ For production, you'll need to:
 2. Click "Add endpoint"
 3. Enter your production URL: `https://your-domain.com/api/payments/webhook`
 4. Select events to listen for:
-   -   `checkout.session.completed`
-   -   `payment_intent.succeeded`
-   -   `payment_intent.payment_failed`
-   -   `charge.refunded`
+   - `checkout.session.completed`
+   - `payment_intent.succeeded`
+   - `payment_intent.payment_failed`
+   - `charge.refunded`
 5. Copy the "Signing secret" and add it to your production environment variables
 
 ## Troubleshooting
 
 ### Webhook not receiving events
 
--   ✅ Check Stripe CLI is running (`stripe listen...`)
--   ✅ Check backend is running on port 4000
--   ✅ Check `STRIPE_WEBHOOK_SECRET` is in `.env`
--   ✅ Restart backend after adding secret
+- ✅ Check Stripe CLI is running (`stripe listen...`)
+- ✅ Check backend is running on port 4000
+- ✅ Check `STRIPE_WEBHOOK_SECRET` is in `.env`
+- ✅ Restart backend after adding secret
 
 ### "Invalid signature" errors
 
--   The webhook secret in `.env` doesn't match the CLI output
--   Make sure you copied the entire `whsec_...` string
--   Restart the backend after updating `.env`
+- The webhook secret in `.env` doesn't match the CLI output
+- Make sure you copied the entire `whsec_...` string
+- Restart the backend after updating `.env`
 
 ### Events not processing
 
--   Check backend console logs for errors
--   Verify the webhook handler in `routes/payments.ts`
--   Check database connectivity
+- Check backend console logs for errors
+- Verify the webhook handler in `routes/payments.ts`
+- Check database connectivity
 
 ## Current Webhook Events Handled
 
@@ -167,15 +167,15 @@ When a `checkout.session.completed` event is received:
 
 ## Testing Checklist
 
--   [ ] Stripe CLI installed and authenticated
--   [ ] Webhook forwarding running
--   [ ] Webhook secret added to `.env`
--   [ ] Backend restarted with new secret
--   [ ] Test payment completed successfully
--   [ ] Webhook event logged in Stripe CLI
--   [ ] User balance updated in database
--   [ ] Transaction record created
--   [ ] Socket event emitted (check browser console)
+- [ ] Stripe CLI installed and authenticated
+- [ ] Webhook forwarding running
+- [ ] Webhook secret added to `.env`
+- [ ] Backend restarted with new secret
+- [ ] Test payment completed successfully
+- [ ] Webhook event logged in Stripe CLI
+- [ ] User balance updated in database
+- [ ] Transaction record created
+- [ ] Socket event emitted (check browser console)
 
 ## Stripe Test Cards
 

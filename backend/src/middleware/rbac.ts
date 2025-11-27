@@ -3,19 +3,18 @@
  * Enforces strict authorization for admin operations
  */
 
-import { NextFunction, Request, Response } from 'express';
-import { captureError } from '../utils/sentry';
+import { NextFunction, Request, Response } from "express";
+import { JWTPayload } from "../utils/jwt";
+import { captureError } from "../utils/sentry";
 
 /**
  * Extended request interface with user info
  */
 export interface AuthenticatedRequest extends Request {
-  user?: {
-    id: string;
-    email: string;
-    role: 'USER' | 'STAFF' | 'ADMIN' | 'SUPERADMIN';
-    username?: string;
+  user?: JWTPayload & {
+    permissions?: string[]; // User-specific permissions
   };
+  matchedPermissions?: string[]; // Permissions that matched for this request
 }
 
 /**
@@ -28,8 +27,8 @@ export function requireAuth(
 ): void {
   if (!req.user) {
     res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Authentication required',
+      error: "Unauthorized",
+      message: "Authentication required",
     });
     return;
   }
@@ -46,18 +45,18 @@ export function requireAdmin(
 ): void {
   if (!req.user) {
     res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Authentication required',
+      error: "Unauthorized",
+      message: "Authentication required",
     });
     return;
   }
 
-  const allowedRoles = ['ADMIN', 'SUPERADMIN'];
+  const allowedRoles = ["ADMIN", "SUPERADMIN"];
   if (!allowedRoles.includes(req.user.role)) {
     // Log unauthorized attempt
-    captureError(new Error('Unauthorized superadmin access attempt'), {
-      level: 'warning',
-      tags: { type: 'security', event: 'unauthorized_superadmin_access' },
+    captureError(new Error("Unauthorized superadmin access attempt"), {
+      level: "warning",
+      tags: { type: "security", event: "unauthorized_superadmin_access" },
       extra: {
         userId: req.user.id,
         email: req.user.email,
@@ -69,9 +68,9 @@ export function requireAdmin(
     });
 
     res.status(403).json({
-      error: 'Forbidden',
-      message: 'Admin privileges required',
-      requiredRole: 'ADMIN or SUPERADMIN',
+      error: "Forbidden",
+      message: "Admin privileges required",
+      requiredRole: "ADMIN or SUPERADMIN",
       userRole: req.user.role,
     });
     return;
@@ -90,17 +89,17 @@ export function requireSuperAdmin(
 ): void {
   if (!req.user) {
     res.status(401).json({
-      error: 'Unauthorized',
-      message: 'Authentication required',
+      error: "Unauthorized",
+      message: "Authentication required",
     });
     return;
   }
 
-  if (req.user.role !== 'SUPERADMIN') {
+  if (req.user.role !== "SUPERADMIN") {
     // Log unauthorized attempt
-    captureError(new Error('Unauthorized superadmin access attempt'), {
-      level: 'warning',
-      tags: { type: 'security', event: 'unauthorized_superadmin_access' },
+    captureError(new Error("Unauthorized superadmin access attempt"), {
+      level: "warning",
+      tags: { type: "security", event: "unauthorized_superadmin_access" },
       extra: {
         userId: req.user.id,
         email: req.user.email,
@@ -112,9 +111,9 @@ export function requireSuperAdmin(
     });
 
     res.status(403).json({
-      error: 'Forbidden',
-      message: 'SuperAdmin privileges required for this operation',
-      requiredRole: 'SUPERADMIN',
+      error: "Forbidden",
+      message: "SuperAdmin privileges required for this operation",
+      requiredRole: "SUPERADMIN",
       userRole: req.user.role,
     });
     return;
@@ -128,7 +127,7 @@ export function requireSuperAdmin(
  */
 export function hasRole(
   req: AuthenticatedRequest,
-  role: 'USER' | 'STAFF' | 'ADMIN' | 'SUPERADMIN',
+  role: "USER" | "STAFF" | "ADMIN" | "SUPERADMIN",
 ): boolean {
   return req.user?.role === role;
 }
@@ -138,7 +137,7 @@ export function hasRole(
  */
 export function hasMinRole(
   req: AuthenticatedRequest,
-  minRole: 'USER' | 'STAFF' | 'ADMIN' | 'SUPERADMIN',
+  minRole: "USER" | "STAFF" | "ADMIN" | "SUPERADMIN",
 ): boolean {
   if (!req.user) return false;
 
@@ -162,12 +161,12 @@ export function requireOwnerOrAdmin(
   resourceUserId: string,
 ): void {
   if (!req.user) {
-    res.status(401).json({ error: 'Unauthorized' });
+    res.status(401).json({ error: "Unauthorized" });
     return;
   }
 
   // Admins and superadmins can access any resource
-  if (['ADMIN', 'SUPERADMIN'].includes(req.user.role)) {
+  if (["ADMIN", "SUPERADMIN"].includes(req.user.role)) {
     next();
     return;
   }
@@ -175,8 +174,8 @@ export function requireOwnerOrAdmin(
   // Regular users can only access their own resources
   if (req.user.id !== resourceUserId) {
     res.status(403).json({
-      error: 'Forbidden',
-      message: 'You can only access your own resources',
+      error: "Forbidden",
+      message: "You can only access your own resources",
     });
     return;
   }

@@ -6,8 +6,8 @@ Production-ready Nginx configuration for DigitalOcean Droplet deployment.
 
 ## 📁 Files in This Directory
 
--   **`advancia.conf`** - Complete Nginx configuration file
--   **Setup script location**: `../scripts/setup-nginx.sh` - Automated setup script
+- **`advancia.conf`** - Complete Nginx configuration file
+- **Setup script location**: `../scripts/setup-nginx.sh` - Automated setup script
 
 ---
 
@@ -77,9 +77,9 @@ sudo certbot --nginx -d yourdomain.com -d www.yourdomain.com
 
 **Certbot will automatically:**
 
--   ✅ Obtain SSL certificates from Let's Encrypt
--   ✅ Update your Nginx configuration
--   ✅ Set up automatic renewal (via cron job)
+- ✅ Obtain SSL certificates from Let's Encrypt
+- ✅ Update your Nginx configuration
+- ✅ Set up automatic renewal (via cron job)
 
 **Test SSL renewal:**
 
@@ -126,36 +126,36 @@ curl https://yourdomain.com/socket.io/
 
 **HTTP Server (Port 80):**
 
--   Redirects all HTTP traffic to HTTPS for security
+- Redirects all HTTP traffic to HTTPS for security
 
 **HTTPS Server (Port 443):**
 
--   **`/api` routes** → Backend API (port 4000)
--   **`/socket.io` routes** → WebSocket support (port 4000)
--   **`/` routes** → Frontend Next.js app (port 3000)
--   **Static assets** → Cached for optimal performance
+- **`/api` routes** → Backend API (port 4000)
+- **`/socket.io` routes** → WebSocket support (port 4000)
+- **`/` routes** → Frontend Next.js app (port 3000)
+- **Static assets** → Cached for optimal performance
 
 ### Security Features
 
 ✅ **SSL/TLS Configuration:**
 
--   TLS 1.2 and TLS 1.3 only (secure protocols)
--   Strong cipher suites
--   HTTP Strict Transport Security (HSTS) enabled
+- TLS 1.2 and TLS 1.3 only (secure protocols)
+- Strong cipher suites
+- HTTP Strict Transport Security (HSTS) enabled
 
 ✅ **Security Headers:**
 
--   X-Frame-Options (clickjacking protection)
--   X-Content-Type-Options (MIME sniffing protection)
--   X-XSS-Protection (cross-site scripting protection)
--   Referrer-Policy (referrer information control)
+- X-Frame-Options (clickjacking protection)
+- X-Content-Type-Options (MIME sniffing protection)
+- X-XSS-Protection (cross-site scripting protection)
+- Referrer-Policy (referrer information control)
 
 ✅ **Performance Optimization:**
 
--   HTTP/2 enabled
--   Static asset caching (365 days for immutable assets)
--   Image optimization caching (7 days)
--   Gzip compression (inherited from main Nginx config)
+- HTTP/2 enabled
+- Static asset caching (365 days for immutable assets)
+- Image optimization caching (7 days)
+- Gzip compression (inherited from main Nginx config)
 
 ---
 
@@ -295,19 +295,19 @@ curl http://localhost:8080/nginx_status
 
 ## 📚 Additional Resources
 
--   [Nginx Official Documentation](https://nginx.org/en/docs/)
--   [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
--   [DigitalOcean Nginx Tutorials](https://www.digitalocean.com/community/tags/nginx)
--   [Nginx SSL Configuration Generator](https://ssl-config.mozilla.org/)
+- [Nginx Official Documentation](https://nginx.org/en/docs/)
+- [Let's Encrypt Documentation](https://letsencrypt.org/docs/)
+- [DigitalOcean Nginx Tutorials](https://www.digitalocean.com/community/tags/nginx)
+- [Nginx SSL Configuration Generator](https://ssl-config.mozilla.org/)
 
 ---
 
 ## 🔗 Related Documentation
 
--   [DigitalOcean Droplet Deployment Guide](../DIGITALOCEAN_DROPLET_DEPLOYMENT.md)
--   [Nginx Configuration Reference](../NGINX_CONFIG_REFERENCE.md)
--   [One Hour Migration Guide](../ONE_HOUR_MIGRATION_GUIDE.md)
--   [Environment Setup Guide](../ENV_SETUP_GUIDE.md)
+- [DigitalOcean Droplet Deployment Guide](../DIGITALOCEAN_DROPLET_DEPLOYMENT.md)
+- [Nginx Configuration Reference](../NGINX_CONFIG_REFERENCE.md)
+- [One Hour Migration Guide](../ONE_HOUR_MIGRATION_GUIDE.md)
+- [Environment Setup Guide](../ENV_SETUP_GUIDE.md)
 
 ---
 

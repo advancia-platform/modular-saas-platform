@@ -215,7 +215,7 @@ router.post("/admin/settings", authenticateToken, requireAdmin, (req, res) => {
 
 ## Testing with Postman/curl
 
-### 1. Register a new user:
+### 1. Register a new user
 
 ```bash
 curl -X POST http://localhost:4000/api/auth/v2/signup \
@@ -228,7 +228,7 @@ curl -X POST http://localhost:4000/api/auth/v2/signup \
   }'
 ```
 
-### 2. Login:
+### 2. Login
 
 ```bash
 curl -X POST http://localhost:4000/api/auth/v2/login \
@@ -239,7 +239,7 @@ curl -X POST http://localhost:4000/api/auth/v2/login \
   }'
 ```
 
-### 3. Access protected route:
+### 3. Access protected route
 
 ```bash
 # Save the accessToken from login response

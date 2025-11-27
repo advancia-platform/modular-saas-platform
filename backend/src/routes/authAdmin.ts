@@ -3,6 +3,15 @@ import jwt from 'jsonwebtoken';
 import { sendAlert } from '../utils/mailer';
 import { logAdminLogin } from '../utils/logger';
 import prisma from '../prismaClient';
+import {
+  trackLoginAttempt,
+  authRateLimiter,
+  sanitizeError,
+  sanitizeObject,
+  logAdminAction,
+  trackIPRequests,
+} from '../middleware/securityHardening';
+import { logger } from '../logger';
 
 const router = express.Router();
 
@@ -50,76 +59,177 @@ export function registerSession(token: string, user: any) {
   if (broadcastSessionsFn) broadcastSessionsFn();
 }
 
-// POST /api/auth/admin/login - Step 1: Verify credentials and send OTP
-router.post('/login', async (req, res) => {
-  const { email, password, phone } = req.body;
+// POST /api/auth/admin/login - Step 1: Verify credentials and send OTP (HARDENED)
+router.post('/login', authRateLimiter, async (req, res) => {
+  try {
+    const { email, password, phone } = req.body;
+    const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
 
-  if (email !== ADMIN_EMAIL || password !== ADMIN_PASS) {
-    // Log failed password attempt
-    await logAdminLogin(req, email, 'FAILED_PASSWORD', phone);
+    // Check IP-based rate limiting (100 req/min)
+    const ipCheck = await trackIPRequests(ipAddress);
+    if (!ipCheck.allowed) {
+      logger.warn(`IP blocked due to excessive requests: ${ipAddress}`);
+      return res.status(429).json({
+        success: false,
+        error: `Too many requests. Please try again in ${ipCheck.remainingMinutes} minutes.`,
+        code: 'IP_RATE_LIMIT',
+      });
+    }
 
-    // Send alert on failed login
-    await sendAlert(
-      '🚫 Advancia: Failed Admin Login',
-      `Email: ${email}\nTime: ${new Date().toISOString()}\nIP: ${
-        req.headers['x-forwarded-for'] || req.socket.remoteAddress
-      }`,
-    );
-    return res.status(401).json({ error: 'Invalid credentials' });
+    // Check account lockout for admin email
+    const lockoutCheck = await trackLoginAttempt(email, false);
+    if (!lockoutCheck.allowed) {
+      logger.warn(`Admin account locked: ${email} from ${ipAddress}`);
+      await sendAlert(
+        '🚨 Advancia: Admin Account Locked',
+        `Email: ${email}\nIP: ${ipAddress}\nTime: ${new Date().toISOString()}\nReason: Multiple failed login attempts`,
+      );
+      return res.status(429).json({
+        success: false,
+        error: `Account temporarily locked. Try again in ${lockoutCheck.remainingMinutes} minutes.`,
+        code: 'ACCOUNT_LOCKED',
+      });
+    }
+
+    // Verify credentials
+    if (email !== ADMIN_EMAIL || password !== ADMIN_PASS) {
+      // Track failed attempt
+      await trackLoginAttempt(email, false);
+      await logAdminLogin(req, email, 'FAILED_PASSWORD', phone);
+
+      // Create audit log
+      await prisma.auditLog.create({
+        data: {
+          userId: null,
+          action: 'ADMIN_LOGIN_FAILED',
+          details: `Failed admin login: invalid credentials`,
+          ipAddress,
+          userAgent: req.get('user-agent') || 'unknown',
+        },
+      });
+
+      // Send alert on failed login
+      await sendAlert(
+        '🚫 Advancia: Failed Admin Login',
+        `Email: ${email}\nTime: ${new Date().toISOString()}\nIP: ${ipAddress}`,
+      );
+
+      logger.warn(`Failed admin login: ${email} from ${ipAddress}`);
+      return res.status(401).json({
+        success: false,
+        error: 'Invalid credentials',
+      });
+    }
+
+    // Generate and send OTP (console-based, no SMS)
+    const code = generateOTP();
+    const expires = Date.now() + 5 * 60 * 1000; // 5 minutes
+    otpStore[email] = { code, expires };
+
+    // Log OTP to console (no Twilio SMS)
+    logger.info(`🔐 [ADMIN OTP] Email: ${email} | Code: ${code} | Expires in 5 minutes`);
+    await logAdminLogin(req, email, 'OTP_SENT', phone || 'console');
+
+    // Create audit log
+    await prisma.auditLog.create({
+      data: {
+        userId: null,
+        action: 'ADMIN_OTP_SENT',
+        details: `Admin OTP sent to ${email}`,
+        ipAddress,
+        userAgent: req.get('user-agent') || 'unknown',
+      },
+    });
+
+    res.json({
+      success: true,
+      step: 'verify_otp',
+      message: 'OTP generated (check server console)',
+      ...(process.env.NODE_ENV === 'development' && { code }),
+    });
+  } catch (error: any) {
+    logger.error('Admin login error:', error);
+    res.status(500).json(sanitizeError(error));
   }
-
-  // Generate and send OTP (console-based, no SMS)
-  const code = generateOTP();
-  const expires = Date.now() + 5 * 60 * 1000; // 5 minutes
-  otpStore[email] = { code, expires };
-
-  // Log OTP to console (no Twilio SMS)
-  console.log(
-    `🔐 [ADMIN OTP] Email: ${email} | Code: ${code} | Expires in 5 minutes`,
-  );
-  await logAdminLogin(req, email, 'OTP_SENT', phone || 'console');
-
-  res.json({
-    step: 'verify_otp',
-    message: 'OTP generated (check server console)',
-    ...(process.env.NODE_ENV === 'development' && { code }),
-  });
 });
 
-// POST /api/auth/admin/verify-otp - Step 2: Verify OTP and issue JWT
-router.post('/verify-otp', async (req, res) => {
-  const { email, code } = req.body;
+// POST /api/auth/admin/verify-otp - Step 2: Verify OTP and issue JWT (HARDENED)
+router.post('/verify-otp', authRateLimiter, async (req, res) => {
+  try {
+    const { email, code } = req.body;
+    const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown';
 
-  const entry = otpStore[email];
-  if (!entry) {
-    await logAdminLogin(req, email, 'FAILED_OTP');
-    return res.status(400).json({ error: 'No OTP requested' });
+    const entry = otpStore[email];
+    if (!entry) {
+      await logAdminLogin(req, email, 'FAILED_OTP');
+      await prisma.auditLog.create({
+        data: {
+          userId: null,
+          action: 'ADMIN_OTP_FAILED',
+          details: 'OTP verification failed: no OTP requested',
+          ipAddress,
+          userAgent: req.get('user-agent') || 'unknown',
+        },
+      });
+      logger.warn(`Admin OTP verification failed: no OTP for ${email}`);
+      return res.status(400).json({
+        success: false,
+        error: 'No OTP requested',
+      });
+    }
+
+    if (Date.now() > entry.expires) {
+      delete otpStore[email];
+      await prisma.auditLog.create({
+        data: {
+          userId: null,
+          action: 'ADMIN_OTP_EXPIRED',
+          details: `OTP expired for ${email}`,
+          ipAddress,
+          userAgent: req.get('user-agent') || 'unknown',
+        },
+      });
+      logger.warn(`Admin OTP expired: ${email}`);
+      await logAdminLogin(req, email, 'FAILED_OTP');
+      return res.status(400).json({
+        success: false,
+        error: 'OTP expired',
+      });
   }
 
-  if (Date.now() > entry.expires) {
+    if (entry.code !== code) {
+      await trackLoginAttempt(email, false);
+      await logAdminLogin(req, email, 'FAILED_OTP');
+      await prisma.auditLog.create({
+        data: {
+          userId: null,
+          action: 'ADMIN_OTP_INVALID',
+          details: `Invalid OTP code for ${email}`,
+          ipAddress,
+          userAgent: req.get('user-agent') || 'unknown',
+        },
+      });
+      logger.warn(`Invalid admin OTP: ${email}`);
+      return res.status(400).json({
+        success: false,
+        error: 'Invalid code',
+      });
+    }
+
+    // OTP verified successfully - reset lockout
+    await trackLoginAttempt(email, true);
     delete otpStore[email];
-    await logAdminLogin(req, email, 'FAILED_OTP');
-    return res.status(400).json({ error: 'OTP expired' });
-  }
 
-  if (entry.code !== code) {
-    await logAdminLogin(req, email, 'FAILED_OTP');
-    return res.status(400).json({ error: 'Invalid code' });
-  }
-
-  // OTP verified successfully
-  delete otpStore[email];
-
-  // Locate an ADMIN user so downstream auth middleware can validate userId
-  let adminUser = await prisma.user.findFirst({
-    where: { role: 'ADMIN', active: true },
-    select: { id: true, email: true, role: true },
-  });
-  if (!adminUser) {
-    const fallback = await prisma.user.findUnique({
-      where: { email: ADMIN_EMAIL },
-      select: { id: true, email: true, role: true, active: true },
+    // Locate an ADMIN user so downstream auth middleware can validate userId
+    let adminUser = await prisma.user.findFirst({
+      where: { role: 'ADMIN', active: true },
+      select: { id: true, email: true, role: true },
     });
+    if (!adminUser) {
+      const fallback = await prisma.user.findUnique({
+        where: { email: ADMIN_EMAIL },
+        select: { id: true, email: true, role: true, active: true },
+      });
     if (fallback && fallback.active !== false) {
       adminUser = {
         id: fallback.id,
@@ -136,28 +246,50 @@ router.post('/verify-otp', async (req, res) => {
     });
   }
 
-  const payload = {
-    userId: adminUser.id,
-    email: adminUser.email,
-    role: 'ADMIN',
-  };
-  const { accessToken, refreshToken } = generateTokens(payload);
+    const payload = {
+      userId: adminUser.id,
+      email: adminUser.email,
+      role: 'ADMIN',
+      iss: process.env.JWT_ISSUER || 'advancia-saas',
+      aud: process.env.JWT_AUDIENCE || 'advancia-api',
+    };
+    const { accessToken, refreshToken } = generateTokens(payload);
 
-  // Register session
-  registerSession(accessToken, payload);
+    // Register session
+    registerSession(accessToken, payload);
 
-  // Log successful login
-  await logAdminLogin(req, email, 'SUCCESS');
+    // Log successful login with audit
+    await logAdminLogin(req, email, 'SUCCESS');
+    await logAdminAction(
+      adminUser.id,
+      'ADMIN_LOGIN_SUCCESS',
+      `Admin ${email} logged in successfully`,
+      req,
+      null
+    );
 
-  // Send success alert
-  await sendAlert(
-    '🔐 Advancia: Admin Login',
-    `Admin logged in: ${email}\nTime: ${new Date().toISOString()}\nIP: ${
-      req.headers['x-forwarded-for'] || req.socket.remoteAddress
-    }`,
-  );
+    logger.info(`Admin login successful: ${email} (${adminUser.id}) from ${ipAddress}`);
 
-  res.json({ accessToken, refreshToken });
+    // Send success alert
+    await sendAlert(
+      '🔐 Advancia: Admin Login',
+      `Admin logged in: ${email}\nTime: ${new Date().toISOString()}\nIP: ${ipAddress}`,
+    );
+
+    res.json({
+      success: true,
+      accessToken,
+      refreshToken,
+      user: sanitizeObject({
+        id: adminUser.id,
+        email: adminUser.email,
+        role: adminUser.role,
+      }),
+    });
+  } catch (error: any) {
+    logger.error('Admin OTP verification error:', error);
+    res.status(500).json(sanitizeError(error));
+  }
 });
 
 // DEV ONLY: Peek current OTP for a given email to facilitate automated tests
@@ -179,37 +311,93 @@ router.get('/dev/get-otp', (req, res) => {
   }
 });
 
-// GET /api/auth/admin/logs - Get admin login history
+// GET /api/auth/admin/logs - Get admin login history (HARDENED)
 router.get('/logs', async (req, res) => {
   try {
-    const logs = await prisma.admin_login_logs.findMany({
-      orderBy: { createdAt: 'desc' },
-      take: 100, // Last 100 login attempts
-    });
+    // Get both old and new audit logs
+    const [oldLogs, auditLogs] = await Promise.all([
+      prisma.admin_login_logs.findMany({
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+      prisma.auditLog.findMany({
+        where: {
+          action: {
+            in: ['ADMIN_LOGIN_FAILED', 'ADMIN_OTP_SENT', 'ADMIN_OTP_FAILED', 'ADMIN_LOGIN_SUCCESS'],
+          },
+        },
+        orderBy: { timestamp: 'desc' },
+        take: 50,
+      }),
+    ]);
 
-    res.json({ logs });
-  } catch (error) {
-    console.error('❌ Failed to fetch admin logs:', error);
-    res.status(500).json({ error: 'Failed to fetch login logs' });
+    // Sanitize sensitive data
+    const sanitizedLogs = {
+      admin_login_logs: oldLogs.map(log => sanitizeObject(log)),
+      audit_logs: auditLogs.map(log => sanitizeObject(log)),
+    };
+
+    res.json({
+      success: true,
+      logs: sanitizedLogs,
+    });
+  } catch (error: any) {
+    logger.error('Failed to fetch admin logs:', error);
+    res.status(500).json(sanitizeError(error));
   }
 });
 
-// POST /api/auth/admin/refresh
-router.post('/refresh', (req, res) => {
-  const { token } = req.body;
+// POST /api/auth/admin/refresh (HARDENED)
+router.post('/refresh', authRateLimiter, async (req, res) => {
   try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({
+        success: false,
+        error: 'Refresh token required',
+      });
+    }
+
     const decoded: any = jwt.verify(token, REFRESH_SECRET);
     const { accessToken, refreshToken } = generateTokens({
+      userId: decoded.userId,
+      email: decoded.email,
+      role: decoded.role,
+      iss: process.env.JWT_ISSUER || 'advancia-saas',
+      aud: process.env.JWT_AUDIENCE || 'advancia-api',
+    });
+
+    // Register new session
+    registerSession(accessToken, {
+      userId: decoded.userId,
       email: decoded.email,
       role: decoded.role,
     });
 
-    // Register new session
-    registerSession(accessToken, { email: decoded.email, role: decoded.role });
+    // Log token refresh
+    await prisma.auditLog.create({
+      data: {
+        userId: decoded.userId || null,
+        action: 'ADMIN_TOKEN_REFRESHED',
+        details: `Admin token refreshed for ${decoded.email}`,
+        ipAddress: (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || 'unknown',
+        userAgent: req.get('user-agent') || 'unknown',
+      },
+    });
 
-    res.json({ accessToken, refreshToken });
-  } catch {
-    res.status(403).json({ error: 'Invalid refresh token' });
+    logger.info(`Admin token refreshed: ${decoded.email}`);
+
+    res.json({
+      success: true,
+      accessToken,
+      refreshToken,
+    });
+  } catch (error: any) {
+    logger.error('Admin token refresh error:', error);
+    res.status(403).json({
+      success: false,
+      error: 'Invalid refresh token',
+    });
   }
 });
 

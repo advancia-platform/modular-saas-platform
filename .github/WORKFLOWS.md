@@ -36,20 +36,20 @@
 
 **What it does:**
 
-#### Backend Testing:
+#### Backend Testing
 
 - ✅ Spins up PostgreSQL & Redis containers
 - ✅ Runs Prisma migrations
 - ✅ Executes tests
 - ✅ Builds the backend
 
-#### Frontend Testing:
+#### Frontend Testing
 
 - ✅ Runs linter
 - ✅ Executes tests
 - ✅ Builds the frontend
 
-#### Code Quality:
+#### Code Quality
 
 - ✅ Lints both backend and frontend code
 
@@ -57,11 +57,11 @@
 
 ## 🚀 How to Use
 
-### View Workflows:
+### View Workflows
 
-Visit: https://github.com/pdtribe181-prog/modular-saas-platform/actions
+Visit: <https://github.com/pdtribe181-prog/modular-saas-platform/actions>
 
-### Trigger a Workflow:
+### Trigger a Workflow
 
 ```bash
 # Push to main branch
@@ -70,7 +70,7 @@ git commit -m "Deploy new features"
 git push origin main
 ```
 
-### Manual Trigger:
+### Manual Trigger
 
 Go to Actions tab → Select workflow → Click "Run workflow"
 
@@ -78,7 +78,7 @@ Go to Actions tab → Select workflow → Click "Run workflow"
 
 ## 🔧 Customizing Workflows
 
-### Add Deployment Steps:
+### Add Deployment Steps
 
 Edit `.github/workflows/deploy.yml` and replace the deployment section:
 
@@ -102,9 +102,9 @@ Edit `.github/workflows/deploy.yml` and replace the deployment section:
     # docker push myapp
 ```
 
-### Add More Secrets:
+### Add More Secrets
 
-1. Go to: https://github.com/pdtribe181-prog/modular-saas-platform/settings/secrets/actions
+1. Go to: <https://github.com/pdtribe181-prog/modular-saas-platform/settings/secrets/actions>
 2. Click "New repository secret"
 3. Add name and value
 4. Update workflow to use it: `${{ secrets.YOUR_SECRET }}`
@@ -149,7 +149,7 @@ CI workflow includes PostgreSQL and Redis for realistic testing.
 
 ## 🛠️ Common Tasks
 
-### Run Tests Locally (Like CI Does):
+### Run Tests Locally (Like CI Does)
 
 ```bash
 # Backend tests
@@ -161,7 +161,7 @@ cd frontend
 npm test
 ```
 
-### Build Locally:
+### Build Locally
 
 ```bash
 # Backend
@@ -173,7 +173,7 @@ cd frontend
 npm run build
 ```
 
-### Lint Code:
+### Lint Code
 
 ```bash
 # Backend
@@ -196,13 +196,13 @@ npm run lint
 3. Expand the failed step
 4. Read error messages
 
-### Common Issues:
+### Common Issues
 
 **Missing Secrets:**
 
 ---
 
-- Add them at: https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/settings/secrets/actions
+- Add them at: <https://github.com/muchaeljohn739337-cloud/-modular-saas-platform/settings/secrets/actions>
 
 **Test Failures:**
 
@@ -229,4 +229,4 @@ npm run lint
 
 ---
 
-**Repository:** https://github.com/muchaeljohn739337-cloud/-modular-saas-platform
+**Repository:** <https://github.com/muchaeljohn739337-cloud/-modular-saas-platform>

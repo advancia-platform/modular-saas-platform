@@ -3,41 +3,39 @@
  * Provides configured Express app with all routes for testing
  */
 
-import express from "express";
 import cors from "cors";
+import express from "express";
 import app from "../src/app";
-import { validateInput } from "../src/middleware/security";
 import { activityLogger } from "../src/middleware/activityLogger";
+import { validateInput } from "../src/middleware/security";
 
 // Import all routers
-import paymentsRouter, { handleStripeWebhook } from "../src/routes/payments";
-import debitCardRouter from "../src/routes/debitCard";
-import medbedsRouter from "../src/routes/medbeds";
-import supportRouter from "../src/routes/support";
-import analyticsRouter from "../src/routes/analytics";
-import aiAnalyticsRouter from "../src/routes/aiAnalytics";
-import authRouter from "../src/routes/auth";
-import adminUsersRouter from "../src/routes/users";
-import transactionsRouter from "../src/routes/transactions";
-import chatRouter from "../src/routes/chat";
-import adminRouter from "../src/routes/admin";
-import consultationRouter from "../src/routes/consultation";
-import systemRouter from "../src/routes/system";
-import marketingRouter from "../src/routes/marketing";
-import subscribersRouter from "../src/routes/subscribers";
-import securityLevelRouter from "../src/routes/securityLevel";
-import ipBlocksRouter from "../src/routes/ipBlocks";
-import authAdminRouter from "../src/routes/authAdmin";
-import userApprovalRouter from "../src/routes/userApproval";
-import sessionsRouter from "../src/routes/sessions";
-import withdrawalsRouter from "../src/routes/withdrawals";
-import healthRouter from "../src/routes/health";
-import tokensRouter from "../src/routes/tokens";
-import rewardsRouter from "../src/routes/rewards";
-import healthReadingsRouter from "../src/routes/health-readings";
-import oalRouter from "../src/routes/oal";
-import emailRouter from "../src/routes/email";
 import { errorHandler, notFoundHandler } from "../src/middleware/errorHandler";
+import adminRouter from "../src/routes/admin";
+import analyticsRouter from "../src/routes/analytics";
+import authRouter from "../src/routes/auth";
+import authAdminRouter from "../src/routes/authAdmin";
+import chatRouter from "../src/routes/chat";
+import consultationRouter from "../src/routes/consultation";
+import debitCardRouter from "../src/routes/debitCard";
+import emailRouter from "../src/routes/email";
+import healthRouter from "../src/routes/health";
+import healthReadingsRouter from "../src/routes/health-readings";
+import ipBlocksRouter from "../src/routes/ipBlocks";
+import marketingRouter from "../src/routes/marketing";
+import medbedsRouter from "../src/routes/medbeds";
+import paymentsRouter from "../src/routes/paymentsEnhanced";
+import { handleStripeWebhook } from "../src/routes/paymentsWebhook";
+import rewardsRouter from "../src/routes/rewards";
+import securityLevelRouter from "../src/routes/securityLevel";
+import sessionsRouter from "../src/routes/sessions";
+import subscribersRouter from "../src/routes/subscribers";
+import supportRouter from "../src/routes/support";
+import systemRouter from "../src/routes/system";
+import tokensRouter from "../src/routes/tokens";
+import transactionsRouter from "../src/routes/transactions";
+import userApprovalRouter from "../src/routes/userApproval";
+import withdrawalsRouter from "../src/routes/withdrawals";
 
 // Configure CORS for testing
 app.use(
@@ -68,9 +66,7 @@ app.use("/api/debit-card", debitCardRouter);
 app.use("/api/medbeds", medbedsRouter);
 app.use("/api/support", supportRouter);
 app.use("/api/admin/analytics", analyticsRouter);
-app.use("/api/ai-analytics", aiAnalyticsRouter);
 app.use("/api/auth", authRouter);
-app.use("/api/admin", adminUsersRouter);
 app.use("/api/admin", adminRouter);
 app.use("/api/transactions", transactionsRouter);
 app.use("/api/chat", chatRouter);
@@ -84,7 +80,6 @@ app.use("/api/admin/user-approval", userApprovalRouter);
 app.use("/api/auth/admin", authAdminRouter);
 app.use("/api/sessions", sessionsRouter);
 app.use("/api/withdrawals", withdrawalsRouter);
-app.use("/api/oal", oalRouter);
 app.use("/api/tokens", tokensRouter);
 app.use("/api/rewards", rewardsRouter);
 app.use("/api/health-readings", healthReadingsRouter);

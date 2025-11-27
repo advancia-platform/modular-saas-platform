@@ -3,7 +3,7 @@
  * Tests for transaction creation and retrieval endpoints
  */
 
-import { Decimal } from "@prisma/client/runtime/library";
+import { Decimal } from "@prisma/client/runtime/index-browser";
 import request from "supertest";
 import prisma from "../../src/prismaClient";
 import {
@@ -130,7 +130,7 @@ describe("Transactions API", () => {
   describe("GET /api/transactions/user/:userId", () => {
     beforeAll(async () => {
       // Create some test transactions
-      await prisma.transaction.createMany({
+      await prisma.transactions.createMany({
         data: [
           {
             userId,

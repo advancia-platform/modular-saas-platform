@@ -6,7 +6,7 @@
 
 ## Quick Start
 
-- Go to: https://github.com/muchaeljohn739337-cloud/-modular-saas-platform
+- Go to: <https://github.com/muchaeljohn739337-cloud/-modular-saas-platform>
 - Click **Code** → **Codespaces** → **Create codespace on main**
 
 ### 2. Automatic Setup
@@ -21,14 +21,14 @@ The Codespace will automatically:
 
 ### 3. Start Development Servers
 
-#### Terminal 1 - Backend:
+#### Terminal 1 - Backend
 
 ```bash
 cd backend
 npm run dev
 ```
 
-#### Terminal 2 - Frontend:
+#### Terminal 2 - Frontend
 
 ```bash
 cd frontend
@@ -46,7 +46,7 @@ npm run dev
 
 Create `.env` files in `backend/` and `frontend/`:
 
-### Backend `.env`:
+### Backend `.env`
 
 ```bash
 DATABASE_URL="postgresql://postgres:password@db:5432/saas_platform_dev"
@@ -56,7 +56,7 @@ NODE_ENV="development"
 FRONTEND_URL="https://${CODESPACE_NAME}-3000.preview.app.github.dev"
 ```
 
-### Frontend `.env.local`:
+### Frontend `.env.local`
 
 ```bash
 NEXT_PUBLIC_API_URL="https://${CODESPACE_NAME}-4000.preview.app.github.dev"
@@ -64,7 +64,7 @@ NEXT_PUBLIC_API_URL="https://${CODESPACE_NAME}-4000.preview.app.github.dev"
 
 ## 🛠️ Useful Commands
 
-### Database:
+### Database
 
 ```bash
 # Run migrations
@@ -77,7 +77,7 @@ npx prisma studio
 npx prisma migrate reset
 ```
 
-### Testing:
+### Testing
 
 ```bash
 # Backend tests
@@ -90,7 +90,7 @@ cd frontend && npm test
 cd frontend && npx playwright test
 ```
 
-### Docker:
+### Docker
 
 ```bash
 # View running containers
@@ -124,16 +124,16 @@ All GitHub Actions workflows work seamlessly with Codespaces commits:
 
 ## 🔄 Codespace Management
 
-### Stop Codespace:
+### Stop Codespace
 
 - Closes automatically after 30min of inactivity
 - Manually: **Codespaces** menu → **Stop Current Codespace**
 
-### Delete Codespace:
+### Delete Codespace
 
 - GitHub → **Codespaces** → **Manage** → Delete unused ones
 
-### Rebuild Container:
+### Rebuild Container
 
 - **Cmd/Ctrl + Shift + P** → **Rebuild Container**
 
@@ -147,14 +147,14 @@ All GitHub Actions workflows work seamlessly with Codespaces commits:
 
 ## 🆘 Troubleshooting
 
-### Database connection issues:
+### Database connection issues
 
 ```bash
 docker-compose restart db
 cd backend && npx prisma migrate deploy
 ```
 
-### Port already in use:
+### Port already in use
 
 ```bash
 # Kill process on port 4000
@@ -164,7 +164,7 @@ npx kill-port 4000
 npx kill-port 3000
 ```
 
-### Dependencies out of sync:
+### Dependencies out of sync
 
 ```bash
 rm -rf node_modules package-lock.json

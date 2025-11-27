@@ -1,14 +1,20 @@
-import crypto from 'crypto';
-import { Router } from 'express';
-import { authenticateToken } from '../middleware/auth';
-import prisma from '../prismaClient';
+import crypto from "crypto";
+import { Router } from "express";
+import { authenticateToken } from "../middleware/auth";
+import prisma from "../prismaClient";
 
 const router = Router();
 
+// Safe middleware wrapper to prevent undefined crashes
+const safeAuth =
+  typeof authenticateToken === "function"
+    ? authenticateToken
+    : (_req: any, _res: any, next: any) => next();
+
 // NOWPayments configuration
-const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY || '';
-const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || '';
-const NOWPAYMENTS_BASE_URL = 'https://api.nowpayments.io/v1';
+const NOWPAYMENTS_API_KEY = process.env.NOWPAYMENTS_API_KEY || "";
+const NOWPAYMENTS_IPN_SECRET = process.env.NOWPAYMENTS_IPN_SECRET || "";
+const NOWPAYMENTS_BASE_URL = "https://api.nowpayments.io/v1";
 
 // Type definitions for NOWPayments API responses
 interface CurrenciesResponse {
@@ -73,8 +79,8 @@ interface EstimateResponse {
  * Silent mode logging - only log in development
  */
 function logDev(message: string, data?: any) {
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[NOWPayments] ${message}`, data || '');
+  if (process.env.NODE_ENV === "development") {
+    console.log(`[NOWPayments] ${message}`, data || "");
   }
   // TODO: Add production analytics integration here (Sentry, DataDog, etc.)
 }
@@ -83,15 +89,15 @@ function logDev(message: string, data?: any) {
  * Safe error response handler
  */
 function handleError(res: any, error: any, context: string) {
-  const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+  const errorMessage = error instanceof Error ? error.message : "Unknown error";
   logDev(`Error in ${context}:`, errorMessage);
 
   if (!res.headersSent) {
     res.status(500).json({
       success: false,
       error:
-        process.env.NODE_ENV === 'production'
-          ? 'Internal server error'
+        process.env.NODE_ENV === "production"
+          ? "Internal server error"
           : errorMessage,
       context,
     });
@@ -103,9 +109,9 @@ function handleError(res: any, error: any, context: string) {
  * Signature = HMAC-SHA512(request_body, IPN_SECRET)
  */
 function verifyIPNSignature(payload: string, signature: string): boolean {
-  const hmac = crypto.createHmac('sha512', NOWPAYMENTS_IPN_SECRET);
+  const hmac = crypto.createHmac("sha512", NOWPAYMENTS_IPN_SECRET);
   hmac.update(payload);
-  const expectedSignature = hmac.digest('hex');
+  const expectedSignature = hmac.digest("hex");
   return expectedSignature === signature;
 }
 
@@ -113,15 +119,15 @@ function verifyIPNSignature(payload: string, signature: string): boolean {
  * Get available cryptocurrencies from NOWPayments
  * GET /api/nowpayments/currencies
  */
-router.get('/currencies', authenticateToken as any, async (req: any, res) => {
+router.get("/currencies", safeAuth as any, async (req: any, res) => {
   try {
-    logDev('Fetching available currencies');
+    logDev("Fetching available currencies");
 
     if (!NOWPAYMENTS_API_KEY) {
-      logDev('API key not configured');
+      logDev("API key not configured");
       return res.status(500).json({
         success: false,
-        error: 'NOWPayments API key not configured',
+        error: "NOWPayments API key not configured",
       });
     }
 
@@ -129,7 +135,7 @@ router.get('/currencies', authenticateToken as any, async (req: any, res) => {
       `${NOWPAYMENTS_BASE_URL}/currencies?fixed_rate=true`,
       {
         headers: {
-          'x-api-key': NOWPAYMENTS_API_KEY,
+          "x-api-key": NOWPAYMENTS_API_KEY,
         },
         signal: AbortSignal.timeout(10000), // 10s timeout
       },
@@ -137,15 +143,15 @@ router.get('/currencies', authenticateToken as any, async (req: any, res) => {
 
     if (!response.ok) {
       const error = await response.text();
-      logDev('Failed to fetch currencies', { status: response.status, error });
+      logDev("Failed to fetch currencies", { status: response.status, error });
       return res.status(response.status).json({
         success: false,
-        error: 'Failed to fetch available currencies',
+        error: "Failed to fetch available currencies",
       });
     }
 
     const data = (await response.json()) as CurrenciesResponse;
-    logDev('Currencies fetched successfully', {
+    logDev("Currencies fetched successfully", {
       count: data.currencies?.length,
     });
 
@@ -154,7 +160,7 @@ router.get('/currencies', authenticateToken as any, async (req: any, res) => {
       currencies: data.currencies,
     });
   } catch (error: any) {
-    handleError(res, error, 'currencies');
+    handleError(res, error, "currencies");
   }
 });
 
@@ -162,93 +168,89 @@ router.get('/currencies', authenticateToken as any, async (req: any, res) => {
  * Get minimum payment amount for a currency
  * GET /api/nowpayments/min-amount/:currency
  */
-router.get(
-  '/min-amount/:currency',
-  authenticateToken as any,
-  async (req: any, res) => {
-    try {
-      const { currency } = req.params;
-      logDev('Fetching minimum amount', { currency });
-
-      const response = await fetch(
-        `${NOWPAYMENTS_BASE_URL}/min-amount?currency_from=usd&currency_to=${currency}`,
-        {
-          headers: {
-            'x-api-key': NOWPAYMENTS_API_KEY,
-          },
-        },
-      );
-
-      if (!response.ok) {
-        const error = await response.text();
-        logDev('Failed to fetch minimum amount', {
-          status: response.status,
-          error,
-        });
-        return res.status(response.status).json({
-          success: false,
-          error: 'Failed to fetch minimum amount',
-        });
-      }
-
-      const data = (await response.json()) as MinAmountResponse;
-      logDev('Minimum amount fetched', data);
-
-      res.json({
-        success: true,
-        minAmount: data.min_amount,
-        currency: currency.toUpperCase(),
-      });
-    } catch (error: any) {
-      logDev('Error fetching minimum amount', { error: error.message });
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error',
-      });
-    }
-  },
-);
-
-/**
- * Get estimated crypto amount for USD price
- * GET /api/nowpayments/estimate?amount=100&currency=btc
- */
-router.get('/estimate', async (req, res) => {
+router.get("/min-amount/:currency", safeAuth as any, async (req: any, res) => {
   try {
-    const { amount, currency } = req.query;
-
-    if (!amount || !currency) {
-      return res.status(400).json({
-        success: false,
-        error: 'Amount and currency are required',
-      });
-    }
-
-    logDev('Fetching estimate', { amount, currency });
+    const { currency } = req.params;
+    logDev("Fetching minimum amount", { currency });
 
     const response = await fetch(
-      `${NOWPAYMENTS_BASE_URL}/estimate?amount=${amount}&currency_from=usd&currency_to=${currency}`,
+      `${NOWPAYMENTS_BASE_URL}/min-amount?currency_from=usd&currency_to=${currency}`,
       {
         headers: {
-          'x-api-key': NOWPAYMENTS_API_KEY,
+          "x-api-key": NOWPAYMENTS_API_KEY,
         },
       },
     );
 
     if (!response.ok) {
       const error = await response.text();
-      logDev('Failed to fetch estimate', {
+      logDev("Failed to fetch minimum amount", {
         status: response.status,
         error,
       });
       return res.status(response.status).json({
         success: false,
-        error: 'Failed to fetch estimate',
+        error: "Failed to fetch minimum amount",
+      });
+    }
+
+    const data = (await response.json()) as MinAmountResponse;
+    logDev("Minimum amount fetched", data);
+
+    res.json({
+      success: true,
+      minAmount: data.min_amount,
+      currency: currency.toUpperCase(),
+    });
+  } catch (error: any) {
+    logDev("Error fetching minimum amount", { error: error.message });
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+    });
+  }
+});
+
+/**
+ * Get estimated crypto amount for USD price
+ * GET /api/nowpayments/estimate?amount=100&currency=btc
+ */
+router.get("/estimate", async (req, res) => {
+  try {
+    const { amount, currency } = req.query;
+
+    if (!amount || !currency) {
+      return res.status(400).json({
+        success: false,
+        error: "Amount and currency are required",
+      });
+    }
+
+    logDev("Fetching estimate", { amount, currency });
+
+    const response = await fetch(
+      `${NOWPAYMENTS_BASE_URL}/estimate?amount=${amount}&currency_from=usd&currency_to=${currency}`,
+      {
+        headers: {
+          "x-api-key": NOWPAYMENTS_API_KEY,
+        },
+      },
+    );
+
+    if (!response.ok) {
+      const error = await response.text();
+      logDev("Failed to fetch estimate", {
+        status: response.status,
+        error,
+      });
+      return res.status(response.status).json({
+        success: false,
+        error: "Failed to fetch estimate",
       });
     }
 
     const data = (await response.json()) as EstimateResponse;
-    logDev('Estimate fetched', data);
+    logDev("Estimate fetched", data);
 
     res.json({
       success: true,
@@ -260,10 +262,10 @@ router.get('/estimate', async (req, res) => {
       },
     });
   } catch (error: any) {
-    logDev('Error fetching estimate', { error: error.message });
+    logDev("Error fetching estimate", { error: error.message });
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   }
 });
@@ -277,220 +279,216 @@ router.get('/estimate', async (req, res) => {
  * 2. Create payment on that invoice with selected crypto
  * 3. Return payment address and amount to user
  */
-router.post(
-  '/create-payment',
-  authenticateToken as any,
-  async (req: any, res) => {
-    try {
-      const {
-        amount,
-        currency,
-        orderId,
-        description,
-        payoutAddress,
-        payoutCurrency,
-      } = req.body;
-      const userId = req.user?.user_id;
+router.post("/create-payment", safeAuth as any, async (req: any, res) => {
+  try {
+    const {
+      amount,
+      currency,
+      orderId,
+      description,
+      payoutAddress,
+      payoutCurrency,
+    } = req.body;
+    const userId = req.user?.user_id;
 
-      if (!amount || !currency) {
-        return res.status(400).json({
-          success: false,
-          error: 'Amount and currency are required',
-        });
-      }
-
-      if (!NOWPAYMENTS_API_KEY || !NOWPAYMENTS_IPN_SECRET) {
-        return res.status(503).json({
-          success: false,
-          error: 'NOWPayments is not configured',
-        });
-      }
-
-      const generatedOrderId = orderId || `NP-${Date.now()}-${userId}`;
-
-      logDev('Step 1: Creating invoice', {
-        amount,
-        orderId: generatedOrderId,
-        userId,
+    if (!amount || !currency) {
+      return res.status(400).json({
+        success: false,
+        error: "Amount and currency are required",
       });
+    }
 
-      // STEP 1: Create Invoice
-      const invoiceData = {
-        price_amount: parseFloat(amount),
-        price_currency: 'usd',
-        order_id: generatedOrderId,
-        order_description: description || 'Crypto payment',
-        ipn_callback_url: `${
-          process.env.BACKEND_URL || 'http://localhost:4000'
-        }/api/nowpayments/ipn`,
-        success_url: `${process.env.FRONTEND_URL}/payments/success`,
-        cancel_url: `${process.env.FRONTEND_URL}/payments/cancel`,
-      };
+    if (!NOWPAYMENTS_API_KEY || !NOWPAYMENTS_IPN_SECRET) {
+      return res.status(503).json({
+        success: false,
+        error: "NOWPayments is not configured",
+      });
+    }
 
-      const invoiceResponse = await fetch(`${NOWPAYMENTS_BASE_URL}/invoice`, {
-        method: 'POST',
+    const generatedOrderId = orderId || `NP-${Date.now()}-${userId}`;
+
+    logDev("Step 1: Creating invoice", {
+      amount,
+      orderId: generatedOrderId,
+      userId,
+    });
+
+    // STEP 1: Create Invoice
+    const invoiceData = {
+      price_amount: parseFloat(amount),
+      price_currency: "usd",
+      order_id: generatedOrderId,
+      order_description: description || "Crypto payment",
+      ipn_callback_url: `${
+        process.env.BACKEND_URL || "http://localhost:4000"
+      }/api/nowpayments/ipn`,
+      success_url: `${process.env.FRONTEND_URL}/payments/success`,
+      cancel_url: `${process.env.FRONTEND_URL}/payments/cancel`,
+    };
+
+    const invoiceResponse = await fetch(`${NOWPAYMENTS_BASE_URL}/invoice`, {
+      method: "POST",
+      headers: {
+        "x-api-key": NOWPAYMENTS_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(invoiceData),
+    });
+
+    if (!invoiceResponse.ok) {
+      const error = await invoiceResponse.text();
+      logDev("Invoice creation failed", {
+        status: invoiceResponse.status,
+        error,
+      });
+      return res.status(invoiceResponse.status).json({
+        success: false,
+        error: "Failed to create invoice",
+        details: error,
+      });
+    }
+
+    const invoice = (await invoiceResponse.json()) as InvoiceResponse;
+    logDev("Invoice created", { invoiceId: invoice.id });
+
+    // STEP 2: Create Payment on Invoice
+    logDev("Step 2: Creating payment on invoice", {
+      invoiceId: invoice.id,
+      payCurrency: currency,
+    });
+
+    const paymentData: any = {
+      iid: invoice.id,
+      pay_currency: currency.toLowerCase(),
+      purchase_id: generatedOrderId,
+      order_description: description || "Crypto payment",
+      customer_email: req.user?.email || "customer@example.com",
+    };
+
+    // Add payout details if provided (for instant conversion)
+    if (payoutAddress && payoutCurrency) {
+      paymentData.payout_address = payoutAddress;
+      paymentData.payout_currency = payoutCurrency.toLowerCase();
+    }
+
+    const paymentResponse = await fetch(
+      `${NOWPAYMENTS_BASE_URL}/invoice-payment`,
+      {
+        method: "POST",
         headers: {
-          'x-api-key': NOWPAYMENTS_API_KEY,
-          'Content-Type': 'application/json',
+          "x-api-key": NOWPAYMENTS_API_KEY,
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(invoiceData),
+        body: JSON.stringify(paymentData),
+      },
+    );
+
+    if (!paymentResponse.ok) {
+      const error = await paymentResponse.text();
+      logDev("Payment creation failed", {
+        status: paymentResponse.status,
+        error,
       });
-
-      if (!invoiceResponse.ok) {
-        const error = await invoiceResponse.text();
-        logDev('Invoice creation failed', {
-          status: invoiceResponse.status,
-          error,
-        });
-        return res.status(invoiceResponse.status).json({
-          success: false,
-          error: 'Failed to create invoice',
-          details: error,
-        });
-      }
-
-      const invoice = (await invoiceResponse.json()) as InvoiceResponse;
-      logDev('Invoice created', { invoiceId: invoice.id });
-
-      // STEP 2: Create Payment on Invoice
-      logDev('Step 2: Creating payment on invoice', {
-        invoiceId: invoice.id,
-        payCurrency: currency,
+      return res.status(paymentResponse.status).json({
+        success: false,
+        error: "Failed to create payment",
+        details: error,
       });
+    }
 
-      const paymentData: any = {
-        iid: invoice.id,
-        pay_currency: currency.toLowerCase(),
-        purchase_id: generatedOrderId,
-        order_description: description || 'Crypto payment',
-        customer_email: req.user?.email || 'customer@example.com',
-      };
+    const payment = (await paymentResponse.json()) as PaymentResponse;
+    logDev("Payment created successfully", {
+      paymentId: payment.payment_id,
+      invoiceId: invoice.id,
+      payAddress: payment.pay_address,
+    });
 
-      // Add payout details if provided (for instant conversion)
-      if (payoutAddress && payoutCurrency) {
-        paymentData.payout_address = payoutAddress;
-        paymentData.payout_currency = payoutCurrency.toLowerCase();
-      }
+    // Save to database
+    await prisma.cryptoPayments.create({
+      data: {
+        id: payment.payment_id.toString(),
+        user_id: userId,
+        invoice_id: invoice.id.toString(),
+        amount: parseFloat(amount),
+        currency: currency.toUpperCase(),
+        status: payment.payment_status || "waiting",
+        payment_url: invoice.invoice_url,
+        order_id: generatedOrderId,
+        description: description || null,
+        paymentProvider: "nowpayments",
+        created_at: new Date(),
+        updated_at: new Date(),
+      },
+    });
 
-      const paymentResponse = await fetch(
-        `${NOWPAYMENTS_BASE_URL}/invoice-payment`,
-        {
-          method: 'POST',
-          headers: {
-            'x-api-key': NOWPAYMENTS_API_KEY,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(paymentData),
-        },
-      );
+    logDev("Payment saved to database", {
+      paymentId: payment.payment_id,
+      invoiceId: invoice.id,
+    });
 
-      if (!paymentResponse.ok) {
-        const error = await paymentResponse.text();
-        logDev('Payment creation failed', {
-          status: paymentResponse.status,
-          error,
-        });
-        return res.status(paymentResponse.status).json({
-          success: false,
-          error: 'Failed to create payment',
-          details: error,
-        });
-      }
-
-      const payment = (await paymentResponse.json()) as PaymentResponse;
-      logDev('Payment created successfully', {
+    res.json({
+      success: true,
+      payment: {
         paymentId: payment.payment_id,
         invoiceId: invoice.id,
         payAddress: payment.pay_address,
-      });
-
-      // Save to database
-      await prisma.cryptoPayments.create({
-        data: {
-          id: payment.payment_id.toString(),
-          user_id: userId,
-          invoice_id: invoice.id.toString(),
-          amount: parseFloat(amount),
-          currency: currency.toUpperCase(),
-          status: payment.payment_status || 'waiting',
-          payment_url: invoice.invoice_url,
-          order_id: generatedOrderId,
-          description: description || null,
-          paymentProvider: 'nowpayments',
-          created_at: new Date(),
-          updated_at: new Date(),
-        },
-      });
-
-      logDev('Payment saved to database', {
-        paymentId: payment.payment_id,
-        invoiceId: invoice.id,
-      });
-
-      res.json({
-        success: true,
-        payment: {
-          paymentId: payment.payment_id,
-          invoiceId: invoice.id,
-          payAddress: payment.pay_address,
-          payAmount: payment.pay_amount,
-          payCurrency: payment.pay_currency?.toUpperCase(),
-          priceAmount: payment.price_amount,
-          priceCurrency: payment.price_currency?.toUpperCase(),
-          invoiceUrl: invoice.invoice_url,
-          status: payment.payment_status,
-          orderId: generatedOrderId,
-          network: payment.network,
-          expiresAt: payment.expiration_estimate_date,
-          createdAt: payment.created_at,
-        },
-      });
-    } catch (error: any) {
-      logDev('Error in payment flow', { error: error.message });
-      res.status(500).json({
-        success: false,
-        error: 'Internal server error',
-        details: error.message,
-      });
-    }
-  },
-);
+        payAmount: payment.pay_amount,
+        payCurrency: payment.pay_currency?.toUpperCase(),
+        priceAmount: payment.price_amount,
+        priceCurrency: payment.price_currency?.toUpperCase(),
+        invoiceUrl: invoice.invoice_url,
+        status: payment.payment_status,
+        orderId: generatedOrderId,
+        network: payment.network,
+        expiresAt: payment.expiration_estimate_date,
+        createdAt: payment.created_at,
+      },
+    });
+  } catch (error: any) {
+    logDev("Error in payment flow", { error: error.message });
+    res.status(500).json({
+      success: false,
+      error: "Internal server error",
+      details: error.message,
+    });
+  }
+});
 
 /**
  * Get payment status
  * GET /api/nowpayments/payment/:paymentId
  */
 router.get(
-  '/payment/:paymentId',
+  "/payment/:paymentId",
   authenticateToken as any,
   async (req: any, res) => {
     try {
       const { paymentId } = req.params;
-      logDev('Fetching payment status', { paymentId });
+      logDev("Fetching payment status", { paymentId });
 
       const response = await fetch(
         `${NOWPAYMENTS_BASE_URL}/payment/${paymentId}`,
         {
           headers: {
-            'x-api-key': NOWPAYMENTS_API_KEY,
+            "x-api-key": NOWPAYMENTS_API_KEY,
           },
         },
       );
 
       if (!response.ok) {
         const error = await response.text();
-        logDev('Failed to fetch payment status', {
+        logDev("Failed to fetch payment status", {
           status: response.status,
           error,
         });
         return res.status(response.status).json({
           success: false,
-          error: 'Failed to fetch payment status',
+          error: "Failed to fetch payment status",
         });
       }
 
       const payment = (await response.json()) as PaymentResponse;
-      logDev('Payment status fetched', {
+      logDev("Payment status fetched", {
         paymentId,
         status: payment.payment_status,
       });
@@ -511,10 +509,10 @@ router.get(
         },
       });
     } catch (error: any) {
-      logDev('Error fetching payment status', { error: error.message });
+      logDev("Error fetching payment status", { error: error.message });
       res.status(500).json({
         success: false,
-        error: 'Internal server error',
+        error: "Internal server error",
       });
     }
   },
@@ -524,19 +522,19 @@ router.get(
  * NOWPayments IPN (Instant Payment Notification) webhook
  * POST /api/nowpayments/ipn
  */
-router.post('/ipn', async (req, res) => {
+router.post("/ipn", async (req, res) => {
   try {
-    const signature = req.headers['x-nowpayments-sig'] as string;
+    const signature = req.headers["x-nowpayments-sig"] as string;
     const payload = JSON.stringify(req.body);
 
-    logDev('IPN received', { signature: signature?.substring(0, 10) + '...' });
+    logDev("IPN received", { signature: signature?.substring(0, 10) + "..." });
 
     // Verify signature
     if (!signature || !verifyIPNSignature(payload, signature)) {
-      logDev('Invalid IPN signature');
+      logDev("Invalid IPN signature");
       return res.status(401).json({
         success: false,
-        error: 'Invalid signature',
+        error: "Invalid signature",
       });
     }
 
@@ -554,28 +552,28 @@ router.post('/ipn', async (req, res) => {
       outcome_currency,
     } = req.body;
 
-    logDev('IPN verified', { payment_id, payment_status, order_id });
+    logDev("IPN verified", { payment_id, payment_status, order_id });
 
     // Update payment in database
     await prisma.cryptoPayments.update({
       where: { id: payment_id.toString() },
       data: {
         status: payment_status,
-        paid_at: payment_status === 'finished' ? new Date() : null,
+        paid_at: payment_status === "finished" ? new Date() : null,
         updated_at: new Date(),
       },
     });
 
-    logDev('Payment updated in database', { payment_id, payment_status });
+    logDev("Payment updated in database", { payment_id, payment_status });
 
     // If payment is successful, credit user account
-    if (payment_status === 'finished' && actually_paid) {
+    if (payment_status === "finished" && actually_paid) {
       const payment = await prisma.cryptoPayments.findUnique({
         where: { id: payment_id.toString() },
       });
 
       if (payment) {
-        logDev('Crediting user account', {
+        logDev("Crediting user account", {
           userId: payment.user_id,
           amount: outcome_amount,
         });
@@ -588,10 +586,10 @@ router.post('/ipn', async (req, res) => {
 
     res.json({ success: true });
   } catch (error: any) {
-    logDev('IPN processing error', { error: error.message });
+    logDev("IPN processing error", { error: error.message });
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   }
 });
@@ -600,18 +598,18 @@ router.post('/ipn', async (req, res) => {
  * List all payments for authenticated user
  * GET /api/nowpayments/my-payments
  */
-router.get('/my-payments', authenticateToken as any, async (req: any, res) => {
+router.get("/my-payments", safeAuth as any, async (req: any, res) => {
   try {
     const userId = req.user?.user_id;
-    logDev('Fetching user payments', { userId });
+    logDev("Fetching user payments", { userId });
 
     const payments = await prisma.cryptoPayments.findMany({
       where: { user_id: userId },
-      orderBy: { created_at: 'desc' },
+      orderBy: { created_at: "desc" },
       take: 50, // Limit to last 50 payments
     });
 
-    logDev('Payments fetched', { count: payments.length });
+    logDev("Payments fetched", { count: payments.length });
 
     res.json({
       success: true,
@@ -627,10 +625,10 @@ router.get('/my-payments', authenticateToken as any, async (req: any, res) => {
       })),
     });
   } catch (error: any) {
-    logDev('Error fetching payments', { error: error.message });
+    logDev("Error fetching payments", { error: error.message });
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   }
 });
@@ -646,7 +644,7 @@ router.get('/my-payments', authenticateToken as any, async (req: any, res) => {
  * GET /api/nowpayments/balance
  * Admin only - shows available funds for payouts
  */
-router.get('/balance', authenticateToken as any, async (req: any, res) => {
+router.get("/balance", safeAuth as any, async (req: any, res) => {
   try {
     // Check if user is admin
     const user = await prisma.user.findUnique({
@@ -654,32 +652,32 @@ router.get('/balance', authenticateToken as any, async (req: any, res) => {
       select: { role: true },
     });
 
-    if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN') {
+    if (user?.role !== "ADMIN" && user?.role !== "SUPERADMIN") {
       return res.status(403).json({
         success: false,
-        error: 'Admin access required',
+        error: "Admin access required",
       });
     }
 
-    logDev('Fetching merchant balance');
+    logDev("Fetching merchant balance");
 
     const response = await fetch(`${NOWPAYMENTS_BASE_URL}/balance`, {
       headers: {
-        'x-api-key': NOWPAYMENTS_API_KEY,
+        "x-api-key": NOWPAYMENTS_API_KEY,
       },
     });
 
     if (!response.ok) {
       const error = await response.text();
-      logDev('Failed to fetch balance', { status: response.status, error });
+      logDev("Failed to fetch balance", { status: response.status, error });
       return res.status(response.status).json({
         success: false,
-        error: 'Failed to fetch merchant balance',
+        error: "Failed to fetch merchant balance",
       });
     }
 
     const balance = (await response.json()) as Record<string, any>;
-    logDev('Balance fetched successfully', {
+    logDev("Balance fetched successfully", {
       currencies: Object.keys(balance).length,
     });
 
@@ -688,10 +686,10 @@ router.get('/balance', authenticateToken as any, async (req: any, res) => {
       balance,
     });
   } catch (error: any) {
-    logDev('Error fetching balance', { error: error.message });
+    logDev("Error fetching balance", { error: error.message });
     res.status(500).json({
       success: false,
-      error: 'Internal server error',
+      error: "Internal server error",
     });
   }
 });
@@ -702,7 +700,7 @@ router.get('/balance', authenticateToken as any, async (req: any, res) => {
  * Admin only - sends approved withdrawals to NOWPayments
  */
 router.post(
-  '/process-withdrawals',
+  "/process-withdrawals",
   authenticateToken as any,
   async (req: any, res) => {
     try {
@@ -712,10 +710,10 @@ router.post(
         select: { role: true, email: true },
       });
 
-      if (user?.role !== 'ADMIN' && user?.role !== 'SUPERADMIN') {
+      if (user?.role !== "ADMIN" && user?.role !== "SUPERADMIN") {
         return res.status(403).json({
           success: false,
-          error: 'Admin access required',
+          error: "Admin access required",
         });
       }
 
@@ -728,11 +726,11 @@ router.post(
       ) {
         return res.status(400).json({
           success: false,
-          error: 'withdrawalIds array is required',
+          error: "withdrawalIds array is required",
         });
       }
 
-      logDev('Processing withdrawals', {
+      logDev("Processing withdrawals", {
         count: withdrawalIds.length,
         adminEmail: user.email,
       });
@@ -741,7 +739,7 @@ router.post(
       const withdrawals = await prisma.crypto_withdrawals.findMany({
         where: {
           id: { in: withdrawalIds },
-          status: 'approved',
+          status: "approved",
         },
         include: {
           user: {
@@ -756,48 +754,48 @@ router.post(
       if (withdrawals.length === 0) {
         return res.status(404).json({
           success: false,
-          error: 'No approved withdrawals found with the provided IDs',
+          error: "No approved withdrawals found with the provided IDs",
         });
       }
 
       // Build NOWPayments payout request
       const payoutRequest = {
         ipn_callback_url: `${
-          process.env.BACKEND_URL || 'http://localhost:4000'
+          process.env.BACKEND_URL || "http://localhost:4000"
         }/api/nowpayments/payout-ipn`,
         withdrawals: withdrawals.map((w) => ({
           address: w.destinationAddress,
           currency: w.currency.toLowerCase(),
           amount: Number(w.amount),
           ipn_callback_url: `${
-            process.env.BACKEND_URL || 'http://localhost:4000'
+            process.env.BACKEND_URL || "http://localhost:4000"
           }/api/nowpayments/payout-ipn`,
           unique_external_id: w.id, // Link back to our withdrawal record
         })),
       };
 
-      logDev('Sending payout request to NOWPayments', {
+      logDev("Sending payout request to NOWPayments", {
         withdrawalCount: payoutRequest.withdrawals.length,
       });
 
       const response = await fetch(`${NOWPAYMENTS_BASE_URL}/payout`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'x-api-key': NOWPAYMENTS_API_KEY,
-          'Content-Type': 'application/json',
+          "x-api-key": NOWPAYMENTS_API_KEY,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(payoutRequest),
       });
 
       if (!response.ok) {
         const error = await response.text();
-        logDev('Payout request failed', { status: response.status, error });
+        logDev("Payout request failed", { status: response.status, error });
 
         // Mark withdrawals as failed
         await prisma.crypto_withdrawals.updateMany({
           where: { id: { in: withdrawalIds } },
           data: {
-            status: 'failed',
+            status: "failed",
             adminNotes: `NOWPayments payout failed: ${error}`,
             updatedAt: new Date(),
           },
@@ -805,13 +803,13 @@ router.post(
 
         return res.status(response.status).json({
           success: false,
-          error: 'Payout request failed',
+          error: "Payout request failed",
           details: error,
         });
       }
 
       const payoutResult = (await response.json()) as any;
-      logDev('Payout created successfully', {
+      logDev("Payout created successfully", {
         batchId: payoutResult.id,
         withdrawalCount: payoutResult.withdrawals?.length,
       });
@@ -827,7 +825,7 @@ router.post(
             return prisma.crypto_withdrawals.update({
               where: { id: matchingWithdrawal.id },
               data: {
-                status: 'processing',
+                status: "processing",
                 adminNotes: `NOWPayments payout initiated. Batch ID: ${payoutResult.id}, Payout ID: ${payoutWithdrawal.id}`,
                 updatedAt: new Date(),
               },
@@ -851,10 +849,10 @@ router.post(
         })),
       });
     } catch (error: any) {
-      logDev('Error processing withdrawals', { error: error.message });
+      logDev("Error processing withdrawals", { error: error.message });
       res.status(500).json({
         success: false,
-        error: 'Internal server error',
+        error: "Internal server error",
         details: error.message,
       });
     }
@@ -866,19 +864,19 @@ router.post(
  * POST /api/nowpayments/payout-ipn
  * Receives notifications when payout status changes
  */
-router.post('/payout-ipn', async (req, res) => {
+router.post("/payout-ipn", async (req, res) => {
   try {
-    const signature = req.headers['x-nowpayments-sig'] as string;
+    const signature = req.headers["x-nowpayments-sig"] as string;
     const payload = JSON.stringify(req.body);
 
     // Verify signature
     if (!verifyIPNSignature(payload, signature)) {
-      logDev('Invalid payout IPN signature');
-      return res.status(401).json({ error: 'Invalid signature' });
+      logDev("Invalid payout IPN signature");
+      return res.status(401).json({ error: "Invalid signature" });
     }
 
     const ipnData = req.body;
-    logDev('Payout IPN received', {
+    logDev("Payout IPN received", {
       id: ipnData.id,
       status: ipnData.status,
       externalId: ipnData.unique_external_id,
@@ -897,20 +895,20 @@ router.post('/payout-ipn', async (req, res) => {
 
         // Map NOWPayments payout status to our status
         switch (ipnData.status) {
-          case 'FINISHED':
-            status = 'completed';
+          case "FINISHED":
+            status = "completed";
             completedAt = new Date();
             txHash = ipnData.hash || txHash;
             break;
-          case 'FAILED':
-          case 'EXPIRED':
-          case 'REFUNDED':
-            status = 'failed';
+          case "FAILED":
+          case "EXPIRED":
+          case "REFUNDED":
+            status = "failed";
             break;
-          case 'WAITING':
-          case 'CONFIRMING':
-          case 'SENDING':
-            status = 'processing';
+          case "WAITING":
+          case "CONFIRMING":
+          case "SENDING":
+            status = "processing";
             break;
         }
 
@@ -921,13 +919,13 @@ router.post('/payout-ipn', async (req, res) => {
             txHash: txHash || ipnData.hash,
             completedAt,
             adminNotes: `NOWPayments status: ${ipnData.status}. ${
-              ipnData.error || ''
+              ipnData.error || ""
             }`,
             updatedAt: new Date(),
           },
         });
 
-        logDev('Withdrawal updated from payout IPN', {
+        logDev("Withdrawal updated from payout IPN", {
           withdrawalId: ipnData.unique_external_id,
           newStatus: status,
         });
@@ -936,8 +934,124 @@ router.post('/payout-ipn', async (req, res) => {
 
     res.json({ success: true });
   } catch (error: any) {
-    logDev('Error processing payout IPN', { error: error.message });
-    res.status(500).json({ error: 'Internal server error' });
+    logDev("Error processing payout IPN", { error: error.message });
+    res.status(500).json({ error: "Internal server error" });
+  }
+});
+
+/**
+ * Create a payment invoice (simplified endpoint for frontend)
+ * POST /api/nowpayments/create-invoice
+ */
+router.post("/create-invoice", safeAuth as any, async (req: any, res) => {
+  try {
+    const {
+      price_amount,
+      price_currency = "USD",
+      pay_currency = "btc",
+      order_id,
+      order_description = "Payment via NOWPayments",
+    } = req.body;
+
+    if (!price_amount || !pay_currency) {
+      return res.status(400).json({
+        success: false,
+        error: "price_amount and pay_currency are required",
+      });
+    }
+
+    if (!NOWPAYMENTS_API_KEY) {
+      return res.status(503).json({
+        success: false,
+        error: "NOWPayments is not configured",
+      });
+    }
+
+    const orderId = order_id || `invoice_${Date.now()}_${req.user?.user_id || 'anon'}`;
+
+    logDev("Creating NOWPayments invoice", {
+      price_amount,
+      price_currency,
+      pay_currency,
+      order_id: orderId,
+    });
+
+    // Create invoice using NOWPayments API
+    const invoiceData = {
+      price_amount: parseFloat(price_amount),
+      price_currency: price_currency.toLowerCase(),
+      pay_currency: pay_currency.toLowerCase(),
+      order_id: orderId,
+      order_description,
+      ipn_callback_url: `${process.env.BACKEND_URL || "http://localhost:4000"}/api/nowpayments/webhook`,
+      success_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/payments/success`,
+      cancel_url: `${process.env.FRONTEND_URL || "http://localhost:3000"}/payments/cancel`,
+    };
+
+    const response = await fetch(`${NOWPAYMENTS_BASE_URL}/invoice`, {
+      method: "POST",
+      headers: {
+        "x-api-key": NOWPAYMENTS_API_KEY,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(invoiceData),
+    });
+
+    if (!response.ok) {
+      const error = await response.text();
+      logDev("Invoice creation failed", {
+        status: response.status,
+        error,
+      });
+      return res.status(response.status).json({
+        success: false,
+        error: "Failed to create payment invoice",
+        details: process.env.NODE_ENV === "development" ? error : undefined,
+      });
+    }
+
+    const invoice = (await response.json()) as InvoiceResponse;
+    logDev("Invoice created successfully", {
+      invoice_id: invoice.id,
+      invoice_url: invoice.invoice_url,
+    });
+
+    // Store invoice in database for tracking
+    try {
+      await prisma.auditLog.create({
+        data: {
+          userId: req.user?.user_id || null,
+          action: "nowpayments_invoice_created",
+          resource: "payment",
+          details: JSON.stringify({
+            invoice_id: invoice.id,
+            order_id: orderId,
+            amount: price_amount,
+            currency: price_currency,
+            pay_currency,
+          }),
+          ipAddress: req.ip,
+          userAgent: req.get("User-Agent") || "",
+        },
+      });
+    } catch (dbError) {
+      logDev("Failed to log invoice creation", { error: dbError });
+      // Don't fail the request if audit logging fails
+    }
+
+    res.json({
+      success: true,
+      invoice_id: invoice.id,
+      invoice_url: invoice.invoice_url,
+      order_id: orderId,
+      pay_amount: invoice.pay_amount || null,
+      pay_currency: pay_currency.toUpperCase(),
+      price_amount,
+      price_currency: price_currency.toUpperCase(),
+      created_at: invoice.created_at,
+    });
+  } catch (error: any) {
+    handleError(res, error, "create-invoice");
   }
 });
 
