@@ -77,13 +77,13 @@ JWT_EXPIRES_IN="24h"
 REFRESH_TOKEN_SECRET="your-refresh-secret-here"
 REFRESH_TOKEN_EXPIRES_IN="7d"
 
-# Cloudflare R2
-CLOUDFLARE_R2_ACCOUNT_ID="your-account-id"
+# Cloudflare R2 (advancia-backups bucket)
+CLOUDFLARE_R2_ACCOUNT_ID="74ecde4d46d4b399c7295cf599d2886b"
 CLOUDFLARE_R2_ACCESS_KEY_ID="your-access-key"
 CLOUDFLARE_R2_SECRET_ACCESS_KEY="your-secret-key"
-CLOUDFLARE_R2_BUCKET_NAME="advancia-uploads"
-CLOUDFLARE_R2_ENDPOINT="https://your-account-id.r2.cloudflarestorage.com"
-CLOUDFLARE_R2_PUBLIC_URL="https://uploads.advancia.com"
+CLOUDFLARE_R2_BUCKET_NAME="advancia-backups"
+CLOUDFLARE_R2_ENDPOINT="https://74ecde4d46d4b399c7295cf599d2886b.r2.cloudflarestorage.com"
+CLOUDFLARE_R2_PUBLIC_URL="https://backups.advancia.com"
 
 # Stripe
 STRIPE_SECRET_KEY="your-stripe-key"
