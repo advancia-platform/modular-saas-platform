@@ -299,7 +299,9 @@ The NOWPayments integration is **production-ready** and can be deployed immediat
 4. **Cost Savings**: Lower fees than traditional payment processors
 5. **Future-Proof**: Ready for the crypto payment revolution
 
-**The integration is complete and fully functional! 🚀**
+## Integration Status
+
+The integration is complete and fully functional! 🚀
 
 ---
 

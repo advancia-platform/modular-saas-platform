@@ -6,10 +6,9 @@
 
 ### Copy & Paste This
 
-```text`nhttps://github.com/pdtribe181-prog/-modular-saas-platform.git
+```texthttps://github.com/pdtribe181-prog/-modular-saas-platform.git
 
-```
-
+```text
 **Important:** Notice the hyphen `-` at the start!
 
 ---
@@ -18,62 +17,55 @@
 
 ### 1. Download GitHub Desktop
 
-```text`nGo to: https://desktop.github.com/
+```textGo to: https://desktop.github.com/
 Download it
 Install it
 Open it
-```
-
+```text
 ### 2. Sign In
 
-```text`nGitHub Desktop → File → Options
+```textGitHub Desktop → File → Options
 Sign in with your GitHub account
 
-```
-
+```text
 ### 3. Clone Repository
 
-```text`nGitHub Desktop → File → Clone Repository
+```textGitHub Desktop → File → Clone Repository
 URL tab → Paste the URL above
 Location: C:\Users\mucha.DESKTOP-H7T9NPM\
 Click Clone
-```
-
+```text
 ### 4. Wait (2-5 minutes)
 
-```text`nGitHub Desktop downloads everything
+```textGitHub Desktop downloads everything
 Shows "Clone Complete"
 
-```
-
+```text
 ### 5. Start Using It
 
-```text`nRight-click repo → Open in VS Code
+```textRight-click repo → Open in VS Code
 Or just see all your files
-```
-
+```text
 ---
 
 ## ✅ AFTER CLONE - VERIFY
 
 Look for these folders:
 
-```text`n✅ backend/
+```text✅ backend/
 ✅ frontend/
 ✅ .git/
 ✅ README.md
 
-```
-
+```text
 If you see them → **Clone worked!** ✅
 
 ---
 
 ## 📍 CLONE TO THIS LOCATION
 
-```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
-```
-
+```textC:\Users\mucha.DESKTOP-H7T9NPM\
+```text
 (GitHub Desktop will create the project folder inside)
 
 ---
@@ -82,26 +74,22 @@ If you see them → **Clone worked!** ✅
 
 **URL:**
 
-```text`nhttps://github.com/pdtribe181-prog/-modular-saas-platform.git
+```texthttps://github.com/pdtribe181-prog/-modular-saas-platform.git
 
-```
-
+```text
 **Location:**
 
-```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
-```
-
+```textC:\Users\mucha.DESKTOP-H7T9NPM\
+```text
 **Time:**
 
-```text`n~5 minutes total
+```text~5 minutes total
 
-```
-
+```text
 **Status:**
 
-```text`nReady to code! 🚀
-```
-
+```textReady to code! 🚀
+```text
 ---
 
 ## 📱 ON YOUR PHONE?

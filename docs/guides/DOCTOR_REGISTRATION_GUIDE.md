@@ -18,7 +18,7 @@ All components are **IMPLEMENTED and READY**:
 
 Open your browser and navigate to:
 
-```
+```text
 http://localhost:3000/register/doctor
 ```
 
@@ -44,7 +44,7 @@ Click the **"Register as Doctor"** button.
 
 **Expected Response:**
 
-```
+```text
 ✅ Registration submitted for approval!
 An admin will review your application. You'll be redirected to the dashboard...
 ```
@@ -395,4 +395,4 @@ If you encounter issues:
 4. Ensure database is accessible
 5. Try the REST Client file (`api-tests/doctor-consultation.http`) to test backend directly
 
-**Happy Testing! 🚀**
+## Happy Testing! 🚀
