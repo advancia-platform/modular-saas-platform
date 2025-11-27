@@ -1,4 +1,9 @@
 import { defineConfig, devices } from '@playwright/test';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Read environment variables from file.
@@ -10,7 +15,7 @@ import { defineConfig, devices } from '@playwright/test';
  * @see https://playwright.dev/docs/test-configuration
  */
 export default defineConfig({
-  globalSetup: require.resolve('./tests/setup/seed.setup.ts'),
+  globalSetup: resolve(__dirname, './tests/setup/seed.setup.ts'),
   testDir: './tests/e2e',
   /* Run tests in files in parallel */
   fullyParallel: true,
