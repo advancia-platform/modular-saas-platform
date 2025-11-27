@@ -10,6 +10,10 @@ const nextConfig = {
   experimental: {
     optimizeCss: true,
     optimizePackageImports: ['lodash', 'date-fns', 'recharts'],
+    // Turbopack configuration (Next.js 14+)
+    turbo: {
+      resolveExtensions: ['.mdx', '.tsx', '.ts', '.jsx', '.js', '.mjs', '.json'],
+    },
   },
 
   // Compression and caching

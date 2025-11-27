@@ -1,0 +1,44 @@
+# Grafana Datasource Configuration for AI DevOps Agent
+apiVersion: 1
+
+datasources:
+  - name: Prometheus
+    type: prometheus
+    access: proxy
+    url: http://prometheus:9090
+    isDefault: true
+    jsonData:
+      timeInterval: "5s"
+      queryTimeout: "60s"
+      httpMethod: "POST"
+    editable: true
+
+  - name: Loki
+    type: loki
+    access: proxy
+    url: http://loki:3100
+    jsonData:
+      maxLines: 1000
+    editable: true
+
+  - name: PostgreSQL
+    type: postgres
+    access: proxy
+    url: postgres:5432
+    database: agentdb
+    user: agent
+    secureJsonData:
+      password: securepass
+    jsonData:
+      sslmode: disable
+      postgresVersion: 1500
+    editable: true
+
+  - name: InfluxDB
+    type: influxdb
+    access: proxy
+    url: http://influxdb:8086
+    database: ai_agent_metrics
+    jsonData:
+      timeInterval: "10s"
+    editable: true

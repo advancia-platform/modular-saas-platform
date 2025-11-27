@@ -1,0 +1,48 @@
+name: Repo Hygiene
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  cleanup-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli
+
+      - name: Auto-fix markdown
+        run: markdownlint --fix "**/*.md"
+
+      - name: Remove junk files
+        run: |
+          find . -type f \( -name "*.tmp" -o -name "*.log" -o -name "*.bak" -o -name "*.old" -o -name "*.backup" -o -name ".DS_Store" -o -name "Thumbs.db" \) -delete
+          find . -type f -name "temp_*" -delete
+          find . -type f -name "*~" -delete
+
+      - name: Clean up empty directories
+        run: find . -type d -empty -delete
+
+      - name: Commit changes
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add -A
+          git diff --staged --quiet || git commit -m "🧹 Auto-fix markdown formatting and clean up junk files"
+
+      - name: Push changes
+        if: github.event_name == 'push'
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}

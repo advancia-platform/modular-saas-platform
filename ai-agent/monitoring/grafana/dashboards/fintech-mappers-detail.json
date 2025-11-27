@@ -1,0 +1,493 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "description": "Detailed performance metrics for all 12 Fintech AI Mappers",
+  "editable": true,
+  "gnetId": null,
+  "graphTooltip": 0,
+  "id": 2,
+  "links": [],
+  "panels": [
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "fraud_detection_accuracy * 100",
+          "interval": "",
+          "legendFormat": "1️⃣ Fraud Detection",
+          "refId": "A"
+        },
+        {
+          "expr": "risk_assessment_accuracy * 100",
+          "interval": "",
+          "legendFormat": "2️⃣ Risk Assessment",
+          "refId": "B"
+        },
+        {
+          "expr": "algorithmic_trading_accuracy * 100",
+          "interval": "",
+          "legendFormat": "3️⃣ Algorithmic Trading",
+          "refId": "C"
+        },
+        {
+          "expr": "sentiment_analysis_accuracy * 100",
+          "interval": "",
+          "legendFormat": "4️⃣ Sentiment Analysis",
+          "refId": "D"
+        },
+        {
+          "expr": "credit_scoring_accuracy * 100",
+          "interval": "",
+          "legendFormat": "5️⃣ Credit Scoring",
+          "refId": "E"
+        },
+        {
+          "expr": "market_analysis_accuracy * 100",
+          "interval": "",
+          "legendFormat": "6️⃣ Market Analysis",
+          "refId": "F"
+        }
+      ],
+      "title": "🧠 Fintech AI Mappers 1-6 Accuracy",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "payment_processing_accuracy * 100",
+          "interval": "",
+          "legendFormat": "7️⃣ Payment Processing",
+          "refId": "A"
+        },
+        {
+          "expr": "compliance_monitoring_accuracy * 100",
+          "interval": "",
+          "legendFormat": "8️⃣ Compliance Monitoring",
+          "refId": "B"
+        },
+        {
+          "expr": "customer_analytics_accuracy * 100",
+          "interval": "",
+          "legendFormat": "9️⃣ Customer Analytics",
+          "refId": "C"
+        },
+        {
+          "expr": "aml_detection_accuracy * 100",
+          "interval": "",
+          "legendFormat": "🔟 AML Detection",
+          "refId": "D"
+        },
+        {
+          "expr": "regulatory_reporting_accuracy * 100",
+          "interval": "",
+          "legendFormat": "1️⃣1️⃣ Regulatory Reporting",
+          "refId": "E"
+        },
+        {
+          "expr": "portfolio_optimization_accuracy * 100",
+          "interval": "",
+          "legendFormat": "1️⃣2️⃣ Portfolio Optimization",
+          "refId": "F"
+        }
+      ],
+      "title": "🧠 Fintech AI Mappers 7-12 Accuracy",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 5000
+              }
+            ]
+          },
+          "unit": "ms"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, rate(mapper_processing_time_ms_bucket{mapper=\"fraud_detection\"}[5m]))",
+          "interval": "",
+          "legendFormat": "Fraud Detection Processing Time",
+          "refId": "A"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(mapper_processing_time_ms_bucket{mapper=\"risk_assessment\"}[5m]))",
+          "interval": "",
+          "legendFormat": "Risk Assessment Processing Time",
+          "refId": "B"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(mapper_processing_time_ms_bucket{mapper=\"algorithmic_trading\"}[5m]))",
+          "interval": "",
+          "legendFormat": "Algorithmic Trading Processing Time",
+          "refId": "C"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(mapper_processing_time_ms_bucket{mapper=\"sentiment_analysis\"}[5m]))",
+          "interval": "",
+          "legendFormat": "Sentiment Analysis Processing Time",
+          "refId": "D"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(mapper_processing_time_ms_bucket{mapper=\"compliance_monitoring\"}[5m]))",
+          "interval": "",
+          "legendFormat": "Compliance Monitoring Processing Time",
+          "refId": "E"
+        },
+        {
+          "expr": "histogram_quantile(0.95, rate(mapper_processing_time_ms_bucket{mapper=\"portfolio_optimization\"}[5m]))",
+          "interval": "",
+          "legendFormat": "Portfolio Optimization Processing Time",
+          "refId": "F"
+        }
+      ],
+      "title": "⚡ AI Mapper Processing Performance (95th percentile)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            }
+          },
+          "mappings": []
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "displayMode": "visible",
+          "placement": "bottom"
+        },
+        "pieType": "pie",
+        "reduceOptions": {
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
+        },
+        "tooltip": {
+          "mode": "single"
+        }
+      },
+      "targets": [
+        {
+          "expr": "sum by (deployment_strategy) (deployment_strategy_usage_total)",
+          "interval": "",
+          "legendFormat": "{{deployment_strategy}}",
+          "refId": "A"
+        }
+      ],
+      "title": "🎯 Deployment Strategy Distribution",
+      "type": "piechart"
+    },
+    {
+      "datasource": "Prometheus",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "vis": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 0.7
+              }
+            ]
+          },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "multi"
+        }
+      },
+      "targets": [
+        {
+          "expr": "avg(risk_score) by (error_type)",
+          "interval": "",
+          "legendFormat": "Average Risk Score - {{error_type}}",
+          "refId": "A"
+        }
+      ],
+      "title": "⚖️ Risk Assessment by Error Type",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 27,
+  "style": "dark",
+  "tags": ["ai-performance", "fintech-mappers", "detailed-metrics"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "🧠 12 Fintech AI Mappers - Detailed Performance",
+  "uid": "fintech-mappers-detail",
+  "version": 1
+}

@@ -1,0 +1,2 @@
+{"endpoint": "/api/auth/login", "method": "POST", "limit": 5, "window_seconds": 900, "description": "Login rate limit", "requires_auth": false, "payload": {"email": "ratelimit@example.com", "password": "wrong"}}
+{"endpoint": "/api/auth/signup", "method": "POST", "limit": 3, "window_seconds": 3600, "description": "Signup rate limit", "requires_auth": false, "payload": {"email": "ratelimit@example.com", "password": "Test123!", "firstName": "Test", "lastName": "User"}}

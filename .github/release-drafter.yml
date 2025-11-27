@@ -1,0 +1,109 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+version-resolver:
+  major:
+    labels:
+      - 'major'
+      - 'breaking-change'
+  minor:
+    labels:
+      - 'feature'
+      - 'enhancement'
+      - 'minor'
+  patch:
+    labels:
+      - 'bug'
+      - 'fix'
+      - 'patch'
+      - 'security'
+      - 'documentation'
+      - 'dependencies'
+  default: patch
+
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'feature'
+      - 'enhancement'
+      - 'new-feature'
+  - title: '🐛 Bug Fixes'
+    labels:
+      - 'bug'
+      - 'fix'
+      - 'bugfix'
+  - title: '🔒 Security'
+    labels:
+      - 'security'
+      - 'vulnerability'
+  - title: '📖 Documentation'
+    labels:
+      - 'documentation'
+      - 'docs'
+  - title: '🛠 Infrastructure'
+    labels:
+      - 'ci'
+      - 'cd'
+      - 'infrastructure'
+      - 'deployment'
+  - title: '📝 Dependencies'
+    labels:
+      - 'dependencies'
+      - 'deps'
+  - title: '🗏 Miscellaneous'
+    labels:
+      - 'chore'
+      - 'refactor'
+      - 'cleanup'
+
+change-template: '- $TITLE @$AUTHOR (#$NUMBER)'
+change-title-escapes: '\<*_&'
+
+template: |
+  ## 🎉 What's Changed
+  
+  $CHANGES
+  
+  **Full Changelog**: https://github.com/advancia-platform/modular-saas-platform/compare/$PREVIOUS_TAG...v$RESOLVED_VERSION
+  
+  ## 🚀 Contributors
+  
+  $CONTRIBUTORS
+  
+  ---
+  
+  ### 📋 Release Notes
+  
+  This release includes improvements to our notification services platform, RBAC implementation, and comprehensive testing infrastructure.
+  
+  **Key Features:**
+  - Granular notification preferences with role-based access control
+  - Multi-provider integrations (Resend, Cryptomus, Telegram, NOWPayments)
+  - Comprehensive audit logging for compliance
+  - 80%+ test coverage with automated CI/CD
+  
+  **Security & Compliance:**
+  - All changes include security scanning and vulnerability checks
+  - RBAC permissions validated for admin/auditor/viewer roles
+  - Audit trails maintained for all preference modifications
+  
+  For deployment instructions and breaking changes, see our [Contributing Guide](CONTRIBUTING.md).
+
+include-pre-releases: false
+prerelease: false
+
+exclude-labels:
+  - 'skip-changelog'
+  - 'no-changelog'
+  - 'duplicate'
+  - 'question'
+  - 'invalid'
+  - 'wontfix'
+  - 'help-wanted'
+  - 'good-first-issue'
+
+replacements:
+  - search: '/\[([A-Z]+-\d+)\]/g'
+    replace: '[#$1](https://github.com/advancia-platform/modular-saas-platform/issues/$1)'
+  - search: '/(CVE-\d{4}-\d+)/g'
+    replace: '[$1](https://cve.mitre.org/cgi-bin/cvename.cgi?name=$1)'

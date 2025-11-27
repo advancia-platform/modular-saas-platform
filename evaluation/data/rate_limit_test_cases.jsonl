@@ -1,0 +1,16 @@
+{"endpoint": "/api/auth/login", "request_count": 3, "time_window": 60, "expected_blocked": false, "test_case": "Login within limit (3 in 15min)"}
+{"endpoint": "/api/auth/login", "request_count": 5, "time_window": 900, "expected_blocked": false, "test_case": "Login at limit (5 in 15min)"}
+{"endpoint": "/api/auth/login", "request_count": 6, "time_window": 900, "expected_blocked": true, "test_case": "Login exceeds limit (6 in 15min)"}
+{"endpoint": "/api/auth/signup", "request_count": 2, "time_window": 3600, "expected_blocked": false, "test_case": "Registration within limit (2 in 1hr)"}
+{"endpoint": "/api/auth/signup", "request_count": 3, "time_window": 3600, "expected_blocked": false, "test_case": "Registration at limit (3 in 1hr)"}
+{"endpoint": "/api/auth/signup", "request_count": 4, "time_window": 3600, "expected_blocked": true, "test_case": "Registration exceeds limit (4 in 1hr)"}
+{"endpoint": "/api/payments/process", "request_count": 8, "time_window": 600, "expected_blocked": false, "test_case": "Payment within limit (8 in 10min)"}
+{"endpoint": "/api/payments/process", "request_count": 10, "time_window": 600, "expected_blocked": false, "test_case": "Payment at limit (10 in 10min)"}
+{"endpoint": "/api/payments/process", "request_count": 11, "time_window": 600, "expected_blocked": true, "test_case": "Payment exceeds limit (11 in 10min)"}
+{"endpoint": "/api/password/reset", "request_count": 2, "time_window": 3600, "expected_blocked": false, "test_case": "Password reset within limit (2 in 1hr)"}
+{"endpoint": "/api/password/reset", "request_count": 3, "time_window": 3600, "expected_blocked": false, "test_case": "Password reset at limit (3 in 1hr)"}
+{"endpoint": "/api/password/reset", "request_count": 4, "time_window": 3600, "expected_blocked": true, "test_case": "Password reset exceeds limit (4 in 1hr)"}
+{"endpoint": "/api/auth/login", "user_role": "admin", "request_count": 10, "time_window": 900, "expected_blocked": false, "test_case": "Admin bypasses rate limit"}
+{"endpoint": "/api/payments/process", "user_role": "admin", "request_count": 20, "time_window": 600, "expected_blocked": false, "test_case": "Admin bypasses payment limit"}
+{"endpoint": "/api/auth/signup", "ip_address": "192.168.1.100", "request_count": 100, "time_window": 60, "expected_blocked": false, "test_case": "IP limit within 100/min"}
+{"endpoint": "/api/auth/signup", "ip_address": "192.168.1.101", "request_count": 101, "time_window": 60, "expected_blocked": true, "test_case": "IP limit exceeds 100/min"}

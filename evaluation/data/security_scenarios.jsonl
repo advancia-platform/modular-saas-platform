@@ -1,0 +1,20 @@
+{"scenario": "sql_injection", "endpoint": "/api/auth/login", "payload": {"email": "admin' OR '1'='1", "password": "anything"}, "expected_blocked": true, "test_case": "SQL injection in email field"}
+{"scenario": "xss_attack", "endpoint": "/api/auth/signup", "payload": {"email": "test@test.com", "password": "Valid123!", "name": "<script>alert('xss')</script>"}, "expected_sanitized": true, "test_case": "XSS in name field"}
+{"scenario": "jwt_tampering", "endpoint": "/api/auth/verify", "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEsInJvbGUiOiJhZG1pbiJ9.invalid_signature", "expected_blocked": true, "test_case": "Tampered JWT token"}
+{"scenario": "jwt_expired", "endpoint": "/api/auth/verify", "token": "expired_token", "expected_blocked": true, "expected_error": "expired", "test_case": "Expired JWT token"}
+{"scenario": "brute_force_prevention", "endpoint": "/api/auth/login", "attempts": 10, "time_window": 60, "expected_blocked": true, "test_case": "Brute force attack detection"}
+{"scenario": "rate_limit_bypass_attempt", "endpoint": "/api/auth/login", "headers": {"X-Forwarded-For": "multiple, spoofed, ips"}, "attempts": 10, "expected_blocked": true, "test_case": "Rate limit bypass using spoofed IPs"}
+{"scenario": "weak_password_rejection", "endpoint": "/api/auth/signup", "payload": {"email": "new@test.com", "password": "weak"}, "expected_blocked": true, "expected_error": "password", "test_case": "Weak password rejected"}
+{"scenario": "email_verification_required", "endpoint": "/api/payments/process", "user_verified": false, "expected_blocked": true, "expected_error": "email not verified", "test_case": "Unverified user blocked from payments"}
+{"scenario": "admin_action_logging", "endpoint": "/api/admin/users/delete", "user_role": "admin", "action": "delete_user", "expected_logged": true, "test_case": "Admin action logged in audit trail"}
+{"scenario": "sensitive_data_exposure", "endpoint": "/api/auth/login", "payload": {"email": "test@test.com", "password": "wrong"}, "expected_no_leak": true, "test_case": "No sensitive data in error response"}
+{"scenario": "payment_amount_validation", "endpoint": "/api/payments/process", "payload": {"amount": -100}, "expected_blocked": true, "expected_error": "invalid amount", "test_case": "Negative payment amount rejected"}
+{"scenario": "payment_amount_max_validation", "endpoint": "/api/payments/process", "payload": {"amount": 1000001}, "expected_blocked": true, "expected_error": "exceeds maximum", "test_case": "Excessive payment amount rejected"}
+{"scenario": "socket_auth_required", "endpoint": "socket.io", "event": "join-room", "token": null, "expected_blocked": true, "test_case": "Socket connection requires authentication"}
+{"scenario": "socket_room_isolation", "endpoint": "socket.io", "event": "join-room", "user_id": 1, "target_room": "user-2", "expected_blocked": true, "test_case": "Users cannot join other users' rooms"}
+{"scenario": "password_reset_rate_limit", "endpoint": "/api/password/reset", "attempts": 5, "time_window": 3600, "expected_blocked": true, "test_case": "Password reset rate limited"}
+{"scenario": "common_password_blocked", "endpoint": "/api/auth/signup", "payload": {"email": "new@test.com", "password": "Password123!"}, "expected_blocked": true, "expected_error": "commonly used", "test_case": "Common password pattern blocked"}
+{"scenario": "session_fixation_prevention", "endpoint": "/api/auth/login", "session_id": "fixed_session_123", "expected_new_session": true, "test_case": "New session created on login"}
+{"scenario": "csrf_protection", "endpoint": "/api/auth/login", "method": "POST", "csrf_token": null, "expected_blocked": false, "test_case": "JWT-based auth immune to CSRF"}
+{"scenario": "secure_headers_present", "endpoint": "/api/auth/login", "expected_headers": ["X-Content-Type-Options", "X-Frame-Options", "X-XSS-Protection"], "test_case": "Security headers present"}
+{"scenario": "secrets_not_exposed", "endpoint": "/api/system/health", "expected_no_secrets": true, "test_case": "No secrets in responses"}

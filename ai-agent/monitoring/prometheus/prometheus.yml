@@ -1,0 +1,113 @@
+# Prometheus Configuration for AI DevOps Agent
+# Complete monitoring setup for fintech AI-powered DevOps automation
+
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  external_labels:
+    cluster: "ai-devops-agent"
+    environment: "production"
+
+rule_files:
+  - "rules/*.yml"
+  - "alerts/*.yml"
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets:
+            - alertmanager:9093
+
+scrape_configs:
+  # Prometheus itself
+  - job_name: "prometheus"
+    static_configs:
+      - targets: ["localhost:9090"]
+    scrape_interval: 30s
+
+  # AI DevOps Agent Core Services
+  - job_name: "reasoning-engine"
+    static_configs:
+      - targets: ["reasoning-engine:5000"]
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      collect[]:
+        - "ai_analysis_duration"
+        - "fintech_mapper_performance"
+        - "error_classification_accuracy"
+        - "fix_generation_time"
+
+  - job_name: "execution-engine"
+    static_configs:
+      - targets: ["execution-engine:3000"]
+    metrics_path: "/metrics"
+    scrape_interval: 10s
+    scrape_timeout: 5s
+    honor_labels: true
+    params:
+      collect[]:
+        - "deployment_success_rate"
+        - "rollback_frequency"
+        - "fix_application_time"
+        - "validation_duration"
+
+  # Infrastructure Services
+  - job_name: "postgres"
+    static_configs:
+      - targets: ["postgres-exporter:9187"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  - job_name: "redis"
+    static_configs:
+      - targets: ["redis-exporter:9121"]
+    metrics_path: "/metrics"
+    scrape_interval: 30s
+
+  # System Metrics
+  - job_name: "node-exporter"
+    static_configs:
+      - targets: ["node-exporter:9100"]
+    scrape_interval: 15s
+
+  # Container Metrics
+  - job_name: "cadvisor"
+    static_configs:
+      - targets: ["cadvisor:8080"]
+    scrape_interval: 15s
+
+  # Docker Engine Metrics
+  - job_name: "docker"
+    static_configs:
+      - targets: ["localhost:9323"]
+    scrape_interval: 30s
+
+  # Application Performance Monitoring
+  - job_name: "ai-agent-custom-metrics"
+    static_configs:
+      - targets: ["reasoning-engine:5000", "execution-engine:3000"]
+    metrics_path: "/custom-metrics"
+    scrape_interval: 5s
+    params:
+      module: ["ai_performance"]
+
+  # Health Check Monitoring
+  - job_name: "blackbox"
+    metrics_path: "/probe"
+    params:
+      module: [http_2xx]
+    static_configs:
+      - targets:
+          - "http://reasoning-engine:5000/health"
+          - "http://execution-engine:3000/health"
+          - "http://grafana:3000/api/health"
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: __param_target
+      - source_labels: [__param_target]
+        target_label: instance
+      - target_label: __address__
+        replacement: blackbox-exporter:9115

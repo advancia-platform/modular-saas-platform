@@ -1,0 +1,33 @@
+# Grafana Dashboard Configuration for AI DevOps Agent
+apiVersion: 1
+
+providers:
+  - name: "AI DevOps Agent Dashboards"
+    orgId: 1
+    folder: "AI Agent"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards
+
+  - name: "Infrastructure Dashboards"
+    orgId: 1
+    folder: "Infrastructure"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/infrastructure
+
+  - name: "AI Performance Dashboards"
+    orgId: 1
+    folder: "AI Performance"
+    type: file
+    disableDeletion: false
+    updateIntervalSeconds: 30
+    allowUiUpdates: true
+    options:
+      path: /var/lib/grafana/dashboards/ai-performance

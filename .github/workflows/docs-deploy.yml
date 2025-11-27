@@ -1,0 +1,382 @@
+name: Deploy MkDocs Documentation
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "docs-site/**"
+      - "mkdocs.yml"
+      - ".github/workflows/docs-deploy.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "docs-site/**"
+      - "mkdocs.yml"
+      - ".github/workflows/docs-deploy.yml"
+  release:
+    types: [published]
+
+env:
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  validate-content:
+    name: Validate Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            mkdocs-material \
+            mkdocs-minify-plugin \
+            mkdocs-git-revision-date-localized-plugin \
+            pymdown-extensions \
+            mike \
+            linkchecker \
+            pyyaml \
+            beautifulsoup4 \
+            requests
+
+      - name: Validate markdown syntax
+        run: |
+          # Check for common markdown issues
+          find docs-site -name "*.md" -exec grep -l "](.*[[:space:]].*)" {} \; | \
+            while read file; do
+              echo "::error file=$file::Contains spaces in markdown links"
+              exit 1
+            done
+
+      - name: Validate MkDocs configuration
+        run: |
+          python -c "
+          import yaml
+          import sys
+
+          try:
+              with open('mkdocs.yml', 'r') as f:
+                  config = yaml.safe_load(f)
+              print('✅ MkDocs configuration is valid')
+          except Exception as e:
+              print(f'::error::Invalid mkdocs.yml: {e}')
+              sys.exit(1)
+          "
+
+      - name: Check for broken internal links
+        run: |
+          # Build docs first
+          mkdocs build --strict
+
+          # Check internal links
+          python - << 'EOF'
+          import os
+          import re
+          from pathlib import Path
+          from urllib.parse import unquote
+
+          docs_dir = Path('docs-site')
+          site_dir = Path('site')
+
+          # Find all markdown files and extract internal links
+          broken_links = []
+
+          for md_file in docs_dir.rglob('*.md'):
+              content = md_file.read_text(encoding='utf-8')
+
+              # Find markdown links: [text](link)
+              links = re.findall(r'\[([^\]]*)\]\(([^)]+)\)', content)
+
+              for link_text, link_url in links:
+                  # Skip external links
+                  if link_url.startswith(('http://', 'https://', 'mailto:')):
+                      continue
+
+                  # Skip anchors only
+                  if link_url.startswith('#'):
+                      continue
+
+                  # Handle relative links
+                  if '/' in link_url:
+                      target_path = docs_dir / link_url.replace('.md', '.md')
+                  else:
+                      target_path = md_file.parent / link_url.replace('.md', '.md')
+
+                  # Check if target exists
+                  if not target_path.exists():
+                      broken_links.append(f"{md_file}: {link_url}")
+
+          if broken_links:
+              print("::error::Broken internal links found:")
+              for link in broken_links:
+                  print(f"::error::{link}")
+              exit(1)
+          else:
+              print("✅ All internal links are valid")
+          EOF
+
+      - name: Validate Mermaid diagrams
+        run: |
+          # Check if mermaid diagrams have valid syntax
+          python - << 'EOF'
+          import re
+          from pathlib import Path
+
+          docs_dir = Path('docs-site')
+          invalid_diagrams = []
+
+          for md_file in docs_dir.rglob('*.md'):
+              content = md_file.read_text(encoding='utf-8')
+
+              # Find mermaid code blocks
+              mermaid_blocks = re.findall(r'```mermaid\n(.*?)\n```', content, re.DOTALL)
+
+              for block in mermaid_blocks:
+                  # Basic validation - check for required keywords
+                  if not any(keyword in block for keyword in ['graph', 'flowchart', 'sequenceDiagram', 'classDiagram', 'gitgraph']):
+                      invalid_diagrams.append(f"{md_file}: Invalid mermaid diagram")
+
+                  # Check for common syntax issues
+                  if '-->' in block and not re.search(r'\w+\s*-->\s*\w+', block):
+                      invalid_diagrams.append(f"{md_file}: Invalid mermaid arrow syntax")
+
+          if invalid_diagrams:
+              print("::warning::Potential mermaid diagram issues:")
+              for diagram in invalid_diagrams:
+                  print(f"::warning::{diagram}")
+          else:
+              print("✅ All mermaid diagrams appear valid")
+          EOF
+
+      - name: Check documentation completeness
+        run: |
+          # Ensure all required sections have content
+          python - << 'EOF'
+          from pathlib import Path
+          import yaml
+
+          docs_dir = Path('docs-site')
+
+          with open('mkdocs.yml', 'r') as f:
+              config = yaml.safe_load(f)
+
+          missing_files = []
+
+          def extract_files(nav_item):
+              if isinstance(nav_item, dict):
+                  for key, value in nav_item.items():
+                      if isinstance(value, str):
+                          # This is a file reference
+                          file_path = docs_dir / value
+                          if not file_path.exists():
+                              missing_files.append(value)
+                      elif isinstance(value, list):
+                          for item in value:
+                              extract_files(item)
+                      elif isinstance(value, dict):
+                          extract_files(value)
+              elif isinstance(nav_item, list):
+                  for item in nav_item:
+                      extract_files(item)
+
+          if 'nav' in config:
+              extract_files(config['nav'])
+
+          if missing_files:
+              print("::error::Missing documentation files:")
+              for file in missing_files:
+                  print(f"::error::Missing: {file}")
+              exit(1)
+          else:
+              print("✅ All navigation files exist")
+          EOF
+
+  deploy:
+    name: Deploy Documentation
+    runs-on: ubuntu-latest
+    needs: validate-content
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install MkDocs and dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            mkdocs-material \
+            mkdocs-minify-plugin \
+            mkdocs-git-revision-date-localized-plugin \
+            pymdown-extensions \
+            mike
+
+      - name: Configure Git for deployment
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Deploy latest version
+        run: |
+          # Get version from git tag or use 'latest'
+          if [[ "${{ github.event_name }}" == "release" ]]; then
+            VERSION="${{ github.event.release.tag_name }}"
+            mike deploy --push --update-aliases "$VERSION" latest
+            mike set-default --push latest
+          else
+            mike deploy --push --update-aliases dev
+          fi
+
+      - name: Deploy to GitHub Pages (fallback)
+        if: failure()
+        run: |
+          mkdocs gh-deploy --force --clean --verbose
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  version-release:
+    name: Create Versioned Documentation
+    runs-on: ubuntu-latest
+    needs: validate-content
+    if: github.event_name == 'release'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install \
+            mkdocs-material \
+            mkdocs-minify-plugin \
+            mkdocs-git-revision-date-localized-plugin \
+            pymdown-extensions \
+            mike
+
+      - name: Configure Git
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+
+      - name: Deploy versioned documentation
+        run: |
+          VERSION="${{ github.event.release.tag_name }}"
+
+          # Create version-specific deployment
+          mike deploy --push --update-aliases "$VERSION"
+
+          # Update latest alias if this is not a pre-release
+          if [[ "${{ github.event.release.prerelease }}" != "true" ]]; then
+            mike alias --push "$VERSION" latest
+            mike set-default --push latest
+          fi
+
+      - name: Generate PDF documentation
+        run: |
+          # Install additional dependencies for PDF generation
+          sudo apt-get update
+          sudo apt-get install -y wkhtmltopdf
+          pip install mkdocs-pdf-export-plugin
+
+          # Add PDF plugin to mkdocs.yml temporarily
+          cp mkdocs.yml mkdocs.yml.backup
+          echo "  - pdf-export:" >> mkdocs.yml
+          echo "      verbose: true" >> mkdocs.yml
+          echo "      media_type: print" >> mkdocs.yml
+          echo "      combined: true" >> mkdocs.yml
+          echo "      combined_output_path: compliance-manual-${{ github.event.release.tag_name }}.pdf" >> mkdocs.yml
+
+          # Build with PDF
+          mkdocs build
+
+          # Restore original mkdocs.yml
+          mv mkdocs.yml.backup mkdocs.yml
+
+      - name: Upload PDF to release
+        if: success()
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ github.event.release.upload_url }}
+          asset_path: ./site/compliance-manual-${{ github.event.release.tag_name }}.pdf
+          asset_name: compliance-manual-${{ github.event.release.tag_name }}.pdf
+          asset_content_type: application/pdf
+
+  notify:
+    name: Notify Teams
+    runs-on: ubuntu-latest
+    needs: [deploy, version-release]
+    if: always()
+
+    steps:
+      - name: Notify Slack
+        if: success()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_DOCS_WEBHOOK }}
+          SLACK_CHANNEL: "#documentation"
+          SLACK_COLOR: good
+          SLACK_MESSAGE: |
+            📚 Documentation updated successfully!
+
+            **Event:** ${{ github.event_name }}
+            **Branch/Tag:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+
+            🔗 [View Documentation](https://docs.advancia.dev)
+            🏷️ [Version History](https://docs.advancia.dev/versions/)
+
+      - name: Notify on failure
+        if: failure()
+        uses: rtCamp/action-slack-notify@v2
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_DOCS_WEBHOOK }}
+          SLACK_CHANNEL: "#alerts"
+          SLACK_COLOR: danger
+          SLACK_MESSAGE: |
+            ❌ Documentation deployment failed!
+
+            **Event:** ${{ github.event_name }}
+            **Branch/Tag:** ${{ github.ref_name }}
+            **Commit:** ${{ github.sha }}
+
+            Please check the GitHub Actions logs for details.
+
+      - name: Update team via email
+        if: github.event_name == 'release'
+        run: |
+          # Send email notification for version releases
+          curl -X POST "${{ secrets.NOTIFICATION_WEBHOOK }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "type": "documentation_release",
+              "version": "${{ github.event.release.tag_name }}",
+              "url": "https://docs.advancia.dev",
+              "pdf_url": "https://github.com/${{ github.repository }}/releases/download/${{ github.event.release.tag_name }}/compliance-manual-${{ github.event.release.tag_name }}.pdf"
+            }'

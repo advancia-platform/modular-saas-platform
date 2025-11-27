@@ -1,0 +1,135 @@
+{
+  "overall_score": 0.0,
+  "timestamp": "2025-11-27T00:28:57.732456Z",
+  "backend_url": "http://localhost:4000",
+  "test_duration_seconds": 28.52,
+  "summary": {
+    "total_tests": 7,
+    "passed": 0,
+    "failed": 7,
+    "skipped": 0
+  },
+  "category_scores": {
+    "password": {
+      "score": 0,
+      "passed": 0,
+      "failed": 0,
+      "duration_seconds": 0
+    },
+    "auth_flow": {
+      "score": 0.0,
+      "passed": 0,
+      "failed": 5,
+      "duration_seconds": 20.42
+    },
+    "rate_limiting": {
+      "score": 0.0,
+      "passed": 0,
+      "failed": 2,
+      "duration_seconds": 8.09
+    }
+  },
+  "issues_found": [
+    {
+      "severity": "high",
+      "category": "auth_flow",
+      "test": "signup_weak_password",
+      "message": "Expected status 400 but got 0",
+      "recommendation": "Review authentication endpoint validation"
+    },
+    {
+      "severity": "high",
+      "category": "auth_flow",
+      "test": "signup_strong_password",
+      "message": "Expected status 201 but got 0",
+      "recommendation": "Review authentication endpoint validation"
+    },
+    {
+      "severity": "high",
+      "category": "auth_flow",
+      "test": "login_correct_credentials",
+      "message": "Expected status 200 but got 0",
+      "recommendation": "Review authentication endpoint validation"
+    },
+    {
+      "severity": "high",
+      "category": "auth_flow",
+      "test": "login_wrong_password",
+      "message": "Expected status 401 but got 0",
+      "recommendation": "Review authentication endpoint validation"
+    },
+    {
+      "severity": "high",
+      "category": "auth_flow",
+      "test": "login_nonexistent_user",
+      "message": "Expected status 401 but got 0",
+      "recommendation": "Review authentication endpoint validation"
+    },
+    {
+      "severity": "high",
+      "category": "rate_limiting",
+      "test": "Login rate limit",
+      "message": "Rate limiting not working on /api/auth/login (made 0 requests, expected limit at 5)",
+      "recommendation": "Implement or fix rate limiting middleware"
+    },
+    {
+      "severity": "high",
+      "category": "rate_limiting",
+      "test": "Signup rate limit",
+      "message": "Rate limiting not working on /api/auth/signup (made 0 requests, expected limit at 3)",
+      "recommendation": "Implement or fix rate limiting middleware"
+    }
+  ],
+  "passed_tests": [],
+  "failed_tests": [
+    {
+      "name": "signup_weak_password",
+      "category": "auth_flow",
+      "expected": "Status 400",
+      "actual": "Status 0",
+      "details": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /api/auth/signup (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x00000170330FEDB0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+    },
+    {
+      "name": "signup_strong_password",
+      "category": "auth_flow",
+      "expected": "Status 201",
+      "actual": "Status 0",
+      "details": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /api/auth/signup (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017034D25AF0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+    },
+    {
+      "name": "login_correct_credentials",
+      "category": "auth_flow",
+      "expected": "Status 200",
+      "actual": "Status 0",
+      "details": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /api/auth/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017034CFBFB0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+    },
+    {
+      "name": "login_wrong_password",
+      "category": "auth_flow",
+      "expected": "Status 401",
+      "actual": "Status 0",
+      "details": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /api/auth/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017034D25BB0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+    },
+    {
+      "name": "login_nonexistent_user",
+      "category": "auth_flow",
+      "expected": "Status 401",
+      "actual": "Status 0",
+      "details": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /api/auth/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017034D24BF0>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+    },
+    {
+      "name": "Login rate limit",
+      "category": "rate_limiting",
+      "expected": "Rate limited after 5 requests",
+      "actual": "Made 0 requests without rate limiting",
+      "details": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /api/auth/login (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017034D26B10>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+    },
+    {
+      "name": "Signup rate limit",
+      "category": "rate_limiting",
+      "expected": "Rate limited after 3 requests",
+      "actual": "Made 0 requests without rate limiting",
+      "details": "HTTPConnectionPool(host='localhost', port=4000): Max retries exceeded with url: /api/auth/signup (Caused by NewConnectionError('<urllib3.connection.HTTPConnection object at 0x0000017034D27590>: Failed to establish a new connection: [WinError 10061] No connection could be made because the target machine actively refused it'))"
+    }
+  ]
+}

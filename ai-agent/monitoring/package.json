@@ -1,0 +1,18 @@
+{
+  "name": "ai-cybersecurity-integration-server",
+  "version": "1.0.0",
+  "description": "Node.js Socket.IO integration server for AI Cybersecurity Dashboard",
+  "main": "integration_server.js",
+  "scripts": {
+    "start": "node integration_server.js",
+    "dev": "nodemon integration_server.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "socket.io": "^4.7.2",
+    "cors": "^2.8.5"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.1"
+  }
+}

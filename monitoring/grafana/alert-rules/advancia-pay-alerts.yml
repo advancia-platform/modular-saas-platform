@@ -1,0 +1,122 @@
+# Grafana Alert Rules for Advancia Pay
+groups:
+  - name: advancia_pay_sla_alerts
+    rules:
+      # Critical: Service Down
+      - alert: ServiceDown
+        expr: up{job=~"advancia-pay.*"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+          team: platform
+        annotations:
+          summary: "Service {{ $labels.job }} is down"
+          description: "Service {{ $labels.job }} has been down for more than 1 minute"
+          runbook_url: "https://wiki.advancia.pay/runbooks/service-down"
+
+      # Critical: High Error Rate
+      - alert: HighErrorRate
+        expr: (rate(http_requests_total{status_code=~"5.*"}[5m]) / rate(http_requests_total[5m])) * 100 > 5
+        for: 2m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+          team: platform
+        annotations:
+          summary: "High error rate on {{ $labels.job }}"
+          description: "Error rate is {{ $value }}% for the last 5 minutes"
+          runbook_url: "https://wiki.advancia.pay/runbooks/high-error-rate"
+
+      # Warning: SLA Degradation
+      - alert: SLADegradation
+        expr: avg_over_time(up{job=~"advancia-pay.*"}[1h]) * 100 < 99.5
+        for: 5m
+        labels:
+          severity: warning
+          service: "{{ $labels.job }}"
+          team: platform
+        annotations:
+          summary: "SLA degradation detected on {{ $labels.job }}"
+          description: "Uptime is {{ $value }}% over the last hour, below 99.5% threshold"
+          runbook_url: "https://wiki.advancia.pay/runbooks/sla-degradation"
+
+      # Critical: SLA Breach
+      - alert: SLABreach
+        expr: avg_over_time(up{job=~"advancia-pay.*"}[24h]) * 100 < 99.0
+        for: 1m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+          team: platform
+        annotations:
+          summary: "SLA BREACH: {{ $labels.job }} uptime below 99%"
+          description: "24h uptime is {{ $value }}%, breaching 99% SLA commitment"
+          runbook_url: "https://wiki.advancia.pay/runbooks/sla-breach"
+
+      # Warning: High Response Time
+      - alert: HighResponseTime
+        expr: histogram_quantile(0.95, rate(http_request_duration_seconds_bucket[5m])) > 2
+        for: 3m
+        labels:
+          severity: warning
+          service: "{{ $labels.job }}"
+          team: platform
+        annotations:
+          summary: "High response time on {{ $labels.job }}"
+          description: "P95 response time is {{ $value }}s for the last 5 minutes"
+          runbook_url: "https://wiki.advancia.pay/runbooks/high-response-time"
+
+      # Warning: Database Connection Issues
+      - alert: DatabaseConnectionHigh
+        expr: database_connections_active > 80
+        for: 5m
+        labels:
+          severity: warning
+          service: database
+          team: platform
+        annotations:
+          summary: "High database connection count"
+          description: "Database has {{ $value }} active connections, approaching limit"
+          runbook_url: "https://wiki.advancia.pay/runbooks/database-connections"
+
+      # Info: Low Traffic
+      - alert: LowTraffic
+        expr: rate(http_requests_total[5m]) < 0.1
+        for: 10m
+        labels:
+          severity: info
+          service: "{{ $labels.job }}"
+          team: platform
+        annotations:
+          summary: "Low traffic detected on {{ $labels.job }}"
+          description: "Request rate is {{ $value }} req/s for the last 5 minutes"
+          runbook_url: "https://wiki.advancia.pay/runbooks/low-traffic"
+
+  - name: advancia_pay_business_alerts
+    rules:
+      # Critical: Notification System Failure
+      - alert: NotificationSystemFailure
+        expr: rate(notification_preferences_operations_total{operation="error"}[5m]) > 0.1
+        for: 2m
+        labels:
+          severity: critical
+          service: notifications
+          team: platform
+        annotations:
+          summary: "Notification system experiencing errors"
+          description: "Notification error rate is {{ $value }} errors/s"
+          runbook_url: "https://wiki.advancia.pay/runbooks/notification-failure"
+
+      # Warning: High User Activity Spike
+      - alert: HighUserActivitySpike
+        expr: increase(active_users_total[5m]) > 1000
+        for: 3m
+        labels:
+          severity: warning
+          service: users
+          team: platform
+        annotations:
+          summary: "Unusual spike in user activity"
+          description: "Active users increased by {{ $value }} in the last 5 minutes"
+          runbook_url: "https://wiki.advancia.pay/runbooks/traffic-spike"

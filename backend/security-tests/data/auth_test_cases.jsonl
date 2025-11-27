@@ -1,0 +1,5 @@
+{"test_name": "signup_weak_password", "endpoint": "/api/auth/signup", "method": "POST", "payload": {"email": "weak@test.com", "password": "weak", "firstName": "Test", "lastName": "User"}, "expected_status": 400}
+{"test_name": "signup_strong_password", "endpoint": "/api/auth/signup", "method": "POST", "payload": {"email": "strong@test.com", "password": "StrongP@ss123", "firstName": "Test", "lastName": "User"}, "expected_status": 201}
+{"test_name": "login_correct_credentials", "endpoint": "/api/auth/login", "method": "POST", "payload": {"email": "strong@test.com", "password": "StrongP@ss123"}, "expected_status": 200}
+{"test_name": "login_wrong_password", "endpoint": "/api/auth/login", "method": "POST", "payload": {"email": "strong@test.com", "password": "WrongPassword"}, "expected_status": 401}
+{"test_name": "login_nonexistent_user", "endpoint": "/api/auth/login", "method": "POST", "payload": {"email": "nonexistent@test.com", "password": "AnyPassword123!"}, "expected_status": 401}

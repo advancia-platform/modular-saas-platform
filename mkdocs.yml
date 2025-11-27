@@ -1,0 +1,183 @@
+site_name: Advancia Pay Ledger Platform
+site_description: Comprehensive documentation for the modular SaaS platform
+site_author: Advancia Platform Team
+repo_url: https://github.com/advancia-platform/modular-saas-platform
+repo_name: advancia-platform/modular-saas-platform
+
+# Documentation directory
+docs_dir: docs-site
+
+# Theme configuration
+theme:
+  name: material
+  palette:
+    # Advancia Pay brand colors
+    - scheme: default
+      primary: blue
+      accent: green
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - scheme: slate
+      primary: blue
+      accent: green
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.path
+    - navigation.top
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.code.annotate
+    - toc.follow
+
+# Extensions
+markdown_extensions:
+  - admonition
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - attr_list
+  - md_in_html
+  - tables
+  - footnotes
+  - abbr
+  - def_list
+
+# Navigation structure
+nav:
+  - Home: index.md
+
+  # Getting Started
+  - Getting Started:
+      - Overview: getting-started/overview.md
+      - Quick Start: getting-started/quick-start.md
+      - Bootstrap Guide: getting-started/bootstrap.md
+      - Prerequisites: getting-started/prerequisites.md
+      - Cluster Validation: getting-started/cluster-validation.md
+
+  # Architecture
+  - Architecture:
+      - GitOps Overview: architecture/gitops-overview.md
+      - Frontend Architecture: architecture/frontend.md
+      - Backend Architecture: architecture/backend.md
+      - ArgoCD Setup: architecture/argocd.md
+      - Namespace Design: architecture/namespaces.md
+      - Workflow Architecture: architecture/workflows.md
+      - System Design: architecture/system-design.md
+
+  # Frontend Dashboard
+  - Frontend:
+      - Dashboard Overview: frontend/dashboard.md
+      - Next.js Setup: frontend/nextjs-setup.md
+      - Tailwind Styling: frontend/tailwind.md
+      - API Integration: frontend/api-integration.md
+      - Component Library: frontend/components.md
+
+  # Backend Services
+  - Backend:
+      - Service Architecture: backend/architecture.md
+      - API Endpoints: backend/api-endpoints.md
+      - Database Design: backend/database.md
+      - External Integrations: backend/integrations.md
+      - Microservices: backend/microservices.md
+
+  # Compliance & Governance
+  - Compliance:
+      - Compliance Overview: compliance/overview.md
+      - KPI Dashboard: compliance/kpi-dashboard.md
+      - Audit Trail: compliance/audit-trail.md
+      - RBAC Implementation: compliance/rbac.md
+      - Regulatory Requirements: compliance/regulatory.md
+
+  # Operations
+  - Operations:
+      - GitOps Operations: operations/gitops-operations.md
+      - Sync Management: operations/sync.md
+      - Rollback Procedures: operations/rollback.md
+      - Scaling Strategies: operations/scaling.md
+      - Chaos Testing: operations/chaos-testing.md
+
+  # Observability
+  - Observability:
+      - Monitoring Overview: observability/overview.md
+      - Monitoring Stack: observability/monitoring.md
+      - Prometheus Setup: observability/prometheus.md
+      - Grafana Dashboards: observability/grafana.md
+      - ELK Integration: observability/elk.md
+      - Alert Management: observability/alerting.md
+
+  # AI Agent System
+  - AI Agent System:
+      - Agent Overview: ai-agent/overview.md
+      - DevOps Agent: ai-agent/devops-agent.md
+      - Command Center: ai-agent/command-center.md
+      - Intelligence Engine: ai-agent/intelligence.md
+      - Automation Rules: ai-agent/automation.md
+
+  # Security
+  - Security:
+      - Security Overview: security/overview.md
+      - Authentication: security/authentication.md
+      - Secret Management: security/secret-management.md
+      - Compliance: security/compliance.md
+      - Incident Response: security/incident-response.md
+
+  # Troubleshooting
+  - Troubleshooting:
+      - Common Issues: troubleshooting/common-issues.md
+      - Error Resolution: troubleshooting/error-resolution.md
+      - Performance Issues: troubleshooting/performance.md
+      - Network Problems: troubleshooting/network.md
+      - FAQ: troubleshooting/faq.md
+
+  # Reference
+  - Reference:
+      - Glossary: reference/glossary.md
+      - API Reference: reference/api.md
+      - Configuration: reference/configuration.md
+      - Commands: reference/commands.md
+      - Best Practices: reference/best-practices.md
+
+  # Guides
+  - Guides:
+      - Email Templates: guides/email-templates.md
+      - Deployment Guide: guides/deployment.md
+      - Monitoring Setup: guides/monitoring-setup.md
+      - Backup Procedures: guides/backup.md
+      - Team Onboarding: guides/team-onboarding.md
+      - Migration Executive Summary: guides/migration-executive-summary.md
+      - Migration & Rollout Plan: guides/migration-rollout-plan.md
+      - Migration Dashboard: guides/migration-dashboard.md
+
+# Plugins
+plugins:
+  - search
+  - minify:
+      minify_html: true
+  - git-revision-date-localized:
+      type: date
+
+# Extra CSS and JavaScript
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/advancia-platform/modular-saas-platform
+  version:
+    provider: mike

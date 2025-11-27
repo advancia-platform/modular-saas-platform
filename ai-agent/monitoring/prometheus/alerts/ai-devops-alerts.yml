@@ -1,0 +1,211 @@
+# Prometheus Alert Rules for AI DevOps Agent
+# Critical alerts for monitoring the fintech AI-powered DevOps system
+
+groups:
+  - name: ai-devops-agent-alerts
+    rules:
+      # Fix Success Rate Alerts
+      - alert: FixSuccessRateDropping
+        expr: rate(fix_success_total[5m]) / rate(fix_attempts_total[5m]) < 0.85
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-devops-agent
+        annotations:
+          summary: "AI DevOps Agent fix success rate is dropping"
+          description: "Fix success rate has dropped below 85% for the last 5 minutes. Current rate: {{ $value }}"
+
+      - alert: FixSuccessRateCritical
+        expr: rate(fix_success_total[5m]) / rate(fix_attempts_total[5m]) < 0.70
+        for: 2m
+        labels:
+          severity: critical
+          service: ai-devops-agent
+        annotations:
+          summary: "AI DevOps Agent fix success rate critically low"
+          description: "Fix success rate has dropped below 70% for the last 2 minutes. Current rate: {{ $value }}"
+
+      # MTTR Alerts
+      - alert: HighMeanTimeToResolution
+        expr: histogram_quantile(0.95, rate(mttr_seconds_bucket[5m])) > 1800
+        for: 10m
+        labels:
+          severity: warning
+          service: ai-devops-agent
+        annotations:
+          summary: "Mean Time To Resolution is too high"
+          description: "95th percentile MTTR has been above 30 minutes for the last 10 minutes. Current MTTR: {{ $value }}s"
+
+      - alert: MTTRCritical
+        expr: histogram_quantile(0.95, rate(mttr_seconds_bucket[5m])) > 3600
+        for: 5m
+        labels:
+          severity: critical
+          service: ai-devops-agent
+        annotations:
+          summary: "Mean Time To Resolution critically high"
+          description: "95th percentile MTTR has been above 1 hour for the last 5 minutes. Current MTTR: {{ $value }}s"
+
+      # Rollback Frequency Alerts
+      - alert: HighRollbackRate
+        expr: increase(rollback_count_total[1h]) > 5
+        for: 0m
+        labels:
+          severity: warning
+          service: ai-devops-agent
+        annotations:
+          summary: "High deployment rollback rate detected"
+          description: "More than 5 rollbacks in the last hour. Count: {{ $value }}"
+
+      - alert: RollbackRateCritical
+        expr: increase(rollback_count_total[1h]) > 10
+        for: 0m
+        labels:
+          severity: critical
+          service: ai-devops-agent
+        annotations:
+          summary: "Critical deployment rollback rate"
+          description: "More than 10 rollbacks in the last hour. Count: {{ $value }}"
+
+  - name: fintech-mapper-alerts
+    rules:
+      # Individual Mapper Performance
+      - alert: FintechMapperDown
+        expr: up{job=~"reasoning-engine|execution-engine"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: "{{ $labels.job }}"
+        annotations:
+          summary: "Fintech AI Mapper service is down"
+          description: "{{ $labels.job }} has been down for more than 1 minute"
+
+      - alert: FintechMapperAccuracyDropping
+        expr: fintech_mapper_accuracy < 0.80
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-devops-agent
+          mapper: "{{ $labels.mapper }}"
+        annotations:
+          summary: "Fintech AI Mapper accuracy dropping"
+          description: "{{ $labels.mapper }} accuracy has dropped below 80%. Current: {{ $value }}"
+
+      - alert: FintechMapperProcessingSlowdown
+        expr: histogram_quantile(0.95, rate(mapper_processing_time_ms_bucket[5m])) > 5000
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-devops-agent
+          mapper: "{{ $labels.mapper }}"
+        annotations:
+          summary: "Fintech AI Mapper processing time high"
+          description: "{{ $labels.mapper }} 95th percentile processing time above 5 seconds. Current: {{ $value }}ms"
+
+  - name: infrastructure-alerts
+    rules:
+      # Resource Usage Alerts
+      - alert: HighCPUUsage
+        expr: (100 - (avg by(instance) (irate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)) > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High CPU usage detected"
+          description: "CPU usage has been above 85% for more than 5 minutes on {{ $labels.instance }}"
+
+      - alert: HighMemoryUsage
+        expr: (1 - (node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes)) * 100 > 85
+        for: 5m
+        labels:
+          severity: warning
+          service: infrastructure
+        annotations:
+          summary: "High memory usage detected"
+          description: "Memory usage has been above 85% for more than 5 minutes on {{ $labels.instance }}"
+
+      - alert: DiskSpaceLow
+        expr: (node_filesystem_avail_bytes{mountpoint="/"} / node_filesystem_size_bytes{mountpoint="/"}) * 100 < 15
+        for: 5m
+        labels:
+          severity: critical
+          service: infrastructure
+        annotations:
+          summary: "Disk space critically low"
+          description: "Less than 15% disk space remaining on {{ $labels.instance }}"
+
+      # Database Alerts
+      - alert: PostgreSQLDown
+        expr: up{job="postgres"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "PostgreSQL is down"
+          description: "PostgreSQL database has been down for more than 1 minute"
+
+      - alert: RedisDown
+        expr: up{job="redis"} == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: database
+        annotations:
+          summary: "Redis is down"
+          description: "Redis cache has been down for more than 1 minute"
+
+      # AI Analysis Performance
+      - alert: AIAnalysisSlowdown
+        expr: histogram_quantile(0.95, rate(ai_analysis_duration_seconds_bucket[5m])) > 30
+        for: 5m
+        labels:
+          severity: warning
+          service: ai-devops-agent
+        annotations:
+          summary: "AI analysis processing slowdown"
+          description: "95th percentile AI analysis time above 30 seconds for 5 minutes. Current: {{ $value }}s"
+
+      - alert: AIAnalysisCriticalSlowdown
+        expr: histogram_quantile(0.95, rate(ai_analysis_duration_seconds_bucket[5m])) > 60
+        for: 2m
+        labels:
+          severity: critical
+          service: ai-devops-agent
+        annotations:
+          summary: "AI analysis processing critically slow"
+          description: "95th percentile AI analysis time above 60 seconds for 2 minutes. Current: {{ $value }}s"
+
+  - name: security-alerts
+    rules:
+      # Security and Compliance Alerts
+      - alert: SecurityViolationDetected
+        expr: increase(security_violations_total[5m]) > 0
+        for: 0m
+        labels:
+          severity: critical
+          service: security
+        annotations:
+          summary: "Security violation detected"
+          description: "{{ $value }} security violations detected in the last 5 minutes"
+
+      - alert: ComplianceCheckFailed
+        expr: compliance_check_success == 0
+        for: 1m
+        labels:
+          severity: critical
+          service: compliance
+        annotations:
+          summary: "Compliance check failed"
+          description: "Compliance check has been failing for more than 1 minute"
+
+      - alert: AnomalyDetectionAlert
+        expr: anomaly_score > 0.8
+        for: 2m
+        labels:
+          severity: warning
+          service: ai-devops-agent
+        annotations:
+          summary: "High anomaly score detected"
+          description: "Anomaly detection score above 0.8 for 2 minutes. Current: {{ $value }}"

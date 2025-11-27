@@ -1,0 +1,36 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+namespace: advancia-prod
+
+resources:
+  - ../../base
+  - hpa.yaml
+  - pdb.yaml
+  - network-policy.yaml
+
+namePrefix: prod-
+
+commonLabels:
+  environment: production
+
+patchesStrategicMerge:
+  - deployment-patch.yaml
+
+images:
+  - name: advancia/backend
+    newTag: v1.2.0
+  - name: advancia/frontend
+    newTag: v1.2.0
+
+replicas:
+  - name: backend
+    count: 3
+  - name: frontend
+    count: 5
+
+configMapGenerator:
+  - name: prod-config
+    literals:
+      - NODE_ENV=production
+      - LOG_LEVEL=info

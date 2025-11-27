@@ -1,0 +1,624 @@
+{
+  "info": {
+    "name": "Advancia Platform - Notification Services API",
+    "description": "Complete API testing collection for notification preferences, Resend email service, and multi-provider integration",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:4000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string",
+      "description": "JWT token for authentication"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "adminToken",
+      "value": "",
+      "type": "string",
+      "description": "Admin JWT token for privileged operations"
+    }
+  ],
+  "item": [
+    {
+      "name": "🔐 Authentication",
+      "description": "Authentication endpoints for obtaining JWT tokens",
+      "item": [
+        {
+          "name": "Login User",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has token', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.collectionVariables.set('authToken', jsonData.token);",
+                  "    if (jsonData.user && jsonData.user.id) {",
+                  "        pm.collectionVariables.set('userId', jsonData.user.id);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"testPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Login Admin",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin login successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('token');",
+                  "    pm.collectionVariables.set('adminToken', jsonData.token);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"admin@example.com\",\n  \"password\": \"adminPassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/admin/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "admin", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📧 Notification Preferences",
+      "description": "User notification preferences management",
+      "item": [
+        {
+          "name": "Get User Preferences",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Status code is 200', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "});",
+                  "",
+                  "pm.test('Response has preferences structure', function () {",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData.data).to.have.property('email');",
+                  "    pm.expect(jsonData.data).to.have.property('sms');",
+                  "    pm.expect(jsonData.data).to.have.property('slack');",
+                  "    pm.expect(jsonData.data).to.have.property('telegram');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "preferences"]
+            }
+          }
+        },
+        {
+          "name": "Update Preferences - Full",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Preferences updated successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData.data).to.have.property('email');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": {\n    \"enabled\": true,\n    \"alerts\": true,\n    \"reports\": false,\n    \"summary\": true,\n    \"marketing\": false\n  },\n  \"sms\": {\n    \"enabled\": false,\n    \"critical\": true,\n    \"incidents\": false,\n    \"maintenance\": false\n  },\n  \"slack\": {\n    \"enabled\": true,\n    \"updates\": true,\n    \"deployments\": false,\n    \"compliance\": false,\n    \"webhooks\": true\n  },\n  \"telegram\": {\n    \"enabled\": false,\n    \"notifications\": false,\n    \"alerts\": false,\n    \"broadcasts\": false\n  },\n  \"digest\": {\n    \"frequency\": \"DAILY\",\n    \"time\": \"08:00\",\n    \"timezone\": \"UTC\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "preferences"]
+            }
+          }
+        },
+        {
+          "name": "Update Preferences - Partial",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Partial update successful', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": {\n    \"enabled\": false,\n    \"marketing\": true\n  },\n  \"digest\": {\n    \"frequency\": \"WEEKLY\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "preferences"]
+            }
+          }
+        },
+        {
+          "name": "Get Available Channels",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Channels retrieved successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "    pm.expect(jsonData.data).to.include.members(['email', 'sms', 'slack', 'telegram']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/preferences/channels",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "preferences", "channels"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📨 Resend Email Service",
+      "description": "Resend email service integration testing",
+      "item": [
+        {
+          "name": "Test Connection",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Resend connection healthy', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('provider', 'resend');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/resend/test-connection",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resend", "test-connection"]
+            }
+          }
+        },
+        {
+          "name": "Send Simple Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Email sent successfully', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('success', true);",
+                  "    pm.expect(jsonData).to.have.property('messageId');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"test@example.com\",\n  \"subject\": \"API Test Email\",\n  \"html\": \"<h1>Test Email</h1><p>This is a test email from the Postman collection.</p>\",\n  \"text\": \"Test Email\\n\\nThis is a test email from the Postman collection.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/resend/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resend", "send"]
+            }
+          }
+        },
+        {
+          "name": "Send Template Email",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Template email sent', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"test@example.com\",\n  \"template\": \"welcome\",\n  \"variables\": {\n    \"userName\": \"Test User\",\n    \"companyName\": \"Advancia Platform\",\n    \"loginUrl\": \"https://app.advancia.io/login\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/resend/template",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resend", "template"]
+            }
+          }
+        },
+        {
+          "name": "Send Campaign Email (Admin)",
+          "auth": {
+            "type": "bearer",
+            "bearer": [
+              {
+                "key": "token",
+                "value": "{{adminToken}}",
+                "type": "string"
+              }
+            ]
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Campaign email sent', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.success).to.be.true;",
+                  "    pm.expect(jsonData.data).to.have.property('campaignId');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipients\": [\"test1@example.com\", \"test2@example.com\"],\n  \"subject\": \"Platform Update Notification\",\n  \"template\": \"compliance-report\",\n  \"variables\": {\n    \"reportDate\": \"2025-11-26\",\n    \"totalTransactions\": \"1,247\",\n    \"complianceScore\": \"98.5%\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/resend/campaign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resend", "campaign"]
+            }
+          }
+        },
+        {
+          "name": "Get Email Templates",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Templates retrieved', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData.data).to.be.an('array');",
+                  "    pm.expect(jsonData.data).to.include.members(['welcome', 'password-reset', 'transaction-alert', 'compliance-report']);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/resend/templates",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resend", "templates"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "🚫 Error Cases",
+      "description": "Negative testing scenarios",
+      "item": [
+        {
+          "name": "Unauthorized Preferences Access",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Unauthorized access blocked', function () {",
+                  "    pm.response.to.have.status(401);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "preferences"]
+            }
+          }
+        },
+        {
+          "name": "Invalid Email Validation",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Validation error for invalid email', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"to\": \"invalid-email\",\n  \"subject\": \"Test\",\n  \"text\": \"Test content\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/resend/send",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resend", "send"]
+            }
+          }
+        },
+        {
+          "name": "Campaign Without Admin Permissions",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Admin permission required', function () {",
+                  "    pm.response.to.have.status(403);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"recipients\": [\"test@example.com\"],\n  \"subject\": \"Unauthorized Campaign\",\n  \"text\": \"This should fail\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/resend/campaign",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "resend", "campaign"]
+            }
+          }
+        },
+        {
+          "name": "Malformed Preferences Data",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Validation error for malformed data', function () {",
+                  "    pm.response.to.have.status(400);",
+                  "    const jsonData = pm.response.json();",
+                  "    pm.expect(jsonData).to.have.property('error');",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": {\n    \"enabled\": \"not_a_boolean\",\n    \"alerts\": \"invalid\"\n  },\n  \"digest\": {\n    \"frequency\": \"INVALID_FREQUENCY\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "preferences"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "📊 Performance Tests",
+      "description": "Load and performance testing scenarios",
+      "item": [
+        {
+          "name": "Bulk Preferences Update",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "pm.test('Bulk update performance acceptable', function () {",
+                  "    pm.response.to.have.status(200);",
+                  "    pm.expect(pm.response.responseTime).to.be.below(2000);",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": {\n    \"enabled\": true,\n    \"alerts\": true,\n    \"reports\": true,\n    \"summary\": true,\n    \"marketing\": false,\n    \"promotions\": false,\n    \"newsletters\": true\n  },\n  \"sms\": {\n    \"enabled\": true,\n    \"critical\": true,\n    \"incidents\": true,\n    \"maintenance\": false,\n    \"alerts\": true\n  },\n  \"slack\": {\n    \"enabled\": true,\n    \"updates\": true,\n    \"deployments\": true,\n    \"compliance\": true,\n    \"webhooks\": true,\n    \"monitoring\": true\n  },\n  \"telegram\": {\n    \"enabled\": true,\n    \"notifications\": true,\n    \"alerts\": true,\n    \"broadcasts\": false,\n    \"updates\": true\n  },\n  \"digest\": {\n    \"frequency\": \"DAILY\",\n    \"time\": \"08:00\",\n    \"timezone\": \"UTC\",\n    \"includeMetrics\": true,\n    \"includeSummary\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "preferences"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: advancia-ingress
+spec:
+  rules:
+  - host: dev-api.advancia.com
+    http:
+      paths:
+      - path: /(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: dev-backend
+            port:
+              number: 80
+  - host: dev-app.advancia.com
+    http:
+      paths:
+      - path: /(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: dev-frontend
+            port:
+              number: 80
+  tls:
+  - hosts:
+    - dev-api.advancia.com
+    - dev-app.advancia.com
+    secretName: dev-advancia-tls

@@ -1,0 +1,23 @@
+apiVersion: v2
+name: advancia-backend
+description: A Helm chart for Advancia SaaS Backend API
+type: application
+version: 1.0.0
+appVersion: "1.2.0"
+
+dependencies: []
+
+keywords:
+  - nodejs
+  - express
+  - api
+  - saas
+  - fintech
+
+home: https://github.com/advancia-platform/modular-saas-platform
+sources:
+  - https://github.com/advancia-platform/modular-saas-platform
+
+maintainers:
+  - name: Advancia Team
+    email: support@advancia.com

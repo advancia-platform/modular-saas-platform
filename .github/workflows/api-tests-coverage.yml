@@ -1,0 +1,166 @@
+name: API Tests with Coverage
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+      - "feature/*"
+  pull_request:
+    branches:
+      - main
+      - develop
+
+env:
+  NODE_VERSION: "18"
+  PYTHON_VERSION: "3.11"
+
+jobs:
+  test-api:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: advancia_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+      redis:
+        image: redis:7-alpine
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: backend/package-lock.json
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ env.PYTHON_VERSION }}
+          cache: "pip"
+          cache-dependency-path: backend/requirements-test.txt
+
+      - name: Install Node.js dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Install Python test dependencies
+        working-directory: ./backend
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements-test.txt
+
+      - name: Setup test environment
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/advancia_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-for-ci
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY_TEST }}
+        run: |
+          # Generate Prisma client
+          npx prisma generate
+
+          # Run database migrations
+          npx prisma db push
+
+          # Seed test data if needed
+          npm run seed:test 2>/dev/null || echo "No test seeding script found"
+
+      - name: Start backend server
+        working-directory: ./backend
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/advancia_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+          JWT_SECRET: test-jwt-secret-for-ci
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY_TEST }}
+          PORT: 4000
+        run: |
+          npm run dev &
+
+          # Wait for server to be ready
+          echo "Waiting for backend server to start..."
+          timeout 60 bash -c 'until curl -f http://localhost:4000/health; do sleep 2; done'
+          echo "Backend server is ready"
+
+      - name: Run API Tests with Coverage
+        working-directory: ./backend
+        env:
+          BASE_URL: http://localhost:4000
+          ADMIN_TOKEN: ${{ secrets.ADMIN_TOKEN_TEST }}
+          AUDITOR_TOKEN: ${{ secrets.AUDITOR_TOKEN_TEST }}
+          VIEWER_TOKEN: ${{ secrets.VIEWER_TOKEN_TEST }}
+          USER_TOKEN: ${{ secrets.USER_TOKEN_TEST }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/advancia_test
+          REDIS_URL: redis://localhost:6379
+          NODE_ENV: test
+        run: |
+          echo "Running API tests with coverage..."
+          pytest -v \
+            --cov=src \
+            --cov-report=xml:coverage.xml \
+            --cov-report=term-missing \
+            --cov-report=html:htmlcov \
+            --cov-fail-under=75 \
+            --durations=10 \
+            tests/api/
+
+      - name: Run Security Tests
+        working-directory: ./backend
+        run: |
+          echo "Running security analysis..."
+          bandit -r src/ -f json -o bandit-report.json || true
+          safety check --json --output safety-report.json || true
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./backend/coverage.xml
+          directory: ./backend
+          flags: api-tests
+          name: api-coverage
+          fail_ci_if_error: false
+          verbose: true
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: test-results
+          path: |
+            backend/coverage.xml
+            backend/htmlcov/
+            backend/bandit-report.json
+            backend/safety-report.json
+
+      - name: Comment coverage on PR
+        if: github.event_name == 'pull_request'
+        uses: py-cov-action/python-coverage-comment-action@v3
+        with:
+          GITHUB_TOKEN: ${{ github.token }}
+          MINIMUM_GREEN: 80
+          MINIMUM_ORANGE: 70

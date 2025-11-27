@@ -1,0 +1,36 @@
+src/routes/alertPolicies.ts(138,7): error TS2322: Type '{ routeGroup: string; threshold: number; cooldown: number; mode: "IMMEDIATE" | "BATCHED" | "MIXED"; batchIntervalMs: number | undefined; channels: ("email" | "sms" | "slack" | "teams" | "websocket" | "sentry")[]; severity: "LOW" | ... 2 more ... | "CRITICAL"; enabled: boolean; createdBy: string | undefined; updatedB...' is not assignable to type '(Without<alert_policiesCreateInput, alert_policiesUncheckedCreateInput> & alert_policiesUncheckedCreateInput) | (Without<...> & alert_policiesCreateInput)'.
+  Type '{ routeGroup: string; threshold: number; cooldown: number; mode: "IMMEDIATE" | "BATCHED" | "MIXED"; batchIntervalMs: number | undefined; channels: ("email" | "sms" | "slack" | "teams" | "websocket" | "sentry")[]; severity: "LOW" | ... 2 more ... | "CRITICAL"; enabled: boolean; createdBy: string | undefined; updatedB...' is not assignable to type 'Without<alert_policiesUncheckedCreateInput, alert_policiesCreateInput> & alert_policiesCreateInput'.
+    Type '{ routeGroup: string; threshold: number; cooldown: number; mode: "IMMEDIATE" | "BATCHED" | "MIXED"; batchIntervalMs: number | undefined; channels: ("email" | "sms" | "slack" | "teams" | "websocket" | "sentry")[]; severity: "LOW" | ... 2 more ... | "CRITICAL"; enabled: boolean; createdBy: string | undefined; updatedB...' is not assignable to type 'alert_policiesCreateInput'.
+      Types of property 'createdBy' are incompatible.
+        Type 'string | undefined' is not assignable to type 'string'.
+          Type 'undefined' is not assignable to type 'string'.
+src/routes/alertPolicies.ts(156,7): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/alertPolicies.ts(234,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/alertPolicies.ts(311,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/alertPolicies.ts(399,9): error TS2322: Type 'string | undefined' is not assignable to type 'string'.
+  Type 'undefined' is not assignable to type 'string'.
+src/routes/gitops.ts(63,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/routes/gitops.ts(116,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/routes/gitops.ts(170,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/routes/gitops.ts(229,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/routes/gitops.ts(301,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/routes/gitops.ts(348,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/routes/gitops.ts(386,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/routes/gitops.ts(493,14): error TS2345: Argument of type 'string[]' is not assignable to parameter of type 'string'.
+src/utils/jwt.ts(23,14): error TS2769: No overload matches this call.
+  Overload 1 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: null, options?: (SignOptions & { algorithm: "none"; }) | undefined): string', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'null'.
+  Overload 2 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | PrivateKeyInput | JsonWebKeyInput, options?: SignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+  Overload 3 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | PrivateKeyInput | JsonWebKeyInput, callback: SignCallback): void', gave the following error.
+    Object literal may only specify known properties, and 'expiresIn' does not exist in type 'SignCallback'.
+src/utils/jwt.ts(32,14): error TS2769: No overload matches this call.
+  Overload 1 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: null, options?: (SignOptions & { algorithm: "none"; }) | undefined): string', gave the following error.
+    Argument of type 'string' is not assignable to parameter of type 'null'.
+  Overload 2 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | PrivateKeyInput | JsonWebKeyInput, options?: SignOptions | undefined): string', gave the following error.
+    Type 'string' is not assignable to type 'number | StringValue | undefined'.
+  Overload 3 of 5, '(payload: string | object | Buffer<ArrayBufferLike>, secretOrPrivateKey: Buffer<ArrayBufferLike> | Secret | PrivateKeyInput | JsonWebKeyInput, callback: SignCallback): void', gave the following error.
+    Object literal may only specify known properties, and 'expiresIn' does not exist in type 'SignCallback'.

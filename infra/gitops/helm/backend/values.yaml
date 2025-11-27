@@ -1,0 +1,204 @@
+# Default values for advancia-backend
+# This is a YAML-formatted file.
+
+replicaCount: 2
+
+image:
+  repository: advancia/backend
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+      - ALL
+  readOnlyRootFilesystem: false
+  runAsNonRoot: true
+  runAsUser: 1001
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 4000
+  annotations: {}
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+  hosts:
+    - host: api.advancia.com
+      paths:
+        - path: /(.*)
+          pathType: ImplementationSpecific
+  tls:
+    - secretName: advancia-backend-tls
+      hosts:
+        - api.advancia.com
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 512Mi
+  requests:
+    cpu: 500m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 70
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+      - weight: 100
+        podAffinityTerm:
+          labelSelector:
+            matchExpressions:
+              - key: app.kubernetes.io/name
+                operator: In
+                values:
+                  - advancia-backend
+          topologyKey: kubernetes.io/hostname
+
+# Environment variables
+env:
+  NODE_ENV: production
+  PORT: "4000"
+  # Database
+  DATABASE_URL: ""
+  # JWT
+  JWT_SECRET: ""
+  JWT_REFRESH_SECRET: ""
+  # Email
+  EMAIL_USER: ""
+  EMAIL_PASSWORD: ""
+  SMTP_HOST: "smtp.gmail.com"
+  SMTP_PORT: "587"
+  # Stripe
+  STRIPE_SECRET_KEY: ""
+  STRIPE_WEBHOOK_SECRET: ""
+  # Cryptomus
+  CRYPTOMUS_API_KEY: ""
+  CRYPTOMUS_MERCHANT_ID: ""
+  # Redis
+  REDIS_URL: ""
+  # Sentry
+  SENTRY_DSN: ""
+  # VAPID
+  VAPID_PUBLIC_KEY: ""
+  VAPID_PRIVATE_KEY: ""
+
+# Secrets (to be created separately)
+secrets:
+  database:
+    name: "database-secret"
+    key: "DATABASE_URL"
+  jwt:
+    name: "jwt-secret"
+    keys:
+      - "JWT_SECRET"
+      - "JWT_REFRESH_SECRET"
+  stripe:
+    name: "stripe-secret"
+    keys:
+      - "STRIPE_SECRET_KEY"
+      - "STRIPE_WEBHOOK_SECRET"
+  cryptomus:
+    name: "cryptomus-secret"
+    keys:
+      - "CRYPTOMUS_API_KEY"
+      - "CRYPTOMUS_MERCHANT_ID"
+  email:
+    name: "email-secret"
+    keys:
+      - "EMAIL_USER"
+      - "EMAIL_PASSWORD"
+  vapid:
+    name: "vapid-secret"
+    keys:
+      - "VAPID_PUBLIC_KEY"
+      - "VAPID_PRIVATE_KEY"
+
+# Health checks
+healthCheck:
+  enabled: true
+  path: /api/health
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 3
+
+# Readiness probe
+readinessProbe:
+  enabled: true
+  path: /api/health
+  initialDelaySeconds: 10
+  periodSeconds: 5
+  timeoutSeconds: 3
+  failureThreshold: 3
+
+# Liveness probe
+livenessProbe:
+  enabled: true
+  path: /api/health
+  initialDelaySeconds: 60
+  periodSeconds: 30
+  timeoutSeconds: 10
+  failureThreshold: 3
+
+# Persistence for logs
+persistence:
+  enabled: false
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  size: 1Gi
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    namespace: monitoring
+    interval: 30s
+    path: /metrics
+
+# Network policies
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+  egress:
+    enabled: true
+
+# Pod Disruption Budget
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1

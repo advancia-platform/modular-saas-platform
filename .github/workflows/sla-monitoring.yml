@@ -1,0 +1,267 @@
+name: SLA Monitoring & Alerting
+
+on:
+  schedule:
+    - cron: "*/5 * * * *" # Every 5 minutes
+  workflow_dispatch: # Manual trigger
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  FRONTEND_URL: ${{ vars.FRONTEND_URL || 'https://advancia-pay-frontend.vercel.app' }}
+  BACKEND_URL: ${{ vars.BACKEND_URL || 'https://advancia-pay-backend.onrender.com' }}
+
+jobs:
+  health-check-matrix:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        service: [frontend, backend]
+        include:
+          - service: frontend
+            url: ${{ vars.FRONTEND_URL || 'https://advancia-pay-frontend.vercel.app' }}
+            endpoint: "/"
+            expected: "200"
+          - service: backend
+            url: ${{ vars.BACKEND_URL || 'https://advancia-pay-backend.onrender.com' }}
+            endpoint: "/health"
+            expected: "200"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Health Check - ${{ matrix.service }}
+        id: health_check
+        run: |
+          echo "Checking ${{ matrix.service }} health..."
+          RESPONSE=$(curl -s -o /dev/null -w "%{http_code},%{time_total}" "${{ matrix.url }}${{ matrix.endpoint }}" || echo "000,0")
+          HTTP_CODE=$(echo $RESPONSE | cut -d',' -f1)
+          RESPONSE_TIME=$(echo $RESPONSE | cut -d',' -f2)
+
+          echo "http_code=$HTTP_CODE" >> $GITHUB_OUTPUT
+          echo "response_time=$RESPONSE_TIME" >> $GITHUB_OUTPUT
+          echo "service=${{ matrix.service }}" >> $GITHUB_OUTPUT
+
+          if [ "$HTTP_CODE" != "${{ matrix.expected }}" ]; then
+            echo "❌ ${{ matrix.service }} health check failed: HTTP $HTTP_CODE"
+            echo "status=failed" >> $GITHUB_OUTPUT
+            exit 1
+          else
+            echo "✅ ${{ matrix.service }} health check passed: HTTP $HTTP_CODE in ${RESPONSE_TIME}s"
+            echo "status=passed" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Store Health Metrics
+        if: always()
+        run: |
+          # Store metrics for SLA calculation
+          echo "$(date -u +%Y-%m-%dT%H:%M:%SZ),${{ matrix.service }},${{ steps.health_check.outputs.status }},${{ steps.health_check.outputs.http_code }},${{ steps.health_check.outputs.response_time }}" >> health_metrics.csv
+
+      - name: Upload Health Metrics
+        if: always()
+        uses: actions/upload-artifact@v3
+        with:
+          name: health-metrics-${{ matrix.service }}-${{ github.run_number }}
+          path: health_metrics.csv
+
+      - name: Trigger PagerDuty Alert (Critical)
+        if: failure() && github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST "https://events.pagerduty.com/v2/enqueue" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "routing_key": "${{ secrets.PAGERDUTY_ROUTING_KEY }}",
+              "event_action": "trigger",
+              "payload": {
+                "summary": "Advancia Pay ${{ matrix.service }} health check failed",
+                "severity": "critical",
+                "source": "GitHub Actions SLA Monitor",
+                "component": "${{ matrix.service }}",
+                "group": "advancia-pay",
+                "class": "health-check",
+                "custom_details": {
+                  "service": "${{ matrix.service }}",
+                  "url": "${{ matrix.url }}${{ matrix.endpoint }}",
+                  "http_code": "${{ steps.health_check.outputs.http_code }}",
+                  "response_time": "${{ steps.health_check.outputs.response_time }}",
+                  "workflow_run": "${{ github.run_id }}",
+                  "commit": "${{ github.sha }}"
+                }
+              }
+            }'
+
+      - name: Send Slack Alert
+        if: failure() && github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST "${{ secrets.SLACK_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "🚨 CRITICAL: Advancia Pay ${{ matrix.service }} health check failed",
+              "attachments": [
+                {
+                  "color": "#ff0000",
+                  "fields": [
+                    {"title": "Service", "value": "${{ matrix.service }}", "short": true},
+                    {"title": "HTTP Code", "value": "${{ steps.health_check.outputs.http_code }}", "short": true},
+                    {"title": "Response Time", "value": "${{ steps.health_check.outputs.response_time }}s", "short": true},
+                    {"title": "URL", "value": "${{ matrix.url }}${{ matrix.endpoint }}", "short": false},
+                    {"title": "Workflow", "value": "${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}", "short": false}
+                  ]
+                }
+              ]
+            }'
+
+      - name: Send Teams Alert
+        if: failure() && github.ref == 'refs/heads/main'
+        run: |
+          curl -X POST "${{ secrets.TEAMS_WEBHOOK_URL }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "text": "🚨 CRITICAL: Advancia Pay ${{ matrix.service }} health check failed",
+              "sections": [
+                {
+                  "activityTitle": "Health Check Failure",
+                  "activitySubtitle": "${{ matrix.service }} service is unhealthy",
+                  "facts": [
+                    {"name": "Service", "value": "${{ matrix.service }}"},
+                    {"name": "HTTP Code", "value": "${{ steps.health_check.outputs.http_code }}"},
+                    {"name": "Response Time", "value": "${{ steps.health_check.outputs.response_time }}s"},
+                    {"name": "Time", "value": "${{ github.event.head_commit.timestamp }}"}
+                  ]
+                }
+              ]
+            }'
+
+  sla-calculation:
+    needs: health-check-matrix
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Health Metrics
+        uses: actions/download-artifact@v3
+        with:
+          path: metrics/
+
+      - name: Calculate SLA Metrics
+        id: sla_calc
+        run: |
+          # Combine all health metrics
+          find metrics/ -name "*.csv" -exec cat {} \; > combined_metrics.csv
+
+          # Calculate 24h uptime (simplified - would use proper time window in production)
+          TOTAL_CHECKS=$(wc -l < combined_metrics.csv)
+          SUCCESSFUL_CHECKS=$(grep -c ",passed," combined_metrics.csv || echo "0")
+
+          if [ "$TOTAL_CHECKS" -gt 0 ]; then
+            UPTIME_PERCENT=$(echo "scale=4; $SUCCESSFUL_CHECKS * 100 / $TOTAL_CHECKS" | bc)
+          else
+            UPTIME_PERCENT="100.0000"
+          fi
+
+          echo "total_checks=$TOTAL_CHECKS" >> $GITHUB_OUTPUT
+          echo "successful_checks=$SUCCESSFUL_CHECKS" >> $GITHUB_OUTPUT
+          echo "uptime_percent=$UPTIME_PERCENT" >> $GITHUB_OUTPUT
+
+          echo "📊 SLA Metrics:"
+          echo "Total Checks: $TOTAL_CHECKS"
+          echo "Successful Checks: $SUCCESSFUL_CHECKS"
+          echo "Uptime: $UPTIME_PERCENT%"
+
+      - name: SLA Threshold Alert
+        if: ${{ steps.sla_calc.outputs.uptime_percent < 99.0000 }}
+        run: |
+          echo "🚨 SLA BREACH DETECTED: Uptime ${{ steps.sla_calc.outputs.uptime_percent }}% < 99%"
+
+          # Trigger escalated PagerDuty alert
+          curl -X POST "https://events.pagerduty.com/v2/enqueue" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "routing_key": "${{ secrets.PAGERDUTY_ROUTING_KEY }}",
+              "event_action": "trigger",
+              "payload": {
+                "summary": "SLA BREACH: Advancia Pay uptime ${{ steps.sla_calc.outputs.uptime_percent }}% in monitoring period",
+                "severity": "critical",
+                "source": "SLA Monitor",
+                "component": "production",
+                "group": "advancia-pay",
+                "class": "sla-breach",
+                "custom_details": {
+                  "uptime_percent": "${{ steps.sla_calc.outputs.uptime_percent }}",
+                  "threshold": "99.0000",
+                  "total_checks": "${{ steps.sla_calc.outputs.total_checks }}",
+                  "successful_checks": "${{ steps.sla_calc.outputs.successful_checks }}",
+                  "monitoring_period": "24h",
+                  "workflow_run": "${{ github.run_id }}"
+                }
+              }
+            }'
+
+      - name: Update Status Badge
+        run: |
+          # Create status badge data
+          if (( $(echo "${{ steps.sla_calc.outputs.uptime_percent }} >= 99.5" | bc -l) )); then
+            BADGE_COLOR="brightgreen"
+            BADGE_STATUS="excellent"
+          elif (( $(echo "${{ steps.sla_calc.outputs.uptime_percent }} >= 99.0" | bc -l) )); then
+            BADGE_COLOR="green"
+            BADGE_STATUS="good"
+          elif (( $(echo "${{ steps.sla_calc.outputs.uptime_percent }} >= 95.0" | bc -l) )); then
+            BADGE_COLOR="yellow"
+            BADGE_STATUS="degraded"
+          else
+            BADGE_COLOR="red"
+            BADGE_STATUS="critical"
+          fi
+
+          echo "Badge: ${{ steps.sla_calc.outputs.uptime_percent }}% - $BADGE_STATUS ($BADGE_COLOR)"
+
+  consecutive-failure-check:
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Check Consecutive Failures
+        run: |
+          # This would check a database or file store for consecutive failures
+          # Simplified version using GitHub API to check recent workflow runs
+
+          RECENT_RUNS=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" \
+            "https://api.github.com/repos/${{ github.repository }}/actions/workflows/sla-monitoring.yml/runs?per_page=10")
+
+          FAILURE_COUNT=0
+          echo "$RECENT_RUNS" | jq -r '.workflow_runs[].conclusion' | while read conclusion; do
+            if [ "$conclusion" = "failure" ]; then
+              FAILURE_COUNT=$((FAILURE_COUNT + 1))
+            else
+              break
+            fi
+          done
+
+          echo "Consecutive failures: $FAILURE_COUNT"
+
+          if [ "$FAILURE_COUNT" -ge 3 ]; then
+            echo "🚨 ESCALATION: $FAILURE_COUNT consecutive failures detected"
+
+            curl -X POST "https://events.pagerduty.com/v2/enqueue" \
+              -H "Content-Type: application/json" \
+              -d '{
+                "routing_key": "${{ secrets.PAGERDUTY_ROUTING_KEY }}",
+                "event_action": "trigger",
+                "payload": {
+                  "summary": "ESCALATION: '"$FAILURE_COUNT"' consecutive health check failures",
+                  "severity": "critical",
+                  "source": "Failure Pattern Detection",
+                  "component": "monitoring",
+                  "group": "advancia-pay",
+                  "class": "consecutive-failures"
+                }
+              }'
+          fi

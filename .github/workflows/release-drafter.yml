@@ -1,0 +1,76 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    types: [opened, reopened, edited, closed]
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Release Drafter
+        uses: release-drafter/release-drafter@v5
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Sync Release Notes to CHANGELOG.md
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          # Check if we have any releases
+          if ! git tag --list | grep -q "v[0-9]"; then
+            echo "No releases found, skipping changelog update"
+            exit 0
+          fi
+          
+          # Get the latest tag
+          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          
+          if [ -n "$LATEST_TAG" ]; then
+            echo "Updating CHANGELOG.md with release $LATEST_TAG"
+            RELEASE_NOTES=$(gh release view "$LATEST_TAG" --json body -q .body 2>/dev/null || echo "Release notes not available")
+            
+            # Create temporary changelog
+            echo "# Changelog" > CHANGELOG_NEW.md
+            echo "" >> CHANGELOG_NEW.md
+            echo "All notable changes to this project will be documented in this file." >> CHANGELOG_NEW.md
+            echo "This project adheres to [Semantic Versioning](https://semver.org/)." >> CHANGELOG_NEW.md
+            echo "" >> CHANGELOG_NEW.md
+            echo "---" >> CHANGELOG_NEW.md
+            echo "" >> CHANGELOG_NEW.md
+            echo "## [$LATEST_TAG] - $(date '+%Y-%m-%d')" >> CHANGELOG_NEW.md
+            echo "$RELEASE_NOTES" >> CHANGELOG_NEW.md
+            echo "" >> CHANGELOG_NEW.md
+            
+            # Append existing changelog content (skip header)
+            if [ -f CHANGELOG.md ]; then
+              tail -n +8 CHANGELOG.md >> CHANGELOG_NEW.md
+            fi
+            
+            mv CHANGELOG_NEW.md CHANGELOG.md
+            
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add CHANGELOG.md
+            if git diff --staged --quiet; then
+              echo "No changes to CHANGELOG.md"
+            else
+              git commit -m "chore: update CHANGELOG.md with release $LATEST_TAG [skip ci]"
+              git push
+            fi
+          fi
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

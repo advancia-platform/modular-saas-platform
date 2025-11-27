@@ -1,0 +1,15 @@
+{"email": "test1@example.com", "password": "wrongpass", "attempt_number": 1, "expected_lockout": false, "expected_success": false, "test_case": "First failed attempt"}
+{"email": "test1@example.com", "password": "wrongpass", "attempt_number": 2, "expected_lockout": false, "expected_success": false, "test_case": "Second failed attempt"}
+{"email": "test1@example.com", "password": "wrongpass", "attempt_number": 3, "expected_lockout": false, "expected_success": false, "test_case": "Third failed attempt"}
+{"email": "test1@example.com", "password": "wrongpass", "attempt_number": 4, "expected_lockout": false, "expected_success": false, "test_case": "Fourth failed attempt"}
+{"email": "test1@example.com", "password": "wrongpass", "attempt_number": 5, "expected_lockout": true, "expected_success": false, "test_case": "Fifth failed attempt - should trigger lockout"}
+{"email": "test1@example.com", "password": "correctpass", "attempt_number": 6, "expected_lockout": true, "expected_success": false, "test_case": "Correct password while locked"}
+{"email": "test2@example.com", "password": "ValidPass123!", "attempt_number": 1, "expected_lockout": false, "expected_success": true, "test_case": "Successful login"}
+{"email": "test3@example.com", "password": "wrongpass", "attempt_number": 1, "expected_lockout": false, "expected_success": false, "test_case": "Single failed attempt"}
+{"email": "test3@example.com", "password": "ValidPass123!", "attempt_number": 2, "expected_lockout": false, "expected_success": true, "test_case": "Successful after one failure"}
+{"email": "admin@example.com", "password": "wrongpass", "attempt_number": 1, "expected_lockout": false, "expected_success": false, "test_case": "Admin failed attempt 1"}
+{"email": "admin@example.com", "password": "wrongpass", "attempt_number": 2, "expected_lockout": false, "expected_success": false, "test_case": "Admin failed attempt 2"}
+{"email": "admin@example.com", "password": "wrongpass", "attempt_number": 3, "expected_lockout": false, "expected_success": false, "test_case": "Admin failed attempt 3"}
+{"email": "admin@example.com", "password": "wrongpass", "attempt_number": 4, "expected_lockout": false, "expected_success": false, "test_case": "Admin failed attempt 4"}
+{"email": "admin@example.com", "password": "wrongpass", "attempt_number": 5, "expected_lockout": true, "expected_success": false, "test_case": "Admin lockout after 5 attempts"}
+{"email": "user@example.com", "password": "ValidPass123!", "wait_after_lockout": 900, "expected_lockout": false, "expected_success": true, "test_case": "Login after 15 min lockout expires"}

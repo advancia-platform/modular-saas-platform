@@ -1,0 +1,58 @@
+# AI DevOps Agent - Python Dependencies
+# Revolutionary AI DevOps Agent using 12 Fintech AI Functions
+
+# Core AI and Machine Learning
+openai>=1.3.0
+numpy>=1.24.0
+pandas>=2.0.0
+scikit-learn>=1.3.0
+
+# Data Processing and Analysis
+scipy>=1.10.0
+matplotlib>=3.7.0
+
+# Async and Networking
+asyncio
+aiohttp>=3.8.0
+requests>=2.31.0
+
+# Configuration and Environment
+python-dotenv>=1.0.0
+pydantic>=2.0.0
+
+# Logging and Monitoring
+structlog>=23.1.0
+
+# Testing and Development
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+
+# Security and Validation
+cryptography>=41.0.0
+
+# Date and Time Processing
+python-dateutil>=2.8.0
+
+# JSON and Data Serialization
+orjson>=3.9.0
+
+# Git Integration
+GitPython>=3.1.32
+
+# Database connectivity (for integration)
+psycopg2-binary>=2.9.0
+redis>=4.5.0
+
+# Security and networking
+cryptography>=41.0.0
+requests>=2.31.0
+
+# Logging and monitoring
+structlog>=23.0.0
+python-json-logger>=2.0.0
+
+# Development tools
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+black>=23.0.0
+mypy>=1.5.0

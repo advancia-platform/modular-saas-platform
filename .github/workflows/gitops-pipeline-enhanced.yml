@@ -1,0 +1,558 @@
+name: 🚀 Enhanced GitOps Pipeline with Security & Observability
+
+on:
+  push:
+    branches: [ main, develop, feature/* ]
+    paths:
+      - 'ai-agent-k8s/**'
+      - 'backend/**'
+      - 'frontend/**'
+      - '.github/workflows/**'
+  pull_request:
+    branches: [ main, develop ]
+    paths:
+      - 'ai-agent-k8s/**'
+      - 'backend/**'
+      - 'frontend/**'
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}/ai-agent
+
+jobs:
+  # 🔍 Code Quality & Security Scan
+  code-quality:
+    name: 🔍 Code Quality & Security
+    runs-on: ubuntu-latest
+    outputs:
+      image-tag: ${{ steps.meta.outputs.tags }}
+      image-digest: ${{ steps.build.outputs.digest }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 🧹 Clean junk files
+        run: |
+          echo "🗑️ Cleaning junk files..."
+          find . -name "*.tmp" -type f -delete
+          find . -name "*.log" -type f -delete
+          find . -name ".DS_Store" -type f -delete
+          find . -name "Thumbs.db" -type f -delete
+          find . -name "*.swp" -type f -delete
+          find . -name "*.swo" -type f -delete
+          find . -name "*~" -type f -delete
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install dependencies
+        run: |
+          npm install -g markdownlint-cli yamllint
+          npm install --prefix backend
+          npm install --prefix frontend
+
+      - name: 📝 Markdown Lint
+        run: |
+          echo "🔍 Running markdown linting..."
+          markdownlint --fix "**/*.md" || true
+          markdownlint "**/*.md"
+
+      - name: 📋 YAML Lint & Validation
+        run: |
+          echo "🔍 Validating YAML files..."
+          find . -name "*.yaml" -o -name "*.yml" | grep -E "(k8s|kubernetes|helm)" | while read file; do
+            echo "Validating $file"
+            yamllint "$file" || true
+          done
+
+      - name: 🛡️ Kubernetes Manifest Validation
+        run: |
+          echo "🔍 Validating Kubernetes manifests..."
+          # Install kubectl
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
+
+          # Validate manifests
+          find ai-agent-k8s -name "*.yaml" -type f | while read manifest; do
+            echo "Validating $manifest"
+            kubectl apply --dry-run=client --validate=true -f "$manifest" || echo "⚠️ Warning: $manifest validation failed"
+          done
+
+      - name: 🔒 Secret Detection
+        uses: trufflesecurity/trufflehog@main
+        with:
+          path: ./
+          base: main
+          head: HEAD
+          extra_args: --debug --only-verified
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🔑 Log in to Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🏷️ Extract metadata
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+
+      - name: 🔨 Build and push Docker image
+        id: build
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  # 🔍 Security Scanning
+  security-scan:
+    name: 🔍 Security & Vulnerability Scan
+    runs-on: ubuntu-latest
+    needs: code-quality
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🛡️ Run Trivy vulnerability scanner
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: ${{ needs.code-quality.outputs.image-tag }}
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: 📊 Upload Trivy scan results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v3
+        if: always()
+        with:
+          sarif_file: 'trivy-results.sarif'
+
+      - name: 🔍 Container Security with Snyk
+        uses: snyk/actions/docker@master
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          image: ${{ needs.code-quality.outputs.image-tag }}
+          args: --severity-threshold=high
+        continue-on-error: true
+
+  # 🧪 Testing & Quality Gates
+  testing:
+    name: 🧪 Testing & Quality Gates
+    runs-on: ubuntu-latest
+    needs: code-quality
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_PASSWORD: test
+          POSTGRES_DB: advancia_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: 📦 Install backend dependencies
+        working-directory: ./backend
+        run: npm ci
+
+      - name: 🏗️ Setup test environment
+        working-directory: ./backend
+        run: |
+          cp .env.example .env.test
+          npm run prisma:generate
+          npm run prisma:migrate:dev
+
+      - name: 🧪 Run backend tests with coverage
+        working-directory: ./backend
+        run: |
+          npm run test:coverage
+          npm run test:integration
+
+      - name: 📊 Upload coverage reports
+        uses: codecov/codecov-action@v3
+        with:
+          directory: ./backend/coverage
+          flags: backend
+
+      - name: 📦 Install frontend dependencies
+        working-directory: ./frontend
+        run: npm ci
+
+      - name: 🧪 Run frontend tests
+        working-directory: ./frontend
+        run: |
+          npm run test
+          npm run test:e2e
+
+      - name: 🏗️ Build frontend
+        working-directory: ./frontend
+        run: npm run build
+
+  # 🚀 GitOps Deployment
+  gitops-deploy:
+    name: 🚀 GitOps Deployment
+    runs-on: ubuntu-latest
+    needs: [code-quality, security-scan, testing]
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    environment:
+      name: ${{ github.ref == 'refs/heads/main' && 'production' || 'development' }}
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Setup ArgoCD CLI
+        run: |
+          curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+          sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+          rm argocd-linux-amd64
+
+      - name: 🔄 Update image tag in manifests
+        run: |
+          # Extract the image tag from the previous job
+          IMAGE_TAG="${{ needs.code-quality.outputs.image-tag }}"
+          echo "Updating manifests with image: $IMAGE_TAG"
+
+          # Update deployment manifest
+          sed -i "s|image: .*|image: $IMAGE_TAG|g" ai-agent-k8s/base/deployment.yaml
+
+          # Commit changes back to repo for GitOps
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add ai-agent-k8s/base/deployment.yaml
+          git commit -m "🚀 Update image tag to $IMAGE_TAG" || exit 0
+
+      - name: 📤 Push changes
+        uses: ad-m/github-push-action@master
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          branch: ${{ github.ref }}
+
+      - name: 🔄 Trigger ArgoCD Sync (if ArgoCD is available)
+        env:
+          ARGOCD_SERVER: ${{ secrets.ARGOCD_SERVER }}
+          ARGOCD_TOKEN: ${{ secrets.ARGOCD_TOKEN }}
+        run: |
+          if [ -n "$ARGOCD_SERVER" ] && [ -n "$ARGOCD_TOKEN" ]; then
+            echo "🔄 Syncing ArgoCD application..."
+            argocd login $ARGOCD_SERVER --grpc-web --auth-token $ARGOCD_TOKEN --insecure
+            argocd app sync ai-agent --force
+            argocd app wait ai-agent --timeout 300
+          else
+            echo "⚠️ ArgoCD credentials not configured, skipping sync"
+          fi
+
+  # 📊 Observability Setup
+  observability:
+    name: 📊 Observability & Monitoring
+    runs-on: ubuntu-latest
+    needs: gitops-deploy
+    if: github.ref == 'refs/heads/main'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 📊 Deploy Grafana Dashboards
+        run: |
+          echo "📊 Creating Grafana dashboards configuration..."
+
+          # Create comprehensive dashboards directory if not exists
+          mkdir -p ai-agent-k8s/observability/grafana/dashboards
+
+          cat > ai-agent-k8s/observability/grafana/dashboards/argocd-operations.json << 'EOF'
+          {
+            "dashboard": {
+              "id": null,
+              "title": "ArgoCD Operations Dashboard",
+              "tags": ["argocd", "gitops"],
+              "timezone": "browser",
+              "panels": [
+                {
+                  "title": "Application Sync Status",
+                  "type": "stat",
+                  "targets": [
+                    {
+                      "expr": "argocd_app_info{sync_status=\"Synced\"}",
+                      "legendFormat": "Synced Apps"
+                    }
+                  ],
+                  "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0}
+                },
+                {
+                  "title": "Deployment Frequency",
+                  "type": "graph",
+                  "targets": [
+                    {
+                      "expr": "increase(argocd_app_sync_total[1h])",
+                      "legendFormat": "Deployments per hour"
+                    }
+                  ],
+                  "gridPos": {"h": 8, "w": 12, "x": 12, "y": 0}
+                },
+                {
+                  "title": "MTTR (Mean Time To Recovery)",
+                  "type": "singlestat",
+                  "targets": [
+                    {
+                      "expr": "avg(argocd_app_health_status == 0) * 60",
+                      "legendFormat": "MTTR (minutes)"
+                    }
+                  ],
+                  "gridPos": {"h": 8, "w": 24, "x": 0, "y": 8}
+                }
+              ],
+              "time": {"from": "now-1h", "to": "now"},
+              "refresh": "5s"
+            }
+          }
+          EOF
+
+      - name: 🚨 Setup Prometheus Alert Rules
+        run: |
+          echo "🚨 Creating enhanced Prometheus alert rules..."
+
+          cat > ai-agent-k8s/observability/prometheus/alert-rules.yaml << 'EOF'
+          apiVersion: monitoring.coreos.com/v1
+          kind: PrometheusRule
+          metadata:
+            name: ai-agent-enhanced-alerts
+            namespace: ai-devops
+          spec:
+            groups:
+            - name: gitops.rules
+              rules:
+              - alert: ArgoCDSyncFailed
+                expr: argocd_app_sync_total{phase="Failed"} > 0
+                for: 2m
+                labels:
+                  severity: critical
+                  component: argocd
+                annotations:
+                  summary: "ArgoCD application sync failed"
+                  description: "Application {{ $labels.name }} sync has failed for more than 2 minutes"
+
+            - name: performance.rules
+              rules:
+              - alert: HighPodCPUUsage
+                expr: rate(container_cpu_usage_seconds_total{pod=~"ai-agent-.*"}[5m]) > 0.8
+                for: 5m
+                labels:
+                  severity: warning
+                  component: ai-agent
+                annotations:
+                  summary: "High CPU usage detected"
+                  description: "Pod {{ $labels.pod }} CPU usage is above 80% for more than 5 minutes"
+
+              - alert: HighPodMemoryUsage
+                expr: container_memory_working_set_bytes{pod=~"ai-agent-.*"} / container_spec_memory_limit_bytes > 0.8
+                for: 5m
+                labels:
+                  severity: warning
+                  component: ai-agent
+                annotations:
+                  summary: "High memory usage detected"
+                  description: "Pod {{ $labels.pod }} memory usage is above 80% for more than 5 minutes"
+
+            - name: reliability.rules
+              rules:
+              - alert: PodRestartLoop
+                expr: increase(kube_pod_container_status_restarts_total{pod=~"ai-agent-.*"}[15m]) > 3
+                for: 5m
+                labels:
+                  severity: critical
+                  component: ai-agent
+                annotations:
+                  summary: "Pod restart loop detected"
+                  description: "Pod {{ $labels.pod }} has restarted {{ $value }} times in the last 15 minutes"
+
+              - alert: HighErrorRate
+                expr: rate(http_requests_total{status=~"5.."}[5m]) > 0.1
+                for: 2m
+                labels:
+                  severity: warning
+                  component: ai-agent
+                annotations:
+                  summary: "High error rate detected"
+                  description: "Error rate is {{ $value | humanizePercentage }} for more than 2 minutes"
+
+            - name: security.rules
+              rules:
+              - alert: SecurityPolicyViolation
+                expr: increase(gatekeeper_violation_total[5m]) > 0
+                for: 1m
+                labels:
+                  severity: critical
+                  component: security
+                annotations:
+                  summary: "Security policy violation detected"
+                  description: "{{ $value }} security policy violations detected in the last 5 minutes"
+          EOF
+
+      - name: 📧 Setup Alert Notifications
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          EMAIL_CONFIG: ${{ secrets.EMAIL_CONFIG }}
+        run: |
+          if [ -n "$SLACK_WEBHOOK" ]; then
+            echo "📧 Configuring Slack notifications..."
+
+            cat > ai-agent-k8s/observability/alertmanager/config.yaml << 'EOF'
+          global:
+            slack_api_url: '${{ secrets.SLACK_WEBHOOK }}'
+
+          route:
+            group_by: ['alertname', 'severity']
+            group_wait: 10s
+            group_interval: 10s
+            repeat_interval: 1h
+            receiver: 'slack-notifications'
+            routes:
+            - match:
+                severity: critical
+              receiver: 'critical-alerts'
+            - match:
+                component: security
+              receiver: 'security-alerts'
+
+          receivers:
+          - name: 'slack-notifications'
+            slack_configs:
+            - channel: '#devops-alerts'
+              title: 'GitOps Alert: {{ .GroupLabels.alertname }}'
+              text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+              send_resolved: true
+
+          - name: 'critical-alerts'
+            slack_configs:
+            - channel: '#critical-alerts'
+              title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+              text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+              send_resolved: true
+
+          - name: 'security-alerts'
+            slack_configs:
+            - channel: '#security-alerts'
+              title: '🛡️ SECURITY: {{ .GroupLabels.alertname }}'
+              text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+              send_resolved: true
+          EOF
+          else
+            echo "⚠️ Slack webhook not configured, skipping notification setup"
+          fi
+
+  # 🌪️ Chaos Engineering
+  chaos-engineering:
+    name: 🌪️ Chaos Engineering Tests
+    runs-on: ubuntu-latest
+    needs: observability
+    if: github.ref == 'refs/heads/main' && github.event_name == 'schedule'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🌪️ Run Chaos Experiments
+        env:
+          KUBECONFIG: ${{ secrets.KUBECONFIG }}
+        run: |
+          if [ -n "$KUBECONFIG" ]; then
+            echo "🌪️ Running chaos engineering experiments..."
+
+            # Apply chaos experiment
+            kubectl apply -f ai-agent-k8s/chaos/chaos-experiment.yaml
+
+            # Wait for experiment to complete
+            sleep 60
+
+            # Check results
+            kubectl get chaosresult -n ai-devops -o jsonpath='{.items[0].status.experimentStatus.verdict}' > chaos-result.txt
+
+            if [ "$(cat chaos-result.txt)" = "Pass" ]; then
+              echo "✅ Chaos experiment passed - system is resilient"
+            else
+              echo "❌ Chaos experiment failed - system needs attention"
+              exit 1
+            fi
+          else
+            echo "⚠️ Kubernetes config not available, skipping chaos tests"
+          fi
+
+  # 💰 Cost Optimization
+  cost-optimization:
+    name: 💰 Cost Optimization Analysis
+    runs-on: ubuntu-latest
+    needs: gitops-deploy
+    if: github.ref == 'refs/heads/main' && github.event_name == 'schedule'
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 💰 Analyze Resource Usage
+        run: |
+          echo "💰 Analyzing resource usage and costs..."
+
+          cat > cost-analysis.md << 'EOF'
+          # Cost Optimization Report
+
+          ## Current Resource Usage
+          - **CPU Requests**: Monitoring HPA metrics
+          - **Memory Requests**: Tracking actual vs. requested
+          - **Storage Usage**: PVC utilization rates
+
+          ## Recommendations
+          - Scale down during off-peak hours
+          - Implement cluster autoscaler
+          - Use spot instances for non-critical workloads
+          - Optimize container resource requests
+
+          ## Cost Savings Opportunities
+          - Vertical Pod Autoscaler for right-sizing
+          - Reserved instances for predictable workloads
+          - Multi-zone deployments for cost efficiency
+          EOF
+
+      - name: 📊 Generate Cost Report
+        uses: actions/upload-artifact@v3
+        with:
+          name: cost-analysis-report
+          path: cost-analysis.md
+
+# 📅 Scheduled Jobs
+on:
+  schedule:
+    # Run chaos engineering tests daily at 2 AM UTC
+    - cron: '0 2 * * *'
+    # Run cost analysis weekly on Sundays
+    - cron: '0 8 * * 0'

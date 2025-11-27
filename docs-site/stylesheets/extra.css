@@ -1,0 +1,109 @@
+/* Advancia Pay Documentation Styling */
+
+:root {
+  --advancia-blue: #0078d4;
+  --advancia-green: #28a745;
+  --advancia-dark-blue: #005a9d;
+  --advancia-light-blue: #e6f3ff;
+}
+
+/* Custom header styling */
+.md-header {
+  background: linear-gradient(
+    135deg,
+    var(--advancia-blue) 0%,
+    var(--advancia-dark-blue) 100%
+  );
+}
+
+/* Custom accent colors */
+.md-typeset a {
+  color: var(--advancia-blue);
+}
+
+.md-typeset a:hover {
+  color: var(--advancia-dark-blue);
+}
+
+/* Custom button styling */
+.md-button {
+  background-color: var(--advancia-blue);
+  border-color: var(--advancia-blue);
+}
+
+.md-button:hover {
+  background-color: var(--advancia-dark-blue);
+  border-color: var(--advancia-dark-blue);
+}
+
+/* Custom admonition styling */
+.md-typeset .admonition.note {
+  border-color: var(--advancia-blue);
+}
+
+.md-typeset .admonition.tip {
+  border-color: var(--advancia-green);
+}
+
+/* Custom code block styling */
+.md-typeset .highlight {
+  background-color: #f8f9fa;
+}
+
+/* Navigation styling */
+.md-nav__item--active > .md-nav__link {
+  color: var(--advancia-blue);
+}
+
+/* Search highlighting */
+.md-search-result__teaser mark {
+  background-color: var(--advancia-light-blue);
+  color: var(--advancia-dark-blue);
+}
+
+/* Custom table styling */
+.md-typeset table:not([class]) {
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.md-typeset table:not([class]) th {
+  background-color: var(--advancia-light-blue);
+  color: var(--advancia-dark-blue);
+  font-weight: 600;
+}
+
+/* Mermaid diagram styling */
+.mermaid {
+  text-align: center;
+  margin: 2em 0;
+}
+
+/* Badge styling */
+img[alt*="Status"],
+img[alt*="Version"],
+img[alt*="License"] {
+  margin: 0 4px;
+  vertical-align: middle;
+}
+
+/* Custom footer */
+.md-footer {
+  background-color: var(--advancia-dark-blue);
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 76.1875em) {
+  .md-nav--primary .md-nav__title {
+    background-color: var(--advancia-blue);
+  }
+}
+
+/* Print styles */
+@media print {
+  .md-header,
+  .md-nav,
+  .md-footer {
+    display: none;
+  }
+}
