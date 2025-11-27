@@ -4,9 +4,12 @@
  * Per Advancia Pay: Audit logging, Winston logging, PCI-DSS compliance
  */
 
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
 import logger from "../logger";
-import { prisma } from "../prismaClient";
+import prisma from "../prismaClient";
+
+// Use Prisma.Decimal constructor (Jest-compatible)
+const Decimal = Prisma.Decimal;
 
 export interface TrustScore {
   overall: number; // 0-100

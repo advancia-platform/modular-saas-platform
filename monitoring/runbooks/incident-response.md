@@ -83,13 +83,13 @@
 **Severity**: Critical  
 **Response Time**: Immediate
 
-#### Symptoms
+#### Symptoms - SLA Breach
 
 - 24h uptime below 99%
 - Multiple service degradation events
 - Customer complaints about availability
 
-#### Investigation Steps
+#### Investigation Steps - SLA Breach
 
 1. **Review incident timeline**
 
@@ -134,7 +134,7 @@
 **Severity**: Critical  
 **Response Time**: < 10 minutes
 
-#### Investigation Steps
+#### Investigation Steps - High Error Rate
 
 1. **Identify error patterns**
 
@@ -149,9 +149,9 @@
 2. **Check recent changes**
    - Review recent deployments
    - Check configuration changes
-   - Verify feature flags
+   - Check feature flags
 
-#### Resolution Steps
+#### Resolution Steps - High Error Rate
 
 1. **Quick fixes**
    - Rollback recent deployment if applicable
@@ -172,7 +172,7 @@
 **Severity**: Warning  
 **Response Time**: < 30 minutes
 
-#### Investigation Steps
+#### Investigation Steps - SLA Degradation
 
 1. **Check service performance**
    - Review response times
@@ -184,7 +184,7 @@
    - Check for capacity issues
    - Review traffic patterns
 
-#### Resolution Steps
+#### Resolution Steps - SLA Degradation
 
 1. **Performance optimization**
    - Optimize slow queries
@@ -203,7 +203,7 @@
 **Severity**: Warning  
 **Response Time**: < 30 minutes
 
-#### Investigation Steps
+#### Investigation Steps - High Response Time
 
 1. **Database performance**
 
@@ -220,7 +220,7 @@
    - Review recent code changes
    - Verify external API performance
 
-#### Resolution Steps
+#### Resolution Steps - High Response Time
 
 1. **Database optimization**
    - Add missing indexes

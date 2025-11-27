@@ -1,0 +1,114 @@
+
+> advancia-backend@1.0.0 dev
+> nodemon --watch src --ext ts,js --ignore '*.test.ts' --ignore '*.spec.ts' --delay 1000ms --exec ts-node src/index.ts
+
+[33m[nodemon] 3.0.2[39m
+[33m[nodemon] reading config .\nodemon.json[39m
+[33m[nodemon] to restart at any time, enter `rs`[39m
+[33m[nodemon] or send SIGHUP to 26584 to restart[39m
+[33m[nodemon] ignoring: '*.test.ts' '*.spec.ts'[39m
+[33m[nodemon] watching path(s): src\**\*[39m
+[33m[nodemon] watching extensions: ts,js[39m
+[32m[nodemon] starting `ts-node src/index.ts`[39m
+[33m[nodemon] spawning[39m
+[33m[nodemon] child pid: 30152[39m
+[33m[nodemon] watching 242 files[39m
+[DIAG] Applied dev-safe defaults: {
+  SKIP_DATABASE_VALIDATION: '0',
+  OTEL_TRACING_ENABLED: 'false',
+  SENTRY_DSN: 'set',
+  ENABLE_CRON: 'false',
+  DIAG_INTERCEPT_EXIT: '1'
+}
+[DIAG] process.exit interception active
+[DIAG] Tracing disabled (OTEL_TRACING_ENABLED != true)
+≡ƒÜÇ Backend starting...
+≡ƒôì Working directory: C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\backend
+≡ƒöº Node version: v24.11.1
+[DIAG-TOP] Beginning phased route import (Phase 1 minimal)
+[DIAG] Cron jobs disabled (ENABLE_CRON!=true)
+Γ£à Using plain JWT secret
+≡ƒöº Configuration loaded successfully
+   Port: 4000
+   Environment: development
+   Frontend URL: http://localhost:3000
+   Allowed CORS Origins: http://localhost:3000, http://localhost:3001, http://127.0.0.1:3000, http://127.0.0.1:3001
+Γ£à Environment variables validated successfully
+[FATAL-TOP] Uncaught Exception early: src/routes/authAdmin.ts(69,27): error TS2554: Expected 3 arguments, but got 1.
+src/routes/authAdmin.ts(70,10): error TS18048: 'ipCheck' is possibly 'undefined'.
+src/routes/authAdmin.ts(70,18): error TS2339: Property 'allowed' does not exist on type 'Response<any, Record<string, any>>'.
+src/routes/authAdmin.ts(74,58): error TS18048: 'ipCheck' is possibly 'undefined'.
+src/routes/authAdmin.ts(74,66): error TS2339: Property 'remainingMinutes' does not exist on type 'Response<any, Record<string, any>>'.
+src/routes/authAdmin.ts(103,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(136,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(167,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(185,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(205,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(382,9): error TS2353: Object literal may only specify known properties, and 'details' does not exist in type '(Without<AuditLogCreateInput, AuditLogUncheckedCreateInput> & AuditLogUncheckedCreateInput) | (Without<...> & AuditLogCreateInput)'.
+
+[FATAL-TOP] Stack: TSError: Γ¿» Unable to compile TypeScript:
+src/routes/authAdmin.ts(69,27): error TS2554: Expected 3 arguments, but got 1.
+src/routes/authAdmin.ts(70,10): error TS18048: 'ipCheck' is possibly 'undefined'.
+src/routes/authAdmin.ts(70,18): error TS2339: Property 'allowed' does not exist on type 'Response<any, Record<string, any>>'.
+src/routes/authAdmin.ts(74,58): error TS18048: 'ipCheck' is possibly 'undefined'.
+src/routes/authAdmin.ts(74,66): error TS2339: Property 'remainingMinutes' does not exist on type 'Response<any, Record<string, any>>'.
+src/routes/authAdmin.ts(103,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(136,9): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(167,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(185,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(205,11): error TS2322: Type 'null' is not assignable to type 'string | undefined'.
+src/routes/authAdmin.ts(382,9): error TS2353: Object literal may only specify known properties, and 'details' does not exist in type '(Without<AuditLogCreateInput, AuditLogUncheckedCreateInput> & AuditLogUncheckedCreateInput) | (Without<...> & AuditLogCreateInput)'.
+
+    at createTSError (C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\node_modules\ts-node\src\index.ts:859:12)
+    at reportTSError (C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\node_modules\ts-node\src\index.ts:863:19)
+    at getOutput (C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\node_modules\ts-node\src\index.ts:1077:36)
+    at Object.compile (C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\node_modules\ts-node\src\index.ts:1433:41)
+    at Module.m._compile (C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\node_modules\ts-node\src\index.ts:1617:30)
+    at node:internal/modules/cjs/loader:1893:10
+    at Object.require.extensions.<computed> [as .ts] (C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\node_modules\ts-node\src\index.ts:1621:12)
+    at Module.load (node:internal/modules/cjs/loader:1481:32)
+    at Module._load (node:internal/modules/cjs/loader:1300:12)
+    at TracingChannel.traceSync (node:diagnostics_channel:328:14)
+[FATAL-TOP] Continuing despite exception (development mode)
+Γ£à Prisma connected successfully
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 
+Redis connection error: 

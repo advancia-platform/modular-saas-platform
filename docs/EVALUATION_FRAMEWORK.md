@@ -167,6 +167,7 @@ Audit logs are saved separately: `results/ci-evaluation_audit.json`
 ### Common Issues
 
 **Backend not responding:**
+
 ```bash
 # Check backend health
 curl http://localhost:4000/health
@@ -176,12 +177,14 @@ cd backend && npm run dev
 ```
 
 **Rate limiting interference:**
+
 ```bash
 # Wait 15 minutes or restart backend
 cd backend && npm run dev
 ```
 
 **Database connection issues:**
+
 ```bash
 cd backend
 npx prisma migrate reset --force

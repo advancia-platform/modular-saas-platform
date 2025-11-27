@@ -1,10 +1,15 @@
-import { Decimal } from "@prisma/client/runtime/index-browser";
+import { Prisma } from "@prisma/client";
 import { Router } from "express";
 import type { Server as IOServer } from "socket.io";
 import Stripe from "stripe";
 import { authenticateToken, requireAdmin } from "../middleware/auth";
 import prisma from "../prismaClient";
 import { withDefaults } from "../utils/prismaHelpers";
+
+// Use Prisma.Decimal constructor (Jest-compatible)
+const Decimal = Prisma.Decimal;
+
+type Decimal = Prisma.Decimal;
 
 const router = Router();
 let ioRef: IOServer | null = null;

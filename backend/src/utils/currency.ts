@@ -1,4 +1,7 @@
-import { Decimal } from "@prisma/client/runtime/library";
+import { Prisma } from "@prisma/client";
+
+// Use Prisma.Decimal constructor (Jest-compatible)
+const Decimal = Prisma.Decimal;
 
 export type SupportedCurrency = "USD" | "EUR" | "GBP" | "BTC" | "ETH" | "USDT";
 

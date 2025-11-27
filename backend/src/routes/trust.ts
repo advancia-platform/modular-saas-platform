@@ -5,6 +5,7 @@
 
 import { Router } from "express";
 import { allowRoles, authenticateToken } from "../middleware/auth";
+import { rateLimiter } from "../middleware/rateLimiterRedis";
 import { validateInput } from "../middleware/security";
 import { scamAdviserService } from "../services/scamAdviserService";
 

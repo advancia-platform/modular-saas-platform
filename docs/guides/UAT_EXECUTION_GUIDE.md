@@ -12,8 +12,7 @@
 
 ```bash
 curl https://api.advancia.pay/api/health
-```
-
+```text`n
 Expected response:
 
 ```json
@@ -22,16 +21,14 @@ Expected response:
   "timestamp": "2025-10-26T12:00:00Z",
   "uptime": 3600
 }
-```
-
+```text`n
 ### Step 2: Test Frontend Access
 
 Open in browser:
 
 ```
-https://advancia.pay
-```
-
+<https://advancia.pay>
+```text`n
 Expected: Frontend loads with no console errors
 
 ### Step 3: Quick WebSocket Test
@@ -65,11 +62,11 @@ Create test account → Balance should update within 1 second
 POST /api/auth/register
 POST /api/auth/login
 Expected: 200 OK with auth token
-```
-
+```text`n
 **2. Token Withdraw (10 min)**
 
 ```
+
 POST /api/tokens/withdraw (valid)
 Expected: 200 OK, transactionHash, status: "pending"
 
@@ -78,8 +75,7 @@ Expected: 400 Bad Request with error
 
 POST /api/tokens/withdraw (negative amount)
 Expected: 400 Bad Request
-```
-
+```text`n
 **3. Token Cashout (10 min)**
 
 ```
@@ -91,18 +87,17 @@ Expected: 400 Bad Request
 
 POST /api/tokens/cashout (negative amount)
 Expected: 400 Bad Request
-```
-
+```text`n
 **4. Rewards Pending (10 min)**
 
 ```
+
 GET /api/rewards/pending/{userId} (valid user)
 Expected: 200 OK, array of rewards, totalAmount
 
 GET /api/rewards/pending/{userId} (invalid user)
 Expected: 404 Not Found
-```
-
+```text`n
 **5. Leaderboard (10 min)**
 
 ```
@@ -114,8 +109,7 @@ Expected: 200 OK, max 5 users
 
 GET /api/rewards/leaderboard?limit=100&offset=10
 Expected: 200 OK, pagination working
-```
-
+```text`n
 ### Phase 1B: Frontend Smoke Tests (45 min)
 
 #### Access & Navigation
@@ -156,6 +150,7 @@ Use Chrome DevTools Network tab:
 #### Test 1: Display & Balance
 
 ```
+
 1. Login as test user
 2. Navigate to Wallet
 3. Check:
@@ -163,8 +158,7 @@ Use Chrome DevTools Network tab:
    - [ ] Transaction history loads
    - [ ] Loading states appear
    - [ ] No JavaScript errors
-```
-
+```text`n
 **Expected**: All items checked, no errors
 
 #### Test 2: Transfer Functionality
@@ -180,13 +174,13 @@ Use Chrome DevTools Network tab:
    - [ ] Success message appears
    - [ ] Balance decreases
    - [ ] Transaction in history
-```
-
+```text`n
 **Expected**: Transaction successful, balance updated
 
 #### Test 3: Withdraw Functionality
 
 ```
+
 1. Click "Withdraw" button
 2. Enter valid ETH address (0x742d35Cc6634C0532925a3b844Bc91e8e1a81aB5)
 3. Enter amount (50 tokens)
@@ -199,8 +193,7 @@ Use Chrome DevTools Network tab:
    - [ ] Success with tx hash
    - [ ] Balance updated
    - [ ] Real-time update (< 1 sec)
-```
-
+```text`n
 **Expected**: Withdrawal successful, balance reflects
 
 #### Test 4: Cashout Functionality
@@ -216,21 +209,20 @@ Use Chrome DevTools Network tab:
    - [ ] USD balance increases by 2.50
    - [ ] Transaction recorded
    - [ ] Success confirmation
-```
-
+```text`n
 **Expected**: Cashout successful, balances updated
 
 #### Test 5: Real-Time Sync
 
 ```
+
 1. Open wallet in 2 browser windows (same user)
 2. Execute withdraw in window 1
 3. Check window 2:
    - [ ] Balance updates within 1 second
    - [ ] No page refresh needed
    - [ ] Transaction appears
-```
-
+```text`n
 **Expected**: Real-time sync working
 
 ### Phase 2B: RewardsDashboard Functional Tests (4 Hours)
@@ -246,13 +238,13 @@ Use Chrome DevTools Network tab:
    - [ ] Progress bar visible
    - [ ] Leaderboard loads
    - [ ] No errors
-```
-
+```text`n
 **Expected**: All components render correctly
 
 #### Test 2: Pending Rewards
 
 ```
+
 1. View pending rewards section
 2. Check each reward:
    - [ ] Amount correct
@@ -261,8 +253,7 @@ Use Chrome DevTools Network tab:
    - [ ] Non-expired rewards only
 3. Calculate total:
    - [ ] Total = sum of all rewards
-```
-
+```text`n
 **Expected**: Correct rewards displayed, accurate totals
 
 #### Test 3: Claim Rewards
@@ -275,13 +266,13 @@ Use Chrome DevTools Network tab:
    - [ ] Success notification
    - [ ] Reward removed from list
    - [ ] Balance updated
-```
-
+```text`n
 **Expected**: Reward claimed successfully
 
 #### Test 4: Tier Progression
 
 ```
+
 1. View tier section
 2. Check:
    - [ ] Current tier displayed
@@ -289,8 +280,7 @@ Use Chrome DevTools Network tab:
    - [ ] Progress bar accurate
    - [ ] Amount to next tier shown
    - [ ] Percentage complete correct
-```
-
+```text`n
 **Expected**: Tier information accurate
 
 #### Test 5: Leaderboard
@@ -304,21 +294,20 @@ Use Chrome DevTools Network tab:
    - [ ] Tier badges show
    - [ ] Current user highlighted
    - [ ] Expand shows more users
-```
-
+```text`n
 **Expected**: Leaderboard correct and ordered
 
 #### Test 6: Real-Time Leaderboard
 
 ```
+
 1. Open leaderboard in 2 windows
 2. Execute reward action in window 1
 3. Check window 2:
    - [ ] Rankings update
    - [ ] Position changes reflected
    - [ ] Updates within 5 seconds
-```
-
+```text`n
 **Expected**: Real-time rank updates
 
 ### Phase 2C: MedBeds Functional Tests (2 Hours)
@@ -334,13 +323,13 @@ Use Chrome DevTools Network tab:
    - [ ] Duration selector works
    - [ ] Chamber options visible
    - [ ] Price displays
-```
-
+```text`n
 **Expected**: All form elements functional
 
 #### Test 2: Booking Creation
 
 ```
+
 1. Select future date
 2. Select available time
 3. Select duration (60 min)
@@ -353,8 +342,7 @@ Use Chrome DevTools Network tab:
    - [ ] Booking reference
    - [ ] Booking in history
    - [ ] Confirmation email (if enabled)
-```
-
+```text`n
 **Expected**: Booking created successfully
 
 #### Test 3: Availability
@@ -367,8 +355,7 @@ Use Chrome DevTools Network tab:
    - [ ] Booked slot now unavailable
    - [ ] Status shows "booked"
    - [ ] Cannot double-book
-```
-
+```text`n
 **Expected**: Availability accurate, no double-bookings
 
 ---
@@ -383,8 +370,7 @@ Use Chrome DevTools Network tab:
 # Test leaderboard response time
 time curl -H "Authorization: Bearer $TOKEN" \
   https://api.advancia.pay/api/rewards/leaderboard?limit=100
-```
-
+```text`n
 Expected:
 
 - Withdraw: < 2 seconds
@@ -395,14 +381,14 @@ Expected:
 #### Test 2: Concurrent Users
 
 ```
+
 1. Create 5 test accounts
 2. Have all login simultaneously
 3. Check:
    - [ ] All logins succeed
    - [ ] No errors
    - [ ] Performance acceptable
-```
-
+```text`n
 Expected: All succeed without errors
 
 #### Test 3: Real-Time Load
@@ -414,21 +400,20 @@ Expected: All succeed without errors
    - [ ] All succeed
    - [ ] All balances update
    - [ ] Real-time sync works
-```
-
+```text`n
 Expected: No dropped updates or errors
 
 #### Test 4: Large Leaderboard Query
 
 ```
+
 1. Query leaderboard with limit=1000
 2. Measure response time
 3. Check:
    - [ ] Response < 1 second
    - [ ] All data returned
    - [ ] Properly formatted
-```
-
+```text`n
 Expected: Fast query, complete results
 
 ---
@@ -456,15 +441,16 @@ Verify:
    - [ ] Real-time updates work
    - [ ] No data inconsistencies
    - [ ] User experience smooth
-```
-
+```text`n
 **Expected**: Seamless user journey, all features work
 
 #### Mobile User Flow
 
 ```
+
 On iOS Safari or Android Chrome:
-1. Access https://advancia.pay
+
+1. Access <https://advancia.pay>
 2. Create account
 3. Execute withdraw
 4. Check:
@@ -472,8 +458,7 @@ On iOS Safari or Android Chrome:
    - [ ] Touch events work
    - [ ] Forms easy to fill
    - [ ] Performance acceptable
-```
-
+```text`n
 **Expected**: Mobile experience acceptable
 
 ### Phase 5B: RPA Automation Verification
@@ -487,13 +472,13 @@ On iOS Safari or Android Chrome:
    - [ ] Label applied
    - [ ] Category correct
    - [ ] Auto-response (if enabled)
-```
-
+```text`n
 **Expected**: Automation triggered correctly
 
 #### Auto-Deploy Workflow
 
 ```
+
 1. Commit test change to main
 2. Watch GitHub Actions
 3. Verify:
@@ -501,8 +486,7 @@ On iOS Safari or Android Chrome:
    - [ ] Build succeeds
    - [ ] Deployment triggered
    - [ ] Frontend updated on Render
-```
-
+```text`n
 **Expected**: Auto-deployment works
 
 #### Health Checks
@@ -513,8 +497,7 @@ On iOS Safari or Android Chrome:
    - [ ] Health checks execute
    - [ ] All services healthy
    - [ ] No critical errors
-```
-
+```text`n
 **Expected**: Health checks passing
 
 ---
@@ -636,8 +619,7 @@ curl https://api.advancia.pay/api/health
 
 # Verify database
 gh run logs <latest-deploy> | grep -i "database.*ok"
-```
-
+```text`n
 ### At Go-Live
 
 1. Announce to support team
@@ -659,8 +641,7 @@ gh run list --workflow "Advancia Auto Manager" --limit 5
 
 # Track user issues
 # (from support ticket system)
-```
-
+```text`n
 ### First Week
 
 - Daily health checks

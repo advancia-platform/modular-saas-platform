@@ -19,9 +19,15 @@ const mockPrismaClient = {
       .fn()
       .mockResolvedValue({ id: "mock-user-id", email: "test@example.com" }),
     findUnique: jest.fn().mockResolvedValue(null),
+    findFirst: jest.fn().mockResolvedValue(null), // For checking if user exists
     findMany: jest.fn().mockResolvedValue([]),
     updateMany: jest.fn().mockResolvedValue({ count: 0 }),
     deleteMany: jest.fn().mockResolvedValue({ count: 0 }),
+    update: jest.fn().mockResolvedValue({}),
+  },
+  user_profiles: {
+    create: jest.fn().mockResolvedValue({ id: "mock-profile-id" }),
+    findUnique: jest.fn().mockResolvedValue(null),
     update: jest.fn().mockResolvedValue({}),
   },
   transaction: {
@@ -44,8 +50,11 @@ const mockPrismaClient = {
   $connect: jest.fn().mockResolvedValue(undefined),
 };
 
-// Mock Prisma BEFORE importing it
-jest.mock("../src/prismaClient", () => mockPrismaClient);
+// Mock Prisma BEFORE importing it (return as default export for ES modules)
+jest.mock("../src/prismaClient", () => ({
+  __esModule: true,
+  default: mockPrismaClient,
+}));
 
 // NOW we can import after mocking
 import prisma from "../src/prismaClient";

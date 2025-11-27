@@ -179,7 +179,7 @@ This document defines the process for detecting, classifying, responding to, and
 
 #### Initial Alert
 
-```
+```text
 🚨 INCIDENT ALERT
 Severity: [P0/P1/P2/P3]
 Systems Affected: [List]
@@ -191,7 +191,7 @@ ETA: [If known]
 
 #### Status Update
 
-```
+```text
 📊 INCIDENT UPDATE
 Time: [Timestamp]
 Status: [Investigating/Identified/Monitoring/Resolved]
@@ -202,7 +202,7 @@ ETA: [Updated estimate]
 
 #### Resolution Notice
 
-```
+```text
 ✅ INCIDENT RESOLVED
 Duration: [Total time]
 Root Cause: [Brief explanation]
@@ -226,7 +226,7 @@ Postmortem: [Scheduled date/time]
 ### Escalation Chain
 
 1. **On-call engineer** → **Team lead** (30 minutes for P0, 2 hours for P1)
-2. **Team lead** → **Engineering manager** (1 hour for P0, 4 hours for P1)  
+2. **Team lead** → **Engineering manager** (1 hour for P0, 4 hours for P1)
 3. **Engineering manager** → **CTO** (2 hours for P0, 8 hours for P1)
 4. **CTO** → **CEO** (4 hours for P0, 24 hours for P1)
 
@@ -255,6 +255,7 @@ Postmortem: [Scheduled date/time]
 # Incident Postmortem: [Title]
 
 ## Summary
+
 - **Date**: [Incident date]
 - **Duration**: [Total duration]
 - **Severity**: [P0/P1/P2/P3]
@@ -262,31 +263,38 @@ Postmortem: [Scheduled date/time]
 - **Users impacted**: [Number/percentage]
 
 ## Timeline
+
 - **Detection**: [How and when detected]
 - **Response**: [Key response actions]
 - **Resolution**: [How resolved]
 
 ## Root Cause
+
 - **Immediate cause**: [Direct trigger]
 - **Contributing factors**: [What made it possible]
 - **Root cause**: [Fundamental issue]
 
 ## Impact
+
 - **User impact**: [How users were affected]
 - **Business impact**: [Revenue, reputation, etc.]
 - **System impact**: [Technical effects]
 
 ## What Went Well
+
 - [Positive aspects of response]
 
 ## What Went Poorly
+
 - [Areas for improvement]
 
 ## Action Items
+
 - [ ] [Action item 1 - Owner - Due date]
 - [ ] [Action item 2 - Owner - Due date]
 
 ## Lessons Learned
+
 - [Key takeaways for future]
 ```
 
@@ -404,18 +412,21 @@ Effective incident response achieves:
 **Total Financial Impact**: $X,XXX
 
 ### Direct Costs
+
 - Engineering time: $X (Y hours × $Z/hour)
 - Vendor support fees: $X
 - Infrastructure costs: $X
 - Third-party services: $X
 
 ### Indirect Costs
+
 - Lost revenue: $X (Z transactions × $Y average)
 - SLA penalties: $X
 - Customer retention: $X
 - Reputation impact: $X (estimated)
 
 ### Recovery Investment
+
 - Prevention measures: $X
 - Monitoring improvements: $X
 - Process updates: $X
@@ -465,28 +476,34 @@ Effective incident response achieves:
 # Drill Assessment: [Drill Name] - [Date]
 
 ## Scenario Summary
+
 - **Type**: [Tabletop/Game Day/Chaos/Coordination]
 - **Duration**: [X hours]
 - **Participants**: [Team members involved]
 - **Systems involved**: [List]
 
 ## Performance Against Targets
+
 - **Detection time**: [Actual] vs [Target]
 - **Response time**: [Actual] vs [Target]
 - **Resolution time**: [Actual] vs [Target]
 - **Communication quality**: [Score/Rating]
 
 ## What Went Well
+
 - [Positive aspects]
 
 ## Areas for Improvement
+
 - [Issues identified]
 
 ## Action Items
+
 - [ ] [Improvement 1 - Owner - Due date]
 - [ ] [Improvement 2 - Owner - Due date]
 
 ## Process Updates Required
+
 - [Changes to procedures]
 - [Training needs identified]
 - [Tool improvements needed]
@@ -544,7 +561,7 @@ Effective incident response achieves:
 ```
 Subject: [Service Status] Investigating Issues with [Service Name]
 
-We're currently investigating reports of issues with [Service Name]. 
+We're currently investigating reports of issues with [Service Name].
 
 Impact: [Description of what users are experiencing]
 Affected Services: [List]
@@ -594,30 +611,35 @@ Thank you for your patience.
 # Monthly Incident Report - [Month Year]
 
 ## Executive Summary
+
 - **Total incidents**: X (↑/↓ Y% from last month)
 - **Critical incidents**: X P0, Y P1
 - **Average MTTR**: X minutes (target: Y minutes)
 - **Uptime achieved**: XX.X% (target: 99.9%)
 
 ## Incident Breakdown
+
 | Severity | Count | Avg Duration | Primary Cause |
-|----------|-------|--------------|---------------|
+| -------- | ----- | ------------ | ------------- |
 | P0       | X     | Y minutes    | [Cause]       |
 | P1       | X     | Y minutes    | [Cause]       |
 | P2       | X     | Y minutes    | [Cause]       |
 | P3       | X     | Y minutes    | [Cause]       |
 
 ## Top Incident Categories
+
 1. [Category] - X incidents
 2. [Category] - Y incidents
 3. [Category] - Z incidents
 
 ## Key Improvements This Month
+
 - [Improvement 1]
 - [Improvement 2]
 - [Improvement 3]
 
 ## Action Items for Next Month
+
 - [Action 1 - Owner]
 - [Action 2 - Owner]
 - [Action 3 - Owner]

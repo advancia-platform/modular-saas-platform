@@ -167,7 +167,7 @@ npm run dev
 
 **Expected Output:**
 
-```
+```text
 🚀 Server running on http://localhost:4000
 ✅ Database connected
 ✅ Socket.IO initialized
@@ -182,7 +182,7 @@ npm run dev
 
 **Expected Output:**
 
-```
+```text
 ▲ Next.js 14.x.x
 - Local:        http://localhost:3000
 - Ready in X.Xs
@@ -295,11 +295,11 @@ git commit -m "docs: Add comprehensive documentation"
 ### Render Backend
 
 **Service:** `srv-d4froq8gjchc73djvp00`  
-**URL:** https://advancia-backend.onrender.com
+**URL:** <https://advancia-backend.onrender.com>
 
 **Configure Environment Variables in Render Dashboard:**
 
-1. Go to https://dashboard.render.com/
+1. Go to <https://dashboard.render.com/>
 2. Select backend service
 3. Environment → Add all variables from `.env.example`
 4. Save Changes (auto-deploys)
@@ -422,9 +422,9 @@ cd frontend; vercel --prod
 
 ## Support
 
-- **Render Dashboard:** https://dashboard.render.com/
-- **Vercel Dashboard:** https://vercel.com/dashboard
-- **Cloudflare Dashboard:** https://dash.cloudflare.com/
-- **GitHub Repository:** https://github.com/advancia-platform/modular-saas-platform
+- **Render Dashboard:** <https://dashboard.render.com/>
+- **Vercel Dashboard:** <https://vercel.com/dashboard>
+- **Cloudflare Dashboard:** <https://dash.cloudflare.com/>
+- **GitHub Repository:** <https://github.com/advancia-platform/modular-saas-platform>
 
-**Backup Repository (Archive):** https://github.com/advancia-platform-backup (DO NOT USE FOR DEVELOPMENT)
+**Backup Repository (Archive):** <https://github.com/advancia-platform-backup> (DO NOT USE FOR DEVELOPMENT)

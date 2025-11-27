@@ -527,20 +527,20 @@ Errors automatically reported if `SENTRY_DSN` is set.
 
 ### Short-term (Production)
 
-5. **Deploy to staging** with production env vars
-6. **Configure Cloudflare DNS** (SPF, DKIM, DMARC records)
-7. **Monitor logs** for first 24 hours
-8. **Set up alerts** for 429/401/500 errors
-9. **Load test** analytics and verification endpoints
+1. **Deploy to staging** with production env vars
+2. **Configure Cloudflare DNS** (SPF, DKIM, DMARC records)
+3. **Monitor logs** for first 24 hours
+4. **Set up alerts** for 429/401/500 errors
+5. **Load test** analytics and verification endpoints
 
 ### Long-term (Features)
 
-10. **Add refresh tokens** for long-lived sessions
-11. **Implement password reset** with OTP
-12. **Create admin dashboard** UI with user management
-13. **Add billing integration** for subscriptions
-14. **Enable 2FA** (TOTP) for high-security accounts
-15. **Add webhook handlers** for Resend email events (bounces, complaints)
+1. **Add refresh tokens** for long-lived sessions
+2. **Implement password reset** with OTP
+3. **Create admin dashboard** UI with user management
+4. **Add billing integration** for subscriptions
+5. **Enable 2FA** (TOTP) for high-security accounts
+6. **Add webhook handlers** for Resend email events (bounces, complaints)
 
 ---
 

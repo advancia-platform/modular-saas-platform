@@ -1,6 +1,6 @@
 # Kubernetes Deployment Commands
 
-# Quick reference for deploying Advancia Pay to Kubernetes
+## Quick reference for deploying Advancia Pay to Kubernetes
 
 ## Prerequisites
 

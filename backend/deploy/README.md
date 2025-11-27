@@ -15,25 +15,33 @@ Quick usage
 
 1. Copy the systemd template to `/etc/systemd/system/advancia-backend.service` and replace placeholders:
 
+   ```bash
    sudo cp deploy/templates/advancia-backend.service.template /etc/systemd/system/advancia-backend.service
+   ```
 
-# Edit file and replace placeholders accordingly
+## Edit file and replace placeholders accordingly
 
 2. Reload systemd and start the service:
 
+   ```bash
    sudo systemctl daemon-reload
    sudo systemctl enable advancia-backend
    sudo systemctl start advancia-backend
    sudo journalctl -u advancia-backend -f
+   ```
 
 3. Copy nginx config into `/etc/nginx/sites-available/advancia` and enable it:
 
+   ```bash
    sudo cp deploy/templates/advancia-nginx.conf.template /etc/nginx/sites-available/advancia
+   ```
 
-# Edit the file and set server_name
+## Edit the file and set server_name
 
+   ```bash
    sudo ln -s /etc/nginx/sites-available/advancia /etc/nginx/sites-enabled/
    sudo nginx -t && sudo systemctl restart nginx
+   ```
 
 4. If you have a domain, run certbot to enable HTTPS:
 

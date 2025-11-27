@@ -18,6 +18,7 @@ GET  /api/email/verification-status      // Check verification status (authentic
 ```
 
 **Features**:
+
 - ✅ Resend email service integration
 - ✅ Token generation with crypto.randomBytes(32)
 - ✅ 1-hour token expiry
@@ -37,6 +38,7 @@ app.use("/api/email", emailVerificationRouter);
 ### 3. Dependencies
 
 Already installed:
+
 - ✅ `resend` - Email service SDK
 - ✅ `express-rate-limit` - Rate limiting middleware
 - ✅ `crypto` - Node.js built-in
@@ -65,21 +67,25 @@ getVerificationStatus()       // Check if user is verified
 ### 2. React Components
 
 **ResendVerificationButton** (`components/auth/ResendVerificationButton.tsx`):
+
 - Button to resend verification email
 - Shows loading state
 - Displays success/error messages
 - Toast notifications
 
 **EmailVerificationBanner** (`components/auth/EmailVerificationBanner.tsx`):
+
 - Shows warning banner if email not verified
 - Includes resend button
 - Auto-hides if verified
 
 **EmailVerifiedBadge** (`components/auth/EmailVerificationBanner.tsx`):
+
 - Shows green "Verified" badge
 - Only displays if email is verified
 
 **VerifyEmailPage** (`app/verify-email/page.tsx`):
+
 - Standalone page for email verification
 - Extracts token from URL query params
 - Shows loading/success/error states
@@ -143,6 +149,7 @@ model User {
 ## Email Template
 
 Beautiful responsive HTML template with:
+
 - Gradient header
 - Centered CTA button
 - Fallback link for manual copy/paste
@@ -160,6 +167,7 @@ const resendVerificationLimiter = rateLimit({
 ```
 
 **Why rate limiting?**
+
 - Prevents email spam
 - Protects against abuse
 - Reduces API costs
@@ -178,6 +186,7 @@ const resendVerificationLimiter = rateLimit({
 ## Error Handling
 
 **Backend**:
+
 - Invalid token: 400 error
 - Expired token: 400 error
 - Already verified: 400 error
@@ -185,6 +194,7 @@ const resendVerificationLimiter = rateLimit({
 - Server errors: 500 error with logging
 
 **Frontend**:
+
 - Network errors: Toast notification
 - Rate limit exceeded: Show "Too many requests" message
 - Token expired: Prompt to request new one
@@ -269,6 +279,7 @@ NEXT_PUBLIC_API_URL=https://api.yourdomain.com/api
 ### 3. DNS Configuration
 
 Add to Cloudflare DNS (see infrastructure checklist):
+
 - SPF record
 - DKIM record
 - DMARC record
@@ -291,6 +302,7 @@ Add to Cloudflare DNS (see infrastructure checklist):
 ### Estimated Costs
 
 **Assumptions:**
+
 - 1,000 new users/month
 - 30% need resend (300 resends)
 - Total: 1,300 verification emails/month
@@ -304,6 +316,7 @@ Add to Cloudflare DNS (see infrastructure checklist):
 **Symptoms**: Verification email never arrives
 
 **Causes**:
+
 - `RESEND_API_KEY` not set
 - Domain not verified in Resend
 - DNS records not propagated

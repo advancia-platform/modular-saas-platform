@@ -187,6 +187,8 @@ import { Server as SocketIOServer } from "socket.io";
 import app from "./app";
 import { activityLogger } from "./middleware/activityLogger";
 import { authenticateToken, requireAdmin } from "./middleware/auth";
+import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
+import { setRateLimiterSocketIO } from "./middleware/rateLimiterRedis";
 import {
   helmetMiddleware,
   rateLimit,
@@ -252,6 +254,7 @@ import trustRouter from "./routes/trust"; // Scam Adviser & trust verification
 // import trustpilotRouter from "./routes/trustpilot"; // Removed - using simple widget embed instead
 // import trustScoreRouter from "./routes/trustScore"; // User trust & reputation system (TEMPORARILY DISABLED)
 // import nowpaymentsRouter from "./routes/nowpayments"; // NOWPayments crypto provider (TEMPORARILY DISABLED for startup fix)
+import cashflowRouter from "./routes/cashflow";
 import pricesRouter from "./routes/prices";
 import securityRouter from "./routes/security"; // Breach monitoring & IP protection
 import storageRouter from "./routes/storage";
@@ -286,6 +289,7 @@ import complianceRouter, { setComplianceSocketIO } from "./routes/compliance"; /
 // import { setSocketIO as setNotificationSocket } from "./services/notificationService"; // Keep commented for now
 // import "./tracing";
 import { dataMasker } from "./utils/dataMasker";
+import { closeQueue, initQueue } from "./utils/queue";
 import { initSentry } from "./utils/sentry";
 import { sanitizeInput } from "./validation/middleware";
 // Global fatal error handlers to expose startup issues clearly
@@ -460,9 +464,13 @@ app.use("/api/auth/secure", authSecureRouter); // Secure auth with bcrypt passwo
 // app.use("/api/auth-enhanced", authEnhancedRouter); // Enhanced auth with session management and TOTP - TEMP DISABLED
 
 // Demo and test routes for enhanced authentication
+import alchemypayRouter from "./routes/alchemypay"; // Alchemy Pay crypto payments
 import analyticsRouter from "./routes/analytics";
 import demoRouter from "./routes/demo";
+import phoneRouter from "./routes/phone"; // Virtual phone number services
+import smsRouter from "./routes/sms"; // SMS verification and notifications
 import subscriptionsRouter from "./routes/subscriptions";
+import whatsappRouter from "./routes/whatsapp"; // WhatsApp Business messaging
 app.use("/api/test", demoRouter); // Permission-based access control demo routes
 
 // Regular routes (minimal set enabled)
@@ -476,6 +484,12 @@ app.use("/api/payments", paymentsEnhancedRouter); // Stripe payment intents & me
 // Crypto payment providers
 // app.use("/api/cryptomus", cryptomusRouter); // Route file not available
 app.use("/api/nowpayments", nowpaymentsRouter); // NOWPayments crypto payments - NOW ENABLED
+app.use("/api/alchemypay", alchemypayRouter); // Alchemy Pay - crypto on/off ramp
+
+// Business phone management
+app.use("/api/phone", phoneRouter); // Virtual phone number services
+app.use("/api/sms", smsRouter); // SMS verification and notifications
+app.use("/api/whatsapp", whatsappRouter); // WhatsApp Business messaging
 
 // Admin routes - PROTECTED with requireAdmin middleware
 // app.use(
@@ -528,6 +542,7 @@ app.use("/api/auth/admin", authAdminRouter);
 
 // User routes
 app.use("/api/transactions", transactionsRouter);
+app.use("/api/cashflow", cashflowRouter); // Cash flow analytics, forecasting & export
 // app.use("/api/chat", chatRouter);
 // app.use("/api/consultation", consultationRouter);
 app.use("/api/system", systemRouter);
@@ -585,109 +600,109 @@ app.use("/api/resend", authenticateToken, resendRouter);
 app.use("/api/preferences", authenticateToken, preferencesRouter);
 
 // Socket.IO connection handling
+// Module-level references for export functions
+let ioRef: any = null;
+const socketActiveSessions = new Map<string, any>();
+
 // JWT auth for Socket.IO handshake
-io.use(async (socket, next) => {
-  try {
-    const token =
-      (socket.handshake.auth?.token as string) ||
-      (socket.handshake.query?.token as string);
-    const guestSessionId =
-      (socket.handshake.auth?.guestSessionId as string) ||
-      (socket.handshake.query?.guestSessionId as string);
-    if (!token) {
-      // Allow unauthenticated chat listeners for guest chat sessions
-      if (
-        guestSessionId &&
-        typeof guestSessionId === "string" &&
-        guestSessionId.length >= 6
-      ) {
-        (socket as any).data = { guestSessionId };
-        return next();
+if (process.env.NODE_ENV !== "test") {
+  ioRef = io; // Store reference for broadcastSessions
+  io.use(async (socket, next) => {
+    try {
+      const token =
+        (socket.handshake.auth?.token as string) ||
+        (socket.handshake.query?.token as string);
+      const guestSessionId =
+        (socket.handshake.auth?.guestSessionId as string) ||
+        (socket.handshake.query?.guestSessionId as string);
+      if (!token) {
+        // Allow unauthenticated chat listeners for guest chat sessions
+        if (
+          guestSessionId &&
+          typeof guestSessionId === "string" &&
+          guestSessionId.length >= 6
+        ) {
+          (socket as any).data = { guestSessionId };
+          return next();
+        }
+        return next(new Error("Auth token or guestSessionId required"));
       }
-      return next(new Error("Auth token or guestSessionId required"));
+      const cleaned = token.startsWith("Bearer ") ? token.split(" ")[1] : token;
+
+      if (!cleaned) {
+        return next(new Error("Invalid token format"));
+      }
+
+      interface JWTPayload {
+        userId: string;
+        email?: string;
+      }
+
+      const payload = jwt.verify(
+        cleaned,
+        config.jwtSecret!,
+      ) as unknown as JWTPayload;
+      const user = await prisma.user.findUnique({
+        where: { id: payload.userId },
+        select: { id: true, role: true, active: true },
+      });
+      if (!user || user.active === false)
+        return next(new Error("Account disabled"));
+      (socket as any).data = { userId: user.id, role: user.role };
+      next();
+    } catch (_e) {
+      next(new Error("Invalid token"));
     }
-    const cleaned = token.startsWith("Bearer ") ? token.split(" ")[1] : token;
-
-    if (!cleaned) {
-      return next(new Error("Invalid token format"));
-    }
-
-    interface JWTPayload {
-      userId: string;
-      email?: string;
-    }
-
-    const payload = jwt.verify(
-      cleaned,
-      config.jwtSecret!,
-    ) as unknown as JWTPayload;
-    const user = await prisma.user.findUnique({
-      where: { id: payload.userId },
-      select: { id: true, role: true, active: true },
-    });
-    if (!user || user.active === false)
-      return next(new Error("Account disabled"));
-    (socket as any).data = { userId: user.id, role: user.role };
-    next();
-  } catch (_e) {
-    next(new Error("Invalid token"));
-  }
-});
-
-io.on("connection", (socket) => {
-  const { userId, role, guestSessionId } = (socket as any).data || {};
-  if (userId) socket.join(`user-${userId}`);
-  if (role === "ADMIN") socket.join("admins");
-  if (guestSessionId) socket.join(`chat-session-${guestSessionId}`);
-
-  // Optional: clients may request to join again with validation
-  socket.on("join-room", (reqUserId: string) => {
-    if (reqUserId && reqUserId === userId) socket.join(`user-${userId}`);
   });
 
-  // Broadcast session updates to admins
-  socket.emit("sessions:update", activeSessions);
-});
+  io.on("connection", (socket) => {
+    const { userId, role, guestSessionId } = (socket as any).data || {};
+    if (userId) socket.join(`user-${userId}`);
+    if (role === "ADMIN") socket.join("admins");
+    if (guestSessionId) socket.join(`chat-session-${guestSessionId}`);
 
-// Broadcast sessions update helper
-export function broadcastSessions() {
-  io.to("admins").emit("sessions:update", activeSessions);
-}
+    // Optional: clients may request to join again with validation
+    socket.on("join-room", (reqUserId: string) => {
+      if (reqUserId && reqUserId === userId) socket.join(`user-${userId}`);
+    });
 
-// Inject Socket.IO into services/routers that need it
-// setNotificationSocket(io); // Service import commented
-setTransactionSocketIO(io);
-// setAdminUsersSocketIO(io); // Route not available
-// setDebitCardSocketIO(io); // Keep disabled if debit cards route disabled
-// setMedbedsSocketIO(io); // Keep disabled if medbeds route disabled
-// setChatSocketIO(io); // Keep disabled if chat route disabled
-setSupportSocketIO(io);
-setPaymentsSocketIO(io);
-// setWithdrawalSocketIO(io); // Function may not be exported
-// setOALSocketIO(io); // Keep disabled if OAL route disabled
-setTokenSocketIO(io);
-setComplianceSocketIO(io); // Compliance monitoring real-time updates
-// Project Management Socket.IO injection
-setTeamSocketIO(io);
-setProjectSocketIO(io);
-setTaskSocketIO(io);
-setMilestoneSocketIO(io);
-// Project Management Socket.IO injection
-setTeamSocketIO(io);
-setProjectSocketIO(io);
-setTaskSocketIO(io);
-setMilestoneSocketIO(io);
+    // Broadcast session updates to admins
+    socket.emit("sessions:update", activeSessions);
+  });
 
-import { errorHandler, notFoundHandler } from "./middleware/errorHandler";
-import { setRateLimiterSocketIO } from "./middleware/rateLimiterRedis";
-import { closeQueue, initQueue } from "./utils/queue";
-console.log("[DIAG] queue utils imported successfully");
+  // Broadcast sessions update helper (moved outside conditional)
+  // See bottom of file for broadcastSessions function
 
-setRateLimiterSocketIO(io);
+  // Inject Socket.IO into services/routers that need it
+  // setNotificationSocket(io); // Service import commented
+  setTransactionSocketIO(io);
+  // setAdminUsersSocketIO(io); // Route not available
+  // setDebitCardSocketIO(io); // Keep disabled if debit cards route disabled
+  // setMedbedsSocketIO(io); // Keep disabled if medbeds route disabled
+  // setChatSocketIO(io); // Keep disabled if chat route disabled
+  setSupportSocketIO(io);
+  setPaymentsSocketIO(io);
+  // setWithdrawalSocketIO(io); // Function may not be exported
+  // setOALSocketIO(io); // Keep disabled if OAL route disabled
+  setTokenSocketIO(io);
+  setComplianceSocketIO(io); // Compliance monitoring real-time updates
+  // Project Management Socket.IO injection
+  setTeamSocketIO(io);
+  setProjectSocketIO(io);
+  setTaskSocketIO(io);
+  setMilestoneSocketIO(io);
+  // Project Management Socket.IO injection
+  setTeamSocketIO(io);
+  setProjectSocketIO(io);
+  setTaskSocketIO(io);
+  setMilestoneSocketIO(io);
 
-// Wire up session broadcasting
-setAuthBroadcast(broadcastSessions);
-setSessionsBroadcast(broadcastSessions);
+  setRateLimiterSocketIO(io);
+
+  // Wire up session broadcasting
+  setAuthBroadcast(broadcastSessions);
+  setSessionsBroadcast(broadcastSessions);
+} // End of Socket.IO initialization (skipped in test mode)
 
 // 404 handler for undefined routes (before error handler)
 app.use(notFoundHandler);
@@ -959,6 +974,13 @@ process.on("SIGTERM", () => handleShutdownSignal("SIGTERM"));
 // Initialize Telegram bot for trust analysis
 import { initializeTelegramBot } from "./services/telegramTrustBot";
 initializeTelegramBot();
+
+// Broadcast sessions update helper (exported for admin usage)
+export function broadcastSessions() {
+  if (ioRef) {
+    ioRef.to("admins").emit("sessions:update", socketActiveSessions);
+  }
+}
 
 // Export app for testing
 export default app;

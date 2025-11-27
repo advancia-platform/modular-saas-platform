@@ -25,6 +25,7 @@ This document describes the comprehensive security hardening measures implemente
 **Implemented in:** `backend/src/middleware/securityHardening.ts`
 
 **Requirements:**
+
 - Minimum 12 characters
 - At least one uppercase letter
 - At least one lowercase letter
@@ -35,6 +36,7 @@ This document describes the comprehensive security hardening measures implemente
 **Function:** `validatePasswordStrength(password: string)`
 
 **Usage:**
+
 ```typescript
 const validation = validatePasswordStrength(password);
 if (!validation.valid) {
@@ -47,6 +49,7 @@ if (!validation.valid) {
 ```
 
 **Blocked Common Passwords:**
+
 - password, 123456, 12345678, qwerty, abc123
 - monkey, 1234567, letmein, trustno1, dragon
 - baseball, iloveyou, master, sunshine, ashley
@@ -58,6 +61,7 @@ if (!validation.valid) {
 **Implemented in:** `backend/src/middleware/securityHardening.ts`
 
 **Policy:**
+
 - Maximum 5 failed login attempts
 - 15-minute lockout period
 - Tracks by email/username
@@ -67,6 +71,7 @@ if (!validation.valid) {
 **Function:** `trackLoginAttempt(identifier: string, success: boolean)`
 
 **Response on Lockout:**
+
 ```json
 {
   "success": false,
@@ -77,6 +82,7 @@ if (!validation.valid) {
 ```
 
 **Applied to:**
+
 - `/api/auth/login` (user login)
 - `/api/auth/admin/login` (admin login)
 - `/api/auth/admin/verify-otp` (admin OTP verification)
@@ -86,6 +92,7 @@ if (!validation.valid) {
 **Implemented in:** `backend/src/middleware/securityHardening.ts`
 
 **Enhanced Claims:**
+
 - `iss` (issuer): `advancia-saas` (configurable)
 - `aud` (audience): `advancia-api` (configurable)
 - `exp` (expiration): Validated on every request
@@ -94,6 +101,7 @@ if (!validation.valid) {
 **Function:** `validateJWTClaims(token: string)`
 
 **Environment Variables:**
+
 ```env
 JWT_ISSUER=advancia-saas
 JWT_AUDIENCE=advancia-api
@@ -102,6 +110,7 @@ REFRESH_SECRET=<your-refresh-secret>
 ```
 
 **Token Expiration:**
+
 - Access Token: 1 day
 - Refresh Token: 7 days
 
@@ -112,12 +121,14 @@ REFRESH_SECRET=<your-refresh-secret>
 **Middleware:** `requireEmailVerified`
 
 **Applied to Protected Routes:**
+
 - `/api/analytics/*` (analytics endpoints)
 - `/api/admin/*` (admin operations)
 - `/api/payments/*` (payment operations)
 - `/api/subscriptions/*` (subscription management)
 
 **Response for Unverified Users:**
+
 ```json
 {
   "success": false,
@@ -144,6 +155,7 @@ REFRESH_SECRET=<your-refresh-secret>
 | Payments | 10 requests | 10 minutes | `paymentRateLimiter` |
 
 **Applied Routes:**
+
 ```typescript
 // Authentication
 router.post('/login', authRateLimiter, ...);
@@ -159,6 +171,7 @@ router.post('/admin/refresh', authRateLimiter, ...);
 ```
 
 **Rate Limit Response:**
+
 ```json
 {
   "success": false,
@@ -172,6 +185,7 @@ router.post('/admin/refresh', authRateLimiter, ...);
 **Implemented in:** `backend/src/middleware/securityHardening.ts`
 
 **Policy:**
+
 - Maximum 100 requests per minute per IP
 - 15-minute lockout on abuse
 - Tracks all IP addresses
@@ -180,6 +194,7 @@ router.post('/admin/refresh', authRateLimiter, ...);
 **Function:** `trackIPRequests(ipAddress: string)`
 
 **Lockout Response:**
+
 ```json
 {
   "success": false,
@@ -194,6 +209,7 @@ router.post('/admin/refresh', authRateLimiter, ...);
 **Implemented in:** `backend/src/middleware/security.ts`
 
 **Validation Strategy:**
+
 - Sanitize all user inputs
 - Type checking with TypeScript
 - Schema validation with Zod (where applicable)
@@ -210,6 +226,7 @@ router.post('/admin/refresh', authRateLimiter, ...);
 **Function:** `sanitizeObject(obj: any)`
 
 **Protected Fields (21 total):**
+
 - password, passwordHash, hash
 - apiKey, api_key, secret, secretKey
 - token, accessToken, refreshToken, resetToken
@@ -219,6 +236,7 @@ router.post('/admin/refresh', authRateLimiter, ...);
 - sessionId, cookie
 
 **Usage:**
+
 ```typescript
 const user = await prisma.user.findUnique({ where: { id } });
 const sanitized = sanitizeObject(user);
@@ -232,16 +250,19 @@ res.json({ success: true, user: sanitized });
 **Function:** `sanitizeError(error: any)`
 
 **Production Mode:**
+
 - No stack traces exposed
 - Generic error messages
 - Safe HTTP status codes
 
 **Development Mode:**
+
 - Full error details
 - Stack traces included
 - Detailed debugging info
 
 **Usage:**
+
 ```typescript
 try {
   // ... operation
@@ -256,6 +277,7 @@ try {
 **Implemented in:** Database model + helper functions
 
 **Logged Events:**
+
 - User registration
 - Login attempts (success/failure)
 - Logout events
@@ -267,6 +289,7 @@ try {
 - Password changes
 
 **Schema:**
+
 ```prisma
 model AuditLog {
   id        String   @id @default(uuid())
@@ -282,6 +305,7 @@ model AuditLog {
 ```
 
 **Usage:**
+
 ```typescript
 await prisma.auditLog.create({
   data: {
@@ -305,11 +329,13 @@ await prisma.auditLog.create({
 **Function:** `validatePaymentAmount(expected: number, actual: number, tolerance = 0.01)`
 
 **Features:**
+
 - Floating-point tolerance (default 1 cent)
 - Prevents amount manipulation
 - Validates currency consistency
 
 **Usage:**
+
 ```typescript
 const isValid = validatePaymentAmount(order.total, req.body.amount);
 if (!isValid) {
@@ -323,17 +349,20 @@ if (!isValid) {
 ### 4.2 Webhook Security
 
 **Stripe Webhooks:**
+
 - Raw body parsing
 - Signature verification
 - Idempotency key tracking
 - Event deduplication
 
 **Cryptomus Webhooks:**
+
 - API key validation
 - Payload verification
 - Status validation
 
 **Applied Routes:**
+
 - `/api/payments/webhook` (Stripe)
 - `/api/cryptomus/webhook` (Cryptomus)
 
@@ -348,12 +377,14 @@ if (!isValid) {
 **Function:** `validateSocketAuth(token: string)`
 
 **Features:**
+
 - JWT validation on connection
 - User-scoped rooms (`user-${userId}`)
 - Event whitelist validation
 - Connection logging
 
 **Usage:**
+
 ```typescript
 io.use((socket, next) => {
   const token = socket.handshake.auth.token;
@@ -373,6 +404,7 @@ io.use((socket, next) => {
 **Implemented in:** `backend/src/index.ts`
 
 **Strategy:**
+
 - Users join only their own room: `user-${userId}`
 - Admins can join `admins` room
 - No arbitrary room subscriptions
@@ -387,6 +419,7 @@ io.use((socket, next) => {
 **Implemented in:** `backend/src/config/index.ts`
 
 **Allowed Origins:**
+
 ```typescript
 const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:3000',
@@ -400,6 +433,7 @@ const allowedOrigins = [
 **Implemented in:** `backend/src/middleware/security.ts`
 
 **Headers Applied:**
+
 - `X-Content-Type-Options: nosniff`
 - `X-Frame-Options: DENY`
 - `X-XSS-Protection: 1; mode=block`
@@ -413,6 +447,7 @@ const allowedOrigins = [
 **Function:** `generateCSRFToken()`
 
 **Features:**
+
 - 32-byte random tokens
 - Hex encoding
 - Session-based validation (future)
@@ -420,6 +455,7 @@ const allowedOrigins = [
 ### 6.4 SQL Injection Prevention
 
 **Strategy:**
+
 - Prisma ORM parameterization
 - No raw SQL queries
 - Input validation
@@ -428,6 +464,7 @@ const allowedOrigins = [
 ### 6.5 XSS Prevention
 
 **Strategy:**
+
 - Output sanitization
 - Content-Type headers
 - React's built-in XSS protection
@@ -440,6 +477,7 @@ const allowedOrigins = [
 ### 7.1 Environment Variables
 
 **Required Secrets:**
+
 ```env
 # JWT
 JWT_SECRET=<strong-random-string>
@@ -482,6 +520,7 @@ node generate-secrets.js
 ### 7.3 Secret Rotation
 
 **Best Practices:**
+
 - Rotate JWT secrets quarterly
 - Rotate API keys after exposure
 - Use different secrets per environment
@@ -494,6 +533,7 @@ node generate-secrets.js
 ### 8.1 Production Hardening
 
 **Swagger Protection:**
+
 ```typescript
 import { protectSwaggerInProduction } from './middleware/securityHardening';
 
@@ -501,6 +541,7 @@ app.use('/api-docs', protectSwaggerInProduction, swaggerUi.serve, swaggerUi.setu
 ```
 
 **Error Handling:**
+
 - Production: Generic error messages
 - Development: Full error details
 - Sentry: All errors logged
@@ -508,18 +549,21 @@ app.use('/api-docs', protectSwaggerInProduction, swaggerUi.serve, swaggerUi.setu
 ### 8.2 Monitoring & Alerts
 
 **Sentry Integration:**
+
 - Error tracking
 - Performance monitoring
 - Breadcrumb logging
 - User context
 
 **Email Alerts:**
+
 - Failed admin logins
 - Account lockouts
 - Payment failures
 - System errors
 
 **Audit Log Monitoring:**
+
 - Query recent login attempts
 - Track admin actions
 - Monitor payment activity
@@ -534,12 +578,14 @@ app.use('/api-docs', protectSwaggerInProduction, swaggerUi.serve, swaggerUi.setu
 **Script:** `backend/test-security-hardening.ps1`
 
 **Run Tests:**
+
 ```powershell
 cd backend
 .\test-security-hardening.ps1
 ```
 
 **Tests Covered:**
+
 1. Password strength validation
 2. Account lockout after failed attempts
 3. Rate limiting (auth, registration)
@@ -552,6 +598,7 @@ cd backend
 ### 9.2 Manual Testing
 
 **Authentication Flow:**
+
 1. Register with weak password → Should fail
 2. Register with strong password → Should succeed
 3. Login with wrong password 5 times → Account locked
@@ -559,11 +606,13 @@ cd backend
 5. Login with correct password → Should succeed
 
 **Rate Limiting:**
+
 1. Make 6 login requests rapidly → 6th should be rate-limited
 2. Make 4 registration requests → 4th should be rate-limited
 3. Make 101 requests from same IP → Should trigger IP lockout
 
 **Token Validation:**
+
 1. Access `/api/auth/me` without token → 401
 2. Access with invalid token → 403
 3. Access with expired token → 403
@@ -604,6 +653,7 @@ This security hardening implementation provides:
 ## Next Steps
 
 1. **Run Security Tests:**
+
    ```powershell
    cd backend
    npm run dev

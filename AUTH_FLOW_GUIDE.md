@@ -135,9 +135,11 @@ Invoke-RestMethod -Uri "http://localhost:4000/api/analytics/dashboard" -Headers 
 1. Visit `http://localhost:3000/auth/login`
 2. Enter credentials: `admin@example.com` / `yourpassword`
 3. Check browser console - token should be in localStorage:
+
    ```javascript
    localStorage.getItem("jwt");
    ```
+
 4. Navigate to `http://localhost:3000/analytics`
 5. Dashboard should load with metrics (no 401 error)
 
@@ -162,6 +164,7 @@ Invoke-RestMethod -Uri "http://localhost:4000/api/analytics/dashboard" -Headers 
 
 - Wait 60 seconds before retrying
 - Adjust rate limit in `backend/src/routes/analytics.ts` if needed:
+
   ```typescript
   const analyticsRateLimiter = rateLimit({
     windowMs: 60 * 1000,
@@ -178,6 +181,7 @@ Invoke-RestMethod -Uri "http://localhost:4000/api/analytics/dashboard" -Headers 
 - Check `backend/src/config/index.ts` `allowedOrigins` includes your frontend URL
 - Ensure `withCredentials: true` in Axios config
 - Verify `NEXT_PUBLIC_BACKEND_URL` in `frontend/.env.local`:
+
   ```bash
   NEXT_PUBLIC_BACKEND_URL=http://localhost:4000
   ```

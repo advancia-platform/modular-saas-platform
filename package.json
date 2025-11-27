@@ -8,6 +8,7 @@
     "backend"
   ],
   "scripts": {
+    "prepare": "husky install",
     "check": "npm run -s type-check && npm run -s lint && npm test",
     "sass": "sass styles/main.scss public/css/main.css",
     "sass:watch": "sass --watch styles/main.scss:public/css/main.css",
@@ -51,6 +52,8 @@
     "start": "cd frontend && npm start",
     "prepare": "node -e \"try { if (process.env.NODE_ENV !== 'production' && require('fs').existsSync('.git')) require('husky').install() } catch (e) {}\" && husky install",
     "docs:lint": "markdownlint-cli2",
+    "markdown:lint": "markdownlint \"**/*.md\" --ignore node_modules --ignore \"**/node_modules/**\"",
+    "markdown:fix": "markdownlint \"**/*.md\" --fix --ignore node_modules --ignore \"**/node_modules/**\"",
     "eval:install": "cd evaluation && pip install -r requirements.txt",
     "eval:run": "cd evaluation && python run_evaluation.py",
     "eval:password": "cd evaluation && python run_evaluation.py --test password --verbose",
@@ -108,7 +111,7 @@
     "commitizen": "^4.3.1",
     "concurrently": "^9.2.1",
     "cz-conventional-changelog": "^3.3.0",
-    "husky": "^8.0.0",
+    "husky": "^8.0.3",
     "jest-environment-jsdom": "^30.2.0",
     "lighthouse": "^13.0.1",
     "lint-staged": "^15.5.2",

@@ -130,19 +130,102 @@ export default function FinanceFlowPage() {
   const [financeData, setFinanceData] = useState<FinanceData>(mockFinanceData);
   const [isLoading, setIsLoading] = useState(true);
   const [emailNotifications, setEmailNotifications] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<'daily' | 'weekly' | 'monthly' | 'yearly'>(
+    'monthly'
+  );
 
   const { data: session } = useSession();
-  const userId = session?.user?.id || '00000000-0000-0000-0000-000000000001';
+  const userId =
+    session?.user?.id || localStorage.getItem('userId') || '00000000-0000-0000-0000-000000000001';
   const { balance } = useBalance(userId);
 
+  // Fetch real cash flow data
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 1000);
+    const fetchCashFlowData = async () => {
+      setIsLoading(true);
+      try {
+        const cashFlowResponse = await cashFlowAPI.getCashFlow(userId, {
+          period: selectedPeriod,
+        });
 
-    return () => clearTimeout(timer);
-  }, []);
+        if (cashFlowResponse.success) {
+          setFinanceData((prev) => ({
+            ...prev,
+            cashFlow: cashFlowResponse.data.cashFlow.map((item) => ({
+              month: item.period,
+              income: item.income,
+              expenses: item.expenses,
+              net: item.net,
+            })),
+            totalBalance: cashFlowResponse.data.summary.netCashFlow,
+            monthlyChange: cashFlowResponse.data.summary.savingsRate,
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching cash flow:', error);
+        toast.error('Failed to load cash flow data');
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (userId) {
+      fetchCashFlowData();
+    }
+  }, [userId, selectedPeriod]);
+
+  // Export handlers
+  const handleExportCSV = async () => {
+    try {
+      toast.loading('Generating CSV...', { id: 'csv-export' });
+      const blob = await cashFlowAPI.exportToCSV(userId, { period: selectedPeriod });
+      cashFlowAPI.downloadBlob(blob, `cashflow-${userId}-${Date.now()}.csv`);
+      toast.success('CSV exported successfully!', { id: 'csv-export' });
+    } catch (error) {
+      console.error('CSV export error:', error);
+      toast.error('Failed to export CSV', { id: 'csv-export' });
+    }
+  };
+
+  const handleExportPDF = async () => {
+    try {
+      toast.loading('Generating PDF...', { id: 'pdf-export' });
+      const blob = await cashFlowAPI.exportToPDF(userId, { period: selectedPeriod });
+      cashFlowAPI.downloadBlob(blob, `cashflow-${userId}-${Date.now()}.pdf`);
+      toast.success('PDF exported successfully!', { id: 'pdf-export' });
+    } catch (error) {
+      console.error('PDF export error:', error);
+      toast.error('Failed to export PDF', { id: 'pdf-export' });
+    }
+  };
+
+  // Refresh data handler
+  const handleRefresh = async () => {
+    try {
+      toast.loading('Refreshing data...', { id: 'refresh' });
+      const cashFlowResponse = await cashFlowAPI.getCashFlow(userId, {
+        period: selectedPeriod,
+      });
+
+      if (cashFlowResponse.success) {
+        setFinanceData((prev) => ({
+          ...prev,
+          cashFlow: cashFlowResponse.data.cashFlow.map((item) => ({
+            month: item.period,
+            income: item.income,
+            expenses: item.expenses,
+            net: item.net,
+          })),
+          totalBalance: cashFlowResponse.data.summary.netCashFlow,
+          monthlyChange: cashFlowResponse.data.summary.savingsRate,
+        }));
+        toast.success('Data refreshed!', { id: 'refresh' });
+      }
+    } catch (error) {
+      console.error('Refresh error:', error);
+      toast.error('Failed to refresh data', { id: 'refresh' });
+    }
+  };
 
   // Email notification handler
   const handleEmailToggle = async () => {
@@ -289,12 +372,33 @@ export default function FinanceFlowPage() {
                   {emailNotifications ? 'Notifications On' : 'Notifications Off'}
                 </button>
 
-                <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 transition-colors">
-                  <Download className="w-4 h-4" />
-                  Export
-                </button>
+                <div className="relative group">
+                  <button className="flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 rounded-xl font-medium text-slate-600 hover:bg-slate-50 transition-colors">
+                    <Download className="w-4 h-4" />
+                    Export
+                  </button>
+                  <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-200 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 z-50">
+                    <button
+                      onClick={handleExportCSV}
+                      className="w-full px-4 py-3 text-left hover:bg-slate-50 rounded-t-xl transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Export as CSV
+                    </button>
+                    <button
+                      onClick={handleExportPDF}
+                      className="w-full px-4 py-3 text-left hover:bg-slate-50 rounded-b-xl transition-colors flex items-center gap-2"
+                    >
+                      <Download className="w-4 h-4" />
+                      Export as PDF
+                    </button>
+                  </div>
+                </div>
 
-                <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors">
+                <button
+                  onClick={handleRefresh}
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+                >
                   <RefreshCw className="w-4 h-4" />
                   Refresh
                 </button>
@@ -513,11 +617,45 @@ export default function FinanceFlowPage() {
                   </div>
 
                   <div className="flex items-center gap-2">
-                    <button className="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-sm font-medium hover:bg-slate-200 transition-colors">
-                      6M
+                    <button
+                      onClick={() => setSelectedPeriod('daily')}
+                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        selectedPeriod === 'daily'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      Daily
                     </button>
-                    <button className="px-4 py-2 bg-blue-600 text-white rounded-xl text-sm font-medium">
-                      1Y
+                    <button
+                      onClick={() => setSelectedPeriod('weekly')}
+                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        selectedPeriod === 'weekly'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      Weekly
+                    </button>
+                    <button
+                      onClick={() => setSelectedPeriod('monthly')}
+                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        selectedPeriod === 'monthly'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      Monthly
+                    </button>
+                    <button
+                      onClick={() => setSelectedPeriod('yearly')}
+                      className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${
+                        selectedPeriod === 'yearly'
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                      }`}
+                    >
+                      Yearly
                     </button>
                   </div>
                 </div>

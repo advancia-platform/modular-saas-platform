@@ -37,7 +37,7 @@ npm run dev
 
 This project previously used a tsconfig field `ignoreDeprecations` which caused Vercel production builds to fail with:
 
-```
+```text
 Type error: Invalid value for '--ignoreDeprecations'.
 ```
 

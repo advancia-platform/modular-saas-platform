@@ -6,8 +6,8 @@
 
 ### Copy & Paste This
 
-```
-https://github.com/pdtribe181-prog/-modular-saas-platform.git
+```text`nhttps://github.com/pdtribe181-prog/-modular-saas-platform.git
+
 ```
 
 **Important:** Notice the hyphen `-` at the start!
@@ -18,8 +18,7 @@ https://github.com/pdtribe181-prog/-modular-saas-platform.git
 
 ### 1. Download GitHub Desktop
 
-```
-Go to: https://desktop.github.com/
+```text`nGo to: https://desktop.github.com/
 Download it
 Install it
 Open it
@@ -27,15 +26,14 @@ Open it
 
 ### 2. Sign In
 
-```
-GitHub Desktop → File → Options
+```text`nGitHub Desktop → File → Options
 Sign in with your GitHub account
+
 ```
 
 ### 3. Clone Repository
 
-```
-GitHub Desktop → File → Clone Repository
+```text`nGitHub Desktop → File → Clone Repository
 URL tab → Paste the URL above
 Location: C:\Users\mucha.DESKTOP-H7T9NPM\
 Click Clone
@@ -43,15 +41,14 @@ Click Clone
 
 ### 4. Wait (2-5 minutes)
 
-```
-GitHub Desktop downloads everything
+```text`nGitHub Desktop downloads everything
 Shows "Clone Complete"
+
 ```
 
 ### 5. Start Using It
 
-```
-Right-click repo → Open in VS Code
+```text`nRight-click repo → Open in VS Code
 Or just see all your files
 ```
 
@@ -61,11 +58,11 @@ Or just see all your files
 
 Look for these folders:
 
-```
-✅ backend/
+```text`n✅ backend/
 ✅ frontend/
 ✅ .git/
 ✅ README.md
+
 ```
 
 If you see them → **Clone worked!** ✅
@@ -74,8 +71,7 @@ If you see them → **Clone worked!** ✅
 
 ## 📍 CLONE TO THIS LOCATION
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
 ```
 
 (GitHub Desktop will create the project folder inside)
@@ -86,26 +82,24 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 **URL:**
 
-```
-https://github.com/pdtribe181-prog/-modular-saas-platform.git
+```text`nhttps://github.com/pdtribe181-prog/-modular-saas-platform.git
+
 ```
 
 **Location:**
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
 ```
 
 **Time:**
 
-```
-~5 minutes total
+```text`n~5 minutes total
+
 ```
 
 **Status:**
 
-```
-Ready to code! 🚀
+```text`nReady to code! 🚀
 ```
 
 ---

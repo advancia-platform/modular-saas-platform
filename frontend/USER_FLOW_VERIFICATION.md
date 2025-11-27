@@ -4,7 +4,7 @@
 
 ### 📍 Flow Overview
 
-```
+```text
 ┌─────────────────────────────────────────────────────────────────┐
 │                     LANDING PAGE (/)                             │
 │  • Check localStorage for token + email                         │
@@ -336,7 +336,7 @@ All pages share:
 
 ## 🔒 Security Features
 
-### Client-Side Protection:
+### Client-Side Protection
 
 1. **Route Guards:**
    - `DashboardRouteGuard` - Protects dashboard pages
@@ -365,7 +365,7 @@ All pages share:
 
 ## 🧪 Testing the Flow
 
-### Manual Test Steps:
+### Manual Test Steps
 
 1. **Start Fresh:**
 
@@ -480,7 +480,7 @@ All pages share:
 
 ## 🚀 Production Readiness
 
-### All Pages Ready for Deployment:
+### All Pages Ready for Deployment
 
 ✅ Landing Page - Complete  
 ✅ Registration - Complete  
@@ -489,14 +489,14 @@ All pages share:
 ✅ Dashboard - Complete  
 ✅ Dashboard Sub-pages - Complete
 
-### Environment Variables Required:
+### Environment Variables Required
 
 ✅ `NEXT_PUBLIC_API_URL` - Backend API endpoint  
 ✅ `NEXT_PUBLIC_API_KEY` - API authentication key  
 ✅ `NEXTAUTH_SECRET` - NextAuth secret key  
 ✅ `NEXTAUTH_URL` - App URL for NextAuth
 
-### Security Checklist:
+### Security Checklist
 
 ✅ HTTPS enforcement  
 ✅ Token-based authentication  

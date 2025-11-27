@@ -1,8 +1,13 @@
-import { Decimal } from "@prisma/client/runtime/index-browser";
+import { Prisma } from "@prisma/client";
 import { Router } from "express";
 import { authenticateToken } from "../middleware/auth";
 import prisma from "../prismaClient";
 import { withDefaults } from "../utils/prismaHelpers";
+
+// Use Prisma.Decimal constructor (Jest-compatible)
+const Decimal = Prisma.Decimal;
+
+type Decimal = Prisma.Decimal;
 
 const router = Router();
 

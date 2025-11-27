@@ -336,7 +336,7 @@ curl -X POST http://localhost:4000/api/email/send-verification \
 
 ## Support Resources
 
-- **Cloudflare Docs**: https://developers.cloudflare.com/
-- **R2 Documentation**: https://developers.cloudflare.com/r2/
-- **Resend Docs**: https://resend.com/docs
-- **Community Forum**: https://community.cloudflare.com/
+- **Cloudflare Docs**: <https://developers.cloudflare.com/>
+- **R2 Documentation**: <https://developers.cloudflare.com/r2/>
+- **Resend Docs**: <https://resend.com/docs>
+- **Community Forum**: <https://community.cloudflare.com/>

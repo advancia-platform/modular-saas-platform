@@ -200,15 +200,15 @@ Monitor these metrics in your application logs:
 
 ## Support Resources
 
-- Render Dashboard: https://dashboard.render.com
-- Prisma Docs: https://www.prisma.io/docs
-- PostgreSQL Docs: https://www.postgresql.org/docs
+- Render Dashboard: <https://dashboard.render.com>
+- Prisma Docs: <https://www.prisma.io/docs>
+- PostgreSQL Docs: <https://www.postgresql.org/docs>
 
 ## Emergency Contacts
 
 If database is completely unreachable:
 
-1. Check Render status page: https://status.render.com
+1. Check Render status page: <https://status.render.com>
 2. Verify your network can reach oregon-postgres.render.com
 3. Check Render dashboard for maintenance notifications
 4. Contact Render support if issue persists

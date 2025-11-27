@@ -1,4 +1,8 @@
 #!/usr/bin/env sh
 . "$(dirname -- "$0")/_/husky.sh"
 
+# Run markdown linting
+npx markdownlint "**/*.md" --ignore node_modules --ignore "**/node_modules/**"
+
+# Run lint-staged
 npx lint-staged

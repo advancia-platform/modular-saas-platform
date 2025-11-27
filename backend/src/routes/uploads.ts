@@ -87,35 +87,31 @@ router.post(
  * Get presigned URL for file download
  * GET /api/uploads/:key
  */
-router.get(
-  "/:key(*)",
-  authenticateToken,
-  async (req: Request, res: Response) => {
-    try {
-      const key = req.params.key;
-      const userId = (req as any).user.userId;
+router.get("/:key", authenticateToken, async (req: Request, res: Response) => {
+  try {
+    const key = req.params.key;
+    const userId = (req as any).user.userId;
 
-      // Verify user owns the file
-      if (!key.startsWith(`uploads/${userId}/`)) {
-        return res.status(403).json({ error: "Access denied" });
-      }
-
-      const url = await getR2PresignedUrl(key, 3600); // 1 hour expiry
-
-      res.json({ success: true, url });
-    } catch (error: any) {
-      logger.error("Failed to generate download URL", { error: error.message });
-      res.status(500).json({ error: "Failed to generate download URL" });
+    // Verify user owns the file
+    if (!key.startsWith(`uploads/${userId}/`)) {
+      return res.status(403).json({ error: "Access denied" });
     }
-  },
-);
+
+    const url = await getR2PresignedUrl(key, 3600); // 1 hour expiry
+
+    res.json({ success: true, url });
+  } catch (error: any) {
+    logger.error("Failed to generate download URL", { error: error.message });
+    res.status(500).json({ error: "Failed to generate download URL" });
+  }
+});
 
 /**
  * Delete file from R2
  * DELETE /api/uploads/:key
  */
 router.delete(
-  "/:key(*)",
+  "/:key",
   authenticateToken,
   async (req: Request, res: Response) => {
     try {

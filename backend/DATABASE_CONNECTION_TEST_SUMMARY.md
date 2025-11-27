@@ -3,15 +3,18 @@
 ## Test Results
 
 ### Connection String Used
+
 ```
 postgresql://database_advancia:***@dpg-d4f112trnu6s73doipjg-a.oregon-postgres.render.com/db_adnan_postrl?connection_limit=5&pool_timeout=10&sslmode=require
 ```
 
 ### Test Status
+
 ✅ Prisma Client connects successfully
 ❌ Query execution fails with pg-protocol error
 
 ### Error Details
+
 ```
 TypeError: The "string" argument must be of type string or an instance of Buffer or ArrayBuffer. Received an instance of Object
     at Buffer.byteLength (node:buffer:787:11)
@@ -34,6 +37,7 @@ The error occurs in the `pg-protocol` library when it tries to serialize the sta
 ## Workaround Solutions
 
 ### Solution 1: Use Direct Connection (No Pooling in ts-node)
+
 For standalone scripts, avoid creating a new Pool:
 
 ```typescript
@@ -47,6 +51,7 @@ import prisma from '../prismaClient';
 ```
 
 ### Solution 2: Test Via API Endpoint
+
 The production app uses the singleton prisma client which works:
 
 ```bash
@@ -58,6 +63,7 @@ curl http://localhost:4000/api/system/db-health
 ```
 
 ### Solution 3: Update pg Package
+
 Try updating to latest pg version:
 
 ```bash
@@ -68,12 +74,15 @@ npm install @types/node-pg@latest --save-dev
 ## Production Deployment
 
 ### Render Configuration
+
 The backend is deployed at:
+
 - **Service ID**: `srv-d4froq8gjchc73djvp00`
 - **Deploy Hook**: `https://api.render.com/deploy/srv-d4froq8gjchc73djvp00?key=jtKWmxEtXZM`
 - **Region**: Oregon
 
 ### Environment Variables (Set in Render Dashboard)
+
 ```bash
 DATABASE_URL=postgresql://database_advancia:W9vl0keXJcw6zTFH0VQDGG9evLwMPyNP@dpg-d4f112trnu6s73doipjg-a.oregon-postgres.render.com/db_adnan_postrl?connection_limit=5&pool_timeout=10&sslmode=require
 
@@ -87,6 +96,7 @@ STRIPE_SECRET_KEY=[Set in Render Dashboard]
 ```
 
 ### Deploy Backend
+
 ```bash
 # Manual deploy
 curl -X POST https://api.render.com/deploy/srv-d4froq8gjchc73djvp00?key=jtKWmxEtXZM
@@ -96,6 +106,7 @@ git push origin main
 ```
 
 ### Test Production Database
+
 ```bash
 # Via health endpoint
 curl https://advancia-backend.onrender.com/api/system/db-health
@@ -123,6 +134,7 @@ curl https://advancia-backend.onrender.com/api/system/db-health
 1. **Deploy to Render** with correct DATABASE_URL
 2. **Test via API endpoint** `/api/system/db-health`
 3. **Run migrations** once deployed:
+
    ```bash
    # SSH into Render shell or use build command
    npx prisma migrate deploy

@@ -63,24 +63,24 @@ Historical documentation and deprecated guides (kept for reference).
 
 ## 🛠️ Development Commands
 
-`ash
+```bash
 
-# Start development servers
+## Start development servers
 
 npm run dev
 
-# Run tests
+## Run tests
 
 npm test
 
-# Type check
+## Type check
 
 npm run type-check
 
-# Lint code
+## Lint code
 
 npm run lint
-`
+```
 
 ## 💡 Need Help?
 

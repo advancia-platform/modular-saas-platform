@@ -61,7 +61,7 @@ python run_evaluation.py
 ## Prerequisites
 
 - Python 3.9+
-- Backend server running on http://localhost:4000
+- Backend server running on <http://localhost:4000>
 - Node.js 18+ (for backend)
 - PostgreSQL database (for backend)
 
@@ -604,6 +604,7 @@ pip install -r requirements.txt
    ```
 
 3. Register in `run_evaluation.py`:
+
    ```python
    evaluators = {
        "my_feature": MyFeatureEvaluator()

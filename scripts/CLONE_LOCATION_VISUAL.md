@@ -4,11 +4,11 @@
 
 ## 🚨 WRONG PATH (Don't Use!)
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
   └─ AppData\Local\GitHubDesktop\app-3.5.3\
      ↑ This is GitHub Desktop SOFTWARE
      ❌ DO NOT CLONE HERE!
+
 ```
 
 **Why it's wrong:**
@@ -22,8 +22,7 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 ## ✅ CORRECT PATH (Use This!)
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
   └─ -modular-saas-platform\   ← Clone here!
      ├─ backend/
      ├─ frontend/
@@ -44,8 +43,7 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 ### ❌ WRONG Structure
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
   ├─ AppData\Local\
   │  └─ GitHubDesktop\
   │     └─ app-3.5.3\
@@ -53,12 +51,12 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
   │           └─ (your code)
   │
   └─ (GitHub Desktop app & settings)
+
 ```
 
 ### ✅ RIGHT Structure
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
   ├─ -modular-saas-platform\           ← RIGHT! ✅
   │  ├─ backend/
   │  ├─ frontend/
@@ -78,13 +76,12 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 ### When You See This
 
-```
-┌──────────────────────────────────────────────┐
+```text`n┌──────────────────────────────────────────────┐
 │ Clone a repository                           │
 ├──────────────────────────────────────────────┤
 │ URL                                          │
 │ ┌────────────────────────────────────────┐  │
-│ │ https://github.com/pdtribe181-prog/   │  │
+│ │ <https://github.com/pdtribe181-prog/>   │  │
 │ │ -modular-saas-platform.git             │  │
 │ └────────────────────────────────────────┘  │
 │                                              │
@@ -96,6 +93,7 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 │                                              │
 │ [ Cancel ]  [ Clone ]                       │
 └──────────────────────────────────────────────┘
+
 ```
 
 ---
@@ -104,37 +102,34 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 ### Step 1: Open GitHub Desktop
 
-```
-📱 Click the GitHub Desktop icon
+```text`n📱 Click the GitHub Desktop icon
 ```
 
 ### Step 2: File → Clone Repository
 
-```
-Menu:
+```text`nMenu:
   File → Clone Repository
+
 ```
 
 ### Step 3: Paste URL
 
-```
-URL: https://github.com/pdtribe181-prog/-modular-saas-platform.git
+```text`nURL: https://github.com/pdtribe181-prog/-modular-saas-platform.git
 ```
 
 ### Step 4: Choose Location (IMPORTANT!)
 
-```
-NOT THIS:
+```text`nNOT THIS:
   ❌ C:\Users\mucha.DESKTOP-H7T9NPM\AppData\Local\GitHubDesktop\...
 
 USE THIS:
   ✅ C:\Users\mucha.DESKTOP-H7T9NPM\
+
 ```
 
 ### Step 5: Click Clone
 
-```
-GitHub Desktop will:
+```text`nGitHub Desktop will:
   ✅ Create: C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\
   ✅ Download all files
   ✅ Set up git connection
@@ -147,20 +142,19 @@ GitHub Desktop will:
 
 ### In Windows Explorer
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
   ✅ -modular-saas-platform/        ← Your cloned repository
      ✅ backend/
      ✅ frontend/
      ✅ .git/
      ✅ README.md
      ✅ 50+ more files
+
 ```
 
 ### In GitHub Desktop
 
-```
-✅ Sidebar shows: "-modular-saas-platform"
+```text`n✅ Sidebar shows: "-modular-saas-platform"
 ✅ Branch: "main"
 ✅ Origin: "GitHub"
 ✅ Path: C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\
@@ -175,18 +169,17 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 ### 1. GitHub Desktop Software (Read-Only)
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\AppData\Local\GitHubDesktop\app-3.5.3\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\AppData\Local\GitHubDesktop\app-3.5.3\
 ├─ GitHub Desktop software files
 ├─ Gets updated automatically
 ├─ DON'T clone here! ❌
 └─ DON'T put code here! ❌
+
 ```
 
 ### 2. Your User Folder (Perfect for Cloning)
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\
 ├─ Documents/
 ├─ Desktop/
 ├─ Pictures/
@@ -196,10 +189,10 @@ C:\Users\mucha.DESKTOP-H7T9NPM\
 
 ### 3. Alternative Project Folder (Also Good)
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\Documents\Projects\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\Documents\Projects\
 ├─ -modular-saas-platform/  ← Or clone here! ✅
 └─ (other projects)
+
 ```
 
 ---
@@ -221,8 +214,7 @@ C:\Users\mucha.DESKTOP-H7T9NPM\Documents\Projects\
 
 ### In GitHub Desktop
 
-```
-1. File → Clone Repository
+```text`n1. File → Clone Repository
 2. URL: https://github.com/pdtribe181-prog/-modular-saas-platform.git
 3. Path: C:\Users\mucha.DESKTOP-H7T9NPM\  ← THIS IS THE KEY!
 4. Click Clone
@@ -232,12 +224,12 @@ C:\Users\mucha.DESKTOP-H7T9NPM\Documents\Projects\
 
 ### Result
 
-```
-C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\
+```text`nC:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\
 ├─ backend/
 ├─ frontend/
 ├─ .git/
 └─ [all your code - ready to work with!]
+
 ```
 
 ---
@@ -246,8 +238,7 @@ C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\
 
 ### Delete and Re-Clone
 
-```
-1. Delete:
+```text`n1. Delete:
    C:\Users\mucha.DESKTOP-H7T9NPM\AppData\Local\GitHubDesktop\app-3.5.3\-modular-saas-platform\
    (or the clone inside app-3.5.3 folder)
 
@@ -266,14 +257,13 @@ C:\Users\mucha.DESKTOP-H7T9NPM\-modular-saas-platform\
 
 **The URL stays the same:**
 
-```
-https://github.com/pdtribe181-prog/-modular-saas-platform.git
+```text`nhttps://github.com/pdtribe181-prog/-modular-saas-platform.git
+
 ```
 
 **Just pick the RIGHT location:**
 
-```
-✅ C:\Users\mucha.DESKTOP-H7T9NPM\
+```text`n✅ C:\Users\mucha.DESKTOP-H7T9NPM\
 ```
 
 **Then clone!** 🚀

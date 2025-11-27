@@ -28,6 +28,7 @@ python run_evaluation.py --test jwt
 ### Integration with CI/CD
 
 The framework runs automatically on:
+
 - Every push to `main` or `develop`
 - All pull requests
 - Weekly schedule (Monday 2 AM UTC)
@@ -166,6 +167,7 @@ cat evaluation/results/ci-evaluation_audit.json
 ```
 
 Audit logs include:
+
 - Timestamp (UTC)
 - Evaluator name
 - Action performed
@@ -261,6 +263,7 @@ If a security issue is discovered:
 ### For Developers
 
 1. **Never log sensitive data**
+
    ```typescript
    // ❌ Bad
    console.log('User password:', password);
@@ -270,6 +273,7 @@ If a security issue is discovered:
    ```
 
 2. **Use evaluation framework before PR**
+
    ```bash
    cd evaluation && python run_evaluation.py
    ```
@@ -310,7 +314,7 @@ If a security issue is discovered:
 - Security Hardening Guide: `docs/SECURITY_HARDENING_GUIDE.md`
 - Integration Documentation: `docs/EVALUATION_FRAMEWORK.md`
 - Backend Architecture: `.github/copilot-instructions.md`
-- PCI-DSS Guidelines: https://www.pcisecuritystandards.org/
+- PCI-DSS Guidelines: <https://www.pcisecuritystandards.org/>
 
 ---
 

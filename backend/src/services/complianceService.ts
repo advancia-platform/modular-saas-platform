@@ -1,8 +1,7 @@
-import { AuditEvent, ComplianceReport, PrismaClient } from "@prisma/client";
+import { AuditEvent, ComplianceReport } from "@prisma/client";
 import { Server as SocketIOServer } from "socket.io";
+import prisma from "../prismaClient";
 import { winstonLogger as logger } from "../utils/winstonLogger";
-
-const prisma = new PrismaClient();
 
 // Socket.IO instance for real-time updates
 let io: SocketIOServer | null = null;

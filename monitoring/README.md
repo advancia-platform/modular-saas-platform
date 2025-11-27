@@ -6,7 +6,7 @@ This monitoring stack provides comprehensive observability for the Advancia Pay 
 
 ## 🏗️ Architecture
 
-```
+```text
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Application   │────│   Prometheus     │────│    Grafana      │
 │                 │    │   (Metrics)      │    │  (Dashboards)   │
@@ -90,8 +90,8 @@ docker-compose ps
 
 ## 📊 Access URLs
 
-| Service           | URL                   | Credentials |
-| ----------------- | --------------------- | ----------- |
+| Service           | URL                     | Credentials |
+| ----------------- | ----------------------- | ----------- |
 | **Grafana**       | <http://localhost:3001> | admin/admin |
 | **Prometheus**    | <http://localhost:9090> | -           |
 | **Alertmanager**  | <http://localhost:9093> | -           |

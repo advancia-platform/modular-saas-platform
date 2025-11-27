@@ -1,4 +1,3 @@
-import { PrismaClient } from "@prisma/client";
 import { Router } from "express";
 import {
   allowRoles,
@@ -6,15 +5,14 @@ import {
   requireAdmin,
 } from "../middleware/auth";
 import { validateInput } from "../middleware/security";
+import prisma from "../prismaClient";
 import {
   ComplianceService,
   setComplianceSocketIO,
 } from "../services/complianceService";
-import { serializeDecimalFields } from "../utils/decimal";
 import { winstonLogger as logger } from "../utils/winstonLogger";
 
 const router = Router();
-const prisma = new PrismaClient();
 
 // Safe middleware wrappers
 const safeAuth: any =

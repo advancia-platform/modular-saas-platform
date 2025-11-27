@@ -52,13 +52,13 @@ npm run dev
 
 ## Running Tests
 
-### Run all security evaluators:
+### Run all security evaluators
 
 ```bash
 python run_all_evaluators.py
 ```
 
-### Run specific evaluator:
+### Run specific evaluator
 
 ```bash
 python evaluators/password_strength.py
