@@ -1,0 +1,336 @@
+name: Workflow Health Check & SLA Monitor
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "0 */6 * * *" # Every 6 hours
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+
+jobs:
+  analyze-failures:
+    name: Analyze Failed Workflows
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      issues: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Get Failed Workflow Runs
+        id: failed-runs
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Get workflow runs from last 24 hours
+            const since = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              status: 'failure',
+              created: `>=${since}`,
+              per_page: 100
+            });
+
+            const failures = [];
+
+            for (const run of runs.workflow_runs) {
+              const { data: jobs } = await github.rest.actions.listJobsForWorkflowRun({
+                owner,
+                repo,
+                run_id: run.id
+              });
+
+              const failedJobs = jobs.jobs.filter(job => job.conclusion === 'failure');
+
+              if (failedJobs.length > 0) {
+                failures.push({
+                  workflow: run.name,
+                  runId: run.id,
+                  runNumber: run.run_number,
+                  branch: run.head_branch,
+                  commit: run.head_sha.substring(0, 7),
+                  url: run.html_url,
+                  createdAt: run.created_at,
+                  jobs: failedJobs.map(job => ({
+                    name: job.name,
+                    conclusion: job.conclusion,
+                    steps: job.steps
+                      .filter(step => step.conclusion === 'failure')
+                      .map(step => ({
+                        name: step.name,
+                        conclusion: step.conclusion
+                      }))
+                  }))
+                });
+              }
+            }
+
+            return failures;
+
+      - name: Generate Failure Report
+        id: report
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const failures = ${{ steps.failed-runs.outputs.result }};
+
+            if (failures.length === 0) {
+              core.setOutput('has_failures', 'false');
+              return 'No workflow failures in the last 24 hours ✅';
+            }
+
+            core.setOutput('has_failures', 'true');
+
+            let report = `# 🚨 Workflow Failure Report\n\n`;
+            report += `**Total Failed Workflows:** ${failures.length}\n`;
+            report += `**Report Generated:** ${new Date().toISOString()}\n\n`;
+            report += `---\n\n`;
+
+            failures.forEach((failure, index) => {
+              report += `## ${index + 1}. ${failure.workflow}\n\n`;
+              report += `- **Run:** #${failure.runNumber}\n`;
+              report += `- **Branch:** \`${failure.branch}\`\n`;
+              report += `- **Commit:** \`${failure.commit}\`\n`;
+              report += `- **Time:** ${failure.createdAt}\n`;
+              report += `- **URL:** ${failure.url}\n\n`;
+
+              report += `### Failed Jobs:\n\n`;
+              failure.jobs.forEach(job => {
+                report += `#### 🔴 ${job.name}\n\n`;
+                if (job.steps && job.steps.length > 0) {
+                  report += `**Failed Steps:**\n`;
+                  job.steps.forEach(step => {
+                    report += `- ❌ ${step.name}\n`;
+                  });
+                  report += `\n`;
+                }
+              });
+
+              report += `---\n\n`;
+            });
+
+            // Common issues and solutions
+            report += `## 🔍 Common Causes & Solutions\n\n`;
+            report += `### 1. **Dependency Installation Failures**\n`;
+            report += `- **Cause:** Package lock file mismatch or registry issues\n`;
+            report += `- **Solution:** Run \`npm ci\` locally and commit updated lock files\n\n`;
+
+            report += `### 2. **TypeScript Type Errors**\n`;
+            report += `- **Cause:** Type mismatches or missing type definitions\n`;
+            report += `- **Solution:** Run \`npm run type-check\` locally and fix errors\n\n`;
+
+            report += `### 3. **Linting Failures**\n`;
+            report += `- **Cause:** ESLint rule violations\n`;
+            report += `- **Solution:** Run \`npm run lint:fix\` to auto-fix issues\n\n`;
+
+            report += `### 4. **Test Failures**\n`;
+            report += `- **Cause:** Breaking changes or environment issues\n`;
+            report += `- **Solution:** Run \`npm test\` locally and review failures\n\n`;
+
+            report += `### 5. **Database Migration Failures**\n`;
+            report += `- **Cause:** Prisma schema conflicts or missing migrations\n`;
+            report += `- **Solution:** Run \`npx prisma migrate dev\` and commit migrations\n\n`;
+
+            report += `### 6. **Build Failures**\n`;
+            report += `- **Cause:** Missing dependencies or build configuration issues\n`;
+            report += `- **Solution:** Run \`npm run build\` locally and check for errors\n\n`;
+
+            report += `### 7. **Docker Build Failures**\n`;
+            report += `- **Cause:** Invalid Dockerfile or missing dependencies\n`;
+            report += `- **Solution:** Test Docker build locally with \`docker build .\`\n\n`;
+
+            report += `### 8. **Pre-commit Hook Failures**\n`;
+            report += `- **Cause:** Husky hooks failing (npm/pnpm issues)\n`;
+            report += `- **Solution:** Use \`git commit --no-verify\` or fix hook scripts\n\n`;
+
+            return report;
+
+      - name: Save Report as Artifact
+        if: steps.report.outputs.has_failures == 'true'
+        run: |
+          mkdir -p reports
+          echo "${{ steps.report.outputs.result }}" > reports/workflow-failures.md
+
+      - name: Upload Failure Report
+        if: steps.report.outputs.has_failures == 'true'
+        uses: actions/upload-artifact@v4
+        with:
+          name: workflow-failure-report-${{ github.run_number }}
+          path: reports/workflow-failures.md
+          retention-days: 30
+
+      - name: Create Issue for Failures
+        if: steps.report.outputs.has_failures == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const report = ${{ steps.report.outputs.result }};
+
+            // Check if there's already an open issue
+            const { data: issues } = await github.rest.issues.listForRepo({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              state: 'open',
+              labels: 'workflow-failure,automated'
+            });
+
+            const existingIssue = issues.find(issue =>
+              issue.title.includes('Workflow Health Check')
+            );
+
+            if (existingIssue) {
+              // Update existing issue
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: existingIssue.number,
+                body: report + `\n\n---\n*Updated: ${new Date().toISOString()}*`
+              });
+            } else {
+              // Create new issue
+              await github.rest.issues.create({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                title: '🚨 Workflow Health Check: Failures Detected',
+                body: report,
+                labels: ['workflow-failure', 'automated', 'bug', 'ci/cd']
+              });
+            }
+
+      - name: Send Slack Alert (Optional)
+        if: steps.report.outputs.has_failures == 'true' && env.SLACK_WEBHOOK_URL != ''
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+        run: |
+          curl -X POST -H 'Content-type: application/json' \
+            --data '{"text":"🚨 GitHub Workflow Failures Detected! Check the latest workflow health report."}' \
+            $SLACK_WEBHOOK_URL
+
+      - name: Summary
+        run: |
+          if [ "${{ steps.report.outputs.has_failures }}" == "true" ]; then
+            echo "⚠️ Workflow failures detected in the last 24 hours"
+            echo "Check the artifact for detailed report"
+            exit 1
+          else
+            echo "✅ All workflows healthy - no failures in the last 24 hours"
+          fi
+
+  sla-monitoring:
+    name: SLA & Performance Monitoring
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Analyze Workflow Performance
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            // Get workflow runs from last 7 days
+            const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+            const { data: runs } = await github.rest.actions.listWorkflowRunsForRepo({
+              owner,
+              repo,
+              created: `>=${since}`,
+              per_page: 100
+            });
+
+            const stats = {
+              total: runs.workflow_runs.length,
+              success: 0,
+              failure: 0,
+              cancelled: 0,
+              avgDuration: 0,
+              workflows: {}
+            };
+
+            let totalDuration = 0;
+
+            runs.workflow_runs.forEach(run => {
+              if (run.conclusion === 'success') stats.success++;
+              else if (run.conclusion === 'failure') stats.failure++;
+              else if (run.conclusion === 'cancelled') stats.cancelled++;
+
+              const duration = (new Date(run.updated_at) - new Date(run.created_at)) / 1000 / 60; // minutes
+              totalDuration += duration;
+
+              if (!stats.workflows[run.name]) {
+                stats.workflows[run.name] = {
+                  total: 0,
+                  success: 0,
+                  failure: 0,
+                  avgDuration: 0,
+                  totalDuration: 0
+                };
+              }
+
+              stats.workflows[run.name].total++;
+              if (run.conclusion === 'success') stats.workflows[run.name].success++;
+              if (run.conclusion === 'failure') stats.workflows[run.name].failure++;
+              stats.workflows[run.name].totalDuration += duration;
+            });
+
+            stats.avgDuration = totalDuration / stats.total;
+
+            // Calculate per-workflow averages
+            Object.keys(stats.workflows).forEach(workflow => {
+              const w = stats.workflows[workflow];
+              w.avgDuration = w.totalDuration / w.total;
+              w.successRate = (w.success / w.total * 100).toFixed(2);
+            });
+
+            // Generate SLA report
+            let report = `# 📊 Workflow SLA Report (Last 7 Days)\n\n`;
+            report += `**Total Runs:** ${stats.total}\n`;
+            report += `**Success:** ${stats.success} (${(stats.success / stats.total * 100).toFixed(2)}%)\n`;
+            report += `**Failure:** ${stats.failure} (${(stats.failure / stats.total * 100).toFixed(2)}%)\n`;
+            report += `**Cancelled:** ${stats.cancelled}\n`;
+            report += `**Avg Duration:** ${stats.avgDuration.toFixed(2)} minutes\n\n`;
+
+            report += `## Workflow Breakdown\n\n`;
+            report += `| Workflow | Total | Success Rate | Avg Duration |\n`;
+            report += `|----------|-------|--------------|---------------|\n`;
+
+            Object.entries(stats.workflows)
+              .sort((a, b) => b[1].total - a[1].total)
+              .forEach(([name, data]) => {
+                const emoji = data.successRate >= 95 ? '✅' : data.successRate >= 80 ? '⚠️' : '🚨';
+                report += `| ${emoji} ${name} | ${data.total} | ${data.successRate}% | ${data.avgDuration.toFixed(2)}m |\n`;
+              });
+
+            report += `\n## SLA Targets\n\n`;
+            report += `- **Success Rate:** ≥ 95% ✅\n`;
+            report += `- **Avg Build Time:** ≤ 10 minutes ⚡\n`;
+            report += `- **Max Build Time:** ≤ 30 minutes ⏱️\n`;
+
+            console.log(report);
+
+            // Alert if SLA violated
+            const successRate = (stats.success / stats.total * 100);
+            if (successRate < 95) {
+              core.setFailed(`SLA Violation: Success rate (${successRate.toFixed(2)}%) below 95% target`);
+            }
+
+      - name: Check Build Times
+        run: |
+          echo "⏱️ Checking build time SLAs..."
+          echo "Target: CI jobs should complete within 10 minutes"
+          echo "Max acceptable: 30 minutes"
