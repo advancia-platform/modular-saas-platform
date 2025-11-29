@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security Vulnerability
+    url: mailto:security@advancia.com
+    about: For security vulnerabilities, please email security@advancia.com directly. Do not open a public issue.
+  - name: 💬 General Questions & Discussions
+    url: https://github.com/advancia-platform/modular-saas-platform/discussions
+    about: Use GitHub Discussions for questions, ideas, and community support.
+  - name: 📖 Documentation
+    url: https://github.com/advancia-platform/modular-saas-platform/tree/main/docs
+    about: Check our documentation before opening an issue.
+  - name: 📧 Support
+    url: mailto:support@advancia.com
+    about: For general support inquiries, email support@advancia.com.
