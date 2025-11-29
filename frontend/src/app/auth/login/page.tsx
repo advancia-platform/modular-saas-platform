@@ -1,11 +1,11 @@
 'use client';
 
-import { signIn, useSession } from 'next-auth/react';
-import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import OtpLogin from '@/components/OtpLogin';
 import { motion } from 'framer-motion';
+import { signIn, useSession } from 'next-auth/react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
 
 type LoginMode = 'password' | 'otp';
 
@@ -19,11 +19,17 @@ export default function LoginPage() {
   const [info, setInfo] = useState('');
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    if (!captchaVerified) {
+      setError('Please complete the robot verification to continue.');
+      return;
+    }
 
     if (!termsAccepted) {
       setError('Please accept the Terms of Service and Privacy Policy to continue.');
@@ -221,9 +227,19 @@ export default function LoginPage() {
               </label>
             </div>
 
+            {/* Robot Verification CAPTCHA */}
+            <RobotVerification
+              onVerify={() => setCaptchaVerified(true)}
+              onFail={() => setCaptchaVerified(false)}
+              verificationType="checkbox"
+              title="Security Check"
+              description="Please verify you're human"
+              className="my-2"
+            />
+
             <button
               type="submit"
-              disabled={loading || !termsAccepted}
+              disabled={loading || !termsAccepted || !captchaVerified}
               className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium disabled:cursor-not-allowed disabled:opacity-60"
             >
               {loading ? 'Signing In...' : 'Sign In'}

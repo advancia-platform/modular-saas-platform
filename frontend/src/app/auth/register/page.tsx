@@ -14,11 +14,18 @@ export default function RegisterPage() {
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [captchaVerified, setCaptchaVerified] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+
+    // Robot verification
+    if (!captchaVerified) {
+      setError('Please complete the robot verification to continue.');
+      return;
+    }
 
     // Validation
     if (!termsAccepted) {
@@ -258,9 +265,20 @@ export default function RegisterPage() {
             </label>
           </div>
 
+          {/* Robot Verification CAPTCHA */}
+          <RobotVerification
+            onVerify={() => setCaptchaVerified(true)}
+            onFail={() => setCaptchaVerified(false)}
+            verificationType="image"
+            imageChallengeType="math"
+            title="Security Verification"
+            description="Complete the challenge to create your account"
+            className="my-2"
+          />
+
           <button
             type="submit"
-            disabled={loading || !termsAccepted}
+            disabled={loading || !termsAccepted || !captchaVerified}
             className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition font-medium disabled:cursor-not-allowed disabled:opacity-60"
           >
             {loading ? 'Creating Account...' : 'Create Account'}
