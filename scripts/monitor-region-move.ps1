@@ -5,7 +5,7 @@ $apiUrl = "https://advanciapayledger.com/api/health"
 $maxAttempts = 30  # 5 minutes
 $interval = 10     # seconds
 
-Write-Host "🔄 Monitoring Backend Deployment (Region Move to Virginia)" -ForegroundColor Cyan
+Write-Host "🔄 Monitoring Backend Deployment (Region: Oregon)" -ForegroundColor Cyan
 Write-Host "=" * 70 -ForegroundColor Gray
 Write-Host ""
 Write-Host "⏳ Waiting for backend to come online..." -ForegroundColor Yellow
@@ -18,13 +18,13 @@ $lastStatus = $null
 while ($attempt -lt $maxAttempts) {
     $attempt++
     $elapsed = $attempt * $interval
-    
+
     Write-Host "[$attempt/$maxAttempts] " -NoNewline -ForegroundColor Yellow
     Write-Host "Checking... " -NoNewline -ForegroundColor White
-    
+
     try {
         $response = Invoke-RestMethod -Uri $apiUrl -Method GET -TimeoutSec 5 -ErrorAction Stop
-        
+
         # Success!
         Write-Host "✅ BACKEND IS UP!" -ForegroundColor Green
         Write-Host ""
@@ -32,15 +32,15 @@ while ($attempt -lt $maxAttempts) {
         Write-Host ($response | ConvertTo-Json -Depth 3) -ForegroundColor White
         Write-Host ""
         Write-Host "🎉 Deployment successful!" -ForegroundColor Green
-        Write-Host "   Backend is now in Virginia region" -ForegroundColor White
+        Write-Host "   Backend is now in Oregon region" -ForegroundColor White
         Write-Host "   Total time: $elapsed seconds" -ForegroundColor Gray
         Write-Host ""
         Write-Host "✅ Next: Test your site at https://advanciapayledger.com" -ForegroundColor Cyan
         exit 0
-        
+
     } catch {
         $statusCode = $_.Exception.Response.StatusCode.value__
-        
+
         if ($statusCode -eq 502) {
             Write-Host "❌ 502 (Still deploying...)" -ForegroundColor Yellow
         } elseif ($statusCode) {
@@ -48,7 +48,7 @@ while ($attempt -lt $maxAttempts) {
         } else {
             Write-Host "⚠️  No response" -ForegroundColor Yellow
         }
-        
+
         if ($attempt -lt $maxAttempts) {
             Write-Host "   Retry in ${interval}s..." -ForegroundColor Gray
             Start-Sleep -Seconds $interval

@@ -4,7 +4,7 @@
   "buildCommand": "cd frontend && npm install && npm run build",
   "outputDirectory": "frontend/.next",
   "installCommand": "echo 'Skipping root install'",
-  "regions": ["iad1"],
+  "regions": ["pdx1"],
   "env": {
     "NEXT_TELEMETRY_DISABLED": "1"
   },
