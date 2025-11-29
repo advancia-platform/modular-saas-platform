@@ -8,19 +8,19 @@ datasource db {
 }
 
 model CryptoPayments {
-  id              String        @id
+  id              String    @id
   user_id         String
   invoice_id      String
   amount          Float
   currency        String
-  status          PaymentStatus @default(PENDING)
+  status          String    @default("pending")
   payment_url     String?
   order_id        String?
   description     String?
   paid_at         DateTime?
   created_at      DateTime?
   updated_at      DateTime?
-  paymentProvider String?       @default("cryptomus") // 'cryptomus' | 'nowpayments'
+  paymentProvider String?   @default("cryptomus") // 'cryptomus' | 'nowpayments'
 
   @@index([user_id])
   @@index([status])
@@ -71,13 +71,13 @@ model activity_logs {
 }
 
 model admin_login_logs {
-  id        Int         @id @default(autoincrement())
+  id        Int      @id @default(autoincrement())
   email     String
   phone     String?
-  status    LoginStatus
+  status    String
   ipAddress String?
   userAgent String?
-  createdAt DateTime    @default(now())
+  createdAt DateTime @default(now())
 
   @@index([createdAt])
   @@index([email])
@@ -306,10 +306,10 @@ model chat_messages {
 }
 
 model chat_sessions {
-  id              String        @id
+  id              String   @id
   userId          String?
-  status          SessionStatus @default(OPEN)
-  createdAt       DateTime      @default(now())
+  status          String   @default("open")
+  createdAt       DateTime @default(now())
   updatedAt       DateTime
   assignedAdminId String?
 }
@@ -342,7 +342,7 @@ model consultations {
 }
 
 model crypto_orders {
-  id                String      @id
+  id                String    @id
   userId            String
   cryptoType        String
   usdAmount         Decimal
@@ -350,7 +350,7 @@ model crypto_orders {
   exchangeRate      Decimal
   processingFee     Decimal
   totalUsd          Decimal
-  status            OrderStatus @default(PENDING)
+  status            String    @default("pending")
   adminAddress      String
   txHash            String?
   adminNotes        String?
@@ -358,7 +358,7 @@ model crypto_orders {
   stripeSessionId   String?
   completedAt       DateTime?
   cancelledAt       DateTime?
-  createdAt         DateTime    @default(now())
+  createdAt         DateTime  @default(now())
   updatedAt         DateTime
 
   @@index([createdAt])
@@ -386,13 +386,13 @@ model crypto_wallets {
 }
 
 model crypto_withdrawals {
-  id                 String           @id
+  id                 String    @id
   userId             String
   cryptoType         String
   cryptoAmount       Decimal
   usdEquivalent      Decimal
   withdrawalAddress  String
-  status             WithdrawalStatus @default(PENDING)
+  status             String    @default("pending")
   adminApprovedBy    String?
   adminNotes         String?
   txHash             String?
@@ -401,16 +401,16 @@ model crypto_withdrawals {
   rejectedAt         DateTime?
   completedAt        DateTime?
   cancelledAt        DateTime?
-  createdAt          DateTime         @default(now())
+  createdAt          DateTime  @default(now())
   updatedAt          DateTime
   user_notes         String?
   amount             Decimal
   approvedBy         String?
   currency           String
   destinationAddress String
-  requestedAt        DateTime         @default(now())
-  paymentProvider    String?          @default("cryptomus") // 'cryptomus' | 'nowpayments'
-  user               User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  requestedAt        DateTime  @default(now())
+  paymentProvider    String?   @default("cryptomus") // 'cryptomus' | 'nowpayments'
+  user               User      @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([createdAt])
   @@index([cryptoType])
@@ -424,18 +424,18 @@ model crypto_withdrawals {
 }
 
 model debit_cards {
-  id             String     @id
+  id             String   @id
   userId         String
-  cardNumber     String     @unique
+  cardNumber     String   @unique
   cardHolderName String
   expiryMonth    Int
   expiryYear     Int
   cvv            String
-  cardType       String     @default("virtual")
-  status         CardStatus @default(ACTIVE)
-  balance        Decimal    @default(0)
-  dailyLimit     Decimal    @default(1000)
-  createdAt      DateTime   @default(now())
+  cardType       String   @default("virtual")
+  status         String   @default("active")
+  balance        Decimal  @default(0)
+  dailyLimit     Decimal  @default(1000)
+  createdAt      DateTime @default(now())
   updatedAt      DateTime
 
   @@index([cardNumber])
@@ -460,22 +460,22 @@ model doctors {
 }
 
 model email_logs {
-  id         String      @id
+  id         String    @id
   userId     String?
   to         String
-  from       String      @default("noreply@advancia.com")
+  from       String    @default("noreply@advancia.com")
   subject    String
   template   String
-  status     EmailStatus @default(PENDING)
-  provider   String      @default("resend")
+  status     String    @default("pending")
+  provider   String    @default("resend")
   providerId String?
   metadata   Json?
   error      String?
   sentAt     DateTime?
   openedAt   DateTime?
   clickedAt  DateTime?
-  createdAt  DateTime    @default(now())
-  user       User?       @relation(fields: [userId], references: [id])
+  createdAt  DateTime  @default(now())
+  user       User?     @relation(fields: [userId], references: [id])
 
   @@index([status])
   @@index([template])
@@ -490,7 +490,7 @@ model eth_activity {
   type              EthActivityType
   txHash            String?         @unique
   amountEth         Decimal
-  status            ActivityStatus
+  status            String
   confirmations     Int             @default(0)
   blockNumber       Int?
   note              String?
@@ -590,7 +590,7 @@ model invoices {
   userId         String
   amount         Decimal
   currency       String          @default("USD")
-  status         InvoiceStatus   @default(PENDING)
+  status         String          @default("pending")
   type           String          @default("transaction")
   billingName    String?
   billingEmail   String?
@@ -653,7 +653,7 @@ model kyc_verifications {
   id                   String    @id
   userId               String    @unique
   kycLevel             Int       @default(0)
-  status               KYCStatus @default(NOT_STARTED)
+  status               String    @default("not_started")
   firstName            String?
   lastName             String?
   dateOfBirth          DateTime?
@@ -689,16 +689,16 @@ model kyc_verifications {
 }
 
 model loans {
-  id               String     @id
+  id               String    @id
   userId           String
   amount           Decimal
   interestRate     Decimal
   termMonths       Int
   monthlyPayment   Decimal
   remainingBalance Decimal
-  status           LoanStatus @default(PENDING)
+  status           String    @default("pending")
   purpose          String
-  startDate        DateTime   @default(now())
+  startDate        DateTime  @default(now())
   dueDate          DateTime
   approvedBy       String?
   approvedAt       DateTime?
@@ -706,7 +706,7 @@ model loans {
   defaultedAt      DateTime?
   cancelledAt      DateTime?
   adminNotes       String?
-  createdAt        DateTime   @default(now())
+  createdAt        DateTime  @default(now())
   updatedAt        DateTime
 
   @@index([createdAt])
@@ -715,23 +715,23 @@ model loans {
 }
 
 model medbeds_bookings {
-  id              String        @id
+  id              String   @id
   userId          String
   chamberType     String
   chamberName     String
   sessionDate     DateTime
   duration        Int
-  cost            Decimal       @db.Decimal(10, 2)
+  cost            Decimal  @db.Decimal(10, 2)
   paymentMethod   String
-  paymentStatus   PaymentStatus @default(PENDING)
+  paymentStatus   String   @default("pending")
   transactionId   String?
   stripeSessionId String?
-  status          BookingStatus @default(SCHEDULED)
+  status          String   @default("scheduled")
   effectiveness   Int?
   notes           String?
-  createdAt       DateTime      @default(now())
+  createdAt       DateTime @default(now())
   updatedAt       DateTime
-  user            User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([paymentStatus])
   @@index([sessionDate])
@@ -740,12 +740,12 @@ model medbeds_bookings {
 }
 
 model notification_logs {
-  id             String             @id
+  id             String    @id
   notificationId String
   channel        String
-  status         NotificationStatus
+  status         String
   errorMessage   String?
-  sentAt         DateTime           @default(now())
+  sentAt         DateTime  @default(now())
   deliveredAt    DateTime?
   metadata       Json?
 
@@ -756,17 +756,17 @@ model notification_logs {
 }
 
 model NotificationLog {
-  id       String      @id @default(cuid())
+  id       String   @id @default(cuid())
   userId   String
   email    String
   subject  String
-  message  String      @db.Text
+  message  String   @db.Text
   template String?
-  provider String      @default("gmail")
-  status   EmailStatus @default(SENT)
+  provider String   @default("gmail")
+  status   String   @default("sent")
   metadata Json?
-  sentAt   DateTime    @default(now())
-  user     User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sentAt   DateTime @default(now())
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
   @@index([email])
@@ -890,14 +890,14 @@ model password_reset_requests {
 }
 
 model payment_sessions {
-  id            String        @id
-  sessionId     String        @unique
+  id            String    @id
+  sessionId     String    @unique
   userId        String
   amount        Decimal
-  currency      String        @default("USD")
+  currency      String    @default("USD")
   paymentMethod String
   provider      String?
-  status        PaymentStatus @default(PENDING)
+  status        String    @default("pending")
   redirectUrl   String?
   callbackUrl   String?
   metadata      Json?
@@ -905,7 +905,7 @@ model payment_sessions {
   completedAt   DateTime?
   failedReason  String?
   transactionId String?
-  createdAt     DateTime      @default(now())
+  createdAt     DateTime  @default(now())
   updatedAt     DateTime
 
   @@index([createdAt])
@@ -956,17 +956,17 @@ model push_subscriptions {
 }
 
 model rewards {
-  id          String       @id
+  id          String    @id
   userId      String
   type        String
   amount      Decimal
-  status      RewardStatus @default(PENDING)
+  status      String    @default("pending")
   title       String
   description String
   metadata    String?
   expiresAt   DateTime?
   claimedAt   DateTime?
-  createdAt   DateTime     @default(now())
+  createdAt   DateTime  @default(now())
 
   @@index([createdAt])
   @@index([status])
@@ -1034,16 +1034,16 @@ model AuditLog {
 }
 
 model support_tickets {
-  id         String       @id
+  id         String    @id
   userId     String
   subject    String
   message    String
-  category   String       @default("GENERAL")
-  status     TicketStatus @default(OPEN)
-  priority   String       @default("MEDIUM")
+  category   String    @default("GENERAL")
+  status     String    @default("OPEN")
+  priority   String    @default("MEDIUM")
   response   String?
   resolvedBy String?
-  createdAt  DateTime     @default(now())
+  createdAt  DateTime  @default(now())
   updatedAt  DateTime
   resolvedAt DateTime?
 
@@ -1079,16 +1079,16 @@ model system_config {
 }
 
 model system_status {
-  id            String       @id
+  id            String   @id
   serviceName   String
-  status        SystemStatus
+  status        String
   responseTime  Int?
   uptime        Decimal?
-  lastChecked   DateTime     @default(now())
+  lastChecked   DateTime @default(now())
   statusMessage String?
-  alertLevel    String       @default("none")
+  alertLevel    String   @default("none")
   metadata      String?
-  createdAt     DateTime     @default(now())
+  createdAt     DateTime @default(now())
   updatedAt     DateTime
 
   @@index([alertLevel])
@@ -1098,17 +1098,17 @@ model system_status {
 }
 
 model token_transactions {
-  id          String            @id
+  id          String   @id
   walletId    String
   amount      Decimal
   type        String
-  status      TransactionStatus @default(COMPLETED)
+  status      String   @default("completed")
   description String?
   toAddress   String?
   fromAddress String?
   txHash      String?
   metadata    String?
-  createdAt   DateTime          @default(now())
+  createdAt   DateTime @default(now())
 
   @@index([createdAt])
   @@index([status])
@@ -1151,17 +1151,17 @@ model transaction_fees {
 }
 
 model transactions {
-  id          String            @id
+  id          String       @id
   userId      String
   amount      Float
   type        String
   description String?
   category    String?
-  status      TransactionStatus @default(COMPLETED)
-  createdAt   DateTime          @default(now())
+  status      String       @default("completed")
+  createdAt   DateTime     @default(now())
   updatedAt   DateTime
-  currency    String            @default("USD")
-  orderId     String?           @unique
+  currency    String       @default("USD")
+  orderId     String?      @unique
   provider    String?
   invoices    invoices?
   reviews     UserReview[]
@@ -1386,19 +1386,19 @@ model WhitelistedAddress {
 }
 
 model withdrawal_queue {
-  id            String      @id
-  withdrawalId  String      @unique
+  id            String    @id
+  withdrawalId  String    @unique
   userId        String
   cryptoType    String
   amount        Decimal
-  priority      Int         @default(0)
-  status        QueueStatus @default(QUEUED)
-  attemptCount  Int         @default(0)
+  priority      Int       @default(0)
+  status        String    @default("queued")
+  attemptCount  Int       @default(0)
   lastAttemptAt DateTime?
   errorMessage  String?
   assignedTo    String?
   estimatedTime DateTime?
-  createdAt     DateTime    @default(now())
+  createdAt     DateTime  @default(now())
   updatedAt     DateTime
 
   @@index([estimatedTime])
@@ -1406,168 +1406,6 @@ model withdrawal_queue {
   @@index([status])
   @@index([userId])
   @@index([withdrawalId])
-}
-
-enum TransactionStatus {
-  PENDING
-  COMPLETED
-  FAILED
-  CANCELLED
-  REFUNDED
-}
-
-enum CardStatus {
-  ACTIVE
-  INACTIVE
-  BLOCKED
-  EXPIRED
-  CANCELLED
-}
-
-enum OrderStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  CANCELLED
-  FAILED
-}
-
-enum WithdrawalStatus {
-  PENDING
-  APPROVED
-  PROCESSING
-  COMPLETED
-  REJECTED
-  CANCELLED
-}
-
-enum RewardStatus {
-  PENDING
-  AVAILABLE
-  CLAIMED
-  EXPIRED
-  CANCELLED
-}
-
-enum TicketStatus {
-  OPEN
-  IN_PROGRESS
-  RESOLVED
-  CLOSED
-}
-
-enum PaymentStatus {
-  PENDING
-  PROCESSING
-  COMPLETED
-  FAILED
-  REFUNDED
-  CANCELLED
-}
-
-enum BookingStatus {
-  SCHEDULED
-  CONFIRMED
-  IN_PROGRESS
-  COMPLETED
-  CANCELLED
-  NO_SHOW
-}
-
-enum JobStatus {
-  PENDING
-  RUNNING
-  COMPLETED
-  FAILED
-  CANCELLED
-}
-
-enum EmailStatus {
-  PENDING
-  SENT
-  DELIVERED
-  FAILED
-  BOUNCED
-}
-
-enum KYCStatus {
-  NOT_STARTED
-  PENDING
-  IN_REVIEW
-  APPROVED
-  REJECTED
-}
-
-enum LoginStatus {
-  SUCCESS
-  FAILED
-  BLOCKED
-  LOCKED
-}
-
-enum SessionStatus {
-  OPEN
-  CLOSED
-  ABANDONED
-  TRANSFERRED
-}
-
-enum LoanStatus {
-  PENDING
-  APPROVED
-  ACTIVE
-  PAID_OFF
-  DEFAULTED
-  CANCELLED
-}
-
-enum InvoiceStatus {
-  PENDING
-  SENT
-  PAID
-  OVERDUE
-  CANCELLED
-  REFUNDED
-}
-
-enum NotificationStatus {
-  PENDING
-  SENT
-  DELIVERED
-  FAILED
-  BOUNCED
-}
-
-enum ActivityStatus {
-  PENDING
-  CONFIRMED
-  FAILED
-  CANCELLED
-}
-
-enum SystemStatus {
-  OPERATIONAL
-  DEGRADED
-  PARTIAL_OUTAGE
-  MAJOR_OUTAGE
-  MAINTENANCE
-  UNKNOWN
-}
-
-enum QueueStatus {
-  QUEUED
-  PROCESSING
-  COMPLETED
-  FAILED
-  CANCELLED
-  RETRY
-}
-
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-  CANCELLED
 }
 
 enum AlertMode {
@@ -2122,18 +1960,18 @@ enum SubscriptionStatus {
 
 // Admin approval workflow for high-value operations
 model AdminApprovalRequest {
-  id           String         @id @default(cuid())
-  requesterId  String // Admin who submitted the request
-  type         String // PROMOTIONAL_CREDIT, REFUND, COMPENSATION, BONUS
-  targetUserId String // User who would receive the credit
-  amount       Decimal        @db.Decimal(20, 8)
+  id           String   @id @default(cuid())
+  requesterId  String   // Admin who submitted the request
+  type         String   // PROMOTIONAL_CREDIT, REFUND, COMPENSATION, BONUS
+  targetUserId String   // User who would receive the credit
+  amount       Decimal  @db.Decimal(20, 8)
   reason       String
-  metadata     String? // JSON stringified additional data
-  status       ApprovalStatus @default(PENDING) // PENDING, APPROVED, REJECTED
-  approverId   String? // Admin who approved/rejected
+  metadata     String?  // JSON stringified additional data
+  status       String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  approverId   String?  // Admin who approved/rejected
   approvedAt   DateTime?
-  createdAt    DateTime       @default(now())
-  updatedAt    DateTime       @updatedAt
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@index([requesterId])
   @@index([targetUserId])
@@ -2145,16 +1983,16 @@ model AdminApprovalRequest {
 
 // Admin credit issuance records for audit trail
 model AdminCreditHistory {
-  id            String   @id @default(cuid())
-  adminId       String // Admin who issued the credit
-  userId        String // User who received the credit
-  type          String // PROMOTIONAL_CREDIT, REFUND, COMPENSATION, BONUS
-  amount        Decimal  @db.Decimal(20, 8)
-  reason        String
-  approvalId    String? // Reference to approval request if required
-  balanceBefore Decimal  @db.Decimal(20, 8)
-  balanceAfter  Decimal  @db.Decimal(20, 8)
-  createdAt     DateTime @default(now())
+  id           String   @id @default(cuid())
+  adminId      String   // Admin who issued the credit
+  userId       String   // User who received the credit
+  type         String   // PROMOTIONAL_CREDIT, REFUND, COMPENSATION, BONUS
+  amount       Decimal  @db.Decimal(20, 8)
+  reason       String
+  approvalId   String?  // Reference to approval request if required
+  balanceBefore Decimal @db.Decimal(20, 8)
+  balanceAfter  Decimal @db.Decimal(20, 8)
+  createdAt    DateTime @default(now())
 
   @@index([adminId])
   @@index([userId])

@@ -424,7 +424,7 @@ app.get("/health", async (req, res) => {
         // Fallback: assume 1 connection if metrics not available
         databaseConnectionsGauge.set(1);
       }
-    } catch (metricsError) {
+    } catch (_metricsError) {
       // Fallback if metrics are not available
       databaseConnectionsGauge.set(1);
     }

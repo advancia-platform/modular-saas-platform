@@ -49,6 +49,13 @@
     "vscode",
     "vscode-insiders"
   ],
+
+  // Shell Integration - Improved command detection and navigation
+  "terminal.integrated.shellIntegration.enabled": true,
+  "terminal.integrated.shellIntegration.decorationsEnabled": "both",
+  "terminal.integrated.shellIntegration.history": 100,
+  "terminal.integrated.shellIntegration.suggestEnabled": true,
+
   "remote.WSL.defaultDistribution": "Ubuntu-24.04",
 
   // ===================================================================
@@ -361,5 +368,28 @@
     }
   ],
   "mssql.autoDisableNonTSqlLanguageService": true,
-  "python.analysis.diagnosticSeverityOverrides": {}
+  "python.analysis.diagnosticSeverityOverrides": {},
+
+  // ===================================================================
+  // 🗄️ SQLTOOLS - DATABASE MANAGEMENT
+  // ===================================================================
+  "sqltools.useNodeRuntime": true,
+  "sqltools.connections": [
+    {
+      "name": "Advancia PostgreSQL (Render)",
+      "driver": "PostgreSQL",
+      "server": "dpg-d4f112trnu6s73doipjg-a.oregon-postgres.render.com",
+      "port": 5432,
+      "database": "db_adnan_postrl",
+      "username": "advancia_db",
+      "password": "HHbjYIjTXPpAnIJNbUMQITFCy8R4Tjxz",
+      "connectionTimeout": 30,
+      "previewLimit": 50,
+      "pgOptions": {
+        "ssl": {
+          "rejectUnauthorized": false
+        }
+      }
+    }
+  ]
 }
