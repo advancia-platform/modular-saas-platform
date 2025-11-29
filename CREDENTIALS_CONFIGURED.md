@@ -1,6 +1,6 @@
 # ✅ All Services Configured - Ready to Test
 
-**Date**: November 27, 2025  
+**Date**: November 27, 2025
 **Status**: All credentials added ✅
 
 ---
@@ -10,34 +10,38 @@
 ### 1. ✅ Database (Render PostgreSQL)
 
 ```
-Username: advancia_db
-Database: db_adnan_postrl
-Host: dpg-d4f112trnu6s73doipjg-a.oregon-postgres.render.com
+Username: <DB_USERNAME>
+Database: <DB_NAME>
+Host: <DB_HOST>
 Port: 5432
 ```
+
+> 💡 **Tip**: Get actual values from `backend/.env` or Render dashboard
 
 ### 2. ✅ Twilio (SMS + WhatsApp)
 
 ```
-Account SID: AC437680f4bacdc2d19c0f5c6d3f43d7df
-Phone Number: +17174695102
-API Key: SK295f3b2039dc66ae9381b3a30e93fda6
+Account SID: <TWILIO_ACCOUNT_SID>
+Phone Number: <TWILIO_PHONE_NUMBER>
+API Key: <TWILIO_API_KEY>
 Key Name: Advancia_login_key
 ```
+
+> ⚠️ **Note**: Real credentials stored in `.env` files only - never commit secrets!
 
 ### 3. ✅ Telegram Bot
 
 ```
 Bot: @advancia_pay1
-Bot Token: 8214679003:AAFf3IccJ85uPZcUUs0HioGiKuTxIaJpwN0
-Admin Chat ID: -1003124493310
+Bot Token: <TELEGRAM_BOT_TOKEN>
+Admin Chat ID: <TELEGRAM_ADMIN_CHAT_ID>
 ```
 
 ### 4. ✅ WhatsApp Sandbox
 
 ```
 Test Number: whatsapp:+14155238886
-Your Number: whatsapp:+17174695102 (after approval)
+Your Number: <YOUR_WHATSAPP_NUMBER> (after approval)
 ```
 
 ---
@@ -166,7 +170,7 @@ npx prisma studio
 | **SMS (Twilio)**      | $1/month     | $0.0075     |
 | **WhatsApp (Twilio)** | Free         | $0.005      |
 
-**Total Monthly**: ~$1 + usage  
+**Total Monthly**: ~$1 + usage
 **Recommendation**: Use Telegram for free notifications! 🚀
 
 ---
@@ -226,16 +230,16 @@ npx prisma db pull
 ### Telegram Bot Not Responding
 
 ```powershell
-# Verify token
-curl "https://api.telegram.org/bot8214679003:AAFf3IccJ85uPZcUUs0HioGiKuTxIaJpwN0/getMe"
+# Verify token (replace with your actual token from .env)
+curl "https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/getMe"
 ```
 
 ### SMS Not Sending
 
 ```powershell
-# Check Twilio credentials
-curl "https://api.twilio.com/2010-04-01/Accounts/AC437680f4bacdc2d19c0f5c6d3f43d7df.json" `
-  -u "AC437680f4bacdc2d19c0f5c6d3f43d7df:fe680f2ea08d9f280dbf048486bdfefe"
+# Check Twilio credentials (replace with your actual credentials from .env)
+curl "https://api.twilio.com/2010-04-01/Accounts/<TWILIO_ACCOUNT_SID>.json" `
+  -u "<TWILIO_ACCOUNT_SID>:<TWILIO_AUTH_TOKEN>"
 ```
 
 ---
@@ -268,5 +272,5 @@ http://localhost:3000/test-comms
 
 ---
 
-_Last Updated: November 27, 2025_  
+_Last Updated: November 27, 2025_
 _Status: Ready for Testing ✅_
