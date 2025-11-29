@@ -297,7 +297,7 @@ def export_model():
     """Export trained model to JSON format for persistence."""
     try:
         model_name = request.args.get('model', 'all')
-        
+
         if model_name == 'all':
             # Export all models
             export_data = {
@@ -326,10 +326,10 @@ def export_model():
                 'credit_scorer': credit_scorer,
                 'market_analyst': market_analyst
             }
-            
+
             if model_name not in model_map:
                 return jsonify({"error": f"Model '{model_name}' not found"}), 404
-            
+
             model = model_map[model_name]
             export_data = {
                 "modelName": model_name,
@@ -337,10 +337,10 @@ def export_model():
                 "version": model.get_version() if hasattr(model, 'get_version') else '1.0.0',
                 "data": model.export_model() if hasattr(model, 'export_model') else model.get_patterns() if hasattr(model, 'get_patterns') else {}
             }
-        
+
         logger.info(f"📦 Model export completed: {model_name}")
         return jsonify(export_data)
-        
+
     except Exception as e:
         logger.error(f"Model export failed: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -350,12 +350,12 @@ def import_model():
     """Import model from JSON data."""
     try:
         model_data = request.get_json()
-        
+
         if not model_data:
             return jsonify({"error": "Model data required"}), 400
-        
+
         model_name = model_data.get('modelName', 'unknown')
-        
+
         # Import based on model type
         if model_name == 'fraud_detector' and hasattr(fraud_detector, 'import_model'):
             fraud_detector.import_model(model_data.get('data', {}))
@@ -365,16 +365,16 @@ def import_model():
             sentiment_analyzer.import_model(model_data.get('data', {}))
         else:
             logger.warning(f"Model {model_name} does not support import or not found")
-        
+
         logger.info(f"📥 Model imported: {model_name} v{model_data.get('version', 'unknown')}")
-        
+
         return jsonify({
             "status": "success",
             "modelName": model_name,
             "version": model_data.get('version', 'unknown'),
             "importedAt": datetime.utcnow().isoformat()
         })
-        
+
     except Exception as e:
         logger.error(f"Model import failed: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -422,9 +422,9 @@ def training_dashboard():
                 "avgProcessingTimeMs": getattr(fraud_detector, 'avg_processing_time', 50)
             }
         }
-        
+
         return jsonify(dashboard_data)
-        
+
     except Exception as e:
         logger.error(f"Dashboard data failed: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -434,12 +434,12 @@ def configure_auto_retrain():
     """Configure automated retraining settings."""
     try:
         config = request.get_json() or {}
-        
+
         enabled = config.get('enabled', True)
         interval_hours = config.get('intervalHours', 24)
         min_samples = config.get('minSamplesRequired', 100)
         accuracy_threshold = config.get('accuracyThreshold', 0.85)
-        
+
         # Apply configuration to models
         for model in [fraud_detector, risk_assessor, sentiment_analyzer]:
             if hasattr(model, 'configure_auto_retrain'):
@@ -455,9 +455,9 @@ def configure_auto_retrain():
                 model.retrain_interval = interval_hours
                 model.min_samples = min_samples
                 model.accuracy_threshold = accuracy_threshold
-        
+
         logger.info(f"🔄 Auto-retraining configured: enabled={enabled}, interval={interval_hours}h")
-        
+
         return jsonify({
             "status": "success",
             "configuration": {
@@ -466,10 +466,10 @@ def configure_auto_retrain():
                 "minSamplesRequired": min_samples,
                 "accuracyThreshold": accuracy_threshold
             },
-            "nextRetrainingCheck": (datetime.utcnow().replace(hour=0, minute=0) + 
+            "nextRetrainingCheck": (datetime.utcnow().replace(hour=0, minute=0) +
                                    timedelta(hours=interval_hours)).isoformat() if enabled else None
         })
-        
+
     except Exception as e:
         logger.error(f"Auto-retrain config failed: {str(e)}")
         return jsonify({"error": str(e)}), 500
@@ -479,29 +479,29 @@ def add_training_sample():
     """Add a sample for future model retraining."""
     try:
         sample = request.get_json()
-        
+
         if not sample:
             return jsonify({"error": "Sample data required"}), 400
-        
+
         # Add to pending samples for all relevant models
         sample['addedAt'] = datetime.utcnow().isoformat()
-        
+
         for model in [fraud_detector, risk_assessor, sentiment_analyzer]:
             if not hasattr(model, 'pending_samples'):
                 model.pending_samples = []
             model.pending_samples.append(sample)
-        
+
         total_pending = len(getattr(fraud_detector, 'pending_samples', []))
-        
+
         logger.info(f"📝 Training sample added. Total pending: {total_pending}")
-        
+
         return jsonify({
             "status": "success",
             "sampleId": sample.get('id', f"sample_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"),
             "pendingSamples": total_pending,
             "addedAt": sample['addedAt']
         })
-        
+
     except Exception as e:
         logger.error(f"Add training sample failed: {str(e)}")
         return jsonify({"error": str(e)}), 500
