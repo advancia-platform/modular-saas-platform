@@ -7,7 +7,6 @@ on:
       - staging
     paths:
       - "frontend/**"
-      - "vercel.json"
       - ".github/workflows/vercel-deploy.yml"
 
   # Allow manual trigger
