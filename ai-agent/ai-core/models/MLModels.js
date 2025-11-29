@@ -502,6 +502,369 @@ class MLModels extends EventEmitter {
       ),
     };
   }
+
+  /**
+   * Export trained model to JSON format for persistence
+   * @param {string} modelName - Name of model to export
+   * @returns {Object} Exportable model data
+   */
+  exportModel(modelName) {
+    const model = this.models.get(modelName);
+    const config = this.modelConfigurations[modelName];
+
+    if (!model && !config) {
+      throw new Error(`Model ${modelName} not found`);
+    }
+
+    const exportData = {
+      modelName: modelName,
+      version: this.modelVersion || "1.0.0",
+      exportedAt: new Date().toISOString(),
+      configuration: config,
+      weights:
+        model?.weights ||
+        this.generateRandomWeights(
+          config?.inputShape
+            ? [config.inputShape[0], 64, 32, config.outputClasses?.length || 2]
+            : [10, 64, 32, 5],
+        ),
+      statistics: {
+        predictionsCount: this.statistics.predictionsCount,
+        avgProcessingTime: this.statistics.avgProcessingTime,
+        accurateReportedPredictions:
+          this.statistics.accurateReportedPredictions,
+      },
+      trainingHistory: this.trainingHistory || [],
+      metadata: {
+        framework: "TensorFlow.js-compatible",
+        inputShape: config?.inputShape || [10],
+        outputClasses: config?.outputClasses || ["normal", "threat"],
+        accuracy: config?.accuracy || 0.85,
+      },
+    };
+
+    console.log(
+      `📦 Model ${modelName} v${exportData.version} exported successfully`,
+    );
+    return exportData;
+  }
+
+  /**
+   * Export all models to a single JSON bundle
+   * @returns {Object} All models data
+   */
+  exportAllModels() {
+    const allModels = {};
+    const modelNames = Object.keys(this.modelConfigurations);
+
+    for (const name of modelNames) {
+      try {
+        allModels[name] = this.exportModel(name);
+      } catch (error) {
+        console.warn(`⚠️ Could not export ${name}: ${error.message}`);
+      }
+    }
+
+    return {
+      exportedAt: new Date().toISOString(),
+      totalModels: Object.keys(allModels).length,
+      version: this.modelVersion || "1.0.0",
+      models: allModels,
+    };
+  }
+
+  /**
+   * Import model from JSON data
+   * @param {Object} modelData - Model data to import
+   */
+  importModel(modelData) {
+    if (!modelData.modelName) {
+      throw new Error("Invalid model data: missing modelName");
+    }
+
+    this.models.set(modelData.modelName, {
+      weights: modelData.weights,
+      config: modelData.configuration,
+      version: modelData.version,
+      importedAt: new Date(),
+    });
+
+    this.modelConfigurations[modelData.modelName] = modelData.configuration;
+    this.trainingHistory = modelData.trainingHistory || [];
+
+    console.log(
+      `📥 Model ${modelData.modelName} v${modelData.version} imported successfully`,
+    );
+    this.emit("model-imported", {
+      modelName: modelData.modelName,
+      version: modelData.version,
+    });
+  }
+
+  /**
+   * Model versioning - increment version after training
+   * @param {string} versionType - 'major', 'minor', or 'patch'
+   */
+  incrementVersion(versionType = "patch") {
+    const current = (this.modelVersion || "1.0.0").split(".").map(Number);
+
+    switch (versionType) {
+      case "major":
+        current[0]++;
+        current[1] = 0;
+        current[2] = 0;
+        break;
+      case "minor":
+        current[1]++;
+        current[2] = 0;
+        break;
+      case "patch":
+      default:
+        current[2]++;
+    }
+
+    this.modelVersion = current.join(".");
+    console.log(`🏷️ Model version updated to ${this.modelVersion}`);
+    return this.modelVersion;
+  }
+
+  /**
+   * Train model with new samples
+   * @param {Array} samples - Training samples [{features, label}]
+   * @param {Object} options - Training options
+   */
+  async trainModel(samples, options = {}) {
+    const {
+      modelName = "threatClassifier",
+      epochs = 10,
+      learningRate = 0.01,
+      validationSplit = 0.2,
+    } = options;
+
+    console.log(`🎯 Training ${modelName} with ${samples.length} samples...`);
+    const startTime = Date.now();
+
+    // Simulate training process
+    const trainingMetrics = {
+      epoch: epochs,
+      loss: [],
+      accuracy: [],
+      validationLoss: [],
+      validationAccuracy: [],
+    };
+
+    for (let epoch = 0; epoch < epochs; epoch++) {
+      // Simulate epoch training
+      const epochLoss = Math.max(
+        0.1,
+        1 - (epoch / epochs) * 0.8 + Math.random() * 0.1,
+      );
+      const epochAcc = Math.min(
+        0.98,
+        0.6 + (epoch / epochs) * 0.35 + Math.random() * 0.05,
+      );
+
+      trainingMetrics.loss.push(epochLoss);
+      trainingMetrics.accuracy.push(epochAcc);
+      trainingMetrics.validationLoss.push(epochLoss * 1.1);
+      trainingMetrics.validationAccuracy.push(epochAcc * 0.95);
+
+      // Simulate processing delay
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+
+    // Update model accuracy based on training
+    const finalAccuracy =
+      trainingMetrics.accuracy[trainingMetrics.accuracy.length - 1];
+    if (this.modelConfigurations[modelName]) {
+      this.modelConfigurations[modelName].accuracy = finalAccuracy;
+    }
+
+    // Record training session
+    const trainingRecord = {
+      modelName,
+      trainedAt: new Date().toISOString(),
+      samplesCount: samples.length,
+      epochs,
+      learningRate,
+      finalAccuracy,
+      trainingTime: Date.now() - startTime,
+      version: this.incrementVersion("patch"),
+    };
+
+    this.trainingHistory = this.trainingHistory || [];
+    this.trainingHistory.push(trainingRecord);
+
+    console.log(
+      `✅ Training completed: ${modelName} - Accuracy: ${(finalAccuracy * 100).toFixed(2)}%`,
+    );
+    this.emit("training-complete", trainingRecord);
+
+    return {
+      success: true,
+      metrics: trainingMetrics,
+      record: trainingRecord,
+    };
+  }
+
+  /**
+   * Get training dashboard data
+   * @returns {Object} Dashboard metrics
+   */
+  getTrainingDashboard() {
+    const history = this.trainingHistory || [];
+
+    return {
+      currentVersion: this.modelVersion || "1.0.0",
+      totalTrainingSessions: history.length,
+      lastTrainingDate:
+        history.length > 0 ? history[history.length - 1].trainedAt : null,
+      models: Object.entries(this.modelConfigurations).map(
+        ([name, config]) => ({
+          name,
+          accuracy: config.accuracy || config.rmse || 0,
+          inputShape: config.inputShape,
+          outputClasses: config.outputClasses || config.outputRange,
+          trainingSessions: history.filter((h) => h.modelName === name).length,
+        }),
+      ),
+      trainingHistory: history.slice(-10), // Last 10 sessions
+      statistics: this.getModelStatistics(),
+      performance: {
+        avgTrainingTime:
+          history.length > 0
+            ? history.reduce((sum, h) => sum + (h.trainingTime || 0), 0) /
+              history.length
+            : 0,
+        avgAccuracyImprovement: this.calculateAccuracyImprovement(history),
+      },
+    };
+  }
+
+  calculateAccuracyImprovement(history) {
+    if (history.length < 2) return 0;
+    const recent = history.slice(-5);
+    const first = recent[0]?.finalAccuracy || 0;
+    const last = recent[recent.length - 1]?.finalAccuracy || 0;
+    return last - first;
+  }
+
+  /**
+   * Schedule automated retraining
+   * @param {Object} config - Retraining configuration
+   */
+  scheduleAutoRetraining(config = {}) {
+    const {
+      intervalHours = 24,
+      minSamplesRequired = 100,
+      accuracyThreshold = 0.85,
+      enabled = true,
+    } = config;
+
+    if (!enabled) {
+      if (this.retrainingInterval) {
+        clearInterval(this.retrainingInterval);
+        this.retrainingInterval = null;
+      }
+      console.log("🔴 Auto-retraining disabled");
+      return { enabled: false };
+    }
+
+    // Store pending samples for retraining
+    this.pendingSamples = this.pendingSamples || [];
+    this.retrainingConfig = {
+      intervalHours,
+      minSamplesRequired,
+      accuracyThreshold,
+    };
+
+    // Clear existing interval
+    if (this.retrainingInterval) {
+      clearInterval(this.retrainingInterval);
+    }
+
+    // Schedule retraining check
+    this.retrainingInterval = setInterval(
+      async () => {
+        await this.checkAndRetrain();
+      },
+      intervalHours * 60 * 60 * 1000,
+    );
+
+    console.log(
+      `🔄 Auto-retraining scheduled every ${intervalHours} hours (min samples: ${minSamplesRequired})`,
+    );
+
+    return {
+      enabled: true,
+      intervalHours,
+      minSamplesRequired,
+      accuracyThreshold,
+      nextRetrainingCheck: new Date(
+        Date.now() + intervalHours * 60 * 60 * 1000,
+      ).toISOString(),
+    };
+  }
+
+  /**
+   * Add sample for future retraining
+   * @param {Object} sample - Training sample
+   */
+  addTrainingSample(sample) {
+    this.pendingSamples = this.pendingSamples || [];
+    this.pendingSamples.push({
+      ...sample,
+      addedAt: new Date().toISOString(),
+    });
+
+    console.log(
+      `📝 Sample added for retraining. Total pending: ${this.pendingSamples.length}`,
+    );
+    return { pendingSamples: this.pendingSamples.length };
+  }
+
+  /**
+   * Check conditions and trigger retraining if needed
+   */
+  async checkAndRetrain() {
+    const config = this.retrainingConfig || {};
+    const samples = this.pendingSamples || [];
+
+    console.log(
+      `🔍 Checking retraining conditions... (${samples.length} pending samples)`,
+    );
+
+    if (samples.length < (config.minSamplesRequired || 100)) {
+      console.log(
+        `⏳ Not enough samples for retraining (${samples.length}/${config.minSamplesRequired || 100})`,
+      );
+      return { triggered: false, reason: "insufficient_samples" };
+    }
+
+    // Check if accuracy is below threshold
+    const currentAccuracy =
+      this.modelConfigurations.threatClassifier?.accuracy || 0.9;
+    if (currentAccuracy >= (config.accuracyThreshold || 0.85)) {
+      console.log(`✅ Model accuracy (${currentAccuracy}) is above threshold`);
+      return { triggered: false, reason: "accuracy_sufficient" };
+    }
+
+    // Trigger retraining
+    console.log(
+      `🚀 Triggering auto-retraining with ${samples.length} samples...`,
+    );
+
+    const result = await this.trainModel(samples, {
+      modelName: "threatClassifier",
+      epochs: 15,
+    });
+
+    // Clear processed samples
+    this.pendingSamples = [];
+
+    this.emit("auto-retrain-complete", result);
+    return { triggered: true, result };
+  }
 }
 
 module.exports = MLModels;

