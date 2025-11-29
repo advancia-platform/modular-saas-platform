@@ -290,6 +290,7 @@ import complianceRouter, { setComplianceSocketIO } from "./routes/compliance"; /
 import adminCreditsRouter from "./routes/admin/credits"; // Admin promotional credits system
 import alchemypayRouter from "./routes/alchemypay"; // Alchemy Pay crypto payments
 import analyticsRouter from "./routes/analytics";
+import blockchainRouter from "./routes/blockchain"; // Alchemy blockchain API for onchain transactions
 import demoRouter from "./routes/demo";
 import phoneRouter from "./routes/phone"; // Virtual phone number services
 import reportsRouter from "./routes/reports"; // Admin reports for dashboard charts
@@ -488,6 +489,7 @@ app.use("/api/payments", paymentsEnhancedRouter); // Stripe payment intents & me
 app.use("/api/cryptomus", cryptomusRouter); // Cryptomus crypto payments
 app.use("/api/nowpayments", nowpaymentsRouter); // NOWPayments crypto payments - NOW ENABLED
 app.use("/api/alchemypay", alchemypayRouter); // Alchemy Pay - crypto on/off ramp
+app.use("/api/blockchain", blockchainRouter); // Alchemy blockchain API - gas, balances, NFTs, transactions
 
 // Business phone management
 app.use("/api/phone", phoneRouter); // Virtual phone number services
