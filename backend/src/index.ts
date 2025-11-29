@@ -214,7 +214,7 @@ console.log("[DIAG] authRouter imported successfully");
 // import chatRouter, { setChatSocketIO } from "./routes/chat";
 // import consultationRouter from "./routes/consultation";
 // import cryptoEnhancedRouter from "./routes/cryptoEnhanced";
-// import cryptomusRouter from "./routes/cryptomus"; // File removed from repository
+import cryptomusRouter from "./routes/cryptomus"; // Cryptomus crypto payments
 // import debitCardRouter, { setDebitCardSocketIO } from "./routes/debitCard";
 // import debitCardEnhancedRouter from "./routes/debitCardEnhanced";
 // import emailRouter from "./routes/email"; // Email templates router
@@ -225,6 +225,7 @@ import emailSignupRouter from "./routes/emailSignup"; // Email magic link signup
 import emailVerificationRouter from "./routes/emailVerification"; // Email verification with Resend
 import gitopsRouter from "./routes/gitops"; // GitOps integration for ArgoCD, Prometheus, Grafana
 import healthRouter from "./routes/health";
+import inboundEmailsRouter from "./routes/inboundEmails"; // Inbound email webhook from Cloudflare
 // import invoicesRouter from "./routes/invoices";
 // import ipBlocksRouter from "./routes/ipBlocks"; // TEMP DISABLED to unblock startup
 // import marketingRouter from "./routes/marketing";
@@ -253,7 +254,6 @@ import tokensRouter, { setTokenSocketIO } from "./routes/tokens";
 import trustRouter from "./routes/trust"; // Scam Adviser & trust verification
 // import trustpilotRouter from "./routes/trustpilot"; // Removed - using simple widget embed instead
 // import trustScoreRouter from "./routes/trustScore"; // User trust & reputation system (TEMPORARILY DISABLED)
-// import nowpaymentsRouter from "./routes/nowpayments"; // NOWPayments crypto provider (TEMPORARILY DISABLED for startup fix)
 import cashflowRouter from "./routes/cashflow";
 import pricesRouter from "./routes/prices";
 import securityRouter from "./routes/security"; // Breach monitoring & IP protection
@@ -286,6 +286,16 @@ import adminDashboardRouter from "./routes/adminDashboard";
 import authJWTRouter from "./routes/authJWT";
 import authSecureRouter from "./routes/authSecure";
 import complianceRouter, { setComplianceSocketIO } from "./routes/compliance"; // GitOps compliance monitoring
+// Demo and additional routes
+import adminCreditsRouter from "./routes/admin/credits"; // Admin promotional credits system
+import alchemypayRouter from "./routes/alchemypay"; // Alchemy Pay crypto payments
+import analyticsRouter from "./routes/analytics";
+import demoRouter from "./routes/demo";
+import phoneRouter from "./routes/phone"; // Virtual phone number services
+import reportsRouter from "./routes/reports"; // Admin reports for dashboard charts
+import smsRouter from "./routes/sms"; // SMS verification and notifications
+import subscriptionsRouter from "./routes/subscriptions";
+import whatsappRouter from "./routes/whatsapp"; // WhatsApp Business messaging
 // import { setSocketIO as setNotificationSocket } from "./services/notificationService"; // Keep commented for now
 // import "./tracing";
 import { dataMasker } from "./utils/dataMasker";
@@ -464,13 +474,6 @@ app.use("/api/auth/secure", authSecureRouter); // Secure auth with bcrypt passwo
 // app.use("/api/auth-enhanced", authEnhancedRouter); // Enhanced auth with session management and TOTP - TEMP DISABLED
 
 // Demo and test routes for enhanced authentication
-import alchemypayRouter from "./routes/alchemypay"; // Alchemy Pay crypto payments
-import analyticsRouter from "./routes/analytics";
-import demoRouter from "./routes/demo";
-import phoneRouter from "./routes/phone"; // Virtual phone number services
-import smsRouter from "./routes/sms"; // SMS verification and notifications
-import subscriptionsRouter from "./routes/subscriptions";
-import whatsappRouter from "./routes/whatsapp"; // WhatsApp Business messaging
 app.use("/api/test", demoRouter); // Permission-based access control demo routes
 
 // Regular routes (minimal set enabled)
@@ -482,7 +485,7 @@ app.use("/api/analytics", analyticsRouter); // Analytics dashboard with JWT auth
 app.use("/api/payments", paymentsEnhancedRouter); // Stripe payment intents & methods
 
 // Crypto payment providers
-// app.use("/api/cryptomus", cryptomusRouter); // Route file not available
+app.use("/api/cryptomus", cryptomusRouter); // Cryptomus crypto payments
 app.use("/api/nowpayments", nowpaymentsRouter); // NOWPayments crypto payments - NOW ENABLED
 app.use("/api/alchemypay", alchemypayRouter); // Alchemy Pay - crypto on/off ramp
 
@@ -526,12 +529,21 @@ app.use("/api/admin/wallets", safeAuth, safeAdmin, adminWalletsRouter);
 app.use("/api/admin", authenticateToken, requireAdmin, adminDashboardRouter);
 app.use("/api/admin", authenticateToken, requireAdmin, adminRouter);
 app.use("/api/admin", adminNotificationLogsRouter); // Admin notification logs with built-in auth
+app.use(
+  "/api/admin/credits",
+  authenticateToken,
+  requireAdmin,
+  adminCreditsRouter,
+); // Promotional credits with limits
 // app.use(
 //   "/api/admin/bulk",
 //   authenticateToken,
 //   requireAdmin,
 //   adminBulkActionsRouter
 // ); // Bulk user actions
+
+// Admin reports for dashboard charts (revenue, users, payments, subscriptions)
+app.use("/api/reports", reportsRouter);
 
 // Trust and reputation routes
 app.use("/api/trust", trustRouter); // Trust scoring, reviews, reputation
@@ -561,7 +573,6 @@ app.use("/api/security", securityRouter); // Breach monitoring & IP protection
 app.use("/api/storage", storageRouter); // Cloudflare R2 object storage operations
 // app.use("/api/tokens", authenticateToken, tokensEnhancedRouter); // Enhanced token features
 // app.use("/api/crypto", authenticateToken, cryptoEnhancedRouter); // Crypto charts & swap (RE-ENABLED)
-// app.use("/api/cryptomus", cryptomusRouter); // Cryptomus payment processing
 // app.use("/api/invoices", invoicesRouter);
 // app.use("/api/emails", emailsRouter);
 // app.use("/api/email", emailRouter); // New email templates endpoint
@@ -574,12 +585,7 @@ app.use("/api/auth/2fa", twoFactorRouter);
 // app.use("/api/password-recovery", passwordRecoveryRouter); // Password recovery & admin user lookup
 app.use("/api/auth", emailSignupRouter); // Email magic link signup
 app.use("/api/email", emailVerificationRouter); // Email verification with Resend
-
-// Project Management routes
-app.use("/api/teams", teamsRouter);
-app.use("/api/projects", projectsRouter);
-app.use("/api/tasks", tasksRouter);
-app.use("/api/milestones", milestonesRouter);
+app.use("/api/emails", inboundEmailsRouter); // Inbound email webhook from Cloudflare Worker
 
 // Project Management routes
 app.use("/api/teams", teamsRouter);

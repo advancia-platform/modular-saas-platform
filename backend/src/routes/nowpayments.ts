@@ -34,6 +34,7 @@ interface InvoiceResponse {
   order_description: string;
   price_amount: number;
   price_currency: string;
+  pay_amount?: number;
   pay_currency?: string;
   ipn_callback_url?: string;
   invoice_url: string;
@@ -967,7 +968,8 @@ router.post("/create-invoice", safeAuth as any, async (req: any, res) => {
       });
     }
 
-    const orderId = order_id || `invoice_${Date.now()}_${req.user?.user_id || 'anon'}`;
+    const orderId =
+      order_id || `invoice_${Date.now()}_${req.user?.user_id || "anon"}`;
 
     logDev("Creating NOWPayments invoice", {
       price_amount,

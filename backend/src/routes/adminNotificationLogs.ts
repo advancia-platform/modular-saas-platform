@@ -1,10 +1,18 @@
-import express, { Response } from 'express';
-import { Parser } from 'json2csv';
-import { logger } from '../logger';
-import { authenticateToken, AuthRequest } from '../middleware/auth';
-import { adminAuditMiddleware, logAdminAction, requireAdminOrAuditor } from '../middleware/logAdminAction';
-import prisma from '../prismaClient';
-import { asyncHandler } from '../utils/errorHandler';
+import express, { Response } from "express";
+import { Parser } from "json2csv";
+import { logger } from "../logger";
+import { authenticateToken, AuthRequest } from "../middleware/auth";
+import {
+  adminAuditMiddleware,
+  logAdminAction,
+  requireAdminOrAuditor,
+} from "../middleware/logAdminAction";
+import prisma from "../prismaClient";
+import {
+  exportComplianceReportPDF,
+  generateComplianceReport,
+} from "../services/complianceReporting";
+import { asyncHandler } from "../utils/errorHandler";
 
 const router = express.Router();
 
@@ -25,8 +33,9 @@ router.use(requireAdminOrAuditor);
  * - limit: Number of records to return (default 50, max 500)
  * - offset: Number of records to skip for pagination
  */
-router.get('/notification-logs',
-  adminAuditMiddleware('VIEW_NOTIFICATION_LOGS'),
+router.get(
+  "/notification-logs",
+  adminAuditMiddleware("VIEW_NOTIFICATION_LOGS"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const {
       email,
@@ -36,8 +45,8 @@ router.get('/notification-logs',
       userId,
       provider,
       status,
-      limit = '50',
-      offset = '0'
+      limit = "50",
+      offset = "0",
     } = req.query;
 
     // Parse pagination params
@@ -46,15 +55,19 @@ router.get('/notification-logs',
 
     // Build filter conditions
     const where: any = {
-      AND: []
+      AND: [],
     };
 
     if (email) {
-      where.AND.push({ email: { contains: email as string, mode: 'insensitive' } });
+      where.AND.push({
+        email: { contains: email as string, mode: "insensitive" },
+      });
     }
 
     if (subject) {
-      where.AND.push({ subject: { contains: subject as string, mode: 'insensitive' } });
+      where.AND.push({
+        subject: { contains: subject as string, mode: "insensitive" },
+      });
     }
 
     if (startDate) {
@@ -93,23 +106,31 @@ router.get('/notification-logs',
                 email: true,
                 firstName: true,
                 lastName: true,
-                role: true
-              }
-            }
+                role: true,
+              },
+            },
           },
-          orderBy: { sentAt: 'desc' },
+          orderBy: { sentAt: "desc" },
           take: limitNum,
           skip: offsetNum,
         }),
-        prisma.notificationLog.count({ where })
+        prisma.notificationLog.count({ where }),
       ]);
 
-      logger.info('Notification logs retrieved by admin', {
+      logger.info("Notification logs retrieved by admin", {
         adminId: req.user?.userId,
         totalCount,
         limitNum,
         offsetNum,
-        filters: { email, subject, startDate, endDate, userId, provider, status }
+        filters: {
+          email,
+          subject,
+          startDate,
+          endDate,
+          userId,
+          provider,
+          status,
+        },
       });
 
       res.json({
@@ -120,19 +141,27 @@ router.get('/notification-logs',
             total: totalCount,
             limit: limitNum,
             offset: offsetNum,
-            hasMore: offsetNum + limitNum < totalCount
+            hasMore: offsetNum + limitNum < totalCount,
           },
-          filters: { email, subject, startDate, endDate, userId, provider, status }
-        }
+          filters: {
+            email,
+            subject,
+            startDate,
+            endDate,
+            userId,
+            provider,
+            status,
+          },
+        },
       });
     } catch (error) {
-      logger.error('Failed to retrieve notification logs', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        adminId: req.user?.userId
+      logger.error("Failed to retrieve notification logs", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        adminId: req.user?.userId,
       });
-      res.status(500).json({ error: 'Failed to retrieve notification logs' });
+      res.status(500).json({ error: "Failed to retrieve notification logs" });
     }
-  })
+  }),
 );
 
 /**
@@ -140,29 +169,27 @@ router.get('/notification-logs',
  * Accepts same filters as the main logs endpoint
  * Returns CSV file download
  */
-router.get('/notification-logs/export',
-  adminAuditMiddleware('EXPORT_NOTIFICATION_LOGS'),
+router.get(
+  "/notification-logs/export",
+  adminAuditMiddleware("EXPORT_NOTIFICATION_LOGS"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const {
-      email,
-      subject,
-      startDate,
-      endDate,
-      userId,
-      provider,
-      status
-    } = req.query;
+    const { email, subject, startDate, endDate, userId, provider, status } =
+      req.query;
 
     // Build same filter conditions as main endpoint
     const where: any = {
-      AND: []
+      AND: [],
     };
 
     if (email) {
-      where.AND.push({ email: { contains: email as string, mode: 'insensitive' } });
+      where.AND.push({
+        email: { contains: email as string, mode: "insensitive" },
+      });
     }
     if (subject) {
-      where.AND.push({ subject: { contains: subject as string, mode: 'insensitive' } });
+      where.AND.push({
+        subject: { contains: subject as string, mode: "insensitive" },
+      });
     }
     if (startDate) {
       where.AND.push({ sentAt: { gte: new Date(startDate as string) } });
@@ -194,34 +221,46 @@ router.get('/notification-logs/export',
               email: true,
               firstName: true,
               lastName: true,
-              role: true
-            }
-          }
+              role: true,
+            },
+          },
         },
-        orderBy: { sentAt: 'desc' },
+        orderBy: { sentAt: "desc" },
       });
 
       // Transform data for CSV export
-      const csvData = logs.map(log => ({
+      const csvData = logs.map((log) => ({
         ID: log.id,
-        'User ID': log.userId,
-        'User Email': log.user.email,
-        'User Name': `${log.user.firstName || ''} ${log.user.lastName || ''}`.trim(),
-        'User Role': log.user.role,
-        'Recipient Email': log.email,
+        "User ID": log.userId,
+        "User Email": log.user.email,
+        "User Name":
+          `${log.user.firstName || ""} ${log.user.lastName || ""}`.trim(),
+        "User Role": log.user.role,
+        "Recipient Email": log.email,
         Subject: log.subject,
-        Message: log.message.replace(/\n/g, ' ').substring(0, 200) + (log.message.length > 200 ? '...' : ''),
-        Template: log.template || '',
+        Message:
+          log.message.replace(/\n/g, " ").substring(0, 200) +
+          (log.message.length > 200 ? "..." : ""),
+        Template: log.template || "",
         Provider: log.provider,
         Status: log.status,
-        'Sent At': log.sentAt.toISOString(),
+        "Sent At": log.sentAt.toISOString(),
       }));
 
       // Configure CSV fields
       const fields = [
-        'ID', 'User ID', 'User Email', 'User Name', 'User Role',
-        'Recipient Email', 'Subject', 'Message', 'Template',
-        'Provider', 'Status', 'Sent At'
+        "ID",
+        "User ID",
+        "User Email",
+        "User Name",
+        "User Role",
+        "Recipient Email",
+        "Subject",
+        "Message",
+        "Template",
+        "Provider",
+        "Status",
+        "Sent At",
       ];
 
       const parser = new Parser({ fields });
@@ -229,34 +268,52 @@ router.get('/notification-logs/export',
 
       // Log export action
       await logAdminAction(
-        req.user?.userId || 'unknown',
-        'EXPORT_NOTIFICATION_LOGS',
+        req.user?.userId || "unknown",
+        "EXPORT_NOTIFICATION_LOGS",
         `${logs.length} records`,
-        JSON.stringify({ filters: { email, subject, startDate, endDate, userId, provider, status } }),
-        req
+        JSON.stringify({
+          filters: {
+            email,
+            subject,
+            startDate,
+            endDate,
+            userId,
+            provider,
+            status,
+          },
+        }),
+        req,
       );
 
-      logger.info('Notification logs exported', {
+      logger.info("Notification logs exported", {
         adminId: req.user?.userId,
         recordCount: logs.length,
-        filters: { email, subject, startDate, endDate, userId, provider, status }
+        filters: {
+          email,
+          subject,
+          startDate,
+          endDate,
+          userId,
+          provider,
+          status,
+        },
       });
 
       // Generate filename with timestamp
-      const timestamp = new Date().toISOString().split('T')[0];
+      const timestamp = new Date().toISOString().split("T")[0];
       const filename = `notification_logs_${timestamp}.csv`;
 
-      res.header('Content-Type', 'text/csv');
+      res.header("Content-Type", "text/csv");
       res.attachment(filename);
       res.send(csv);
     } catch (error) {
-      logger.error('Failed to export notification logs', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        adminId: req.user?.userId
+      logger.error("Failed to export notification logs", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        adminId: req.user?.userId,
       });
-      res.status(500).json({ error: 'Failed to export notification logs' });
+      res.status(500).json({ error: "Failed to export notification logs" });
     }
-  })
+  }),
 );
 
 /**
@@ -270,8 +327,9 @@ router.get('/notification-logs/export',
  * - limit: Number of records to return (default 50, max 200)
  * - offset: Number of records to skip for pagination
  */
-router.get('/audit-trail',
-  adminAuditMiddleware('VIEW_ADMIN_AUDIT_TRAIL'),
+router.get(
+  "/audit-trail",
+  adminAuditMiddleware("VIEW_ADMIN_AUDIT_TRAIL"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const {
       adminId,
@@ -280,8 +338,8 @@ router.get('/audit-trail',
       role,
       startDate,
       endDate,
-      limit = '50',
-      offset = '0'
+      limit = "50",
+      offset = "0",
     } = req.query;
 
     // Parse pagination params
@@ -290,7 +348,7 @@ router.get('/audit-trail',
 
     // Build filter conditions
     const where: any = {
-      AND: []
+      AND: [],
     };
 
     if (adminId) {
@@ -298,11 +356,15 @@ router.get('/audit-trail',
     }
 
     if (action) {
-      where.AND.push({ action: { contains: action as string, mode: 'insensitive' } });
+      where.AND.push({
+        action: { contains: action as string, mode: "insensitive" },
+      });
     }
 
     if (target) {
-      where.AND.push({ target: { contains: target as string, mode: 'insensitive' } });
+      where.AND.push({
+        target: { contains: target as string, mode: "insensitive" },
+      });
     }
 
     if (role) {
@@ -332,33 +394,34 @@ router.get('/audit-trail',
                 email: true,
                 firstName: true,
                 lastName: true,
-                role: true
-              }
-            }
+                role: true,
+              },
+            },
           },
-          orderBy: { timestamp: 'desc' },
+          orderBy: { timestamp: "desc" },
           take: limitNum,
           skip: offsetNum,
         }),
-        prisma.adminAuditTrail.count({ where })
+        prisma.adminAuditTrail.count({ where }),
       ]);
 
-      logger.info('Admin audit trail retrieved', {
+      logger.info("Admin audit trail retrieved", {
         adminId: req.user?.userId,
         totalCount,
         limitNum,
-        offsetNum
+        offsetNum,
       });
 
       // Add computed name field for consistency with frontend expectations
-      const enrichedAuditLogs = auditLogs.map(log => ({
+      const enrichedAuditLogs = auditLogs.map((log) => ({
         ...log,
         admin: {
           ...log.admin,
-          name: log.admin.firstName && log.admin.lastName
-            ? `${log.admin.firstName} ${log.admin.lastName}`
-            : log.admin.email
-        }
+          name:
+            log.admin.firstName && log.admin.lastName
+              ? `${log.admin.firstName} ${log.admin.lastName}`
+              : log.admin.email,
+        },
       }));
 
       res.json({
@@ -369,47 +432,49 @@ router.get('/audit-trail',
             total: totalCount,
             limit: limitNum,
             offset: offsetNum,
-            hasMore: offsetNum + limitNum < totalCount
+            hasMore: offsetNum + limitNum < totalCount,
           },
-          filters: { adminId, action, target, role, startDate, endDate }
-        }
+          filters: { adminId, action, target, role, startDate, endDate },
+        },
       });
     } catch (error) {
-      logger.error('Failed to retrieve admin audit trail', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        adminId: req.user?.userId
+      logger.error("Failed to retrieve admin audit trail", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        adminId: req.user?.userId,
       });
-      res.status(500).json({ error: 'Failed to retrieve audit trail' });
+      res.status(500).json({ error: "Failed to retrieve audit trail" });
     }
-  })
+  }),
 );
 
 /**
  * GET /api/admin/audit-trail/export - Export admin audit trail as CSV
  */
-router.get('/audit-trail/export',
-  adminAuditMiddleware('EXPORT_ADMIN_AUDIT_TRAIL'),
+router.get(
+  "/audit-trail/export",
+  adminAuditMiddleware("EXPORT_ADMIN_AUDIT_TRAIL"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
-    const {
-      adminId,
-      action,
-      target,
-      role,
-      startDate,
-      endDate
-    } = req.query;
+    const { adminId, action, target, role, startDate, endDate } = req.query;
 
     // Build same filter conditions as main endpoint
     const where: any = {
-      AND: []
+      AND: [],
     };
 
     if (adminId) where.AND.push({ adminId: adminId as string });
-    if (action) where.AND.push({ action: { contains: action as string, mode: 'insensitive' } });
-    if (target) where.AND.push({ target: { contains: target as string, mode: 'insensitive' } });
+    if (action)
+      where.AND.push({
+        action: { contains: action as string, mode: "insensitive" },
+      });
+    if (target)
+      where.AND.push({
+        target: { contains: target as string, mode: "insensitive" },
+      });
     if (role) where.AND.push({ admin: { role: role as string } });
-    if (startDate) where.AND.push({ timestamp: { gte: new Date(startDate as string) } });
-    if (endDate) where.AND.push({ timestamp: { lte: new Date(endDate as string) } });
+    if (startDate)
+      where.AND.push({ timestamp: { gte: new Date(startDate as string) } });
+    if (endDate)
+      where.AND.push({ timestamp: { lte: new Date(endDate as string) } });
 
     if (where.AND.length === 0) {
       delete where.AND;
@@ -424,31 +489,45 @@ router.get('/audit-trail/export',
               email: true,
               firstName: true,
               lastName: true,
-              role: true
-            }
-          }
+              role: true,
+            },
+          },
         },
-        orderBy: { timestamp: 'desc' },
+        orderBy: { timestamp: "desc" },
       });
 
       // Transform data for CSV export
-      const csvData = auditLogs.map(log => ({
+      const csvData = auditLogs.map((log) => ({
         ID: log.id,
-        'Admin ID': log.adminId,
-        'Admin Email': log.admin.email,
-        'Admin Name': `${log.admin.firstName || ''} ${log.admin.lastName || ''}`.trim(),
-        'Admin Role': log.admin.role,
+        "Admin ID": log.adminId,
+        "Admin Email": log.admin.email,
+        "Admin Name":
+          `${log.admin.firstName || ""} ${log.admin.lastName || ""}`.trim(),
+        "Admin Role": log.admin.role,
         Action: log.action,
-        Target: log.target || '',
-        Details: (log.details || '').substring(0, 100) + ((log.details || '').length > 100 ? '...' : ''),
-        'IP Address': log.ipAddress || '',
-        'User Agent': (log.userAgent || '').substring(0, 50) + ((log.userAgent || '').length > 50 ? '...' : ''),
+        Target: log.target || "",
+        Details:
+          (log.details || "").substring(0, 100) +
+          ((log.details || "").length > 100 ? "..." : ""),
+        "IP Address": log.ipAddress || "",
+        "User Agent":
+          (log.userAgent || "").substring(0, 50) +
+          ((log.userAgent || "").length > 50 ? "..." : ""),
         Timestamp: log.timestamp.toISOString(),
       }));
 
       const fields = [
-        'ID', 'Admin ID', 'Admin Email', 'Admin Name', 'Admin Role',
-        'Action', 'Target', 'Details', 'IP Address', 'User Agent', 'Timestamp'
+        "ID",
+        "Admin ID",
+        "Admin Email",
+        "Admin Name",
+        "Admin Role",
+        "Action",
+        "Target",
+        "Details",
+        "IP Address",
+        "User Agent",
+        "Timestamp",
       ];
 
       const parser = new Parser({ fields });
@@ -456,34 +535,37 @@ router.get('/audit-trail/export',
 
       // Log export action
       await logAdminAction(
-        req.user?.userId || 'unknown',
-        'EXPORT_ADMIN_AUDIT_TRAIL',
+        req.user?.userId || "unknown",
+        "EXPORT_ADMIN_AUDIT_TRAIL",
         `${auditLogs.length} records`,
-        JSON.stringify({ filters: { adminId, action, target, role, startDate, endDate } }),
-        req
+        JSON.stringify({
+          filters: { adminId, action, target, role, startDate, endDate },
+        }),
+        req,
       );
 
-      const timestamp = new Date().toISOString().split('T')[0];
+      const timestamp = new Date().toISOString().split("T")[0];
       const filename = `admin_audit_trail_${timestamp}.csv`;
 
-      res.header('Content-Type', 'text/csv');
+      res.header("Content-Type", "text/csv");
       res.attachment(filename);
       res.send(csv);
     } catch (error) {
-      logger.error('Failed to export admin audit trail', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        adminId: req.user?.userId
+      logger.error("Failed to export admin audit trail", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        adminId: req.user?.userId,
       });
-      res.status(500).json({ error: 'Failed to export audit trail' });
+      res.status(500).json({ error: "Failed to export audit trail" });
     }
-  })
+  }),
 );
 
 /**
  * GET /api/admin/notification-stats - Get notification statistics for dashboard
  */
-router.get('/notification-stats',
-  adminAuditMiddleware('VIEW_NOTIFICATION_STATS'),
+router.get(
+  "/notification-stats",
+  adminAuditMiddleware("VIEW_NOTIFICATION_STATS"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
     try {
       const now = new Date();
@@ -498,30 +580,30 @@ router.get('/notification-stats',
         totalCount,
         failedCount,
         byProvider,
-        byStatus
+        byStatus,
       ] = await Promise.all([
         prisma.notificationLog.count({
-          where: { sentAt: { gte: today } }
+          where: { sentAt: { gte: today } },
         }),
         prisma.notificationLog.count({
-          where: { sentAt: { gte: thisWeek } }
+          where: { sentAt: { gte: thisWeek } },
         }),
         prisma.notificationLog.count({
-          where: { sentAt: { gte: thisMonth } }
+          where: { sentAt: { gte: thisMonth } },
         }),
         prisma.notificationLog.count(),
         prisma.notificationLog.count({
-          where: { status: 'failed' }
+          where: { status: "failed" },
         }),
         prisma.notificationLog.groupBy({
-          by: ['provider'],
+          by: ["provider"],
           _count: { provider: true },
-          orderBy: { _count: { provider: 'desc' } }
+          orderBy: { _count: { provider: "desc" } },
         }),
         prisma.notificationLog.groupBy({
-          by: ['status'],
-          _count: { status: true }
-        })
+          by: ["status"],
+          _count: { status: true },
+        }),
       ]);
 
       res.json({
@@ -532,49 +614,55 @@ router.get('/notification-stats',
             thisWeek: weekCount,
             thisMonth: monthCount,
             total: totalCount,
-            failed: failedCount
+            failed: failedCount,
           },
-          byProvider: byProvider.map(p => ({
+          byProvider: byProvider.map((p) => ({
             provider: p.provider,
-            count: p._count.provider
+            count: p._count.provider,
           })),
-          byStatus: byStatus.map(s => ({
+          byStatus: byStatus.map((s) => ({
             status: s.status,
-            count: s._count.status
-          }))
-        }
+            count: s._count.status,
+          })),
+        },
       });
     } catch (error) {
-      logger.error('Failed to retrieve notification stats', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        adminId: req.user?.userId
+      logger.error("Failed to retrieve notification stats", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        adminId: req.user?.userId,
       });
-      res.status(500).json({ error: 'Failed to retrieve notification statistics' });
+      res
+        .status(500)
+        .json({ error: "Failed to retrieve notification statistics" });
     }
-  })
+  }),
 );
 
 /**
  * POST /api/admin/compliance/generate-report - Generate compliance report for date range
  * Body: { reportType: 'weekly' | 'monthly' | 'quarterly', startDate: string, endDate: string }
  */
-router.post('/compliance/generate-report',
-  adminAuditMiddleware('GENERATE_COMPLIANCE_REPORT'),
+router.post(
+  "/compliance/generate-report",
+  adminAuditMiddleware("GENERATE_COMPLIANCE_REPORT"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const { reportType, startDate, endDate } = req.body;
 
     // Validate input
-    if (!reportType || !['weekly', 'monthly', 'quarterly'].includes(reportType)) {
+    if (
+      !reportType ||
+      !["weekly", "monthly", "quarterly"].includes(reportType)
+    ) {
       return res.status(400).json({
         success: false,
-        error: 'Invalid report type. Must be weekly, monthly, or quarterly.'
+        error: "Invalid report type. Must be weekly, monthly, or quarterly.",
       });
     }
 
     if (!startDate || !endDate) {
       return res.status(400).json({
         success: false,
-        error: 'Start date and end date are required.'
+        error: "Start date and end date are required.",
       });
     }
 
@@ -585,52 +673,53 @@ router.post('/compliance/generate-report',
       if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         return res.status(400).json({
           success: false,
-          error: 'Invalid date format.'
+          error: "Invalid date format.",
         });
       }
 
       if (start >= end) {
         return res.status(400).json({
           success: false,
-          error: 'Start date must be before end date.'
+          error: "Start date must be before end date.",
         });
       }
 
       const report = await generateComplianceReport(reportType, start, end);
 
-      logger.info('Compliance report generated via API', {
+      logger.info("Compliance report generated via API", {
         adminId: req.user?.userId,
         reportType,
         startDate: start.toISOString(),
-        endDate: end.toISOString()
+        endDate: end.toISOString(),
       });
 
       res.json({
         success: true,
-        data: report
+        data: report,
       });
     } catch (error) {
-      logger.error('Failed to generate compliance report via API', {
-        error: error instanceof Error ? error.message : 'Unknown error',
+      logger.error("Failed to generate compliance report via API", {
+        error: error instanceof Error ? error.message : "Unknown error",
         adminId: req.user?.userId,
         reportType,
         startDate,
-        endDate
+        endDate,
       });
       res.status(500).json({
         success: false,
-        error: 'Failed to generate compliance report'
+        error: "Failed to generate compliance report",
       });
     }
-  })
+  }),
 );
 
 /**
  * POST /api/admin/compliance/export-pdf - Export compliance report as PDF
  * Body: { reportType: 'weekly' | 'monthly' | 'quarterly', startDate: string, endDate: string }
  */
-router.post('/compliance/export-pdf',
-  adminAuditMiddleware('EXPORT_COMPLIANCE_REPORT_PDF'),
+router.post(
+  "/compliance/export-pdf",
+  adminAuditMiddleware("EXPORT_COMPLIANCE_REPORT_PDF"),
   asyncHandler(async (req: AuthRequest, res: Response) => {
     const { reportType, startDate, endDate } = req.body;
 
@@ -641,28 +730,28 @@ router.post('/compliance/export-pdf',
       const report = await generateComplianceReport(reportType, start, end);
       const pdfBuffer = await exportComplianceReportPDF(report);
 
-      const filename = `compliance_report_${reportType}_${start.toISOString().split('T')[0]}.pdf`;
+      const filename = `compliance_report_${reportType}_${start.toISOString().split("T")[0]}.pdf`;
 
-      res.header('Content-Type', 'application/pdf');
+      res.header("Content-Type", "application/pdf");
       res.attachment(filename);
       res.send(pdfBuffer);
 
-      logger.info('Compliance report PDF exported', {
+      logger.info("Compliance report PDF exported", {
         adminId: req.user?.userId,
         reportType,
-        filename
+        filename,
       });
     } catch (error) {
-      logger.error('Failed to export compliance report PDF', {
-        error: error instanceof Error ? error.message : 'Unknown error',
-        adminId: req.user?.userId
+      logger.error("Failed to export compliance report PDF", {
+        error: error instanceof Error ? error.message : "Unknown error",
+        adminId: req.user?.userId,
       });
       res.status(500).json({
         success: false,
-        error: 'Failed to export compliance report'
+        error: "Failed to export compliance report",
       });
     }
-  })
+  }),
 );
 
 export default router;

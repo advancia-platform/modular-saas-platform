@@ -10,11 +10,11 @@ jobs:
     runs-on: ubuntu-latest
     env:
       DATABASE_URL: ${{ secrets.DATABASE_URL }}
-      R2_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
-      R2_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
-      R2_BUCKET: ${{ secrets.R2_BUCKET }}
-      R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
-      R2_ENDPOINT: ${{ secrets.R2_ENDPOINT }} # optional override
+      CLOUDFLARE_R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+      CLOUDFLARE_R2_SECRET_ACCESS_KEY: ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
+      CLOUDFLARE_R2_BUCKET_NAME: ${{ secrets.CLOUDFLARE_R2_BUCKET_NAME }}
+      CLOUDFLARE_R2_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_R2_ACCOUNT_ID }}
+      CLOUDFLARE_R2_ENDPOINT: ${{ secrets.CLOUDFLARE_R2_ENDPOINT }} # optional override
       HEALTH_URL: ${{ secrets.HEALTH_URL }} # optional post-backup API health check
     steps:
       - name: Checkout
@@ -46,41 +46,41 @@ jobs:
           echo "file=$FILE" >> $GITHUB_OUTPUT
 
       - name: Configure AWS credentials for R2
-        if: env.R2_ACCESS_KEY_ID != '' && env.R2_SECRET_ACCESS_KEY != ''
+        if: env.CLOUDFLARE_R2_ACCESS_KEY_ID != '' && env.CLOUDFLARE_R2_SECRET_ACCESS_KEY != ''
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ env.R2_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.R2_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ env.CLOUDFLARE_R2_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ env.CLOUDFLARE_R2_SECRET_ACCESS_KEY }}
           aws-region: us-east-1
 
       - name: Upload to Cloudflare R2
-        if: env.R2_ACCESS_KEY_ID != '' && env.R2_SECRET_ACCESS_KEY != '' && env.R2_BUCKET != ''
+        if: env.CLOUDFLARE_R2_ACCESS_KEY_ID != '' && env.CLOUDFLARE_R2_SECRET_ACCESS_KEY != '' && env.CLOUDFLARE_R2_BUCKET_NAME != ''
         env:
           FILE: db-backup-${{ steps.ts.outputs.ts }}.dump
         run: |
           set -euo pipefail
-          ENDPOINT=${R2_ENDPOINT}
-          if [ -z "$ENDPOINT" ] && [ -n "$R2_ACCOUNT_ID" ]; then
-            ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          ENDPOINT=${CLOUDFLARE_R2_ENDPOINT}
+          if [ -z "$ENDPOINT" ] && [ -n "$CLOUDFLARE_R2_ACCOUNT_ID" ]; then
+            ENDPOINT="https://${CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
           fi
           if [ -z "$ENDPOINT" ]; then
-            echo "R2 endpoint not provided. Set secret R2_ENDPOINT or R2_ACCOUNT_ID." >&2
+            echo "R2 endpoint not provided. Set secret CLOUDFLARE_R2_ENDPOINT or CLOUDFLARE_R2_ACCOUNT_ID." >&2
             exit 1
           fi
           KEY_PATH="backups/backend/${FILE}"
-          echo "Uploading ${FILE} to s3://${R2_BUCKET}/${KEY_PATH} via ${ENDPOINT}"
-          aws s3 cp "$FILE" "s3://${R2_BUCKET}/${KEY_PATH}" --endpoint-url "$ENDPOINT"
+          echo "Uploading ${FILE} to s3://${CLOUDFLARE_R2_BUCKET_NAME}/${KEY_PATH} via ${ENDPOINT}"
+          aws s3 cp "$FILE" "s3://${CLOUDFLARE_R2_BUCKET_NAME}/${KEY_PATH}" --endpoint-url "$ENDPOINT"
 
       - name: Verify object exists (HEAD)
         if: success()
         run: |
           set -euo pipefail
-          ENDPOINT=${R2_ENDPOINT}
-          if [ -z "$ENDPOINT" ] && [ -n "$R2_ACCOUNT_ID" ]; then
-            ENDPOINT="https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
+          ENDPOINT=${CLOUDFLARE_R2_ENDPOINT}
+          if [ -z "$ENDPOINT" ] && [ -n "$CLOUDFLARE_R2_ACCOUNT_ID" ]; then
+            ENDPOINT="https://${CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com"
           fi
           KEY_PATH="backups/backend/db-backup-${{ steps.ts.outputs.ts }}.dump"
-          aws s3 ls "s3://${R2_BUCKET}/${KEY_PATH}" --endpoint-url "$ENDPOINT"
+          aws s3 ls "s3://${CLOUDFLARE_R2_BUCKET_NAME}/${KEY_PATH}" --endpoint-url "$ENDPOINT"
 
       - name: Health check (optional)
         if: env.HEALTH_URL != ''

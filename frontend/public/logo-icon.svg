@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 60 60">
+  <defs>
+    <linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#3B82F6"/>
+      <stop offset="50%" style="stop-color:#6366F1"/>
+      <stop offset="100%" style="stop-color:#8B5CF6"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background -->
+  <rect width="60" height="60" rx="14" fill="url(#iconGradient)"/>
+
+  <!-- Stylized "A" letter -->
+  <path d="M30 12 L48 48 L41 48 L37 40 L23 40 L19 48 L12 48 L30 12 Z" fill="white"/>
+  <path d="M25 34 L35 34 L32 26 L28 26 Z" fill="url(#iconGradient)"/>
+</svg>

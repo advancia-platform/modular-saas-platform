@@ -1,21 +1,22 @@
 'use client';
-import { useState } from 'react';
+import TrustpilotReviewCollector from '@/components/TrustpilotReviewCollector';
+import TrustpilotWidgetEmbedded from '@/components/TrustpilotWidgetEmbedded';
 import { motion } from 'framer-motion';
 import {
-  ChevronDown,
-  Shield,
-  Zap,
-  TrendingUp,
-  Lock,
-  Globe,
-  Award,
   ArrowRight,
-  CheckCircle,
-  DollarSign,
+  Award,
   Bitcoin,
+  CheckCircle,
+  ChevronDown,
+  Globe,
+  Lock,
+  Shield,
+  TrendingUp,
   Wallet,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useState } from 'react';
 
 export default function LandingPage() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
@@ -151,14 +152,12 @@ export default function LandingPage() {
       <nav className="fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-lg border-b border-purple-500/20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center space-x-2">
-              <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-white" />
-              </div>
+            <Link href="/" className="flex items-center space-x-2">
+              <img src="/logo-icon.svg" alt="Advancia" className="w-10 h-10" />
               <span className="text-2xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 bg-clip-text text-transparent">
                 Advancia
               </span>
-            </div>
+            </Link>
             <div className="hidden md:flex space-x-8">
               <a href="#features" className="text-gray-300 hover:text-white transition">
                 Features
@@ -174,6 +173,16 @@ export default function LandingPage() {
               </a>
             </div>
             <div className="flex items-center space-x-4">
+              {/* Trustpilot Mini Badge */}
+              <a
+                href="https://www.trustpilot.com/review/advanciapayledger.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hidden lg:flex items-center gap-1 text-xs text-gray-300 hover:text-white transition"
+              >
+                <Star className="w-4 h-4 text-green-400 fill-green-400" />
+                <span>Trustpilot</span>
+              </a>
               <Link href="/auth/login" className="text-gray-300 hover:text-white transition">
                 Sign In
               </Link>
@@ -542,6 +551,41 @@ export default function LandingPage() {
               </motion.div>
             ))}
           </div>
+
+          {/* Trustpilot Widget Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-16 text-center"
+          >
+            <div className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-8">
+              <div className="flex items-center justify-center gap-2 mb-4">
+                <Star className="w-6 h-6 text-green-400 fill-green-400" />
+                <span className="text-xl font-semibold text-white">Verified on Trustpilot</span>
+              </div>
+              <p className="text-gray-400 mb-6">See our verified reviews from real customers</p>
+              {/* Trustpilot Carousel Widget */}
+              <TrustpilotWidgetEmbedded
+                template="carousel"
+                height={350}
+                width="100%"
+                theme="dark"
+                stars="5"
+              />
+              <div className="mt-6">
+                <a
+                  href="https://www.trustpilot.com/review/advanciapayledger.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 text-green-400 hover:text-green-300 transition font-semibold"
+                >
+                  <span>View all reviews on Trustpilot</span>
+                  <ArrowRight className="w-4 h-4" />
+                </a>
+              </div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
@@ -657,12 +701,10 @@ export default function LandingPage() {
         <div className="max-w-7xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-8">
             <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <div className="w-10 h-10 bg-gradient-to-br from-purple-500 to-blue-500 rounded-lg flex items-center justify-center">
-                  <DollarSign className="w-6 h-6 text-white" />
-                </div>
+              <Link href="/" className="flex items-center space-x-2 mb-4">
+                <img src="/logo-icon.svg" alt="Advancia" className="w-10 h-10" />
                 <span className="text-xl font-bold text-white">Advancia</span>
-              </div>
+              </Link>
               <p className="text-gray-400 text-sm">
                 Your trusted gateway to financial freedom and cryptocurrency excellence.
               </p>
@@ -696,14 +738,14 @@ export default function LandingPage() {
               <h4 className="text-white font-semibold mb-4">Company</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white transition">
+                  <Link href="/about" className="hover:text-white transition">
                     About Us
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition">
-                    Careers
-                  </a>
+                  <Link href="/contact" className="hover:text-white transition">
+                    Contact
+                  </Link>
                 </li>
                 <li>
                   <a href="#" className="hover:text-white transition">
@@ -721,19 +763,19 @@ export default function LandingPage() {
               <h4 className="text-white font-semibold mb-4">Legal</h4>
               <ul className="space-y-2 text-sm text-gray-400">
                 <li>
-                  <a href="#" className="hover:text-white transition">
+                  <Link href="/terms" className="hover:text-white transition">
                     Terms of Service
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition">
+                  <Link href="/privacy-policy" className="hover:text-white transition">
                     Privacy Policy
-                  </a>
+                  </Link>
                 </li>
                 <li>
-                  <a href="#" className="hover:text-white transition">
-                    Cookie Policy
-                  </a>
+                  <Link href="/contact" className="hover:text-white transition">
+                    Contact Us
+                  </Link>
                 </li>
                 <li>
                   <a href="#faq" className="hover:text-white transition">
@@ -743,9 +785,15 @@ export default function LandingPage() {
               </ul>
             </div>
           </div>
+
+          {/* Trustpilot Review Collector */}
+          <div className="mt-8 mb-6">
+            <TrustpilotReviewCollector />
+          </div>
+
           <div className="border-t border-purple-500/20 pt-8 flex flex-col md:flex-row justify-between items-center">
             <p className="text-gray-400 text-sm mb-4 md:mb-0">
-              © 2025 Advancia Financial. All rights reserved.
+              © {new Date().getFullYear()} Advancia Pay Ledger. All rights reserved.
             </p>
             <div className="flex space-x-6">
               <Globe className="w-5 h-5 text-gray-400 hover:text-white transition cursor-pointer" />

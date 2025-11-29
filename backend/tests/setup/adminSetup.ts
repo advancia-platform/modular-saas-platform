@@ -88,7 +88,7 @@ export async function cleanupTestUsers() {
  * Generate admin JWT token for authenticated requests
  */
 export function generateAdminToken(userId: string): string {
-  return jwt.sign({ userId, role: "ADMIN" }, getTestJWTSecret(), {
+  return jwt.sign({ userId, role: "ADMIN", type: "access" }, getTestJWTSecret(), {
     expiresIn: "1h",
   });
 }
@@ -97,7 +97,7 @@ export function generateAdminToken(userId: string): string {
  * Generate user JWT token for authenticated requests
  */
 export function generateUserToken(userId: string): string {
-  return jwt.sign({ userId, role: "USER" }, getTestJWTSecret(), {
+  return jwt.sign({ userId, role: "USER", type: "access" }, getTestJWTSecret(), {
     expiresIn: "1h",
   });
 }

@@ -3,6 +3,7 @@
 import {
   Activity,
   BarChart3,
+  BookOpen,
   CreditCard,
   Database,
   FileText,
@@ -20,13 +21,15 @@ import {
 import { usePathname, useRouter } from 'next/navigation';
 
 const navItems = [
+  { name: 'Dashboard', path: '/admin/dashboard', icon: BarChart3 },
+  { name: 'Users', path: '/admin/users', icon: Users },
+  { name: 'Payments', path: '/admin/payments', icon: CreditCard },
+  { name: 'Ledger', path: '/admin/ledger', icon: BookOpen },
+  { name: 'Withdrawals', path: '/admin/withdrawals', icon: Wallet },
+  { name: 'Analytics', path: '/admin/analytics', icon: Activity },
   { name: 'Sessions', path: '/admin/sessions', icon: Shield },
   { name: 'Subscribers', path: '/admin/subscribers', icon: Users },
-  { name: 'Users', path: '/admin/users', icon: Users },
   { name: 'Roles', path: '/admin/roles', icon: Shield },
-  { name: 'Dashboard', path: '/admin/dashboard', icon: BarChart3 },
-  { name: 'Analytics', path: '/admin/analytics', icon: Activity },
-  { name: 'Withdrawals', path: '/admin/withdrawals', icon: Wallet },
   { name: 'Crypto', path: '/admin/crypto', icon: Database },
   { name: 'Crypto Balances', path: '/admin/crypto-balances', icon: Wallet },
   { name: 'Debit Cards', path: '/admin/debit-card', icon: CreditCard },
@@ -44,11 +47,8 @@ export default function AdminNav() {
   const pathname = usePathname();
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('userEmail');
-    localStorage.removeItem('userRole');
-    router.push('/admin/login');
+    // Use the logout page for cleaner token cleanup
+    router.push('/logout');
   };
 
   return (

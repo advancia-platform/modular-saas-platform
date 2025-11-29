@@ -23,9 +23,10 @@ export async function createAuditLog(
       data: {
         userId,
         action: data.action,
-        resource: data.resource,
+        resourceType: data.resource,
         resourceId: data.resourceId,
-        oldValues: data.oldValues ? JSON.stringify(data.oldValues) : null,
+        changes: data.oldValues ? JSON.stringify(data.oldValues) : null,
+        previousValues: data.oldValues ? JSON.stringify(data.oldValues) : null,
         newValues: data.newValues ? JSON.stringify(data.newValues) : null,
         metadata: data.metadata ? JSON.stringify(data.metadata) : null,
         ipAddress,
@@ -34,16 +35,13 @@ export async function createAuditLog(
       },
     });
 
-    logger.info(
-      {
-        userId,
-        action: data.action,
-        resource: data.resource,
-        resourceId: data.resourceId,
-        ipAddress,
-      },
-      "Audit log created",
-    );
+    logger.info("Audit log created", {
+      userId,
+      action: data.action,
+      resource: data.resource,
+      resourceId: data.resourceId,
+      ipAddress,
+    });
   } catch (error) {
     logger.error("Failed to create audit log", {
       error: error.message,
@@ -252,13 +250,5 @@ export async function getAuditLogs(filters: {
     orderBy: { timestamp: "desc" },
     take: filters.limit || 100,
     skip: filters.offset || 0,
-    include: {
-      user: {
-        select: {
-          email: true,
-          role: true,
-        },
-      },
-    },
   });
 }

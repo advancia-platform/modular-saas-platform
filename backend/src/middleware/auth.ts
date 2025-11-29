@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { AccessTokenPayload, sessionManager } from "../auth/sessionManager";
 import { config } from "../jobs/config";
+import { logger } from "../logger";
 import prisma from "../prismaClient";
 import { JWTPayload } from "../utils/jwt";
 import { captureError } from "../utils/sentry";
@@ -453,12 +454,15 @@ export function verifyToken(
 ): any {
   try {
     return jwt.verify(token, config.jwtSecret, {
-      algorithm: JWT_ALGORITHM,
+      algorithms: [JWT_ALGORITHM],
       issuer: "advancia-pay",
       audience,
     });
   } catch (error) {
-    logger.error({ error: error.message }, "JWT verification failed");
+    logger.error(
+      { error: (error as Error).message },
+      "JWT verification failed",
+    );
     throw new Error("Invalid token");
   }
 }

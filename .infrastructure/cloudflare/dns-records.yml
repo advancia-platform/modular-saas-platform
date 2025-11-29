@@ -1,0 +1,158 @@
+# Cloudflare DNS Records for advanciapayledger.com
+# Zone ID: 0bff66558872c58ed5b8b7942acc34d9
+# Account ID: 74ecde4d46d4b399c7295cf599d2886b
+
+zone: advanciapayledger.com
+
+records:
+  # ===========================================
+  # WEBSITE RECORDS
+  # ===========================================
+
+  # Root/Apex -> Vercel (Frontend)
+  - type: CNAME
+    name: "@"
+    content: cname.vercel-dns.com
+    proxied: true
+    ttl: auto
+    comment: "Frontend - Vercel"
+
+  # www -> Vercel (Frontend)
+  - type: CNAME
+    name: "www"
+    content: cname.vercel-dns.com
+    proxied: true
+    ttl: auto
+    comment: "Frontend www - Vercel"
+
+  # API -> Render (Backend)
+  - type: CNAME
+    name: "api"
+    content: dpg-d4f112trnu6s73doipjg-a.oregon-postgres.render.com
+    proxied: true
+    ttl: auto
+    comment: "Backend API - Render"
+
+  # ===========================================
+  # EMAIL RECORDS (Cloudflare Email Routing)
+  # ===========================================
+
+  # MX Records for Cloudflare Email Routing
+  - type: MX
+    name: "@"
+    content: route1.mx.cloudflare.net
+    priority: 69
+    ttl: auto
+    comment: "Cloudflare Email Routing"
+
+  - type: MX
+    name: "@"
+    content: route2.mx.cloudflare.net
+    priority: 12
+    ttl: auto
+    comment: "Cloudflare Email Routing"
+
+  - type: MX
+    name: "@"
+    content: route3.mx.cloudflare.net
+    priority: 84
+    ttl: auto
+    comment: "Cloudflare Email Routing"
+
+  # ===========================================
+  # SPF, DKIM, DMARC RECORDS
+  # ===========================================
+
+  # SPF Record - Authorize Cloudflare and Resend to send emails
+  - type: TXT
+    name: "@"
+    content: "v=spf1 include:_spf.mx.cloudflare.net include:amazonses.com include:_spf.resend.com ~all"
+    ttl: auto
+    comment: "SPF - Email sender authorization"
+
+  # DMARC Record - Email authentication policy
+  - type: TXT
+    name: "_dmarc"
+    content: "v=DMARC1; p=quarantine; rua=mailto:admin@advanciapayledger.com; pct=100"
+    ttl: auto
+    comment: "DMARC policy"
+
+  # Resend DKIM - Add after domain verification in Resend dashboard
+  # Get actual values from: https://resend.com/domains
+  - type: TXT
+    name: "resend._domainkey"
+    content: "REPLACE_WITH_RESEND_DKIM_VALUE"
+    ttl: auto
+    comment: "Resend DKIM"
+
+  # ===========================================
+  # SECURITY RECORDS
+  # ===========================================
+
+  # CAA Record - Certificate Authority Authorization
+  - type: CAA
+    name: "@"
+    content: '0 issue "letsencrypt.org"'
+    ttl: auto
+    comment: "CAA - Let's Encrypt only"
+
+  - type: CAA
+    name: "@"
+    content: '0 issue "digicert.com"'
+    ttl: auto
+    comment: "CAA - DigiCert (Cloudflare)"
+
+  - type: CAA
+    name: "@"
+    content: '0 issuewild "letsencrypt.org"'
+    ttl: auto
+    comment: "CAA wildcard - Let's Encrypt"
+
+# ===========================================
+# EMAIL ROUTING CONFIGURATION
+# ===========================================
+# Configure in Cloudflare Dashboard > Email > Email Routing
+
+email_routing:
+  enabled: true
+
+  addresses:
+    - address: "privacy@advanciapayledger.com"
+      action: "worker"
+      worker: "advancia-email-worker"
+      description: "Privacy requests (GDPR/CCPA)"
+
+    - address: "legal@advanciapayledger.com"
+      action: "worker"
+      worker: "advancia-email-worker"
+      description: "Legal inquiries"
+
+    - address: "support@advanciapayledger.com"
+      action: "worker"
+      worker: "advancia-email-worker"
+      description: "General support"
+
+    - address: "admin@advanciapayledger.com"
+      action: "forward"
+      destination: "admin_5925@advancia.com"
+      description: "Admin forwarding"
+
+  catch_all:
+    action: "forward"
+    destination: "admin@advanciapayledger.com"
+    description: "Catch-all to admin"
+# ===========================================
+# CLOUDFLARE API COMMANDS
+# ===========================================
+# Use these curl commands to apply DNS records via API
+
+# List existing records:
+# curl -X GET "https://api.cloudflare.com/client/v4/zones/0bff66558872c58ed5b8b7942acc34d9/dns_records" \
+#   -H "Authorization: Bearer _c0eQLPqAqS5J2RnlX-N2nTtomDGkKpnvYH2oHeu" \
+#   -H "Content-Type: application/json"
+
+# Add MX record example:
+# curl -X POST "https://api.cloudflare.com/client/v4/zones/0bff66558872c58ed5b8b7942acc34d9/dns_records" \
+#   -H "Authorization: Bearer _c0eQLPqAqS5J2RnlX-N2nTtomDGkKpnvYH2oHeu" \
+#   -H "Content-Type: application/json" \
+#   -d '{"type":"MX","name":"@","content":"route1.mx.cloudflare.net","priority":69,"ttl":1}'

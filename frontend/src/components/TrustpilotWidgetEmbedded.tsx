@@ -34,7 +34,8 @@ const TEMPLATE_IDS: Record<WidgetTemplate, string> = {
 };
 
 export default function TrustpilotWidgetEmbedded({
-  businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID || '',
+  businessUnitId = process.env.NEXT_PUBLIC_TRUSTPILOT_BUSINESS_UNIT_ID ||
+    '691c974952d3b92df9ac4f10',
   locale = 'en-US',
   theme = 'light',
   template = 'mini',

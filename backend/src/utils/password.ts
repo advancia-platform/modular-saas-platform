@@ -46,10 +46,13 @@ export async function verifyPassword(
   }
 }
 
-export async function migratePasswordIfNeeded(
-  plain: string,
-  storedHash: string,
-): Promise<string | null> {
+export async function validateResetToken(token: string): Promise<boolean> {
+  // TODO: Implement proper token validation with database lookup
+  // For now, return true if token is not empty
+  return token && token.length > 10;
+}
+
+export async function migratePasswordIfNeeded(plain: string, storedHash: string): Promise<string | null> {
   // If bcrypt, rehash to Argon2 on next successful login
   if (isBcryptHash(storedHash)) {
     const ok = await bcrypt.compare(plain, storedHash).catch(() => false);

@@ -1,5 +1,5 @@
 import { startOfDay, subDays } from "date-fns";
-import { prisma } from "../prismaClient";
+import prisma from "../prismaClient";
 
 export async function getDashboardMetrics() {
   const now = new Date();

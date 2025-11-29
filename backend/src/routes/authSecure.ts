@@ -7,6 +7,7 @@ import {
   requestPasswordReset,
   resetPassword,
 } from "../services/authService";
+import { validateResetToken } from "../utils/password";
 
 const router = Router();
 

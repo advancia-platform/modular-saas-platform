@@ -8,39 +8,35 @@ Purpose: give AI coding agents the minimum, specific context to be productive in
 
 ### Architecture and boundaries
 
-- Backend: Node.js + Express + TypeScript, Prisma ORM, Socket.IO. Entry: `backend/src/index.ts`.
-- Frontend: Next.js 14 (App Router) in `frontend/` consuming `/api/**` from backend.
-- Database: PostgreSQL via Prisma with many models (see `backend/prisma/schema.prisma`). Use `backend/src/prismaClient.ts` to import a singleton PrismaClient.
-- Realtime: Socket.IO on the same HTTP server. Clients join per-user rooms: `join-room` → room `user-${userId}`. Server emits domain-specific events (transactions, notifications).
-- Notifications: web push + email + socket broadcast in `backend/src/services/notificationService.ts`. Socket instance is injected via `setSocketIO(io)` from `index.ts`.
-- Config/CORS: `backend/src/config/index.ts` computes `allowedOrigins` and other runtime config. CORS uses this list; add new origins there.
+- **Backend**: Node.js + Express + TypeScript, Prisma ORM, Socket.IO. Entry: `backend/src/index.ts`.
+- **Frontend**: Next.js 14 (App Router) with Turbopack in `frontend/` consuming `/api/**` from backend.
+- **Database**: PostgreSQL via Prisma with extensive models (see `backend/prisma/schema.prisma`). Use `backend/src/prismaClient.ts` for singleton PrismaClient.
+- **Realtime**: Socket.IO on the same HTTP server. Clients join per-user rooms: `join-room` → room `user-${userId}`. Server emits domain-specific events (transactions, notifications).
+- **Notifications**: Multi-channel (web push + email + socket) in `backend/src/services/notificationService.ts`. Socket instance injected via `setSocketIO(io)` from `index.ts`.
+- **Monitoring**: Prometheus metrics + Sentry error tracking initialized early in `backend/src/index.ts` with custom metrics for HTTP requests and business operations.
 
-### Key runtime behaviors and cross-cutting concerns
+### Critical runtime behaviors
 
-- Rate limiting applies to all `/api/**` (see `rateLimit` middleware in `backend/src/index.ts`).
-- Stripe webhook requires raw body on `/api/payments/webhook` before `express.json()`. Don't move middleware order.
-- AuthN/AuthZ: JWT with `authenticateToken` and role gates via `allowRoles/requireAdmin` (see `backend/src/middleware/auth.ts` and usages in `backend/src/routes/users.ts`, `backend/src/routes/support.ts`). Some routes also check an `x-api-key` header in development-friendly way (see `routes/auth.ts`).
-- Decimals: Prisma Decimal fields should be serialized as strings in JSON responses. Use `backend/src/utils/decimal.ts` helpers: `serializeDecimal()`, `serializeDecimalFields()`, `serializeDecimalArray()`.
-- Background jobs: `node-cron` schedules notification fallback emails in `index.ts`.
-- Crypto payments: Cryptomus integration for BTC/ETH/USDT payments (see `routes/cryptomus.ts`, `routes/cryptoEnhanced.ts`).
-- Email systems: Multiple providers - Gmail SMTP for OTP, Resend for templates, SendGrid for bulk (see `routes/emails.ts`, `routes/email.ts`, `routes/send-email.ts`).
-- Monitoring: Sentry for error tracking and performance monitoring (initialized in `backend/src/utils/sentry.ts`).
+- **Rate limiting**: Applied to all `/api/**` routes via middleware in `backend/src/index.ts`.
+- **Stripe webhooks**: Requires raw body on `/api/payments/webhook` BEFORE `express.json()`. Never reorder middleware.
+- **Authentication**: Dual-mode JWT system with `authenticateToken` (legacy) and `authenticateTokenWithSession` (new) in `backend/src/middleware/auth.ts`. Use role gates: `allowRoles/requireAdmin`.
+- **Decimal handling**: Prisma Decimal fields MUST be serialized as strings. Always use `backend/src/utils/decimal.ts` helpers: `serializeDecimal()`, `serializeDecimalFields()`, `serializeDecimalArray()`.
+- **Session management**: Enhanced auth uses `sessionManager` from `backend/src/auth/sessionManager.ts` with activity tracking.
+- **Sentry integration**: Automatic error capturing with route grouping and security event logging in auth middleware.
 
-### Route conventions and wiring
+### Route architecture and patterns
 
-- Routers live in `backend/src/routes/*.ts`. Each exports an Express router:
-  - Example: `tokens.ts`, `rewards.ts`, `auth.ts`, `system.ts`, `users.ts`, `support.ts`, `cryptomus.ts`, `cryptoEnhanced.ts`.
-- Register routers in `backend/src/index.ts` under `/api/<name>` in the "Registering routes" section. Keep the Stripe webhook raw-body line before `express.json()`.
-- Input validation and security headers live in `backend/src/middleware/security.ts`; reuse `validateInput`, `securityHeaders` if adding endpoints.
+- **Route files**: 80+ routers in `backend/src/routes/*.ts`, each exports Express router. Major ones: `auth.ts`, `tokens.ts`, `withdrawals.ts`, `cryptomus.ts`, `payments.ts`, `admin/`.
+- **Registration**: Wire routers in `backend/src/index.ts` "Registering routes" section as `/api/<name>`. Keep Stripe webhook raw-body line before `express.json()`.
+- **Validation**: Use `backend/src/middleware/security.ts` - `validateInput`, `securityHeaders` for consistent input handling.
+- **Auth patterns**: Most routes use `authenticateToken` → check `req.user.role` for authorization. Admin routes stack `requireAdmin` middleware.
 
-### Data model hot spots (Prisma)
+### Data model essentials (Prisma)
 
-- Core models: `User`, `Transaction`, `TokenWallet`, `TokenTransaction`, `Reward`, `UserTier`, `AuditLog`, crypto orders/withdrawals, notifications, support, and Ethereum activity.
-- Crypto models: `CryptoWallet`, `CryptoWithdrawal` for managing user crypto balances and transactions.
-- When you add or change schema:
-  - Update `backend/prisma/schema.prisma` → run `npx prisma migrate dev` in `backend`.
-  - Regenerate client if needed: `npm run prisma:generate`.
-  - Verify with `npx prisma studio`.
+- **Financial core**: `User`, `Transaction`, `TokenWallet` (with Decimal fields), `CryptoPayments`, `CryptoWithdrawal`, `Reward`, `UserTier`.
+- **Business logic**: `RPAWorkflow`, `RPAExecution` for automation, extensive audit/logging models, notification preferences.
+- **Schema changes**: `backend/prisma/schema.prisma` → `npx prisma migrate dev` → `npm run prisma:generate` → verify with `npx prisma studio`.
+- **Migration pattern**: Always backup before schema changes. Use descriptive migration names.
 
 ### Realtime and notifications
 
@@ -48,26 +44,25 @@ Purpose: give AI coding agents the minimum, specific context to be productive in
 - Notification service sends socket, push (web-push), and email (nodemailer). Environment keys: `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `EMAIL_USER`, `EMAIL_PASSWORD`, `SMTP_HOST`, `SMTP_PORT`.
 - Admin broadcasts: Emit to `admins` room for admin-only notifications.
 
-### External integrations
+### External integrations and services
 
-- **Authentication (Email-Only OTP)**: Email OTP via Gmail SMTP (free) - see `routes/auth.ts`. Password login with bcrypt hashing. TOTP 2FA. Required env vars: `EMAIL_USER`, `EMAIL_PASSWORD`, `SMTP_HOST` (smtp.gmail.com), `SMTP_PORT` (587).
-- **Crypto Payments**: Cryptomus API for crypto invoices/payments. Env vars: `CRYPTOMUS_API_KEY`, `CRYPTOMUS_MERCHANT_ID`.
-- **Fiat Payments**: Stripe payments webhook in `routes/payments.ts`: `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`.
-- **Email Services**:
-  - Gmail SMTP for transactional emails (OTP, notifications)
-  - Resend for HTML templates and marketing emails
-  - SendGrid for bulk communications
-- **Ethereum gateway**: ethers v5 on backend; ethers v6 on frontend.
-- **Monitoring**: Sentry for error tracking (`SENTRY_DSN` env var).
-- **Storage**: AWS S3 for backups and file uploads (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `S3_BACKUPS_BUCKET`).
+- **Authentication**: Multi-method with email OTP (Gmail SMTP), password + bcrypt, TOTP 2FA. Session-based JWT with activity tracking.
+- **Payment processors**: 
+  - Stripe for fiat (`STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`)
+  - Cryptomus for crypto (`CRYPTOMUS_API_KEY`, `CRYPTOMUS_MERCHANT_ID`)
+  - Support for BTC/ETH/USDT with real-time status tracking
+- **Email stack**: Gmail SMTP (transactional), Resend (templates), SendGrid (bulk). Multiple providers for reliability.
+- **Blockchain**: ethers v5 (backend), ethers v6 (frontend). Crypto address validation via `crypto-address-validator`.
+- **Infrastructure**: Sentry (errors), Prometheus (metrics), Redis (caching), AWS S3 (backups), Digital Ocean Spaces (automated backups).
 
-### Local dev workflows (Linux/bash)
+### Development workflows (npm workspaces)
 
-- Backend: `cd backend && npm install && npm run dev` (starts on port 4000).
-- Frontend: `cd frontend && npm install && npm run dev` (starts on port 3000).
-- Database: run Postgres locally or Docker; set `DATABASE_URL` in `backend/.env`. First time: `npx prisma migrate dev`.
-- Full stack with Docker: `docker-compose up -d` (includes Postgres + Redis).
-- Prisma Studio: `cd backend && npx prisma studio`.
+- **Quick start**: `npm run dev` (both frontend/backend), or `npm run dev:safe` (with failure recovery).
+- **Individual**: `npm run dev:frontend` (Next.js on :3000), `npm run dev:backend` (Express on :4000).
+- **Database**: `docker-compose up -d` for local Postgres+Redis, then `npx prisma migrate dev` in `backend/`.
+- **Debugging**: `npm run dev:debug` includes log tailing. Use VS Code launch configs for Node inspector.
+- **Testing**: `npm run check` (type-check + lint + test), `npm test` (all workspaces), `npm run test:coverage`.
+- **Prisma Studio**: `cd backend && npx prisma studio` for visual DB management.
 
 ### CI/CD and deployment workflows
 
@@ -92,12 +87,15 @@ Purpose: give AI coding agents the minimum, specific context to be productive in
 - Use `debugger` in route handlers; set breakpoints in async functions.
 - Winston logging: Use `backend/src/logger.ts` for structured logging (replaces console.log in production).
 
-### Testing conventions
+### Project-specific patterns and conventions
 
-- Use Jest for unit/integration tests in `backend/` and `frontend/`.
-- Backend tests: Run `npm test` in `backend/` (covers routes, services, utils). Place tests in `__tests__/` subdirs.
-- Frontend tests: Run `npm test` in `frontend/` (covers components, API calls). Use React Testing Library.
-- Mock Prisma with `@prisma/client` in-memory or test DB. Avoid real DB in unit tests.
+- **Workspace structure**: npm workspaces with shared scripts. Use `npm run <script> --workspaces` for bulk operations.
+- **Frontend performance**: Next.js 14 with Turbopack, aggressive bundle optimization in `next.config.js`. Image optimization with WebP/AVIF.
+- **Security headers**: CSP, HSTS, and security headers configured in Next.js and Express middleware.
+- **Git workflow**: Automated branch protection, PR labeling, and release drafting via GitHub Actions. 40+ workflow files in `.github/workflows/`.
+- **Deployment**: Auto-deploy to Render (backend) + Vercel (frontend) on `main` push. Blue-green and canary deployment workflows available.
+- **Testing strategy**: Jest (unit/integration), Playwright (e2e), security evaluation with Python scripts in `backend/security-tests/`.
+- **Code quality**: ESLint + Prettier with automatic fixes on save. Husky pre-commit hooks with type checking.
 - Integration tests: `npm run test:integration` for API endpoint testing.
 - Error formats: Throw `Error` with descriptive messages; routes return `{ error: string }` on 400/500.
 
@@ -142,6 +140,48 @@ If anything here is unclear or you need deeper conventions (tests, logging field
 - `frontend/README.md` and `backend/README.md` (commands and structure)
 
 If anything here is unclear or you need deeper conventions (tests, logging fields, error formats), ask and we'll refine this guide. Review and update this file quarterly to match repo evolution.
+
+### Quick reference commands
+
+```bash
+# Fresh setup
+npm run setup:quick                    # Install all deps + docs tooling
+npm run dev                           # Start both frontend/backend
+docker-compose up -d                  # Start Postgres + Redis
+
+# Development
+npm run prisma:generate               # Generate Prisma client
+npx prisma studio                     # Database GUI (in backend/)
+npm run check                        # Full validation (type + lint + test)
+npm run fix                          # Auto-fix linting + formatting
+
+# Deployment & CI
+npm run build                        # Build all workspaces
+npm run backup                       # Database backup script
+npm run deploy                       # Deploy via bash script
+```
+
+### Common gotchas and debugging
+
+- **Decimal serialization**: Always use `serializeDecimal*()` helpers - raw Prisma Decimal breaks JSON.stringify.
+- **Auth middleware**: `authenticateTokenWithSession` is newer, `authenticateToken` is legacy. Both valid.
+- **Route registration order**: Stripe webhook `/api/payments/webhook` must be registered before `express.json()`.
+- **Socket.IO rooms**: Use `user-${userId}` pattern. Inject `io` via setter functions in services.
+- **Prisma client**: Always import from `backend/src/prismaClient.ts` (singleton), never direct from `@prisma/client`.
+- **Environment variables**: Backend loads from `.env` file, frontend from `process.env.NEXT_PUBLIC_*`.
+
+### Files to examine for context
+
+- `backend/src/index.ts` - Server setup, middleware order, route registration
+- `backend/src/middleware/auth.ts` - Authentication patterns and security
+- `backend/src/utils/decimal.ts` - Financial data serialization
+- `backend/prisma/schema.prisma` - Complete data model
+- `package.json` - Workspace structure and available scripts
+- `.github/workflows/` - CI/CD automation patterns
+
+---
+
+*Updated: Nov 2025 - Reflects current architecture with enhanced auth, Prometheus monitoring, and npm workspace patterns*
 
 ---
 

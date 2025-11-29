@@ -12,11 +12,11 @@ Store user uploads and backups in R2 replacing S3; keep seeds/keys secret.
 ## Credentials (Environment Variables)
 
 ```bash
-R2_ACCOUNT_ID=xxxxxxxxxxxxxxxxxxxxxxxx
-R2_ACCESS_KEY_ID=AKIA...
-R2_SECRET_ACCESS_KEY=********
-R2_BUCKET_NAME=advancia-prod-assets
-R2_ENDPOINT=https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com
+CLOUDFLARE_R2_ACCOUNT_ID=xxxxxxxxxxxxxxxxxxxxxxxx
+CLOUDFLARE_R2_ACCESS_KEY_ID=AKIA...
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=********
+CLOUDFLARE_R2_BUCKET_NAME=advancia-prod-assets
+CLOUDFLARE_R2_ENDPOINT=https://${CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com
 STORAGE_PROVIDER=r2
 ```
 
@@ -29,14 +29,14 @@ Create `backend/src/services/r2StorageService.ts` (added).
 - `uploadBuffer(key, buffer, contentType?)`
 - `uploadStream(key, stream, contentType?)`
 - `getObject(key)` returns readable stream.
-- `generatePublicUrl(key)` uses `R2_PUBLIC_BASE_URL` if set.
+- `generatePublicUrl(key)` uses `CLOUDFLARE_R2_PUBLIC_URL` if set.
 
 ## Migration From S3 (Optional One-Off)
 
 If old S3 bucket `advancia-legacy`:
 
 ```bash
-aws s3 sync s3://advancia-legacy r2://advancia-prod-assets --endpoint-url https://$R2_ACCOUNT_ID.r2.cloudflarestorage.com
+aws s3 sync s3://advancia-legacy r2://advancia-prod-assets --endpoint-url https://$CLOUDFLARE_R2_ACCOUNT_ID.r2.cloudflarestorage.com
 ```
 
 Test with a small prefix first.
@@ -57,7 +57,7 @@ Retention script: remove >30 day objects.
 
 - Never expose access keys client-side.
 - Rotate keys every 180 days; dual-key window 24h.
-- Scan frontend build: `grep -R R2_ACCESS_KEY_ID frontend/.next || echo "OK"`.
+- Scan frontend build: `grep -R CLOUDFLARE_R2_ACCESS_KEY_ID frontend/.next || echo "OK"`.
 
 ## Rollback
 

@@ -1,8 +1,9 @@
+import { Prisma } from '@prisma/client';
 import express from 'express';
-import { authenticateToken } from '../middleware/auth';
-import { createAlchemyPayout, getAlchemyPayoutStatus } from '../services/alchemypay';
-import prisma from '../prismaClient';
 import logger from '../logger';
+import { authenticateToken } from '../middleware/auth';
+import prisma from '../prismaClient';
+import { createAlchemyPayout, getAlchemyPayoutStatus } from '../services/alchemypay';
 
 const router = express.Router();
 
@@ -49,17 +50,19 @@ router.post('/withdrawal', authenticateToken, async (req, res) => {
     const payout = await createAlchemyPayout(amount, currency, address, network);
 
     // Record withdrawal in database
-    const withdrawal = await prisma.cryptoWithdrawal.create({
+    const withdrawal = await prisma.crypto_withdrawals.create({
       data: {
         userId,
-        amount: amount.toString(),
+        amount: new Prisma.Decimal(amount.toString()),
         currency: currency.toUpperCase(),
-        walletAddress: address,
+        withdrawalAddress: address,
+        destinationAddress: address,
         status: 'PENDING',
-        provider: 'alchemypay',
-        transactionHash: payout.txHash,
-        externalId: payout.id,
-        network,
+        paymentProvider: 'alchemypay',
+        txHash: payout.txHash,
+        cryptoType: currency.toLowerCase(),
+        cryptoAmount: new Prisma.Decimal(amount.toString()),
+        usdEquivalent: new Prisma.Decimal(amount.toString()),
       },
     });
 
@@ -75,9 +78,9 @@ router.post('/withdrawal', authenticateToken, async (req, res) => {
         amount: withdrawal.amount,
         currency: withdrawal.currency,
         status: withdrawal.status,
-        provider: withdrawal.provider,
+        paymentProvider: withdrawal.paymentProvider,
         payoutId: payout.id,
-        txHash: payout.txHash,
+        txHash: withdrawal.txHash,
         createdAt: withdrawal.createdAt,
       },
     });
@@ -100,11 +103,11 @@ router.get('/withdrawal/:withdrawalId', authenticateToken, async (req, res) => {
     const { withdrawalId } = req.params;
     const userId = (req as any).user.id;
 
-    const withdrawal = await prisma.cryptoWithdrawal.findFirst({
+    const withdrawal = await prisma.crypto_withdrawals.findFirst({
       where: {
         id: withdrawalId,
         userId,
-        provider: 'alchemypay',
+        paymentProvider: 'alchemypay',
       },
     });
 
@@ -115,23 +118,23 @@ router.get('/withdrawal/:withdrawalId', authenticateToken, async (req, res) => {
       });
     }
 
-    // Fetch latest status from Alchemy Pay if we have an external ID
-    if (withdrawal.externalId) {
+    // Fetch latest status from Alchemy Pay if we have a txHash (using it as external ID)
+    if (withdrawal.txHash) {
       try {
-        const payoutStatus = await getAlchemyPayoutStatus(withdrawal.externalId);
+        const payoutStatus = await getAlchemyPayoutStatus(withdrawal.txHash);
 
         // Update local status if changed
         if (payoutStatus.status && payoutStatus.status !== withdrawal.status) {
-          await prisma.cryptoWithdrawal.update({
+          await prisma.crypto_withdrawals.update({
             where: { id: withdrawalId },
             data: {
               status: payoutStatus.status.toUpperCase(),
-              transactionHash: payoutStatus.txHash || withdrawal.transactionHash,
+              txHash: payoutStatus.txHash || withdrawal.txHash,
             },
           });
 
           withdrawal.status = payoutStatus.status.toUpperCase();
-          withdrawal.transactionHash = payoutStatus.txHash || withdrawal.transactionHash;
+          withdrawal.txHash = payoutStatus.txHash || withdrawal.txHash;
         }
       } catch (error) {
         logger.warn('Failed to fetch Alchemy Pay status, using cached data', {
@@ -148,9 +151,9 @@ router.get('/withdrawal/:withdrawalId', authenticateToken, async (req, res) => {
         amount: withdrawal.amount,
         currency: withdrawal.currency,
         status: withdrawal.status,
-        walletAddress: withdrawal.walletAddress,
-        transactionHash: withdrawal.transactionHash,
-        network: withdrawal.network,
+        withdrawalAddress: withdrawal.withdrawalAddress,
+        txHash: withdrawal.txHash,
+        cryptoType: withdrawal.cryptoType,
         createdAt: withdrawal.createdAt,
         updatedAt: withdrawal.updatedAt,
       },
@@ -180,17 +183,17 @@ router.post('/webhook', express.raw({ type: 'application/json' }), async (req, r
     const { payoutId, status, txHash } = payload;
 
     if (payoutId) {
-      // Update withdrawal status
-      const withdrawal = await prisma.cryptoWithdrawal.findFirst({
-        where: { externalId: payoutId },
+      // Update withdrawal status - using payoutId as txHash for lookup
+      const withdrawal = await prisma.crypto_withdrawals.findFirst({
+        where: { txHash: payoutId },
       });
 
       if (withdrawal) {
-        await prisma.cryptoWithdrawal.update({
+        await prisma.crypto_withdrawals.update({
           where: { id: withdrawal.id },
           data: {
             status: status?.toUpperCase() || withdrawal.status,
-            transactionHash: txHash || withdrawal.transactionHash,
+            txHash: txHash || withdrawal.txHash,
           },
         });
 

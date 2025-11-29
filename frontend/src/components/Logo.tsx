@@ -1,21 +1,68 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Wallet, Shield, Zap } from 'lucide-react';
+import Image from 'next/image';
 
 interface LogoProps {
   size?: 'sm' | 'md' | 'lg';
   showText?: boolean;
   variant?: 'light' | 'dark' | 'gradient';
+  useSvg?: boolean;
 }
 
-export default function Logo({ size = 'md', showText = true, variant = 'gradient' }: LogoProps) {
+export default function Logo({
+  size = 'md',
+  showText = true,
+  variant = 'gradient',
+  useSvg = true,
+}: LogoProps) {
   const sizes = {
-    sm: { icon: 24, text: 'text-lg', container: 'w-8 h-8' },
-    md: { icon: 32, text: 'text-xl', container: 'w-10 h-10' },
-    lg: { icon: 40, text: 'text-2xl', container: 'w-12 h-12' },
+    sm: { icon: 32, text: 'text-lg', container: 'w-8 h-8', full: { w: 150, h: 30 } },
+    md: { icon: 40, text: 'text-xl', container: 'w-10 h-10', full: { w: 200, h: 40 } },
+    lg: { icon: 48, text: 'text-2xl', container: 'w-12 h-12', full: { w: 250, h: 50 } },
   };
 
+  // Use SVG logo files
+  if (useSvg) {
+    if (showText) {
+      // Full logo with text
+      const logoSrc = variant === 'dark' ? '/logo-full-dark.svg' : '/logo-full.svg';
+      return (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Image
+            src={logoSrc}
+            alt="Advancia Pay Ledger"
+            width={sizes[size].full.w}
+            height={sizes[size].full.h}
+            priority
+          />
+        </motion.div>
+      );
+    } else {
+      // Icon only
+      return (
+        <motion.div
+          initial={{ opacity: 0, x: -20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5 }}
+        >
+          <Image
+            src="/logo-icon.svg"
+            alt="Advancia"
+            width={sizes[size].icon}
+            height={sizes[size].icon}
+            priority
+          />
+        </motion.div>
+      );
+    }
+  }
+
+  // Fallback to CSS-based logo
   const variants = {
     light: 'bg-white text-blue-600 border-blue-200',
     dark: 'bg-slate-900 text-white border-slate-700',
@@ -34,25 +81,8 @@ export default function Logo({ size = 'md', showText = true, variant = 'gradient
       <div
         className={`${sizes[size].container} ${variants[variant]} border-2 rounded-xl flex items-center justify-center shadow-lg relative overflow-hidden`}
       >
-        {/* Animated background shimmer */}
-        <motion.div
-          className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent"
-          animate={{
-            x: ['-100%', '200%'],
-          }}
-          transition={{
-            duration: 3,
-            repeat: Infinity,
-            ease: 'linear',
-          }}
-        />
-
-        {/* Triple icon stack for fintech feel */}
-        <div className="relative flex items-center justify-center">
-          <Wallet size={sizes[size].icon * 0.6} className="absolute opacity-30 -translate-x-1" />
-          <Shield size={sizes[size].icon * 0.7} className="absolute opacity-50" />
-          <Zap size={sizes[size].icon * 0.5} className="relative z-10" />
-        </div>
+        {/* Stylized A */}
+        <span className="font-bold text-xl">A</span>
       </div>
 
       {/* Logo Text */}

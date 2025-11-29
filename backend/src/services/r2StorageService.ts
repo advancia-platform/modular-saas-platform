@@ -5,11 +5,11 @@
  * and generating signed URLs for objects stored in an R2 bucket.
  *
  * Environment Variables required:
- *  - R2_ACCOUNT_ID
- *  - R2_ACCESS_KEY_ID
- *  - R2_SECRET_ACCESS_KEY
- *  - R2_BUCKET
- *  - (optional) R2_PUBLIC_BASE_URL for constructing public URLs
+ *  - CLOUDFLARE_R2_ACCOUNT_ID
+ *  - CLOUDFLARE_R2_ACCESS_KEY_ID
+ *  - CLOUDFLARE_R2_SECRET_ACCESS_KEY
+ *  - CLOUDFLARE_R2_BUCKET_NAME
+ *  - (optional) CLOUDFLARE_R2_PUBLIC_URL for constructing public URLs
  */
 import crypto from "crypto";
 
@@ -18,12 +18,12 @@ import crypto from "crypto";
  * Uses S3-compatible API endpoints with manual AWS Signature Version 4 signing.
  *
  * Required env vars:
- *  - R2_ACCOUNT_ID
- *  - R2_ACCESS_KEY_ID
- *  - R2_SECRET_ACCESS_KEY
- *  - R2_BUCKET
+ *  - CLOUDFLARE_R2_ACCOUNT_ID
+ *  - CLOUDFLARE_R2_ACCESS_KEY_ID
+ *  - CLOUDFLARE_R2_SECRET_ACCESS_KEY
+ *  - CLOUDFLARE_R2_BUCKET_NAME
  * Optional:
- *  - R2_PUBLIC_BASE_URL (for constructing public asset URLs)
+ *  - CLOUDFLARE_R2_PUBLIC_URL (for constructing public asset URLs)
  */
 
 interface R2Config {
@@ -37,13 +37,13 @@ let cfg: R2Config | null = null;
 
 export function initR2Client(): void {
   if (cfg) return;
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucket = process.env.R2_BUCKET;
+  const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID;
+  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+  const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME;
   if (!accountId || !accessKeyId || !secretAccessKey || !bucket) {
     throw new Error(
-      "R2 not configured (missing one of R2_ACCOUNT_ID/R2_ACCESS_KEY_ID/R2_SECRET_ACCESS_KEY/R2_BUCKET)",
+      "R2 not configured (missing one of CLOUDFLARE_R2_ACCOUNT_ID/CLOUDFLARE_R2_ACCESS_KEY_ID/CLOUDFLARE_R2_SECRET_ACCESS_KEY/CLOUDFLARE_R2_BUCKET_NAME)",
     );
   }
   cfg = { accountId, accessKeyId, secretAccessKey, bucket };
@@ -262,10 +262,10 @@ export function isInitialized(): boolean {
 
 try {
   if (
-    process.env.R2_ACCOUNT_ID &&
-    process.env.R2_ACCESS_KEY_ID &&
-    process.env.R2_SECRET_ACCESS_KEY &&
-    process.env.R2_BUCKET
+    process.env.CLOUDFLARE_R2_ACCOUNT_ID &&
+    process.env.CLOUDFLARE_R2_ACCESS_KEY_ID &&
+    process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY &&
+    process.env.CLOUDFLARE_R2_BUCKET_NAME
   )
     initR2Client();
 } catch (_) {}

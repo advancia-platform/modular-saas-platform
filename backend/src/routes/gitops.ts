@@ -111,7 +111,7 @@ router.get(
 
 // GET /api/gitops/applications/:name - Get specific application details
 router.get(
-  "/applications/:id",
+  "/applications/:name",
   authenticateToken,
   allowRoles("admin", "operator"),
   validateGitOpsEnabled,

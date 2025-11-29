@@ -177,6 +177,13 @@ variable "sentry_dsn" {
   sensitive   = true
 }
 
+# Email Configuration
+variable "resend_domain" {
+  description = "Resend domain for email routing (e.g., yourdomain@resend.dev)"
+  type        = string
+  default     = "advancia@resend.dev" # Replace with your actual Resend domain
+}
+
 # Rate Limiting
 variable "api_rate_limit" {
   description = "API rate limit per minute"

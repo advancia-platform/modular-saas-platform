@@ -18,7 +18,7 @@ CNAME   _domainkey          <resend-domainkey>              Auto    No
 
 1. **SPF Record**: Add TXT record for @ with SPF value from Resend
 2. **DKIM Record**: Add CNAME for domain key from Resend dashboard
-3. **DMARC Record**: Add TXT for _dmarc with policy
+3. **DMARC Record**: Add TXT for \_dmarc with policy
 4. **Verify in Resend Dashboard**: Check all records are green
 
 ## TLS/SSL Configuration
@@ -37,7 +37,7 @@ CNAME   _domainkey          <resend-domainkey>              Auto    No
 - **Universal SSL**: Active (free)
 - **Certificate Status**: Active
 - **Validity**: Auto-renewed by Cloudflare
-- **Edge Certificate**: Covers yourdomain.com, *.yourdomain.com
+- **Edge Certificate**: Covers yourdomain.com, \*.yourdomain.com
 
 ### Origin Certificates
 
@@ -70,10 +70,7 @@ CNAME   _domainkey          <resend-domainkey>              Auto    No
 ```json
 [
   {
-    "AllowedOrigins": [
-      "https://yourdomain.com",
-      "https://api.yourdomain.com"
-    ],
+    "AllowedOrigins": ["https://yourdomain.com", "https://api.yourdomain.com"],
     "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
     "AllowedHeaders": ["*"],
     "ExposeHeaders": ["ETag"],
@@ -90,20 +87,20 @@ CNAME   _domainkey          <resend-domainkey>              Auto    No
    - **Bucket**: advancia-backups
    - **TTL**: Never expire (or set appropriate)
 3. Save credentials:
-   - `R2_ACCOUNT_ID`
-   - `R2_ACCESS_KEY_ID`
-   - `R2_SECRET_ACCESS_KEY`
-   - `R2_BUCKET_NAME`
+   - `CLOUDFLARE_R2_ACCOUNT_ID`
+   - `CLOUDFLARE_R2_ACCESS_KEY_ID`
+   - `CLOUDFLARE_R2_SECRET_ACCESS_KEY`
+   - `CLOUDFLARE_R2_BUCKET_NAME`
 
 ### Environment Variables
 
 ```bash
 # Backend .env
-R2_ACCOUNT_ID=your-account-id
-R2_ACCESS_KEY_ID=your-access-key-id
-R2_SECRET_ACCESS_KEY=your-secret-access-key
-R2_BUCKET_NAME=advancia-backups
-R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+CLOUDFLARE_R2_ACCOUNT_ID=your-account-id
+CLOUDFLARE_R2_ACCESS_KEY_ID=your-access-key-id
+CLOUDFLARE_R2_SECRET_ACCESS_KEY=your-secret-access-key
+CLOUDFLARE_R2_BUCKET_NAME=advancia-backups
+CLOUDFLARE_R2_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
 ```
 
 ## Resend Email Integration
@@ -130,15 +127,15 @@ APP_URL=https://yourdomain.com
 ### Test Email Sending
 
 ```typescript
-import { Resend } from 'resend';
+import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 await resend.emails.send({
-  from: 'noreply@yourdomain.com',
-  to: 'test@example.com',
-  subject: 'Test Email',
-  html: '<p>Hello from Resend + Cloudflare!</p>'
+  from: "noreply@yourdomain.com",
+  to: "test@example.com",
+  subject: "Test Email",
+  html: "<p>Hello from Resend + Cloudflare!</p>",
 });
 ```
 

@@ -16,7 +16,7 @@ declare global {
     interface Request {
       sessionID?: string;
       rateLimit?: { resetTime?: Date };
-      file?: any; // Simplified for type safety
+      // file is already declared by multer types
     }
   }
 }

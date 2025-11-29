@@ -208,8 +208,8 @@ export async function requestPasswordReset(
 
     // Send password reset email
     try {
-      const { sendResetEmail } = await import("./emailService");
-      await sendResetEmail(email, token);
+      const { sendPasswordResetEmail } = await import("./emailService.js");
+      await sendPasswordResetEmail(email, token);
       logger.info("Password reset email sent successfully", { email });
     } catch (emailError: any) {
       logger.error("Failed to send password reset email", {
@@ -232,6 +232,7 @@ export async function requestPasswordReset(
     });
     return {
       success: false,
+      message: "Failed to process password reset request",
       error: "Failed to process password reset request",
     };
   }
@@ -262,6 +263,7 @@ export async function resetPassword(
       });
       return {
         success: false,
+        message: "Invalid or expired reset token",
         error: "Invalid or expired reset token",
       };
     }
@@ -303,6 +305,7 @@ export async function resetPassword(
     });
     return {
       success: false,
+      message: "Failed to reset password",
       error: "Failed to reset password",
     };
   }

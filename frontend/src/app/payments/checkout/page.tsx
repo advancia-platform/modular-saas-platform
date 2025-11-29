@@ -1,14 +1,26 @@
 'use client';
 import { motion } from 'framer-motion';
-import { AlertCircle, ArrowLeft, Bitcoin, Check, CreditCard, Lock, Shield } from 'lucide-react';
+import {
+  AlertCircle,
+  ArrowLeft,
+  ArrowRightLeft,
+  Bitcoin,
+  Check,
+  CreditCard,
+  Globe,
+  Lock,
+  Shield,
+} from 'lucide-react';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
+type PaymentProvider = 'stripe' | 'cryptomus' | 'nowpayments' | 'alchemypay';
+
 export default function CheckoutPage() {
   const [amount, setAmount] = useState<number>(100);
-  const [selectedMethod, setSelectedMethod] = useState<'stripe' | 'crypto'>('stripe');
+  const [selectedMethod, setSelectedMethod] = useState<PaymentProvider>('stripe');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [token, setToken] = useState<string>('');
@@ -33,26 +45,54 @@ export default function CheckoutPage() {
     setLoading(true);
 
     try {
-      const res = await fetch(`${API_URL}/api/payments/checkout-session`, {
+      // Determine the API endpoint based on provider
+      let endpoint = '/api/payments/checkout-session';
+      let body: Record<string, unknown> = { amount, provider: selectedMethod };
+
+      switch (selectedMethod) {
+        case 'stripe':
+          endpoint = '/api/payments/checkout-session';
+          body = { amount, provider: 'stripe' };
+          break;
+        case 'cryptomus':
+          endpoint = '/api/cryptomus/create-invoice';
+          body = { amount, currency: 'USD' };
+          break;
+        case 'nowpayments':
+          endpoint = '/api/nowpayments/create-invoice';
+          body = { amount, currency: 'usd', payCurrency: 'btc' };
+          break;
+        case 'alchemypay':
+          endpoint = '/api/alchemypay/create-payment';
+          body = { amount, cryptoCurrency: 'USDT', fiatCurrency: 'USD' };
+          break;
+      }
+
+      const res = await fetch(`${API_URL}${endpoint}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          amount,
-          provider: selectedMethod === 'crypto' ? 'cryptomus' : 'stripe',
-        }),
+        body: JSON.stringify(body),
       });
 
       if (!res.ok) {
         const data = await res.json();
-        throw new Error(data.error || 'Checkout failed');
+        throw new Error(data.error || data.message || 'Checkout failed');
       }
 
       const data = await res.json();
-      if (data.redirectUrl) {
-        window.location.href = data.redirectUrl;
+
+      // Handle different response formats
+      const redirectUrl = data.redirectUrl || data.paymentUrl || data.url || data.invoice_url;
+
+      if (redirectUrl) {
+        window.location.href = redirectUrl;
+      } else if (data.address) {
+        // For crypto payments that return an address instead of URL
+        // Redirect to a payment status page
+        window.location.href = `/payments/crypto-pending?orderId=${data.orderId || data.id}&address=${data.address}&amount=${data.amount}`;
       } else {
         throw new Error('No checkout URL returned');
       }
@@ -65,18 +105,40 @@ export default function CheckoutPage() {
 
   const paymentMethods = [
     {
-      id: 'stripe',
-      name: 'Credit Card',
+      id: 'stripe' as PaymentProvider,
+      name: 'Credit / Debit Card',
       icon: <CreditCard className="w-6 h-6" />,
-      description: 'Visa, Mastercard, Amex',
-      logos: ['💳'],
+      description: 'Visa, Mastercard, Amex, Apple Pay',
+      logos: ['💳', '🍎'],
+      badge: 'Most Popular',
+      badgeColor: 'bg-blue-500',
     },
     {
-      id: 'crypto',
-      name: 'Cryptocurrency',
+      id: 'cryptomus' as PaymentProvider,
+      name: 'Cryptomus',
       icon: <Bitcoin className="w-6 h-6" />,
-      description: 'BTC, ETH, USDT',
+      description: 'BTC, ETH, USDT, LTC + more',
       logos: ['₿', 'Ξ', '₮'],
+      badge: 'Low Fees',
+      badgeColor: 'bg-green-500',
+    },
+    {
+      id: 'nowpayments' as PaymentProvider,
+      name: 'NOWPayments',
+      icon: <Globe className="w-6 h-6" />,
+      description: '200+ cryptocurrencies supported',
+      logos: ['🌐', '₿', '🪙'],
+      badge: '200+ Coins',
+      badgeColor: 'bg-purple-500',
+    },
+    {
+      id: 'alchemypay' as PaymentProvider,
+      name: 'Alchemy Pay',
+      icon: <ArrowRightLeft className="w-6 h-6" />,
+      description: 'Fiat ↔ Crypto On/Off Ramp',
+      logos: ['💵', '↔️', '₿'],
+      badge: 'Fiat Ramp',
+      badgeColor: 'bg-amber-500',
     },
   ];
 
@@ -169,38 +231,46 @@ export default function CheckoutPage() {
             >
               <h2 className="text-xl font-semibold text-white mb-4">Choose Payment Method</h2>
 
-              <div className="space-y-3">
+              <div className="grid sm:grid-cols-2 gap-3">
                 {paymentMethods.map((method) => (
                   <button
                     key={method.id}
-                    onClick={() => setSelectedMethod(method.id as any)}
-                    className={`w-full p-4 rounded-xl border-2 transition ${
+                    onClick={() => setSelectedMethod(method.id)}
+                    className={`relative p-4 rounded-xl border-2 transition ${
                       selectedMethod === method.id
                         ? 'border-purple-500 bg-purple-500/10'
                         : 'border-slate-700 bg-slate-900/30 hover:border-slate-600'
                     }`}
                   >
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4">
-                        <div
-                          className={`p-3 rounded-lg ${
-                            selectedMethod === method.id
-                              ? 'bg-purple-500 text-white'
-                              : 'bg-slate-700 text-slate-300'
-                          }`}
-                        >
-                          {method.icon}
-                        </div>
-                        <div className="text-left">
-                          <h3 className="font-semibold text-white">{method.name}</h3>
-                          <p className="text-sm text-slate-400">{method.description}</p>
-                        </div>
+                    {/* Badge */}
+                    {method.badge && (
+                      <span
+                        className={`absolute -top-2 -right-2 ${method.badgeColor} text-white text-xs font-bold px-2 py-0.5 rounded-full`}
+                      >
+                        {method.badge}
+                      </span>
+                    )}
+                    <div className="flex items-center space-x-3">
+                      <div
+                        className={`p-3 rounded-lg ${
+                          selectedMethod === method.id
+                            ? 'bg-purple-500 text-white'
+                            : 'bg-slate-700 text-slate-300'
+                        }`}
+                      >
+                        {method.icon}
                       </div>
-                      <div className="flex items-center space-x-2 text-2xl">
-                        {method.logos.map((logo, idx) => (
-                          <span key={idx}>{logo}</span>
-                        ))}
+                      <div className="text-left flex-1">
+                        <h3 className="font-semibold text-white">{method.name}</h3>
+                        <p className="text-xs text-slate-400">{method.description}</p>
                       </div>
+                    </div>
+                    <div className="flex items-center justify-end space-x-1 text-lg mt-2">
+                      {method.logos.map((logo, idx) => (
+                        <span key={idx} className="opacity-70">
+                          {logo}
+                        </span>
+                      ))}
                     </div>
                   </button>
                 ))}

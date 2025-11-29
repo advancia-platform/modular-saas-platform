@@ -1,29 +1,69 @@
 {
+  // ===================================================================
+  // ADVANCIA PAY LEDGER - RECOMMENDED VS CODE EXTENSIONS
+  // ===================================================================
+  // REQUIRED: Core development tools that must be installed
+  // RECOMMENDED: Productivity boosters that enhance workflow
+  // ===================================================================
+
   "recommendations": [
+    // ===== REQUIRED: Core Development =====
     "prisma.prisma",
-    "ckolkman.vscode-postgres",
-    "bradlc.vscode-tailwindcss",
-    "ms-vscode.vscode-typescript-next",
     "dbaeumer.vscode-eslint",
     "esbenp.prettier-vscode",
-    "usernamehw.errorlens",
-    "ms-playwright.playwright",
-    "firsttris.vscode-jest-runner",
+    "ms-vscode.vscode-typescript-next",
     "GitHub.copilot",
     "github.copilot-chat",
+
+    // ===== REQUIRED: Git & GitHub =====
     "github.vscode-pull-request-github",
     "github.vscode-github-actions",
     "eamodio.gitlens",
     "mhutchie.git-graph",
-    "humao.rest-client",
+
+    // ===== REQUIRED: Database =====
+    "ckolkman.vscode-postgres",
+    "ms-azuretools.vscode-cosmosdb",
+
+    // ===== REQUIRED: Docker & Containers =====
     "ms-azuretools.vscode-docker",
+    "ms-vscode-remote.remote-wsl",
+    "ms-vscode-remote.remote-containers",
+
+    // ===== RECOMMENDED: Frontend =====
+    "bradlc.vscode-tailwindcss",
     "formulahendry.auto-rename-tag",
+    "naumovs.color-highlight",
+
+    // ===== RECOMMENDED: Testing =====
+    "ms-playwright.playwright",
+    "firsttris.vscode-jest-runner",
+    "Orta.vscode-jest",
+
+    // ===== RECOMMENDED: API & Debug =====
+    "humao.rest-client",
+    "usernamehw.errorlens",
+
+    // ===== RECOMMENDED: Code Quality =====
     "aaron-bond.better-comments",
     "oderwat.indent-rainbow",
     "christian-kohler.path-intellisense",
     "wayou.vscode-todo-highlight",
-    "streetsidesoftware.code-spell-checker"
+
+    // ===== RECOMMENDED: Azure & Cloud =====
+    "ms-azuretools.vscode-azure-github-copilot",
+    "ms-azuretools.vscode-azureappservice",
+    "ms-azuretools.vscode-azurefunctions",
+
+    // ===== RECOMMENDED: Markdown & Docs =====
+    "DavidAnson.vscode-markdownlint",
+    "yzhang.markdown-all-in-one",
+
+    // ===== RECOMMENDED: Utilities =====
+    "mikestead.dotenv",
+    "EditorConfig.EditorConfig"
   ],
+
   "unwantedRecommendations": [
     "ms-vscode.vscode-typescript",
     "Vue.volar",
@@ -31,9 +71,6 @@
     "ms-python.vscode-pylance",
     "ms-vscode.powershell",
     "redis.redis-for-vscode",
-    "ms-azuretools.vscode-containers",
-    "ms-vscode-remote.remote-containers",
-    "firsttris.vscode-jest-runner",
     "rangav.vscode-thunder-client"
   ]
 }

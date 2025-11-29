@@ -14,6 +14,8 @@ export interface JWTPayload {
   role: string;
   type?: string;
   active?: boolean;
+  iss?: string;
+  aud?: string;
 }
 
 /**

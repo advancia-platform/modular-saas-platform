@@ -3,7 +3,11 @@
  * Tests for token balance and transaction history endpoints
  */
 
+// Set RESEND_API_KEY before any imports
+process.env.RESEND_API_KEY = "re_63QGjLFt_HKj6HJHLpZNP6ZqAnMBUFitL";
+
 import request from "supertest";
+import { PrismaClient, Prisma } from "@prisma/client";
 import prisma from "../../src/prismaClient";
 import {
   cleanupTestUsers,
@@ -91,7 +95,7 @@ describe("Token Wallet API", () => {
       walletId = wallet.id;
 
       // Create some test transactions
-      await prisma.tokenTransaction.createMany({
+      await prisma.token_transactions.createMany({
         data: [
           {
             walletId,
@@ -189,12 +193,19 @@ describe("Token Wallet API", () => {
       });
       if (!senderWallet) {
         await prisma.token_wallets.create({
-          data: { userId, balance: 1000 },
+          data: {
+            id: `wallet-${userId}`,
+            userId,
+            balance: new Prisma.Decimal(1000),
+            lockedBalance: new Prisma.Decimal(0),
+            lifetimeEarned: new Prisma.Decimal(0),
+            updatedAt: new Date(),
+          },
         });
       } else {
         await prisma.token_wallets.update({
           where: { userId },
-          data: { balance: 1000 },
+          data: { balance: new Prisma.Decimal(1000) },
         });
       }
 
@@ -203,8 +214,9 @@ describe("Token Wallet API", () => {
         where: { userId: recipientId },
       });
       if (!recipientWallet) {
-        await prisma.token_wallets.create({
-          data: { userId: recipientId },
+        await prisma.token_wallets.createMany({
+          data: [{ userId: recipientId }],
+          skipDuplicates: true,
         });
       }
     });
@@ -212,14 +224,14 @@ describe("Token Wallet API", () => {
     afterAll(async () => {
       // Cleanup recipient transactions and wallet
       if (recipientId) {
-        const recipientWallet = await prisma.tokenWallet.findUnique({
+        const recipientWallet = await prisma.token_wallets.findUnique({
           where: { userId: recipientId },
         });
         if (recipientWallet) {
-          await prisma.tokenTransaction.deleteMany({
+          await prisma.token_transactions.deleteMany({
             where: { walletId: recipientWallet.id },
           });
-          await prisma.tokenWallet.delete({
+          await prisma.token_wallets.delete({
             where: { id: recipientWallet.id },
           });
         }

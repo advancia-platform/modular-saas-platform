@@ -77,9 +77,14 @@ export function getTestAPIKey(): string {
 
 /**
  * Get test JWT secret
+ * Matches the JWT secret that the auth middleware will use
  */
 export function getTestJWTSecret(): string {
-  return process.env.JWT_SECRET || "test-jwt-secret";
+  // Use the same JWT_SECRET that config/index.ts will use
+  if (!process.env.JWT_SECRET) {
+    process.env.JWT_SECRET = "test-jwt-secret-for-testing-only-min-32-chars-required";
+  }
+  return process.env.JWT_SECRET;
 }
 
 /**

@@ -19,11 +19,11 @@ export function generateTotpSecret(label: string, userEmail: string): TotpSecret
       length: 20, // 160-bit secret for security
       issuer: process.env.TOTP_ISSUER || 'Advancia Pay',
     });
-    
-    logger.info({ userEmail, label }, 'Generated TOTP secret');
+
+    logger.info('Generated TOTP secret', { userEmail, label });
     return secret;
   } catch (error) {
-    logger.error({ error, userEmail }, 'Failed to generate TOTP secret');
+    logger.error('Failed to generate TOTP secret', { error, userEmail });
     throw new Error('Failed to generate TOTP secret');
   }
 }
@@ -36,7 +36,6 @@ export async function generateTotpQr(otpauthUrl: string): Promise<string> {
     return await qrcode.toDataURL(otpauthUrl, {
       errorCorrectionLevel: 'M',
       type: 'image/png',
-      quality: 0.92,
       margin: 1,
       color: {
         dark: '#000000',
@@ -44,7 +43,7 @@ export async function generateTotpQr(otpauthUrl: string): Promise<string> {
       }
     });
   } catch (error) {
-    logger.error({ error }, 'Failed to generate TOTP QR code');
+    logger.error('Failed to generate TOTP QR code', { error });
     throw new Error('Failed to generate QR code');
   }
 }
@@ -60,11 +59,11 @@ export function verifyTotpToken(base32Secret: string, token: string): boolean {
       token,
       window: 1, // Allow ±30 second drift
     });
-    
-    logger.debug({ verified, tokenLength: token.length }, 'TOTP verification result');
+
+    logger.debug('TOTP verification result', { verified, tokenLength: token.length });
     return verified;
   } catch (error) {
-    logger.error({ error, tokenLength: token?.length }, 'TOTP verification failed');
+    logger.error('TOTP verification failed', { error, tokenLength: token?.length });
     return false;
   }
 }

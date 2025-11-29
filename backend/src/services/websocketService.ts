@@ -37,22 +37,22 @@ export class WebSocketService {
         socket.role = decoded.role;
 
         logger.info(
+          "Socket authenticated",
           {
             userId: socket.userId,
             socketId: socket.id,
             role: socket.role,
           },
-          "Socket authenticated",
         );
 
         next();
       } catch (error) {
         logger.warn(
+          "Socket authentication failed",
           {
             socketId: socket.id,
             error: error.message,
           },
-          "Socket authentication failed",
         );
 
         next(new Error("Authentication failed"));
@@ -81,12 +81,12 @@ export class WebSocketService {
       }
 
       logger.info(
+        "User connected via WebSocket",
         {
           userId: socket.userId,
           socketId: socket.id,
           totalConnections: this.getConnectedSocketsCount(socket.userId),
         },
-        "User connected via WebSocket",
       );
 
       // Handle join-room event for backwards compatibility
@@ -122,13 +122,13 @@ export class WebSocketService {
         this.removeUserConnection(socket.userId!, socket.id);
 
         logger.info(
+          "User disconnected from WebSocket",
           {
             userId: socket.userId,
             socketId: socket.id,
             reason,
             remainingConnections: this.getConnectedSocketsCount(socket.userId!),
           },
-          "User disconnected from WebSocket",
         );
       });
     });
@@ -161,12 +161,12 @@ export class WebSocketService {
   public emitToUser(userId: string, event: string, data: any): void {
     this.io.to(`user:${userId}`).emit(event, data);
     logger.debug(
+      "Event emitted to user",
       {
         targetUserId: userId,
         event,
         dataKeys: Object.keys(data || {}),
       },
-      "Event emitted to user",
     );
   }
 
@@ -174,12 +174,12 @@ export class WebSocketService {
   public emitToTenant(tenantId: string, event: string, data: any): void {
     this.io.to(`tenant:${tenantId}`).emit(event, data);
     logger.debug(
+      "Event emitted to tenant",
       {
         targetTenant: tenantId,
         event,
         dataKeys: Object.keys(data || {}),
       },
-      "Event emitted to tenant",
     );
   }
 
@@ -187,12 +187,12 @@ export class WebSocketService {
   public emitToRole(role: string, event: string, data: any): void {
     this.io.to(`role:${role}`).emit(event, data);
     logger.debug(
+      "Event emitted to role",
       {
         targetRole: role,
         event,
         dataKeys: Object.keys(data || {}),
       },
-      "Event emitted to role",
     );
   }
 
@@ -200,11 +200,11 @@ export class WebSocketService {
   public broadcast(event: string, data: any): void {
     this.io.emit(event, data);
     logger.debug(
+      "Event broadcasted to all users",
       {
         event,
         dataKeys: Object.keys(data || {}),
       },
-      "Event broadcasted to all users",
     );
   }
 

@@ -17,13 +17,13 @@ router.get('/preferences', asyncHandler(async (req: AuthRequest, res) => {
   }
 
   try {
-    let preferences = await prisma.notificationPreferences.findUnique({
+    let preferences = await prisma.notification_preferences.findUnique({
       where: { userId }
     });
 
     // Create default preferences if they don't exist
     if (!preferences) {
-      preferences = await prisma.notificationPreferences.create({
+      preferences = await prisma.notification_preferences.create({
         data: {
           userId,
           emailEnabled: true,
@@ -84,7 +84,7 @@ router.put('/preferences', asyncHandler(async (req: AuthRequest, res) => {
         return obj;
       }, {});
 
-    const preferences = await prisma.notificationPreferences.upsert({
+    const preferences = await prisma.notification_preferences.upsert({
       where: { userId },
       update: filteredUpdates,
       create: {

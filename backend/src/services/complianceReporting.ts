@@ -2,7 +2,7 @@ import { PrismaClient } from '@prisma/client';
 import { Parser } from 'json2csv';
 import PDFDocument from 'pdfkit';
 import { logger } from '../logger';
-import { sendEmail } from './notificationService';
+import { sendEmail } from './emailService';
 
 const prisma = new PrismaClient();
 
@@ -421,13 +421,17 @@ Advancia Pay System
     }
 
     for (const recipient of recipients) {
-      await sendEmail(
+      const result = await sendEmail(
         recipient,
         subject,
-        message,
-        undefined, // template
-        attachments
+        message
       );
+      if (!result.success) {
+        logger.error('Failed to send compliance report email', {
+          recipient,
+          error: result.error,
+        });
+      }
     }
 
     logger.info('Compliance report sent successfully', {
@@ -452,7 +456,7 @@ export async function getComplianceReportRecipients(): Promise<string[]> {
     // Get all super admins for compliance reports
     const superAdmins = await prisma.user.findMany({
       where: {
-        role: 'SUPER_ADMIN',
+        role: 'SUPERADMIN',
         // Add any additional filters like active status
       },
       select: {

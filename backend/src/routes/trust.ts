@@ -3,11 +3,15 @@
  * Per Advancia Pay: Rate limiting, authentication, audit logging
  */
 
-import { Router } from "express";
+import { Router, Request, Response } from "express";
 import { allowRoles, authenticateToken } from "../middleware/auth";
 import { rateLimiter } from "../middleware/rateLimiterRedis";
 import { validateInput } from "../middleware/security";
 import { scamAdviserService } from "../services/scamAdviserService";
+import { calculateTrustScore, getUserReputation } from "../services/trustScoreService";
+import { serializeDecimalFields } from "../utils/decimal";
+import { logger } from "../logger";
+import prisma from "../prismaClient";
 
 console.log(
   "[trust] middleware types:",
@@ -226,7 +230,7 @@ router.post(
 router.get(
   "/score",
   safeAuth,
-  rateLimiter(10, 60),
+  rateLimiter({ windowMs: 10 * 1000, max: 60, group: "trust-score" }),
   async (req: Request, res: Response) => {
     try {
       const userId = (req as any).user.userId;
@@ -251,7 +255,7 @@ router.get(
 router.get(
   "/reputation",
   safeAuth,
-  rateLimiter(10, 60),
+  rateLimiter({ windowMs: 10 * 1000, max: 60, group: "trust-reputation" }),
   async (req: Request, res: Response) => {
     try {
       const userId = (req as any).user.userId;
@@ -259,9 +263,7 @@ router.get(
       const reputation = await getUserReputation(userId);
 
       // Serialize Decimal fields per Advancia Pay patterns
-      const serialized = serializeDecimalFields(reputation, [
-        "averageTransactionAmount",
-      ]);
+      const serialized = serializeDecimalFields(reputation);
 
       res.json({
         success: true,
@@ -281,7 +283,7 @@ router.get(
 router.get(
   "/user/:userId",
   safeAuth,
-  rateLimiter(20, 60),
+  rateLimiter({ windowMs: 20 * 1000, max: 60, group: "trust-user" }),
   async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;
@@ -312,7 +314,7 @@ router.get(
 router.post(
   "/review",
   safeAuth,
-  rateLimiter(5, 3600),
+  rateLimiter({ windowMs: 3600 * 1000, max: 5, group: "trust-review" }),
   async (req: Request, res: Response) => {
     try {
       const reviewerId = (req as any).user.userId;
@@ -388,7 +390,7 @@ router.post(
 router.get(
   "/reviews/:userId",
   safeAuth,
-  rateLimiter(20, 60),
+  rateLimiter({ windowMs: 20 * 1000, max: 60, group: "trust-reviews" }),
   async (req: Request, res: Response) => {
     try {
       const { userId } = req.params;

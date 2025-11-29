@@ -11,7 +11,7 @@ const router = Router();
 /**
  * Refresh endpoint — exchanges a valid refresh token for new tokens
  */
-router.post("/refresh", (req, res) => {
+router.post("/refresh", async (req, res) => {
   const { refreshToken } = req.body;
 
   if (!refreshToken) {
@@ -23,7 +23,7 @@ router.post("/refresh", (req, res) => {
   }
 
   try {
-    const session = refreshSession(refreshToken);
+    const session = await refreshSession(refreshToken);
 
     if (!session) {
       logger.warn("Token refresh failed: invalid or expired refresh token", {
@@ -78,16 +78,12 @@ router.post("/signin", async (req, res) => {
       const role = "ADMIN";
       const sessionId = require("crypto").randomBytes(16).toString("hex");
 
-      const accessToken = generateAccessToken(
-        parseInt(userId),
+      const accessToken = generateAccessToken({
+        userId: parseInt(userId),
         role,
         sessionId,
-      );
-      const refreshToken = generateRefreshToken(
-        parseInt(userId),
-        role,
-        sessionId,
-      );
+      });
+      const refreshToken = generateRefreshToken(userId, sessionId);
 
       logger.info("Signin successful", {
         userId,

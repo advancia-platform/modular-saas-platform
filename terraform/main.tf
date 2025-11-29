@@ -77,7 +77,7 @@ resource "vercel_project" "frontend" {
   name      = var.project_name
   framework = "nextjs"
 
-  git_repository {
+  git_repository = {
     type              = "github"
     repo              = var.github_repo
     production_branch = "main"
@@ -136,7 +136,55 @@ resource "cloudflare_record" "backend" {
   ttl     = 1
 }
 
-# Cloudflare WAF Rules
+# Cloudflare Email Routing Configuration
+resource "cloudflare_email_routing_settings" "email_routing" {
+  zone_id = data.cloudflare_zone.main.id
+  enabled = true
+}
+
+# MX Records for Cloudflare Email Routing
+resource "cloudflare_record" "mx_1" {
+  zone_id  = data.cloudflare_zone.main.id
+  name     = var.frontend_subdomain
+  content  = "mx1.email.cloudflare.net"
+  type     = "MX"
+  priority = 10
+  ttl      = 300
+}
+
+resource "cloudflare_record" "mx_2" {
+  zone_id  = data.cloudflare_zone.main.id
+  name     = var.frontend_subdomain
+  content  = "mx2.email.cloudflare.net"
+  type     = "MX"
+  priority = 20
+  ttl      = 300
+}
+
+# TXT Record for SPF (Cloudflare Email Routing)
+resource "cloudflare_record" "spf" {
+  zone_id = data.cloudflare_zone.main.id
+  name    = var.frontend_subdomain
+  content = "v=spf1 include:_spf.mx.cloudflare.net ~all"
+  type    = "TXT"
+  ttl     = 300
+}
+
+# Cloudflare Email Routing Rule
+resource "cloudflare_email_routing_rule" "catch_all" {
+  zone_id = data.cloudflare_zone.main.id
+  name    = "Resend Catch-All"
+  enabled = true
+
+  matcher {
+    type = "all"
+  }
+
+  action {
+    type  = "forward"
+    value = [var.resend_domain]
+  }
+}
 resource "cloudflare_ruleset" "waf_custom_rules" {
   zone_id = data.cloudflare_zone.main.id
   name    = "WAF Custom Rules - ${var.project_name}"

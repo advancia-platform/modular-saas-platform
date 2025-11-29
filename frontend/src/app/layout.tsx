@@ -8,6 +8,8 @@ import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import SilentModeProvider from '@/components/SilentModeProvider';
 import SplashScreen from '@/components/SplashScreen';
 import SystemFeedbackBanner from '@/components/SystemFeedbackBanner';
+import TrustpilotInvitation from '@/components/TrustpilotInvitation';
+import { AuthProvider as RBACAuthProvider } from '@/context/AuthContext';
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 // import dynamic from "next/dynamic";
@@ -51,14 +53,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ErrorBoundary>
           <ScrollToTop />
           <AuthProvider>
-            <SilentModeProvider />
-            <SystemFeedbackBanner />
-            <LiveSupportScript />
-            <ServiceWorkerRegistration />
-            {children}
-            <ChatbotWidget />
-            {/* Advancia AI chat widget - temporarily disabled for build testing */}
-            {/* <AdvanciaAIWidget /> */}
+            <RBACAuthProvider>
+              <SilentModeProvider />
+              <SystemFeedbackBanner />
+              <LiveSupportScript />
+              <TrustpilotInvitation />
+              <ServiceWorkerRegistration />
+              {children}
+              <ChatbotWidget />
+              {/* Advancia AI chat widget - temporarily disabled for build testing */}
+              {/* <AdvanciaAIWidget /> */}
+            </RBACAuthProvider>
           </AuthProvider>
         </ErrorBoundary>
       </body>

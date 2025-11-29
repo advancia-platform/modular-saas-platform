@@ -3,14 +3,32 @@
  * Converts Prisma types (Decimal, Date) to JSON-safe formats
  */
 
-import { Prisma } from "@prisma/client";
-type Decimal = Prisma.Decimal;
+// Safe Prisma import - may not be available if client not generated
+let Prisma: any;
+try {
+  Prisma = require("@prisma/client").Prisma;
+} catch {
+  Prisma = { Decimal: class {} };
+}
+type Decimal = typeof Prisma.Decimal;
+
+/**
+ * Check if value is a Decimal-like object (has toNumber method)
+ */
+function isDecimalLike(value: unknown): value is { toNumber(): number } {
+  return (
+    value !== null &&
+    typeof value === "object" &&
+    "toNumber" in value &&
+    typeof (value as any).toNumber === "function"
+  );
+}
 
 /**
  * Convert Decimal to number
  */
 export function serializeDecimal(value: any): number {
-  if (value instanceof Prisma.Decimal) {
+  if (isDecimalLike(value)) {
     return value.toNumber();
   }
   if (typeof value === "string") {
@@ -44,7 +62,7 @@ export function serializePrismaObject(obj: any): any {
 
   const serialized: any = {};
   for (const [key, value] of Object.entries(obj)) {
-    if (value instanceof Prisma.Decimal) {
+    if (isDecimalLike(value)) {
       serialized[key] = value.toNumber();
     } else if (value instanceof Date) {
       serialized[key] = value.toISOString();

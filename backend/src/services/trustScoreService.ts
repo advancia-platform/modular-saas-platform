@@ -27,7 +27,7 @@ export interface UserReputation {
   totalTransactions: number;
   successfulTransactions: number;
   failedTransactions: number;
-  averageTransactionAmount: Decimal;
+  averageTransactionAmount: Prisma.Decimal;
   accountAgeInDays: number;
   verificationStatus: {
     email: boolean;
@@ -48,10 +48,6 @@ export async function calculateTrustScore(userId: string): Promise<TrustScore> {
     const user = await prisma.user.findUnique({
       where: { id: userId },
       include: {
-        transactions: {
-          orderBy: { createdAt: "desc" },
-          take: 100,
-        },
         auditLogs: {
           orderBy: { timestamp: "desc" },
           take: 50,
@@ -63,15 +59,22 @@ export async function calculateTrustScore(userId: string): Promise<TrustScore> {
       throw new Error("User not found");
     }
 
+    // Get recent transactions separately
+    const transactions = await prisma.transactions.findMany({
+      where: { userId },
+      orderBy: { createdAt: "desc" },
+      take: 100,
+    });
+
     // 1. Transaction History Score (0-25 points)
-    const transactionScore = calculateTransactionScore(user.transactions);
+    const transactionScore = calculateTransactionScore(transactions);
 
     // 2. Account Age Score (0-25 points)
     const accountAgeScore = calculateAccountAgeScore(user.createdAt);
 
     // 3. Verification Level Score (0-25 points)
     const verificationScore = calculateVerificationScore({
-      email: user.isEmailVerified,
+      email: user.emailVerified,
       phone: user.phoneNumber !== null,
       kyc: user.kycVerified || false,
       twoFactor: user.totpSecret !== null,
@@ -199,13 +202,6 @@ async function detectFraudIndicators(userId: string): Promise<string[]> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
     include: {
-      transactions: {
-        where: {
-          createdAt: {
-            gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
-          },
-        },
-      },
       auditLogs: {
         where: {
           action: { in: ["LOGIN_FAILED", "WITHDRAWAL_FAILED"] },
@@ -217,6 +213,16 @@ async function detectFraudIndicators(userId: string): Promise<string[]> {
 
   if (!user) return indicators;
 
+  // Get recent transactions separately
+  const recentTransactions = await prisma.transactions.findMany({
+    where: {
+      userId,
+      createdAt: {
+        gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // Last 7 days
+      },
+    },
+  });
+
   // 1. Multiple failed logins
   const failedLogins = user.auditLogs.filter((log) =>
     log.action.includes("LOGIN_FAILED"),
@@ -226,7 +232,6 @@ async function detectFraudIndicators(userId: string): Promise<string[]> {
   }
 
   // 2. High failure rate in recent transactions
-  const recentTransactions = user.transactions;
   const failedRecent = recentTransactions.filter((t) => t.status === "FAILED");
   if (
     recentTransactions.length > 0 &&
@@ -241,7 +246,7 @@ async function detectFraudIndicators(userId: string): Promise<string[]> {
   }
 
   // 4. Unverified email
-  if (!user.isEmailVerified) {
+  if (!user.emailVerified) {
     indicators.push("Email not verified");
   }
 
@@ -261,26 +266,27 @@ export async function getUserReputation(
 ): Promise<UserReputation> {
   const user = await prisma.user.findUnique({
     where: { id: userId },
-    include: {
-      transactions: true,
-    },
   });
 
   if (!user) {
     throw new Error("User not found");
   }
 
+  const transactions = await prisma.transactions.findMany({
+    where: { userId },
+  });
+
   const trustScore = await calculateTrustScore(userId);
 
-  const totalTransactions = user.transactions.length;
-  const successfulTransactions = user.transactions.filter(
+  const totalTransactions = transactions.length;
+  const successfulTransactions = transactions.filter(
     (t) => t.status === "COMPLETED" || t.status === "SUCCESS",
   ).length;
-  const failedTransactions = user.transactions.filter(
+  const failedTransactions = transactions.filter(
     (t) => t.status === "FAILED",
   ).length;
 
-  const totalAmount = user.transactions.reduce(
+  const totalAmount = transactions.reduce(
     (sum, t) => sum.add(t.amount),
     new Decimal(0),
   );
@@ -308,7 +314,7 @@ export async function getUserReputation(
     averageTransactionAmount,
     accountAgeInDays,
     verificationStatus: {
-      email: user.isEmailVerified,
+      email: user.emailVerified,
       phone: user.phoneNumber !== null,
       kyc: user.kycVerified || false,
       twoFactor: user.totpSecret !== null,

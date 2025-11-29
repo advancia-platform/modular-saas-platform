@@ -578,3 +578,20 @@ export class SessionManager {
 
 // Export singleton instance
 export const sessionManager = new SessionManager();
+
+// Export convenience functions
+export async function refreshSession(refreshToken: string, req?: Request) {
+  return sessionManager.refreshTokens(refreshToken, req);
+}
+
+export async function verifyAccessToken(token: string) {
+  return sessionManager.verifyAccessToken(token);
+}
+
+export function generateAccessToken(payload: any) {
+  return (sessionManager as any).generateAccessToken(payload);
+}
+
+export function generateRefreshToken(userId: string, sessionId: string) {
+  return (sessionManager as any).generateRefreshToken(userId, sessionId);
+}

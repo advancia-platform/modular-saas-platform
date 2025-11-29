@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { logger } from "../logger";
 
 export interface ErrorResponse {
@@ -99,26 +99,23 @@ export function errorHandler(
   error: Error | AppError,
   req: Request,
   res: Response,
-  next: Function,
+  next: NextFunction,
 ): void {
   const requestId =
     (req.headers["x-request-id"] as string) || generateRequestId();
 
   // Log error
-  logger.error(
-    {
-      error: error.message,
-      stack: error.stack,
-      requestId,
-      url: req.url,
-      method: req.method,
-      ip: req.ip,
-      userAgent: req.get("User-Agent"),
-      userId: (req as any).user?.userId,
-      statusCode: error instanceof AppError ? error.statusCode : 500,
-    },
-    "Request error",
-  );
+  logger.error("Request error", {
+    error: error.message,
+    stack: error.stack,
+    requestId,
+    url: req.url,
+    method: req.method,
+    ip: req.ip,
+    userAgent: req.get("User-Agent"),
+    userId: (req as any).user?.userId,
+    statusCode: error instanceof AppError ? error.statusCode : 500,
+  });
 
   // Handle known application errors
   if (error instanceof AppError) {
@@ -130,7 +127,7 @@ export function errorHandler(
       requestId,
     };
 
-    return res.status(error.statusCode).json(response);
+    res.status(error.statusCode).json(response);
   }
 
   // Handle Prisma errors
@@ -161,7 +158,7 @@ export function errorHandler(
       requestId,
     };
 
-    return res.status(statusCode).json(response);
+    res.status(statusCode).json(response);
   }
 
   // Handle validation errors (e.g., from express-validator)
@@ -174,7 +171,7 @@ export function errorHandler(
       requestId,
     };
 
-    return res.status(400).json(response);
+    res.status(400).json(response);
   }
 
   // Handle JWT errors
@@ -189,7 +186,7 @@ export function errorHandler(
       requestId,
     };
 
-    return res.status(401).json(response);
+    res.status(401).json(response);
   }
 
   // Handle multer errors (file upload)
@@ -217,7 +214,7 @@ export function errorHandler(
       requestId,
     };
 
-    return res.status(400).json(response);
+    res.status(400).json(response);
   }
 
   // Handle unknown errors
@@ -244,9 +241,9 @@ function generateRequestId(): string {
 
 // Async error wrapper
 export function asyncHandler<T extends Request, U extends Response>(
-  fn: (req: T, res: U, next: Function) => Promise<any>,
+  fn: (req: T, res: U, next: NextFunction) => Promise<any>,
 ) {
-  return (req: T, res: U, next: Function) => {
+  return (req: T, res: U, next: NextFunction) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 }

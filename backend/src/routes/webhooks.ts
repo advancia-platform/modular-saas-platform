@@ -343,27 +343,21 @@ router.post("/nowpayments", async (req: Request, res: Response) => {
         .digest("hex");
 
       if (signature !== expectedSignature) {
-        logger.warn(
-          {
-            expectedSignature,
-            receivedSignature: signature,
-          },
-          "NOWPayments webhook signature verification failed",
-        );
+        logger.warn("NOWPayments webhook signature verification failed", {
+          expectedSignature,
+          receivedSignature: signature,
+        });
         return res.status(401).json({ error: "Invalid signature" });
       }
     }
 
     const webhookData = req.body;
-    logger.info(
-      {
-        payoutId: webhookData.payout_id,
-        status: webhookData.status,
-        currency: webhookData.currency,
-        amount: webhookData.amount,
-      },
-      "Received NOWPayments webhook",
-    );
+    logger.info("Received NOWPayments webhook", {
+      payoutId: webhookData.payout_id,
+      status: webhookData.status,
+      currency: webhookData.currency,
+      amount: webhookData.amount,
+    });
 
     // Import here to avoid circular dependencies
     const { handleNOWPaymentsWebhook } = await import(
@@ -374,35 +368,26 @@ router.post("/nowpayments", async (req: Request, res: Response) => {
     const result = await handleNOWPaymentsWebhook(webhookData);
 
     if (result.success) {
-      logger.info(
-        {
-          payoutId: webhookData.payout_id,
-          status: webhookData.status,
-        },
-        "NOWPayments webhook processed successfully",
-      );
+      logger.info("NOWPayments webhook processed successfully", {
+        payoutId: webhookData.payout_id,
+        status: webhookData.status,
+      });
 
       res.status(200).json({ success: true, message: result.message });
     } else {
-      logger.error(
-        {
-          payoutId: webhookData.payout_id,
-          error: result.message,
-        },
-        "NOWPayments webhook processing failed",
-      );
+      logger.error("NOWPayments webhook processing failed", {
+        payoutId: webhookData.payout_id,
+        error: result.message,
+      });
 
       res.status(400).json({ success: false, error: result.message });
     }
   } catch (error: any) {
-    logger.error(
-      {
-        error: error.message,
-        stack: error.stack,
-        body: req.body,
-      },
-      "NOWPayments webhook error",
-    );
+    logger.error("NOWPayments webhook error", {
+      error: error.message,
+      stack: error.stack,
+      body: req.body,
+    });
 
     res.status(500).json({
       success: false,

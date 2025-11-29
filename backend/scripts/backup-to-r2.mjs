@@ -1,11 +1,15 @@
+import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import "dotenv/config";
 import fs from "fs";
 import path from "path";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 
 const REGION = "auto";
-const { R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET } =
-  process.env;
+const {
+  CLOUDFLARE_R2_ACCOUNT_ID,
+  CLOUDFLARE_R2_ACCESS_KEY_ID,
+  CLOUDFLARE_R2_SECRET_ACCESS_KEY,
+  CLOUDFLARE_R2_BUCKET_NAME,
+} = process.env;
 
 function fail(msg) {
   console.error(`❌ ${msg}`);
@@ -17,25 +21,25 @@ async function main() {
   const filePath = path.resolve(process.cwd(), fileArg);
 
   if (
-    !R2_ACCOUNT_ID ||
-    !R2_ACCESS_KEY_ID ||
-    !R2_SECRET_ACCESS_KEY ||
-    !R2_BUCKET
+    !CLOUDFLARE_R2_ACCOUNT_ID ||
+    !CLOUDFLARE_R2_ACCESS_KEY_ID ||
+    !CLOUDFLARE_R2_SECRET_ACCESS_KEY ||
+    !CLOUDFLARE_R2_BUCKET_NAME
   ) {
     fail(
-      "Missing R2 env vars: R2_ACCOUNT_ID, R2_ACCESS_KEY_ID, R2_SECRET_ACCESS_KEY, R2_BUCKET",
+      "Missing R2 env vars: CLOUDFLARE_R2_ACCOUNT_ID, CLOUDFLARE_R2_ACCESS_KEY_ID, CLOUDFLARE_R2_SECRET_ACCESS_KEY, CLOUDFLARE_R2_BUCKET_NAME",
     );
   }
   if (!fs.existsSync(filePath)) fail(`File not found: ${filePath}`);
 
-  const endpoint = `https://${R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
+  const endpoint = `https://${CLOUDFLARE_R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;
   const client = new S3Client({
     region: REGION,
     endpoint,
     forcePathStyle: false,
     credentials: {
-      accessKeyId: R2_ACCESS_KEY_ID,
-      secretAccessKey: R2_SECRET_ACCESS_KEY,
+      accessKeyId: CLOUDFLARE_R2_ACCESS_KEY_ID,
+      secretAccessKey: CLOUDFLARE_R2_SECRET_ACCESS_KEY,
     },
   });
 
@@ -48,13 +52,15 @@ async function main() {
 
   await client.send(
     new PutObjectCommand({
-      Bucket: R2_BUCKET,
+      Bucket: CLOUDFLARE_R2_BUCKET_NAME,
       Key: key,
       Body: data,
       ContentType: contentType,
     }),
   );
-  console.log(`✅ Uploaded ${base} to r2://${R2_BUCKET}/${key}`);
+  console.log(
+    `✅ Uploaded ${base} to r2://${CLOUDFLARE_R2_BUCKET_NAME}/${key}`,
+  );
 }
 
 main().catch((e) => fail(e.message));

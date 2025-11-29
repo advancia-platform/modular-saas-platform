@@ -1,12 +1,12 @@
-const WAValidator = require('wallet-address-validator');
+const { validate } = require('crypto-address-validator');
 
 /**
- * Validate cryptocurrency wallet addresses using wallet-address-validator
+ * Validate cryptocurrency wallet addresses using crypto-address-validator
  */
 
 export function validateBTCAddress(address: string): boolean {
   try {
-    return WAValidator.validate(address, 'BTC');
+    return validate('BTC', address);
   } catch (error) {
     return false;
   }
@@ -14,7 +14,7 @@ export function validateBTCAddress(address: string): boolean {
 
 export function validateETHAddress(address: string): boolean {
   try {
-    return WAValidator.validate(address, 'ETH');
+    return validate('ETH', address);
   } catch (error) {
     return false;
   }
@@ -27,7 +27,7 @@ export function validateUSDTAddress(address: string): boolean {
 
 export function validateLTCAddress(address: string): boolean {
   try {
-    return WAValidator.validate(address, 'LTC');
+    return validate('LTC', address);
   } catch (error) {
     return false;
   }

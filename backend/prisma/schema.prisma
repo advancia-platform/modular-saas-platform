@@ -1188,7 +1188,7 @@ model trustpilot_reviews {
   helpful      Int          @default(0)
   notHelpful   Int          @default(0)
   response     String?
-  responseDate  DateTime?
+  responseDate DateTime?
   tags         String[]     @default([])
   source       String       @default("trustpilot")
   status       ReviewStatus @default(PENDING)
@@ -1198,16 +1198,16 @@ model trustpilot_reviews {
 }
 
 model UserReview {
-  id            String        @id @default(cuid())
+  id            String   @id @default(cuid())
   reviewerId    String
   revieweeId    String
   rating        Int
-  comment       String?       @db.Text
+  comment       String?  @db.Text
   category      String
   transactionId String?
-  helpful       Int           @default(0)
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
+  helpful       Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   reviewer    User          @relation("ReviewsGiven", fields: [reviewerId], references: [id], onDelete: Cascade)
   reviewee    User          @relation("ReviewsReceived", fields: [revieweeId], references: [id], onDelete: Cascade)
@@ -1956,4 +1956,47 @@ enum SubscriptionStatus {
   ACTIVE
   CANCELED
   PAST_DUE
+}
+
+// Admin approval workflow for high-value operations
+model AdminApprovalRequest {
+  id           String   @id @default(cuid())
+  requesterId  String   // Admin who submitted the request
+  type         String   // PROMOTIONAL_CREDIT, REFUND, COMPENSATION, BONUS
+  targetUserId String   // User who would receive the credit
+  amount       Decimal  @db.Decimal(20, 8)
+  reason       String
+  metadata     String?  // JSON stringified additional data
+  status       String   @default("PENDING") // PENDING, APPROVED, REJECTED
+  approverId   String?  // Admin who approved/rejected
+  approvedAt   DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([requesterId])
+  @@index([targetUserId])
+  @@index([status])
+  @@index([type])
+  @@index([createdAt])
+  @@map("admin_approval_requests")
+}
+
+// Admin credit issuance records for audit trail
+model AdminCreditHistory {
+  id           String   @id @default(cuid())
+  adminId      String   // Admin who issued the credit
+  userId       String   // User who received the credit
+  type         String   // PROMOTIONAL_CREDIT, REFUND, COMPENSATION, BONUS
+  amount       Decimal  @db.Decimal(20, 8)
+  reason       String
+  approvalId   String?  // Reference to approval request if required
+  balanceBefore Decimal @db.Decimal(20, 8)
+  balanceAfter  Decimal @db.Decimal(20, 8)
+  createdAt    DateTime @default(now())
+
+  @@index([adminId])
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+  @@map("admin_credit_history")
 }

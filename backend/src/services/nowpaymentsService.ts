@@ -56,13 +56,13 @@ export async function createPayout(
     };
 
     logger.info(
+      "Creating NOWPayments payout",
       {
         amount,
         currency,
         address: address.substring(0, 10) + "...", // Mask address for security
         sandbox: IS_SANDBOX,
       },
-      "Creating NOWPayments payout",
     );
 
     const response = await axios.post(`${baseUrl}/payout`, payload, {
@@ -115,12 +115,12 @@ export async function getPayoutStatus(
     return response.data;
   } catch (error: any) {
     logger.error(
+      "Failed to get NOWPayments payout status",
       {
         error: error.message,
         payoutId,
         response: error.response?.data,
       },
-      "Failed to get NOWPayments payout status",
     );
 
     throw new Error("Failed to get payout status");
@@ -137,18 +137,18 @@ export async function handleNOWPaymentsWebhook(
     const { payout_id, status, currency, amount, hash, network_fee } = data;
 
     if (!payout_id) {
-      logger.warn({ data }, "NOWPayments webhook missing payout_id");
+      logger.warn("NOWPayments webhook missing payout_id", { data });
       return { success: false, message: "Missing payout_id" };
     }
 
     logger.info(
+      "Processing NOWPayments webhook",
       {
         payoutId: payout_id,
         status,
         currency,
         amount,
       },
-      "Processing NOWPayments webhook",
     );
 
     // Find the withdrawal record by txId (which stores the NOWPayments payout_id)
@@ -159,8 +159,8 @@ export async function handleNOWPaymentsWebhook(
 
     if (!withdrawal) {
       logger.warn(
-        { payoutId: payout_id },
         "No withdrawal found for NOWPayments payout",
+        { payoutId: payout_id },
       );
       return { success: false, message: "Withdrawal not found" };
     }
@@ -184,7 +184,7 @@ export async function handleNOWPaymentsWebhook(
         withdrawalStatus = "failed";
         break;
       default:
-        logger.warn({ status }, "Unknown NOWPayments payout status");
+        logger.warn("Unknown NOWPayments payout status", { status });
         break;
     }
 
@@ -203,6 +203,7 @@ export async function handleNOWPaymentsWebhook(
     });
 
     logger.info(
+      "Withdrawal status updated from NOWPayments webhook",
       {
         withdrawalId: withdrawal.id,
         userId: withdrawal.userId,
@@ -210,7 +211,6 @@ export async function handleNOWPaymentsWebhook(
         newStatus: withdrawalStatus,
         txHash: hash,
       },
-      "Withdrawal status updated from NOWPayments webhook",
     );
 
     // TODO: Emit socket event for real-time updates
@@ -219,12 +219,12 @@ export async function handleNOWPaymentsWebhook(
     return { success: true, message: "Webhook processed successfully" };
   } catch (error: any) {
     logger.error(
+      "Failed to process NOWPayments webhook",
       {
         error: error.message,
         stack: error.stack,
         webhookData: data,
       },
-      "Failed to process NOWPayments webhook",
     );
 
     return { success: false, message: "Internal server error" };
@@ -252,11 +252,11 @@ export async function getAvailableCurrencies(): Promise<string[]> {
     return response.data.currencies || [];
   } catch (error: any) {
     logger.error(
+      "Failed to get NOWPayments currencies",
       {
         error: error.message,
         response: error.response?.data,
       },
-      "Failed to get NOWPayments currencies",
     );
 
     // Return fallback currencies if API fails

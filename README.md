@@ -77,7 +77,29 @@ cd backend && npm install && npm run dev
 cd frontend && npm install && npm run dev
 ```
 
-### 3. Access Applications
+### 3. No-Config Debugging ⚡
+
+**Just press F5!** Our smart debugger auto-detects what you want to debug:
+
+```bash
+# Auto-detect debugging (recommended)
+npm run debug
+
+# Or specific targets
+npm run debug:backend    # Debug Express server
+npm run debug:frontend   # Debug Next.js app
+npm run debug:test       # Debug Jest tests
+```
+
+**VS Code Integration:**
+
+- Press **F5** → Select "🚀 Smart Debug (Auto-Detect)"
+- Automatically detects test files, frontend components, or backend services
+- Zero configuration needed!
+
+📖 [Complete Debugging Guide](./NO_CONFIG_DEBUGGING.md)
+
+### 4. Access Applications
 
 - 🌐 Frontend: <http://localhost:3000>
 - 🔧 Backend API: <http://localhost:4000>

@@ -134,12 +134,12 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-50 bg-white border-b shadow-sm">
         <div className="flex items-center justify-between p-4">
-          <h1 className="text-xl font-bold">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+          <Link href="/" className="flex items-center gap-2">
+            <img src="/logo-icon.svg" alt="Advancia" className="w-8 h-8" />
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Advancia
             </span>
-            <span className="text-purple-400">Pay</span>
-          </h1>
+          </Link>
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
             className="p-2.5 rounded-xl hover:bg-gray-100 active:scale-95 transition-all touch-manipulation"
@@ -169,12 +169,15 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
               className="lg:hidden fixed top-0 left-0 bottom-0 w-80 max-w-[85vw] bg-white z-50 shadow-2xl flex flex-col"
             >
               <div className="p-6 border-b">
-                <h1 className="text-2xl font-bold">
-                  <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-                    Advancia
-                  </span>
-                  <span className="text-purple-400">Pay</span> Ledger
-                </h1>
+                <Link href="/" className="flex items-center gap-3">
+                  <img src="/logo-icon.svg" alt="Advancia" className="w-10 h-10" />
+                  <div>
+                    <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Advancia
+                    </span>
+                    <span className="text-sm text-gray-500 block">Pay Ledger</span>
+                  </div>
+                </Link>
               </div>
 
               <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
@@ -241,12 +244,15 @@ export default function SidebarLayout({ children }: { children: React.ReactNode 
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex w-72 bg-white border-r flex-col shadow-xl">
         <div className="p-6 border-b bg-gradient-to-br from-white to-blue-50">
-          <h1 className="text-2xl font-bold">
-            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Advancia
-            </span>
-            <span className="text-purple-400">Pay</span> Ledger
-          </h1>
+          <Link href="/" className="flex items-center gap-3">
+            <img src="/logo-icon.svg" alt="Advancia" className="w-10 h-10" />
+            <div>
+              <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Advancia
+              </span>
+              <span className="text-sm text-gray-500 block">Pay Ledger</span>
+            </div>
+          </Link>
         </div>
 
         <nav className="flex-1 p-4 space-y-2 overflow-y-auto">

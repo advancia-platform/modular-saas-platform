@@ -1,0 +1,22 @@
+# Cloudflare Email Worker Configuration
+# Handles inbound emails for privacy@ and legal@advanciapayledger.com
+
+name = "advancia-email-worker"
+main = "src/index.ts"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Account binding
+account_id = "74ecde4d46d4b399c7295cf599d2886b"
+
+# Environment variables (set via wrangler secret or dashboard)
+[vars]
+FORWARD_TO = "admin@advanciapayledger.com"
+DOMAIN = "advanciapayledger.com"
+COMPANY_NAME = "Advancia Pay Ledger"
+ENVIRONMENT = "production"
+
+# Secrets to configure (use: wrangler secret put <name>)
+# - RESEND_API_KEY: Resend API key for sending responses
+# - ADMIN_EMAIL: Primary admin email for forwarding
+# - SLACK_WEBHOOK_URL: Optional Slack notifications

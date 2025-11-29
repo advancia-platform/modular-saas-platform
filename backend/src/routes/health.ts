@@ -3,6 +3,8 @@ import logger from "../logger";
 import prisma from "../prismaClient";
 import { checkR2Connection } from "../services/r2Client";
 import { getRedis } from "../services/redisClient";
+import { checkCosmosHealth } from "../services/cosmosClient";
+import { poolMetrics } from "../config/pgPoolConfig";
 
 const router = express.Router();
 
@@ -165,6 +167,24 @@ router.get("/health/detailed", async (req: Request, res: Response) => {
       health.services.r2 = { status: "error", message: error.message };
       health.status = "degraded";
     }
+
+    // Check Azure Cosmos DB (optional - for AI/Chat features)
+    try {
+      const cosmosHealth = await checkCosmosHealth();
+      (health.services as any).cosmosDb = cosmosHealth.connected
+        ? { status: "connected", database: cosmosHealth.database, containers: cosmosHealth.containers }
+        : { status: "not_configured", message: cosmosHealth.error };
+    } catch (error: any) {
+      (health.services as any).cosmosDb = { status: "error", message: error.message };
+    }
+
+    // Add PostgreSQL pool metrics
+    (health as any).poolMetrics = {
+      queryCount: poolMetrics.queryCount,
+      slowQueryCount: poolMetrics.slowQueryCount,
+      avgQueryTimeMs: Math.round(poolMetrics.avgQueryTime),
+      errorCount: poolMetrics.errorCount,
+    };
 
     res.status(health.status === "healthy" ? 200 : 503).json(health);
   } catch (error: any) {

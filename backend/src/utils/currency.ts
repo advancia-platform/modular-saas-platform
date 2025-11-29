@@ -11,8 +11,8 @@ export interface CurrencyConfig {
   name: string;
   decimals: number;
   isCrypto: boolean;
-  minAmount: Decimal;
-  maxAmount: Decimal;
+  minAmount: Prisma.Decimal;
+  maxAmount: Prisma.Decimal;
 }
 
 export const CURRENCIES: Record<SupportedCurrency, CurrencyConfig> = {
@@ -22,8 +22,8 @@ export const CURRENCIES: Record<SupportedCurrency, CurrencyConfig> = {
     name: "US Dollar",
     decimals: 2,
     isCrypto: false,
-    minAmount: new Decimal("0.01"),
-    maxAmount: new Decimal("1000000"),
+  minAmount: new Decimal("0.01"),
+  maxAmount: new Decimal("1000000"),
   },
   EUR: {
     code: "EUR",
@@ -31,8 +31,8 @@ export const CURRENCIES: Record<SupportedCurrency, CurrencyConfig> = {
     name: "Euro",
     decimals: 2,
     isCrypto: false,
-    minAmount: new Decimal("0.01"),
-    maxAmount: new Decimal("1000000"),
+  minAmount: new Decimal("0.01"),
+  maxAmount: new Decimal("1000000"),
   },
   GBP: {
     code: "GBP",
@@ -74,7 +74,7 @@ export const CURRENCIES: Record<SupportedCurrency, CurrencyConfig> = {
 
 // Format currency amount with proper decimals and symbol
 export function formatCurrency(
-  amount: Decimal | string | number,
+  amount: Prisma.Decimal | string | number,
   currency: SupportedCurrency,
 ): string {
   const config = CURRENCIES[currency];
@@ -96,7 +96,7 @@ export function formatCurrency(
 export function parseCurrencyAmount(
   amountStr: string,
   currency: SupportedCurrency,
-): Decimal {
+): Prisma.Decimal {
   const config = CURRENCIES[currency];
   if (!config) {
     throw new Error(`Unsupported currency: ${currency}`);
@@ -128,10 +128,10 @@ export function parseCurrencyAmount(
 
 // Convert between currencies (placeholder - would need real exchange rates)
 export async function convertCurrency(
-  amount: Decimal,
+  amount: Prisma.Decimal,
   fromCurrency: SupportedCurrency,
   toCurrency: SupportedCurrency,
-): Promise<Decimal> {
+): Promise<Prisma.Decimal> {
   if (fromCurrency === toCurrency) {
     return amount;
   }
@@ -187,10 +187,10 @@ export function getCryptoCurrencies(): CurrencyConfig[] {
 
 // Calculate transaction fee
 export function calculateTransactionFee(
-  amount: Decimal,
+  amount: Prisma.Decimal,
   currency: SupportedCurrency,
   feePercentage: number = 0.025, // 2.5% default
-): Decimal {
+): Prisma.Decimal {
   const config = CURRENCIES[currency];
   if (!config) {
     throw new Error(`Unsupported currency: ${currency}`);
@@ -205,9 +205,9 @@ export function calculateTransactionFee(
 
 // Round amount to currency precision
 export function roundToCurrencyPrecision(
-  amount: Decimal,
+  amount: Prisma.Decimal,
   currency: SupportedCurrency,
-): Decimal {
+): Prisma.Decimal {
   const config = CURRENCIES[currency];
   if (!config) {
     throw new Error(`Unsupported currency: ${currency}`);
@@ -218,12 +218,12 @@ export function roundToCurrencyPrecision(
 
 // Validate amount format
 export function validateAmount(
-  amount: string | number | Decimal,
+  amount: string | number | Prisma.Decimal,
   currency: SupportedCurrency,
 ): {
   isValid: boolean;
   error?: string;
-  parsedAmount?: Decimal;
+  parsedAmount?: Prisma.Decimal;
 } {
   try {
     const config = CURRENCIES[currency];

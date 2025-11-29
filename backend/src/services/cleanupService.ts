@@ -67,7 +67,7 @@ export class CleanupService {
     // Destroy all cron tasks
     cron.getTasks().forEach((task, name) => {
       if (name === "session-cleanup" || name === "daily-cleanup") {
-        task.destroy();
+        task.stop();
       }
     });
 
@@ -85,18 +85,18 @@ export class CleanupService {
       const result = await sessionManager.cleanupExpiredSessions();
 
       logger.info(
+        "Regular cleanup completed",
         {
           sessionsDeleted: result.sessionsDeleted,
           tokensDeleted: result.tokensDeleted,
         },
-        "Regular cleanup completed",
       );
     } catch (error: any) {
       logger.error(
+        "Regular cleanup failed",
         {
           error: error.message,
         },
-        "Regular cleanup failed",
       );
     }
   }
@@ -151,6 +151,7 @@ export class CleanupService {
       await prisma.$disconnect();
 
       logger.info(
+        "Deep cleanup completed",
         {
           sessionsDeleted: sessionResult.sessionsDeleted,
           revokedTokensDeleted: sessionResult.tokensDeleted,
@@ -158,14 +159,13 @@ export class CleanupService {
           activityLogsDeleted: activityLogCleanup.count,
           expiredTokensCleared: expiredTokenCleanup.count,
         },
-        "Deep cleanup completed",
       );
     } catch (error: any) {
       logger.error(
+        "Deep cleanup failed",
         {
           error: error.message,
         },
-        "Deep cleanup failed",
       );
     }
   }
@@ -179,7 +179,7 @@ export class CleanupService {
   }> {
     logger.info("Starting manual cleanup");
     const result = await sessionManager.cleanupExpiredSessions();
-    logger.info(result, "Manual cleanup completed");
+    logger.info("Manual cleanup completed", result);
     return result;
   }
 
@@ -240,10 +240,10 @@ export class CleanupService {
       };
     } catch (error: any) {
       logger.error(
+        "Failed to get cleanup stats",
         {
           error: error.message,
         },
-        "Failed to get cleanup stats",
       );
       throw error;
     }

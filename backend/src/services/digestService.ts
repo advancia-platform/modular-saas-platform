@@ -37,7 +37,7 @@ export async function generateDigest(userId: string): Promise<void> {
     const digestStart = getDigestStartDate(prefs.digestFrequency);
 
     // Get audit events
-    const auditEvents = await prisma.user_audit_logs.findMany({
+    const auditEvents = await prisma.audit_logs.findMany({
       where: {
         userId,
         timestamp: { gte: digestStart }
@@ -81,7 +81,7 @@ export async function generateDigest(userId: string): Promise<void> {
     });
 
     // Send digest email using your existing notification service
-    const { createNotification } = await import('./notificationService');
+    const { createNotification } = await import('./notificationService.js');
 
     await createNotification({
       userId,

@@ -96,6 +96,11 @@ function getAllowedOrigins(): string[] {
       "http://localhost:3001",
       "http://127.0.0.1:3000",
       "http://127.0.0.1:3001",
+      // React Native development (iOS Simulator, Android Emulator, Expo)
+      "http://localhost:19000",
+      "http://localhost:19006",
+      "http://10.0.2.2:4000", // Android Emulator
+      "http://localhost:8081", // React Native Metro bundler
     ].forEach((o) => set.add(o));
   }
 

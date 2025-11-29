@@ -5,6 +5,7 @@ import webpush from "web-push";
 import { logger } from "../logger";
 import prisma from "../prismaClient";
 import { withDefaults } from "../utils/prismaHelpers";
+// Note: Using local sendEmail implementation for notifications
 
 // Configure VAPID (will be set from env)
 const vapidPublicKey = process.env.VAPID_PUBLIC_KEY || "";
@@ -51,7 +52,7 @@ async function logEmailToDatabase(
   template: string = "notification",
   provider: string = "gmail",
   status: string = "sent",
-  metadata?: Record<string, any>
+  metadata?: Record<string, any>,
 ): Promise<void> {
   try {
     await prisma.notificationLog.create({
@@ -86,9 +87,9 @@ async function logEmailToDatabase(
     Sentry.captureException(error, {
       tags: {
         component: "notification-service",
-        operation: "email-logging"
+        operation: "email-logging",
       },
-      extra: { userId, email, subject, provider, status }
+      extra: { userId, email, subject, provider, status },
     });
   }
 }
@@ -240,7 +241,15 @@ async function sendEmail(
     });
 
     // Log email to NotificationLog for admin auditing
-    await logEmailToDatabase(userId, user.email, subject, message, "notification", "gmail", "sent");
+    await logEmailToDatabase(
+      userId,
+      user.email,
+      subject,
+      message,
+      "notification",
+      "gmail",
+      "sent",
+    );
 
     await logDelivery(notificationId, "email", "sent");
     console.log(`✅ Email sent to ${user.email}`);
@@ -250,7 +259,16 @@ async function sendEmail(
     // Log failed email attempt
     const user = await prisma.user.findUnique({ where: { id: userId } });
     if (user?.email) {
-      await logEmailToDatabase(userId, user.email, subject, message, "notification", "gmail", "failed", { error: errorMsg });
+      await logEmailToDatabase(
+        userId,
+        user.email,
+        subject,
+        message,
+        "notification",
+        "gmail",
+        "failed",
+        { error: errorMsg },
+      );
     }
 
     await logDelivery(notificationId, "email", "failed", errorMsg);
@@ -618,7 +636,12 @@ export async function notifyAllAdmins(
 }
 
 // Withdrawal-specific notification functions
-export async function notifyWithdrawal(userId: string, amount: number, currency: string, txId: string) {
+export async function notifyWithdrawal(
+  userId: string,
+  amount: number,
+  currency: string,
+  txId: string,
+) {
   try {
     const message = `Your withdrawal of ${currency} ${amount} has been processed successfully.`;
 
@@ -633,52 +656,60 @@ export async function notifyWithdrawal(userId: string, amount: number, currency:
         amount,
         currency,
         txId,
-        actionUrl: `${process.env.FRONTEND_URL}/transactions/${txId}`
-      }
+        actionUrl: `${process.env.FRONTEND_URL}/transactions/${txId}`,
+      },
     });
 
     logger.info(`Withdrawal notification sent to user ${userId}`, {
       userId,
       amount,
       currency,
-      txId
+      txId,
     });
-
   } catch (error) {
-    logger.error('Failed to send withdrawal notification', {
+    logger.error("Failed to send withdrawal notification", {
       userId,
       amount,
       currency,
       txId,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : "Unknown error",
     });
 
     // Track error in Sentry
     Sentry.captureException(error, {
       tags: {
-        service: 'notification',
-        type: 'withdrawal'
+        service: "notification",
+        type: "withdrawal",
       },
       extra: {
         userId,
         amount,
         currency,
-        txId
-      }
+        txId,
+      },
     });
 
     throw error;
   }
 }
 
-export async function notifyComplianceIssue(userId: string, issue: string, severity: 'LOW' | 'MEDIUM' | 'HIGH' = 'MEDIUM') {
+export async function notifyComplianceIssue(
+  userId: string,
+  issue: string,
+  severity: "LOW" | "MEDIUM" | "HIGH" = "MEDIUM",
+) {
   try {
     const message = `A ${severity.toLowerCase()} priority compliance issue was detected: ${issue}. Please review immediately.`;
 
     await createNotification({
       userId,
       type: "all",
-      priority: severity === 'HIGH' ? 'urgent' : severity === 'MEDIUM' ? 'high' : 'normal',
+      priority:
+        severity === "HIGH"
+          ? "urgent"
+          : severity === "MEDIUM"
+            ? "high"
+            : "normal",
       category: "security",
       title: `Compliance Alert - ${severity} Priority`,
       message,
@@ -686,48 +717,51 @@ export async function notifyComplianceIssue(userId: string, issue: string, sever
         issue,
         severity,
         actionUrl: `${process.env.FRONTEND_URL}/compliance`,
-        requiresImmedateAction: severity === 'HIGH'
-      }
+        requiresImmedateAction: severity === "HIGH",
+      },
     });
 
     logger.warn(`Compliance alert sent to user ${userId}`, {
       userId,
       issue,
-      severity
+      severity,
     });
-
   } catch (error) {
-    logger.error('Failed to send compliance notification', {
+    logger.error("Failed to send compliance notification", {
       userId,
       issue,
       severity,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : "Unknown error",
     });
 
     // Track compliance notification failures in Sentry with high priority
     Sentry.captureException(error, {
-      level: 'error',
+      level: "error",
       tags: {
-        service: 'notification',
-        type: 'compliance',
-        severity: severity
+        service: "notification",
+        type: "compliance",
+        severity: severity,
       },
       extra: {
         userId,
         issue,
-        severity
-      }
+        severity,
+      },
     });
 
     throw error;
   }
 }
 
-export async function notifyAuditEvent(userId: string, event: string, metadata?: Record<string, any>) {
+export async function notifyAuditEvent(
+  userId: string,
+  event: string,
+  metadata?: Record<string, any>,
+) {
   try {
     const user = await prisma.user.findUnique({
       where: { id: userId },
-      select: { id: true, role: true }
+      select: { id: true, role: true },
     });
 
     if (!user) {
@@ -736,7 +770,9 @@ export async function notifyAuditEvent(userId: string, event: string, metadata?:
     }
 
     // Only notify admins of audit events
-    if (!['SUPER_ADMIN', 'FINANCE_ADMIN', 'SUPPORT_ADMIN'].includes(user.role)) {
+    if (
+      !["SUPER_ADMIN", "FINANCE_ADMIN", "SUPPORT_ADMIN"].includes(user.role)
+    ) {
       return;
     }
 
@@ -752,49 +788,50 @@ export async function notifyAuditEvent(userId: string, event: string, metadata?:
       data: {
         event,
         metadata,
-        actionUrl: `${process.env.FRONTEND_URL}/admin/audit`
-      }
+        actionUrl: `${process.env.FRONTEND_URL}/admin/audit`,
+      },
     });
 
     // Also send to admins room via Socket.IO
     if (io) {
-      io.to('admins').emit('audit-event', {
-        type: 'audit',
+      io.to("admins").emit("audit-event", {
+        type: "audit",
         event,
         message,
         userId,
         timestamp: new Date().toISOString(),
-        metadata
+        metadata,
       });
     }
 
     logger.info(`Audit notification sent to admin ${userId}`, {
       userId,
       event,
-      metadata
+      metadata,
     });
-
   } catch (error) {
-    logger.error('Failed to send audit notification', {
+    logger.error("Failed to send audit notification", {
       userId,
       event,
       metadata,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : "Unknown error",
     });
 
     // Track audit notification failures in Sentry
     Sentry.captureException(error, {
       tags: {
-        service: 'notification',
-        type: 'audit'
+        service: "notification",
+        type: "audit",
       },
       extra: {
         userId,
         event,
-        metadata
-      }
+        metadata,
+      },
     });
 
     throw error;
   }
 }
+
+export { sendEmail };

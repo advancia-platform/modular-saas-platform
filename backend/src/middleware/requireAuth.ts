@@ -11,7 +11,7 @@ interface AuthRequest extends Request {
   };
 }
 
-export function requireAuth(
+export async function requireAuth(
   req: AuthRequest,
   res: Response,
   next: NextFunction,
@@ -32,7 +32,7 @@ export function requireAuth(
   const token = authHeader.replace("Bearer ", "");
 
   try {
-    const payload = verifyAccessToken(token);
+    const payload = await verifyAccessToken(token);
 
     if (!payload) {
       logger.warn("Authentication failed: invalid token", {
@@ -116,4 +116,4 @@ export function requireAdmin(
   return requireRole(["ADMIN", "SUPER_ADMIN"])(req, res, next);
 }
 
-export { AuthRequest };
+export type { AuthRequest };
