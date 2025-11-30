@@ -4,6 +4,10 @@ on:
   workflow_dispatch:
   push:
     branches: ["main"]
+    paths:
+      - "backend/**"
+      - "render.yaml"
+      - ".github/workflows/deploy.yml"
 
 jobs:
   deploy-render:
@@ -14,7 +18,20 @@ jobs:
           RENDER_DEPLOY_HOOK_URL_BACKEND: ${{ secrets.RENDER_DEPLOY_HOOK_URL_BACKEND }}
         run: |
           if [ -z "$RENDER_DEPLOY_HOOK_URL_BACKEND" ]; then
-            echo "Missing RENDER_DEPLOY_HOOK_URL_BACKEND secret"; exit 1;
+            echo "⚠️ RENDER_DEPLOY_HOOK_URL_BACKEND secret is not set."
+            echo "Render auto-deploy from render.yaml will still work if the repository is connected."
+            echo "To enable webhook-based deployment, set the RENDER_DEPLOY_HOOK_URL_BACKEND secret."
+            exit 0
           fi
           curl -fsSL -X POST "$RENDER_DEPLOY_HOOK_URL_BACKEND"
-          echo "Render deploy triggered."
+          echo "✅ Render deploy triggered via webhook."
+
+      - name: Deployment summary
+        run: |
+          echo "## 🚀 Render Backend Deployment" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- **Branch:** main" >> $GITHUB_STEP_SUMMARY
+          echo "- **Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "- **Trigger:** ${{ github.event_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Render will automatically deploy when changes are detected in the repository." >> $GITHUB_STEP_SUMMARY
