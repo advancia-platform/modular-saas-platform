@@ -1,0 +1,117 @@
+# OpenTelemetry Collector Configuration
+# For forwarding logs, traces, and metrics to Sentry
+
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+  # Receive logs from various sources
+  filelog:
+    include:
+      - /var/log/app/*.log
+    start_at: beginning
+    operators:
+      - type: regex_parser
+        regex: '^(?P<timestamp>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z)\s+(?P<level>\w+)\s+(?P<message>.*)$'
+        timestamp:
+          parse_from: attributes.timestamp
+          layout: "%Y-%m-%dT%H:%M:%S.%LZ"
+
+  # Docker container logs
+  docker_stats:
+    endpoint: unix:///var/run/docker.sock
+    collection_interval: 10s
+
+processors:
+  batch:
+    timeout: 5s
+    send_batch_size: 100
+
+  # Add resource attributes
+  resource:
+    attributes:
+      - key: service.name
+        value: advancia-pay-ledger
+        action: upsert
+      - key: deployment.environment
+        from_attribute: NODE_ENV
+        action: upsert
+
+  # Filter out health check logs
+  filter:
+    logs:
+      exclude:
+        match_type: regexp
+        bodies:
+          - ".*GET /health.*"
+          - ".*GET /api/health.*"
+          - ".*healthcheck.*"
+
+  # Transform log levels
+  transform:
+    log_statements:
+      - context: log
+        statements:
+          - set(severity_text, "ERROR") where body matches "(?i)error|exception|fail"
+          - set(severity_text, "WARN") where body matches "(?i)warn|warning"
+
+exporters:
+  # Forward to your backend log drain endpoint
+  otlphttp:
+    endpoint: ${BACKEND_URL}/api/logs/otlp
+    headers:
+      Authorization: Bearer ${LOG_DRAIN_API_KEY}
+
+  # Direct Sentry export (alternative)
+  sentry:
+    dsn: ${SENTRY_DSN}
+
+  # Console output for debugging
+  logging:
+    verbosity: detailed
+    sampling_initial: 5
+    sampling_thereafter: 200
+
+  # Prometheus metrics (optional)
+  prometheus:
+    endpoint: 0.0.0.0:8889
+    namespace: otel
+
+extensions:
+  health_check:
+    endpoint: 0.0.0.0:13133
+
+  pprof:
+    endpoint: 0.0.0.0:1777
+
+  zpages:
+    endpoint: 0.0.0.0:55679
+
+service:
+  extensions: [health_check, pprof, zpages]
+
+  pipelines:
+    logs:
+      receivers: [otlp, filelog]
+      processors: [batch, resource, filter, transform]
+      exporters: [otlphttp, logging]
+
+    traces:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [otlphttp]
+
+    metrics:
+      receivers: [otlp]
+      processors: [batch, resource]
+      exporters: [prometheus]
+
+  telemetry:
+    logs:
+      level: info
+    metrics:
+      address: 0.0.0.0:8888

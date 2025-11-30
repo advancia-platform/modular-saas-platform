@@ -480,6 +480,7 @@ app.use("/api", healthRouter);
 
 // GitOps integration routes (ArgoCD, Prometheus, Grafana)
 app.use("/api/gitops", gitopsRouter);
+app.use("/api/logs", logDrainsRouter); // Log drains for Vercel, Heroku, OpenTelemetry
 app.use("/api/compliance", safeAuth, safeAdmin, complianceRouter); // Compliance monitoring (admin only)
 
 // Auth routes (public)
