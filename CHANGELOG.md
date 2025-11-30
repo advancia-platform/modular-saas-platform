@@ -5,6 +5,36 @@ This project adheres to [Semantic Versioning](https://semver.org/).
 
 ---
 
+## [v0.0.9] - 2025-11-30
+## 🎉 What's Changed
+
+* No changes
+
+**Full Changelog**: https://github.com/advancia-platform/modular-saas-platform/compare/v0.0.8...v0.0.9
+
+## 🚀 Contributors
+
+@github-actions[bot] and @muchaeljohn739337-cloud
+
+---
+
+### 📋 Release Notes
+
+This release includes improvements to our notification services platform, RBAC implementation, and comprehensive testing infrastructure.
+
+**Key Features:**
+- Granular notification preferences with role-based access control
+- Multi-provider integrations (Resend, Cryptomus, Telegram, NOWPayments)
+- Comprehensive audit logging for compliance
+- 80%+ test coverage with automated CI/CD
+
+**Security & Compliance:**
+- All changes include security scanning and vulnerability checks
+- RBAC permissions validated for admin/auditor/viewer roles
+- Audit trails maintained for all preference modifications
+
+For deployment instructions and breaking changes, see our [Contributing Guide](CONTRIBUTING.md).
+
 ## [v0.0.8] - 2025-11-30
 - 🔐 **Role-based access control** (Admin, Auditor, Viewer, User) with comprehensive permissions
 - 📋 **Comprehensive audit logging** for compliance and security monitoring
