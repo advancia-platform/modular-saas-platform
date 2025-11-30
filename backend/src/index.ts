@@ -8,11 +8,27 @@ import gcStats from "prometheus-gc-stats";
 import { setupSwagger } from "./utils/swagger";
 
 // Sentry setup
-const Sentry = require("@sentry/node");
+import * as Sentry from "@sentry/node";
 Sentry.init({
   dsn: "https://41dbdb2c446534ac933de22ca5c2778c@o4510400768573440.ingest.us.sentry.io/4510400800096256",
+  integrations: [
+    // Send console.log, console.warn, and console.error calls as logs to Sentry
+    Sentry.consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
+  ],
   tracesSampleRate: 1.0,
   sendDefaultPii: true,
+  // Enable logs to be sent to Sentry
+  _experiments: {
+    enableLogs: true,
+  },
+});
+
+// Log server startup to Sentry
+Sentry.logger.info("Backend server initializing", {
+  action: "server_init",
+  timestamp: new Date().toISOString(),
+  nodeVersion: process.version,
+  environment: process.env.NODE_ENV || "development",
 });
 
 // Initialize Prometheus metrics collection

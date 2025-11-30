@@ -1,6 +1,7 @@
 import * as Sentry from "@sentry/node";
 import {
   consoleIntegration,
+  consoleLoggingIntegration,
   httpIntegration,
   onUncaughtExceptionIntegration,
   onUnhandledRejectionIntegration,
@@ -25,12 +26,18 @@ export function initSentry() {
       // Add other integrations as needed
       httpIntegration(),
       consoleIntegration(),
+      // Send console.log, console.warn, and console.error calls as logs to Sentry
+      consoleLoggingIntegration({ levels: ["log", "warn", "error"] }),
       onUncaughtExceptionIntegration(),
       onUnhandledRejectionIntegration(),
     ],
     // Performance Monitoring
     tracesSampleRate: process.env.NODE_ENV === "production" ? 0.1 : 1.0, // 10% in production, 100% in development
     profilesSampleRate: 1.0, // Profile 100% of transactions
+    // Enable logs to be sent to Sentry
+    _experiments: {
+      enableLogs: true,
+    },
 
     // Release tracking
     release: process.env.npm_package_version || "1.0.0",
@@ -221,3 +228,61 @@ export function redactSensitiveData(
 
   return clone;
 }
+
+// Sentry Logger helpers - use these for structured logging to Sentry
+export const sentryLogger = {
+  /**
+   * Log info level message to Sentry
+   */
+  info(message: string, data?: Record<string, unknown>) {
+    if (process.env.SENTRY_DSN) {
+      Sentry.logger.info(message, redactSensitiveData(data || {}));
+    } else {
+      console.log(`[Sentry Info] ${message}`, data || {});
+    }
+  },
+
+  /**
+   * Log warning level message to Sentry
+   */
+  warn(message: string, data?: Record<string, unknown>) {
+    if (process.env.SENTRY_DSN) {
+      Sentry.logger.warn(message, redactSensitiveData(data || {}));
+    } else {
+      console.warn(`[Sentry Warn] ${message}`, data || {});
+    }
+  },
+
+  /**
+   * Log error level message to Sentry
+   */
+  error(message: string, data?: Record<string, unknown>) {
+    if (process.env.SENTRY_DSN) {
+      Sentry.logger.error(message, redactSensitiveData(data || {}));
+    } else {
+      console.error(`[Sentry Error] ${message}`, data || {});
+    }
+  },
+
+  /**
+   * Log debug level message to Sentry
+   */
+  debug(message: string, data?: Record<string, unknown>) {
+    if (process.env.SENTRY_DSN) {
+      Sentry.logger.debug(message, redactSensitiveData(data || {}));
+    } else {
+      console.debug(`[Sentry Debug] ${message}`, data || {});
+    }
+  },
+
+  /**
+   * Log trace level message to Sentry
+   */
+  trace(message: string, data?: Record<string, unknown>) {
+    if (process.env.SENTRY_DSN) {
+      Sentry.logger.trace(message, redactSensitiveData(data || {}));
+    } else {
+      console.trace(`[Sentry Trace] ${message}`, data || {});
+    }
+  },
+};

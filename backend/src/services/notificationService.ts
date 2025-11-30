@@ -628,6 +628,38 @@ export async function notifyAllAdmins(
       console.log("✅ Socket notification sent to admins room");
     }
 
+    // Send to Discord for critical/high priority notifications
+    if (
+      discordService.isAvailable() &&
+      (payload.priority === "high" || payload.priority === "urgent")
+    ) {
+      const alertType =
+        payload.category === "security"
+          ? "error"
+          : payload.priority === "urgent"
+            ? "error"
+            : payload.priority === "high"
+              ? "warning"
+              : "info";
+
+      discordService
+        .sendAlert({
+          title: payload.title,
+          description: payload.message,
+          type: alertType,
+          fields: payload.data
+            ? Object.entries(payload.data)
+                .slice(0, 5)
+                .map(([name, value]) => ({
+                  name,
+                  value: String(value),
+                  inline: true,
+                }))
+            : undefined,
+        })
+        .catch((err) => console.error("Discord notification failed:", err));
+    }
+
     return notifications;
   } catch (error) {
     console.error("❌ Error notifying admins:", error);
@@ -659,6 +691,22 @@ export async function notifyWithdrawal(
         actionUrl: `${process.env.FRONTEND_URL}/transactions/${txId}`,
       },
     });
+
+    // Send to Discord for transaction tracking
+    if (discordService.isAvailable()) {
+      discordService
+        .sendTransactionAlert({
+          type: "withdrawal",
+          amount: String(amount),
+          currency,
+          userId,
+          status: "completed",
+          transactionId: txId,
+        })
+        .catch((err) =>
+          console.error("Discord transaction alert failed:", err),
+        );
+    }
 
     logger.info(`Withdrawal notification sent to user ${userId}`, {
       userId,
