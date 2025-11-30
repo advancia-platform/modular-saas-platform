@@ -39,7 +39,7 @@ interface FixExecutionResult {
 
 export class AIDevOpsAgent extends EventEmitter {
   private logger: winston.Logger;
-  private errorIntake: ErrorIntakeSystem;
+  private errorIntake!: ErrorIntakeSystem;
   private isRunning: boolean = false;
   private processingQueue: Map<string, ErrorEvent> = new Map();
   private activeFixAttempts: Map<string, any> = new Map();
@@ -503,10 +503,12 @@ export class AIDevOpsAgent extends EventEmitter {
 
       return { success: false, description: "Code changes failed" };
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error("Code change failed:", error);
       return {
         success: false,
-        description: `Code change error: ${error.message}`,
+        description: `Code change error: ${errorMessage}`,
       };
     }
   }
@@ -540,10 +542,12 @@ export class AIDevOpsAgent extends EventEmitter {
         description: `Updated ${packages.length} dependencies`,
       };
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error("Dependency update failed:", error);
       return {
         success: false,
-        description: `Dependency update error: ${error.message}`,
+        description: `Dependency update error: ${errorMessage}`,
       };
     }
   }
@@ -560,10 +564,12 @@ export class AIDevOpsAgent extends EventEmitter {
 
       return { success: true, description: "Configuration updated" };
     } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : String(error);
       this.logger.error("Configuration update failed:", error);
       return {
         success: false,
-        description: `Configuration error: ${error.message}`,
+        description: `Configuration error: ${errorMessage}`,
       };
     }
   }
